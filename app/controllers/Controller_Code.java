@@ -478,7 +478,7 @@ public class Controller_Code extends _BaseController {
             }
 
             if (help.pending_programs) {
-                if (!person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return forbidden();
+                // TODO if (!person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return forbidden();
                 disjunction
                         .conjunction()
                             .eq("versions.approval_state", Approval.PENDING.name())
@@ -935,7 +935,7 @@ public class Controller_Code extends _BaseController {
             // Kontrola objektu
             Model_CProgramVersion version = Model_CProgramVersion.find.byId(version_id);
 
-            this.permissionService.check(person(), version, Action.PUBLISH);
+            this.checkPublishPermission(version);
 
             if (Model_CProgramVersion.find.query().where().eq("approval_state", Approval.PENDING.name())
                     .eq("author_id", _BaseController.personId())

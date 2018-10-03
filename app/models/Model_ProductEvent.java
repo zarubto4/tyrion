@@ -23,11 +23,12 @@ import java.util.UUID;
 @ApiModel("ProductEvent")
 @Table(name="ProductEvent")
 public class Model_ProductEvent extends BaseModel {
-    /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
     private static final Logger logger = new Logger(Model_ProductEvent.class);
 
-    /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
+/* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @ManyToOne public Model_Product product;
 
@@ -40,7 +41,7 @@ public class Model_ProductEvent extends BaseModel {
     @JsonIgnore @Column(columnDefinition = "TEXT")
     public String detail;
 
-    /* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
 
     @Override
     public void save() throws _Base_Result_Exception {
@@ -94,7 +95,7 @@ public class Model_ProductEvent extends BaseModel {
         return detail;
     }
 
-    /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
     @JsonIgnore
     public List<Model_ProductEvent> getEvents(ProductEventType type, Instant from, boolean ascending) {
         return Model_ProductEvent.find.query()
@@ -106,27 +107,19 @@ public class Model_ProductEvent extends BaseModel {
                 .findList();
     }
 
-    /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
-    /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
-    /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-    /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    @Transient @Override public void check_create_permission() throws _Base_Result_Exception { }
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { }
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public enum Permission {} // Not Required here
-
-    /* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-    /* FINDER -------------------------------------------------------------------------------------------------------------*/
+/* FINDER -------------------------------------------------------------------------------------------------------------*/
 
     @CacheFinderField(Model_ProductEvent.class)
     public static CacheFinder<Model_ProductEvent> find = new CacheFinder<>(Model_ProductEvent.class);

@@ -145,12 +145,12 @@ public class Model_AuthorizationToken extends BaseModel implements Permissible, 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 
-    @Override
+    @JsonIgnore @Override
     public EntityType getEntityType() {
         return EntityType.AUTHORIZATION_TOKEN;
     }
 
-    @Override
+    @JsonIgnore @Override
     public List<Action> getSupportedActions() {
         return Arrays.asList(Action.CREATE, Action.READ, Action.DELETE);
     }

@@ -11,6 +11,7 @@ import utilities.enums.EntityType;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
 import utilities.enums.NotificationType;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
@@ -38,12 +39,11 @@ public class Model_BootLoader extends NamedModel implements Permissible {
 
     @JsonIgnore @OneToMany(mappedBy="bootloader",cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareUpdate> updates = new ArrayList<>();
 
-    @JsonIgnore  @ManyToOne(fetch = FetchType.LAZY)     public Model_HardwareType hardware_type;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)      public Model_HardwareType hardware_type;
     @JsonIgnore @OneToOne(fetch = FetchType.LAZY)       public Model_HardwareType main_hardware_type;
 
-    @JsonIgnore  @OneToMany(mappedBy="actual_boot_loader", fetch = FetchType.LAZY)                 public List<Model_Hardware> hardware = new ArrayList<>();
-                 @OneToOne(mappedBy = "boot_loader", cascade = CascadeType.ALL)                    public Model_Blob file;
-
+    @JsonIgnore  @OneToMany(mappedBy="actual_boot_loader", fetch = FetchType.LAZY)  public List<Model_Hardware> hardware = new ArrayList<>();
+    @JsonIgnore  @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)       public Model_Blob file;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -61,29 +61,11 @@ public class Model_BootLoader extends NamedModel implements Permissible {
         }
     }
 
-    @JsonProperty public String  file_path() {
+    @JsonProperty
+    public String  file_path() {
         try {
 
-            if (idCache().get(Model_Blob.class) != null) {
-                String link = Model_Blob.find.byId(idCache().get(Model_Blob.class)).getPublicDownloadLink();
-                if (link != null) {
-                    return link;
-                }
-            }
-
-            if (file == null) {
-                logger.error("File nto exist inside bootloader!");
-                return null;
-            }
-
-            String total_link = file.getPublicDownloadLink();
-            idCache().add(Model_Blob.class, file.id);
-
-
-            logger.trace("path - total link: {}", total_link);
-
-            // Přesměruji na link
-            return total_link;
+            return getBlob().getPublicDownloadLink();
 
         } catch (_Base_Result_Exception e){
             //nothing
@@ -97,6 +79,11 @@ public class Model_BootLoader extends NamedModel implements Permissible {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
+    public Model_Blob getBlob() {
+        return file != null ? file : Model_Blob.find.query().where().eq("boot_loader.id", id).findOne();
+    }
+
+    @JsonIgnore
     public UUID getHardwareTypeId() {
         if (idCache().get(Model_HardwareType.class) == null) {
             idCache().add(Model_HardwareType.class, (UUID) Model_HardwareType.find.query().where().eq("boot_loaders.id", id).select("id").findSingleAttribute());
@@ -107,21 +94,13 @@ public class Model_BootLoader extends NamedModel implements Permissible {
 
     @JsonIgnore
     public Model_HardwareType getHardwareType() {
-        try {
-            return Model_HardwareType.find.byId(getHardwareTypeId());
-        }catch (Exception e) {
-            return null;
-        }
+        return hardware_type != null ? hardware_type : Model_HardwareType.find.query().where().eq("boot_loaders.id", id).findOne();
     }
 
     @JsonIgnore
     public UUID getMainHardwareTypeId() {
 
-        // System.out.println("getMainHardwareTypeId for bootloader " + this.name);
-
         if (idCache().get(Model_HardwareType.Model_HardwareType_Main.class) == null) { // Záměrně random! Protože potřebuji uložit stejný typ objektu do paměti dvakrát a rozpoznání je jen podle typu třídy
-
-            // System.out.println("getMainHardwareTypeId cache is null " + this.name);
 
             UUID main = (UUID) Model_HardwareType.find.query().where().eq("main_boot_loader.id", id).select("id").findSingleAttribute();
             if (main != null) {
@@ -130,7 +109,6 @@ public class Model_BootLoader extends NamedModel implements Permissible {
             } else {
                 logger.warn("getMainHardwareTypeId for bootloader {} is null - but its probably ok", this.name);
             }
-
         }
 
         return idCache().get(Model_HardwareType.Model_HardwareType_Main.class);
@@ -139,19 +117,13 @@ public class Model_BootLoader extends NamedModel implements Permissible {
     @JsonIgnore
     public Model_HardwareType getMainHardwareType() {
         try {
-
-            UUID id = getMainHardwareTypeId();
-            logger.warn("getMainHardwareType for bootloader {} getMainHardwareTypeId: id {} ", this.name, id);
-            if(id != null) {
-                return Model_HardwareType.find.byId(id);
-            } else  {
-                return null;
-            }
-
-        }catch (Exception e) {
+            return main_hardware_type != null ? main_hardware_type : Model_HardwareType.find.query().where().eq("main_boot_loader.id", id).findOne();
+        } catch (Result_Error_NotFound e) {
+            // nothing
+        } catch (Exception e) {
             logger.internalServerError(e);
-            return null;
         }
+        return null;
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -261,12 +233,6 @@ public class Model_BootLoader extends NamedModel implements Permissible {
     }
 
     @JsonIgnore @Override
-    public void update() {
-
-        super.update();
-    }
-
-    @JsonIgnore @Override
     public boolean delete() {
 
         logger.debug("delete :: Delete object Id: {} ", this.id);
@@ -309,12 +275,12 @@ public class Model_BootLoader extends NamedModel implements Permissible {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @Override
+    @JsonIgnore @Override
     public EntityType getEntityType() {
         return EntityType.BOOTLOADER;
     }
 
-    @Override
+    @JsonIgnore @Override
     public List<Action> getSupportedActions() {
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }

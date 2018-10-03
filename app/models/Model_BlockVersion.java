@@ -56,12 +56,12 @@ public class Model_BlockVersion extends VersionModel implements Permissible, Und
 
     @JsonIgnore
     public Model_Block getBlock() {
-        return Model_Block.find.query().where().eq("versions.id", id).findOne();
+        return isLoaded("block") ? block : Model_Block.find.query().nullable().where().eq("versions.id", id).findOne();
     }
 
-    @Override
+    @JsonIgnore @Override
     public Model_Project getProject() {
-        return this.block != null ? this.block.getProject() : this.getBlock().getProject();
+        return this.getBlock().getProject();
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -132,12 +132,12 @@ public class Model_BlockVersion extends VersionModel implements Permissible, Und
 
 /* PERMISSIONS ---------------------------------------------------------------------------------------------------------*/
 
-    @Override
+    @JsonIgnore @Override
     public EntityType getEntityType() {
         return EntityType.BLOCK_VERSION;
     }
 
-    @Override
+    @JsonIgnore @Override
     public List<Action> getSupportedActions() {
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.PUBLISH);
     }

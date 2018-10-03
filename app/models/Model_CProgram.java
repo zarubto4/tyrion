@@ -118,8 +118,9 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
         }
     }
 
-    @JsonIgnore @Transient public Model_Project getProject() {
-        return this.project != null ? this.project : Model_Project.find.query().where().eq("c_programs.id", this.id).findOne();
+    @JsonIgnore @Override
+    public Model_Project getProject() {
+        return isLoaded("project") ? this.project : Model_Project.find.query().nullable().where().eq("c_programs.id", this.id).findOne();
     }
 
     @JsonIgnore @Transient public List<UUID> getVersionsId() {
@@ -168,12 +169,7 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore @Transient public Model_HardwareType getHardwareType()     {
-        try {
-            return Model_HardwareType.find.byId(getHardwareTypeId());
-        }catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return hardware_type != null ? hardware_type : Model_HardwareType.find.query().where().eq("c_programs.id", id).findOne();
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -259,17 +255,17 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @Override
+    @JsonIgnore @Override
     public EntityType getEntityType() {
         return EntityType.FIRMWARE;
     }
 
-    @Override
+    @JsonIgnore @Override
     public List<Action> getSupportedActions() {
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.PUBLISH);
     }
 
-    // TODO workaround
+    // TODO permissions workaround
     @JsonProperty @Transient @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
         return true;
     }

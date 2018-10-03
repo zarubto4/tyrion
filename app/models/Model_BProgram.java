@@ -67,7 +67,7 @@ public class Model_BProgram extends TaggedModel implements Permissible, UnderPro
 
     @JsonIgnore
     public Model_Project getProject() {
-        return this.project != null ? this.project : Model_Project.find.query().where().eq("b_programs.id", id).findOne();
+        return isLoaded("project") ? this.project : Model_Project.find.query().nullable().where().eq("b_programs.id", id).findOne();
     }
 
     @JsonIgnore
@@ -175,12 +175,12 @@ public class Model_BProgram extends TaggedModel implements Permissible, UnderPro
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @Override
+    @JsonIgnore @Override
     public EntityType getEntityType() {
         return EntityType.BLOCKO_PROGRAM;
     }
 
-    @Override
+    @JsonIgnore @Override
     public List<Action> getSupportedActions() {
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }

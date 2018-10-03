@@ -16,6 +16,7 @@ import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
+import utilities.model.UnderProduct;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
@@ -35,7 +36,7 @@ import java.util.*;
 @ApiModel(value = "Project", description = "Model of Project")
 @Table(name="Project")
 @Permissions({ Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.INVITE, Action.ACTIVATE })
-public class Model_Project extends TaggedModel implements Permissible {
+public class Model_Project extends TaggedModel implements Permissible, UnderProduct {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -70,7 +71,6 @@ public class Model_Project extends TaggedModel implements Permissible {
 
             Model_Product product = getProduct();
             if (product != null) {
-                product.check_read_permission();
                 return new Swagger_Short_Reference(product.id, product.name, product.description);
             } else {
                 return null;
@@ -437,14 +437,9 @@ public class Model_Project extends TaggedModel implements Permissible {
     }
 
     @JsonIgnore
+    @Override
     public Model_Product getProduct() {
-        try {
-            return Model_Product.find.byId(getProductId());
-
-        }catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return product != null ? product : Model_Product.find.query().where().eq("projects.id", id).findOne();
     }
 
 /* JSON IGNORE METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -690,12 +685,12 @@ public class Model_Project extends TaggedModel implements Permissible {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @Override
+    @JsonIgnore @Override
     public EntityType getEntityType() {
         return EntityType.PROJECT;
     }
 
-    @Override
+    @JsonIgnore @Override
     public List<Action> getSupportedActions() {
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.ACTIVATE, Action.INVITE);
     }

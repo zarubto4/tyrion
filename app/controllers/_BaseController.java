@@ -20,6 +20,7 @@ import utilities.logger.ServerLogger;
 import utilities.logger.YouTrack;
 import utilities.model.BaseModel;
 import utilities.model.JsonSerializable;
+import utilities.permission.Action;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.server_measurement.RequestLatency;
@@ -104,6 +105,14 @@ public abstract class _BaseController {
 
     public void checkDeletePermission(BaseModel model) throws ForbiddenException, NotSupportedException {
         this.permissionService.checkDelete(person(), model);
+    }
+
+    public void checkActivatePermission(BaseModel model) throws ForbiddenException, NotSupportedException {
+        this.permissionService.check(person(), model, Action.ACTIVATE);
+    }
+
+    public void checkPublishPermission(BaseModel model) throws ForbiddenException, NotSupportedException {
+        this.permissionService.check(person(), model, Action.PUBLISH);
     }
 
 // PERSON OPERATIONS ###################################################################################################

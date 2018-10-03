@@ -70,7 +70,7 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @Override
+    @JsonIgnore @Override
     public Model_Project getProject() {
         return this.get_grid_program().getProject();
     }
@@ -88,7 +88,7 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
 
     @JsonIgnore
     public Model_GridProgram get_grid_program() throws _Base_Result_Exception {
-        return this.grid_program != null ? this.grid_program : Model_GridProgram.find.query().where().eq("versions.id", id).findOne();
+        return isLoaded("grid_program") ? this.grid_program : Model_GridProgram.find.query().nullable().where().eq("versions.id", id).findOne();
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -166,12 +166,12 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @Override
+    @JsonIgnore @Override
     public EntityType getEntityType() {
         return EntityType.GRID_PROGRAM_VERSION;
     }
 
-    @Override
+    @JsonIgnore @Override
     public List<Action> getSupportedActions() {
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }

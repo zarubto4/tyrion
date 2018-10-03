@@ -84,7 +84,7 @@ public class Controller_Article extends _BaseController {
             article.name                  = help.name;
             article.mark_down_text        = help.mark_down_text;
 
-            this.permissionService.checkCreate(person(), article);
+            this.checkCreatePermission(article);
 
             // Uložení objektu
             article.save();

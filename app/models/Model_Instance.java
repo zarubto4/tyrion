@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
@@ -17,11 +16,13 @@ import utilities.cache.CacheFinderField;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import utilities.errors.Exceptions.Result_Error_NotFound;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
+import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfiguration;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationFile;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationProgram;
@@ -42,7 +43,7 @@ import java.util.stream.Collectors;
 @Entity
 @ApiModel(description = "Model of Instance", value = "Instance")
 @Table(name="Instance")
-public class Model_Instance extends TaggedModel {
+public class Model_Instance extends TaggedModel implements Permissible, UnderProject {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -227,14 +228,9 @@ public class Model_Instance extends TaggedModel {
         return idCache().get(Model_Project.class);
     }
 
-    @JsonIgnore
+    @JsonIgnore @Override
     public Model_Project getProject() {
-        try {
-            return Model_Project.find.byId(getProjectId());
-        }catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return isLoaded("project") ? project :  Model_Project.find.query().nullable().where().eq("instances.id", id).findOne();
     }
 
     @JsonIgnore
@@ -758,12 +754,11 @@ public class Model_Instance extends TaggedModel {
 
             logger.debug("Cloud_Homer_server:: cloud_verification_token:: WebView FloatingPersonToken Token found and user have permission");
 
-
             // Kontola operávnění ke konkrétní instanci??
             Model_HomerServer server = Model_HomerServer.find.byId(homer.id);
 
             // Veřejný server
-            if(server.server_type == HomerType.PUBLIC || server.server_type == HomerType.MAIN || server.server_type == HomerType.BACKUP) {
+            if (server.server_type == HomerType.PUBLIC || server.server_type == HomerType.MAIN || server.server_type == HomerType.BACKUP) {
 
                 logger.debug("cloud_verification_token:: Server is public - try to find participants.person.id");
 
@@ -780,19 +775,16 @@ public class Model_Instance extends TaggedModel {
 
                 logger.warn("cloud_verification_token:: Its a private Server!");
 
-                if(Model_Project.find.query().where().eq("servers.id", server.id).eq("participants.person.id", floatingPersonToken.get_person_id()).select("id").findOne() != null) {
+                if (Model_Project.find.query().where().eq("servers.id", server.id).eq("participants.person.id", floatingPersonToken.get_person_id()).select("id").findOne() != null) {
                     logger.trace("validate_incoming_user_connection_to_hardware_logger:: Private Server Find fot this Person");
                     homer.send(help.get_result(true));
 
-                }else {
+                } else {
                     logger.warn("validate_incoming_user_connection_to_hardware_logger:: Private Server NOT Find fot this Person");
                     homer.send(help.get_result(false));
 
                 }
-
             }
-
-
         } catch (Exception e) {
             logger.internalServerError(e);
         }
@@ -805,85 +797,17 @@ public class Model_Instance extends TaggedModel {
         return getProject().getPath() + "/instances/" + this.id;
     }
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_create_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_create_" + id);
-                return;
-            }
-            if (_BaseController.person().has_permission(Permission.Instance_create.name())) return;
-
-            this.project.check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_create_" + id, true);
-
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_create_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-                return;
-            }
-            if (_BaseController.person().has_permission(Permission.Instance_read.name())) return;
-
-            this.getProject().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-            if (_BaseController.person().has_permission(Permission.Instance_update.name())) return;
-
-            this.getProject().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.INSTANCE;
     }
 
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-                return;
-            }
-            if (_BaseController.person().has_permission(Permission.Instance_delete.name())) return;
-
-            this.getProject().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.DEPLOY);
     }
-
-    public enum Permission { Instance_create, Instance_read, Instance_update, Instance_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

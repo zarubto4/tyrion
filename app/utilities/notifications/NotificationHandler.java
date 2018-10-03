@@ -132,7 +132,7 @@ public class NotificationHandler {
                     if (notification.notification_importance != NotificationImportance.LOW && notification.id == null) {
 
                         notification.person = Model_Person.find.byId(person_id); // Get Person Model from Cache
-                        notification.save_object();
+                        notification.save();
 
                         message.put("id", notification.id.toString());
                         message.put("notification_id", notification.id.toString());

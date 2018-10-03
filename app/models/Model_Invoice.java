@@ -15,7 +15,10 @@ import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
+import utilities.model.UnderProduct;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -24,7 +27,7 @@ import java.util.*;
 @Entity
 @ApiModel( value = "Invoice", description = "Model of Invoice")
 @Table(name="Invoice")
-public class Model_Invoice extends BaseModel {
+public class Model_Invoice extends BaseModel implements Permissible, UnderProduct {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -257,7 +260,7 @@ public class Model_Invoice extends BaseModel {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
+    @JsonIgnore @Override
     public Model_Product getProduct() {
         if (product == null) product = Model_Product.getByInvoice(this.id);
         return product;
@@ -436,9 +439,9 @@ public class Model_Invoice extends BaseModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+    // TODO rework permissions
 
     @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
         if(_BaseController.person().has_permission(Permission.Invoice_create.name())) return;
@@ -462,6 +465,15 @@ public class Model_Invoice extends BaseModel {
         throw new Result_Error_PermissionDenied();
     }
 
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.INVOICE;
+    }
+
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
+    }
 
     public enum Permission {Invoice_create, Invoice_update, Invoice_read, Invoice_delete}
 

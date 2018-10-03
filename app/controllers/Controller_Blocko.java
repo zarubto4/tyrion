@@ -15,6 +15,7 @@ import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.enums.Approval;
 import utilities.enums.ProgramType;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.permission.Action;
@@ -77,7 +78,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help  = formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_Project project = Model_Project.find.byId(project_id);
@@ -87,6 +88,8 @@ public class Controller_Blocko extends _BaseController {
             bProgram.description           = help.description;
             bProgram.name                  = help.name;
             bProgram.project               = project;
+
+            this.checkCreatePermission(bProgram);
 
             // Uložení objektu
             bProgram.save();
@@ -179,6 +182,8 @@ public class Controller_Blocko extends _BaseController {
 
             // Vytvoření odchozího JSON
             Swagger_B_Program_List result = new Swagger_B_Program_List(query, page_number, help);
+
+             // TODO permissions
 
             // Vrácení výsledku
             return ok(result);
@@ -314,7 +319,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tags help  = formFromRequestWithValidation(Swagger_Tags.class);
+            Swagger_Tags help = formFromRequestWithValidation(Swagger_Tags.class);
 
             Model_BProgram bProgram = Model_BProgram.find.byId(help.object_id);
 
@@ -577,7 +582,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Instance_New help  = formFromRequestWithValidation(Swagger_Instance_New.class);
+            Swagger_Instance_New help = formFromRequestWithValidation(Swagger_Instance_New.class);
 
             // Kontrola objektu
             Model_Project project = Model_Project.find.byId(help.project_id);
@@ -596,6 +601,8 @@ public class Controller_Blocko extends _BaseController {
             instance.server_main = main_server;
             instance.server_backup = backup_server;
             instance.b_program = b_program;
+
+            this.checkCreatePermission(instance);
 
             instance.save();
 
@@ -623,11 +630,7 @@ public class Controller_Blocko extends _BaseController {
     })
     public Result instance_get(UUID instance_id) {
         try {
-
-            Model_Instance instance = Model_Instance.find.byId(instance_id);
-
-            return ok(instance);
-
+            return read(Model_Instance.find.byId(instance_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -664,7 +667,7 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help  = formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_Instance instance = Model_Instance.find.byId(instance_id);
@@ -672,10 +675,7 @@ public class Controller_Blocko extends _BaseController {
             instance.name = help.name;
             instance.description = help.description;
 
-            // Update Objektu
-            instance.update();
-
-            return ok(instance);
+            return update(instance);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -715,6 +715,8 @@ public class Controller_Blocko extends _BaseController {
 
             // Kontrola objektu
             Model_Instance instance = Model_Instance.find.byId(help.object_id);
+
+            this.checkUpdatePermission(instance);
 
             // Přidání Tagu
             instance.addTags(help.tags);
@@ -761,6 +763,8 @@ public class Controller_Blocko extends _BaseController {
             // Kontrola objektu
             Model_Instance instance = Model_Instance.find.byId(help.object_id);
 
+            this.checkUpdatePermission(instance);
+
             // Odebrání Tagu
             instance.removeTags(help.tags);
 
@@ -787,12 +791,7 @@ public class Controller_Blocko extends _BaseController {
     })
     public Result instance_delete(UUID instance_id) {
         try {
-
-            Model_Instance instance = Model_Instance.find.byId(instance_id);
-            instance.delete();
-
-            return ok();
-
+            return delete(Model_Instance.find.byId(instance_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -815,6 +814,8 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             Model_Instance instance = Model_Instance.find.byId(instance_id);
+
+            this.permissionService.check(person(), instance, Action.DEPLOY);
 
             instance.stop();
 
@@ -869,6 +870,9 @@ public class Controller_Blocko extends _BaseController {
             snapshot.description = help.description;
             snapshot.b_program_version = version;
             snapshot.instance = instance;
+
+            this.checkCreatePermission(snapshot);
+
             snapshot.save();
 
             snapshot.program = Model_Blob.upload(help.json().toString(), "snapshot.json", snapshot.get_path());
@@ -920,9 +924,8 @@ public class Controller_Blocko extends _BaseController {
 
             snapshot.name = help.name;
             snapshot.description = help.description;
-            snapshot.update();
 
-            return ok(snapshot);
+            return update(snapshot);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -944,11 +947,7 @@ public class Controller_Blocko extends _BaseController {
     })
     public Result instanceSnapshot_get(UUID snapshot_id) {
         try {
-
-            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(snapshot_id);
-
-            return ok(snapshot);
-
+            return read(Model_InstanceSnapshot.find.byId(snapshot_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -1042,13 +1041,7 @@ public class Controller_Blocko extends _BaseController {
     })
     public Result instanceSnapshot_delete(UUID snapshot_id) {
         try {
-
-            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(snapshot_id);
-
-            snapshot.delete();
-
-            return ok();
-
+            return delete(Model_InstanceSnapshot.find.byId(snapshot_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -1108,6 +1101,8 @@ public class Controller_Blocko extends _BaseController {
 
             // Vytvářím seznam podle stránky
             Swagger_Instance_List result = new Swagger_Instance_List(query, page_number, help);
+
+            // TODO permissions
 
             // Vracím seznam
             return ok(result);
@@ -1578,28 +1573,29 @@ public class Controller_Blocko extends _BaseController {
                 block.publish_type = ProgramType.PUBLIC;
             }
 
-            this.permissionService.checkCreate(person(), block);
+            this.checkCreatePermission(block);
             
             // Uložení objektu
             block.save();
 
-            // Získání šablony
-            Model_BlockVersion scheme = Model_BlockVersion.get_scheme();
+            try {
 
-            // Kontrola objektu
-            if (scheme == null) return created(block);
+                Model_BlockVersion scheme = Model_BlockVersion.get_scheme();
 
-            // Vytvoření objektu první verze
-            Model_BlockVersion blockoBlockVersion = new Model_BlockVersion();
-            blockoBlockVersion.name = "0.0.0";
-            blockoBlockVersion.description = "This is a first version of block.";
-            blockoBlockVersion.approval_state = Approval.APPROVED;
-            blockoBlockVersion.design_json = scheme.design_json;
-            blockoBlockVersion.logic_json = scheme.logic_json;
-            blockoBlockVersion.block = block;
-            blockoBlockVersion.save();
+                // Vytvoření objektu první verze
+                Model_BlockVersion blockoBlockVersion = new Model_BlockVersion();
+                blockoBlockVersion.name = "0.0.0";
+                blockoBlockVersion.description = "This is a first version of block.";
+                blockoBlockVersion.approval_state = Approval.APPROVED;
+                blockoBlockVersion.design_json = scheme.design_json;
+                blockoBlockVersion.logic_json = scheme.logic_json;
+                blockoBlockVersion.block = block;
+                blockoBlockVersion.save();
 
-            // Vrácení objektu
+            } catch (Result_Error_NotFound e) {
+                // Nothing
+            }
+
             return created(block);
 
         } catch (Exception e) {
@@ -1663,7 +1659,7 @@ public class Controller_Blocko extends _BaseController {
 
             }
 
-            this.permissionService.checkCreate(person(), blockNew);
+            this.checkCreatePermission(blockNew);
 
             blockNew.save();
 
@@ -1715,7 +1711,7 @@ public class Controller_Blocko extends _BaseController {
             block.description = help.description;
             block.name        = help.name;
 
-            this.permissionService.checkUpdate(person(), block);
+            this.checkUpdatePermission(block);
 
             // Uložení objektu
             block.update();
@@ -1767,7 +1763,7 @@ public class Controller_Blocko extends _BaseController {
             // Kontrola objektu
             Model_Block block = Model_Block.find.byId(help.object_id);
 
-            this.permissionService.checkUpdate(person(), block);
+            this.checkUpdatePermission(block);
 
             // Add Tags
             block.addTags(help.tags);
@@ -1814,7 +1810,7 @@ public class Controller_Blocko extends _BaseController {
             // Kontrola objektu
             Model_Block block = Model_Block.find.byId(help.object_id);
 
-            this.permissionService.checkUpdate(person(), block);
+            this.checkUpdatePermission(block);
 
             // Remove Tags
             block.removeTags(help.tags);
@@ -2037,11 +2033,12 @@ public class Controller_Blocko extends _BaseController {
         try {
 
             Model_Block block = Model_Block.find.byId(block_id);
+
+            this.checkActivatePermission(block);
+
             if (!block.active) return badRequest("Block is already deactivated");
             
             block.active = false;
-
-            // TODO permissions
 
             block.update();
 
@@ -2071,10 +2068,10 @@ public class Controller_Blocko extends _BaseController {
 
             Model_Block block = Model_Block.find.byId(block_id);
 
+            this.checkActivatePermission(block);
+
             if (block.active) return badRequest("Block is already activated");
             block.active = true;
-
-            // TODO permissions
 
             block.update();
 
@@ -2126,7 +2123,7 @@ public class Controller_Blocko extends _BaseController {
             // Kontrola nadřazeného objektu
             Model_Block block_old = private_block_version.getBlock();
 
-            this.permissionService.check(person(), block_old, Action.PUBLISH);
+            this.checkPublishPermission(block_old);
 
             if (help.decision) {
 
@@ -2366,7 +2363,7 @@ public class Controller_Blocko extends _BaseController {
             // Kontrola objektu
             Model_BlockVersion version = Model_BlockVersion.find.byId(version_id);
 
-            this.permissionService.check(person(), version, Action.PUBLISH);
+            this.checkUpdatePermission(version);
 
             if (Model_BlockVersion.find.query().where().eq("approval_state", Approval.PENDING.name())
                     .eq("author_id", _BaseController.personId())

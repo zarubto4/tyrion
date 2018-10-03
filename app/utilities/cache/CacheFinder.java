@@ -42,7 +42,7 @@ public class CacheFinder<T extends BaseModel> extends Finder<UUID, T> implements
         }
 
         logger.debug("byId - ({}) id: {} get from db", this.entityType.getSimpleName(), id);
-        T entity = this.query().where().idEq(id).findOne();
+        T entity = super.byId(id);
 
         if (entity == null) {
             logger.debug("byId - ({}) id: {} not found", this.entityType.getSimpleName(), id);
@@ -57,9 +57,7 @@ public class CacheFinder<T extends BaseModel> extends Finder<UUID, T> implements
     @Override
     public CacheQuery<T> query() {
         DefaultOrmQuery<T> query = (DefaultOrmQuery<T>) super.query();
-        CacheQuery<T> cacheQuery = new CacheQuery<>(this, query.getBeanDescriptor(), db(), query.getExpressionFactory());
-        cacheQuery.setDisableLazyLoading(true);
-        return cacheQuery;
+        return new CacheQuery<>(this, query.getBeanDescriptor(), db(), query.getExpressionFactory());
     }
 
     public void setCache(Cache<UUID, T> cache) {

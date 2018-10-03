@@ -3,7 +3,6 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
@@ -11,18 +10,22 @@ import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
+import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.swagger.output.*;
 import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -34,7 +37,7 @@ import java.util.UUID;
 @ApiModel(description = "Model of HardwareUpdate",
         value = "HardwareUpdate")
 @Table(name="HardwareUpdate")
-public class Model_HardwareUpdate extends BaseModel {
+public class Model_HardwareUpdate extends BaseModel implements Permissible, UnderProject {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -199,6 +202,10 @@ public class Model_HardwareUpdate extends BaseModel {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Override
+    public Model_Project getProject() {
+        return getHardware().getProject();
+    }
 
     @JsonIgnore
     public UUID getHardwareId() {
@@ -214,12 +221,7 @@ public class Model_HardwareUpdate extends BaseModel {
 
     @JsonIgnore
     public Model_Hardware getHardware() {
-        try {
-            return Model_Hardware.find.byId(getHardwareId());
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return isLoaded("hardware") ? hardware : Model_Hardware.find.query().nullable().where().eq("updates.id", id).findOne();
     }
 
     @JsonIgnore
@@ -410,8 +412,6 @@ public class Model_HardwareUpdate extends BaseModel {
 
         return true;
     }
-
-
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -904,62 +904,16 @@ public class Model_HardwareUpdate extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    // Not Required - Supported directly only by Tyrion
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        // true
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-                return;
-            }
-
-            if(_BaseController.person().has_permission(Permission.UpdateProcedure_read.name())) return;
-
-            getHardware().check_read_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-
-            if(_BaseController.person().has_permission(Permission.UpdateProcedure_edit.name())) return;
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-                return;
-            }
-
-            if(_BaseController.person().has_permission(Permission.UpdateProcedure_edit.name())) return;
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.HARDWARE_UPDATE;
     }
 
-    public enum Permission { UpdateProcedure_read, UpdateProcedure_edit }
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.READ, Action.UPDATE, Action.DELETE);
+    }
+
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

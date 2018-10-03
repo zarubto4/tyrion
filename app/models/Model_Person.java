@@ -16,6 +16,7 @@ import utilities.Server;
 import utilities.cache.CacheField;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
+import utilities.enums.EntityType;
 import utilities.enums.NotificationAction;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
@@ -27,17 +28,16 @@ import utilities.model.BaseModel;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @ApiModel("Person")
 @Table(name = "Person")
-public class Model_Person extends BaseModel {
+public class Model_Person extends BaseModel implements Permissible {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -78,10 +78,10 @@ public class Model_Person extends BaseModel {
 
     @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Employee>              employees            = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_ProjectParticipant>    projects_participant = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_AuthorizationToken>    authorization_tokens  = new ArrayList<>();  // Propojení, které uživatel napsal
-    @JsonIgnore @OneToMany(mappedBy = "owner",  cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Invitation>            invitations          = new ArrayList<>();   // Pozvánky, které uživatel rozeslal
+    @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_AuthorizationToken>    authorization_tokens = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "owner",  cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Invitation>            invitations          = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Notification>          notifications        = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_GridTerminal>          grid_terminals       = new ArrayList<>();   // Přihlášený websocket uživatele
+    @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_GridTerminal>          grid_terminals       = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -238,21 +238,14 @@ public class Model_Person extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {}
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        // Nothing
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.PERSON;
     }
-    @JsonIgnore @Transient @Override public void check_update_permission()   throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Person_update.name())) return;
-        if(!_BaseController.personId().equals(this.id)) throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Person_delete.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient public void check_activation_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Person_activation.name())) return;
-        throw new Result_Error_PermissionDenied();
+
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.ACTIVATE);
     }
 
     @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission") @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -264,6 +257,8 @@ public class Model_Person extends BaseModel {
             return null;
         }
     }
+
+
 
     public enum Permission { Person_edit, Person_update, Person_delete, Person_activation, Byzance_employee }
 
@@ -290,7 +285,7 @@ public class Model_Person extends BaseModel {
         this.cache_permissions_keys.put(permission_key, value);
     }
 
-    /* CACHE ---------------------------------------------------------------------------------------------------------------*/
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     @CacheField(value = UUID.class, duration = 3600, maxElements = 200, name = "Model_Person_Token")
     public static Cache<UUID, UUID> token_cache;

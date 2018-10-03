@@ -86,12 +86,7 @@ public class Controller_Notification extends _BaseController {
   @Security.Authenticated(Authentication.class)
   public Result notification_delete(UUID notification_id) {
     try {
-
-      Model_Notification notification = Model_Notification.find.byId(notification_id);
-
-      notification.delete();
-      return ok();
-
+      return delete(Model_Notification.find.byId(notification_id));
     } catch (Exception e) {
       return controllerServerError(e);
     }
@@ -129,6 +124,8 @@ public class Controller_Notification extends _BaseController {
         Swagger_Notification_Read help = formFromRequestWithValidation(Swagger_Notification_Read.class);
 
         List<Model_Notification> notifications = Model_Notification.find.query().where().idIn(help.notification_id).findList();
+
+        // TODO permissions
 
         for (Model_Notification notification : notifications) {
 
@@ -212,7 +209,7 @@ public class Controller_Notification extends _BaseController {
           // Kontrola objektu
           Model_Notification notification = Model_Notification.find.byId(notification_id);
 
-          notification.check_confirm_permission();
+          this.checkUpdatePermission(notification);
 
           if (notification.confirmed) return badRequest("Notification is already confirmed");
 

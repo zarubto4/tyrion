@@ -48,34 +48,11 @@ public class Model_ValidationToken extends BaseModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @javax.persistence.Transient
-    @Override public void check_read_permission()   throws _Base_Result_Exception {
-        logger.error("check_read_permission: Not Supported");
-        throw new Result_Error_NotSupportedException();
-    }
-    @JsonIgnore @javax.persistence.Transient
-    @Override public void check_create_permission() throws _Base_Result_Exception {
-        logger.error("check_create_permission: Not Supported");
-        throw new Result_Error_NotSupportedException();
-    }
-    @JsonIgnore @javax.persistence.Transient
-    @Override public void check_update_permission() throws _Base_Result_Exception {
-        logger.error("check_update_permission: Not Supported");
-        throw new Result_Error_NotSupportedException();
-    }
-    @JsonIgnore @javax.persistence.Transient
-    @Override public void check_delete_permission() throws _Base_Result_Exception {
-        logger.error("check_delete_permission: Not Supported");
-        throw new Result_Error_NotSupportedException();
-    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
-    public static Finder<UUID, Model_ValidationToken> find = new Finder<>(Model_ValidationToken.class);
 
+    public static Finder<UUID, Model_ValidationToken> find = new Finder<>(Model_ValidationToken.class);
 }

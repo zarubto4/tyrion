@@ -26,6 +26,7 @@ import utilities.enums.ExtensionType;
 import utilities.enums.InvoiceStatus;
 import utilities.enums.PaymentMethod;
 import utilities.enums.ProductEventType;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.financial.extensions.ExtensionInvoiceItem;
 import utilities.financial.fakturoid.FakturoidService;
 import utilities.logger.Logger;
@@ -64,9 +65,37 @@ public class Controller_ZZZ_Tester extends _BaseController {
      public Result test1() {
          try {
 
+             Model_Role role = Model_Role.getByName("SuperAdmin");
 
+             System.out.println("Persons in role: " + role.persons.size() + " but person found: " + Model_Person.find.query().where().eq("roles.id", role.id).findCount());
 
-             return ok("Valid version for mode");
+             role.persons.forEach(r -> System.out.println(r.email));
+
+             Model_Person person = new Model_Person();
+             person.email = UUID.randomUUID() + "@mail.com";
+             person.nick_name = "test" + UUID.randomUUID();
+             person.validated = true;
+             person.setPassword("password");
+
+             person.save();
+
+             System.out.println("Person saved");
+
+             role.persons.add(person);
+
+             System.out.println("Persons in role: " + role.persons.size() + " but still person found: " + Model_Person.find.query().where().eq("roles.id", role.id).findCount());
+
+             role.update();
+
+             System.out.println("Persons in role after update: " + role.persons.size() + " but person found: " + Model_Person.find.query().where().eq("roles.id", role.id).findCount());
+             role.persons.forEach(r -> System.out.println(r.email));
+
+             role.refresh();
+
+             System.out.println("Persons in role after refresh: " + role.persons.size() + " but person found: " + Model_Person.find.query().where().eq("roles.id", role.id).findCount());
+             role.persons.forEach(r -> System.out.println(r.email));
+
+             return ok("Done");
          } catch (Exception e) {
              logger.internalServerError(e);
              return badRequest();
@@ -77,24 +106,15 @@ public class Controller_ZZZ_Tester extends _BaseController {
     public Result test2() {
         try {
 
-            List<String> places = Arrays.asList("002100373136510236363332","004100273136510236363332","002900363136510236363332","002C00443136510236363332","003500443036511935353233",
-                    "004300443136510236363332","002700373136510236363332","004900283136510236363332","003E00363136510236363332");
+            Model_Role role = Model_Role.getByName("SuperAdmin");
 
+            List<Model_Person> persons = Model_Person.find.query().where().eq("roles.id", role.id).findList();
 
-            List<String> registration_hash = new ArrayList<>();
+            persons.forEach(person -> {
+                System.out.print("Roles size:" + person.roles.size());
 
-            for(String full_id : places) {
-                System.out.println("Check Full_id:: " + full_id);
-                Model_HardwareRegistrationEntity hw = Model_HardwareRegistrationEntity.getbyFull_id(full_id);
-
-                if(hw != null) {
-                    registration_hash.add(hw.hash_for_adding);
-                }else {
-                    System.err.println("Full Id:: "+  full_id +" not exist in central authority");
-                }
-            }
-
-            System.out.println(registration_hash);
+                person.roles.forEach(r -> System.out.println(r.name));
+            });
 
            return ok();
         } catch (Exception e) {

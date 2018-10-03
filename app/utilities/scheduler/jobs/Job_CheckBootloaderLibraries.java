@@ -107,9 +107,8 @@ public class Job_CheckBootloaderLibraries implements Job {
                 // Seznam Release z GitHubu v upravené podobě
                 List<Swagger_GitHubReleases> releases = help.list;
 
-                List<UUID> hardwareTypes_id = Model_HardwareType.find.query().where().findIds();
+                List<UUID> hardwareTypes_id = Model_HardwareType.find.all().stream().map(t -> t.id).collect(Collectors.toList());
                 // Do každého typu desky - který má Tyrion v DB doplní podporované knihovny
-
 
                 for (UUID uuid : hardwareTypes_id) {
 
@@ -117,14 +116,9 @@ public class Job_CheckBootloaderLibraries implements Job {
 
                     logger.trace("check_version_thread:: Get  Hardware Type from database: Type Name: {}",  hardwareType.name);
 
-                    //System.out.println("Získávám z databáze všechny bootloadery");
                     List<Model_BootLoader> bootLoaders = hardwareType.boot_loaders_get_for_github_include_removed();
 
-
                     logger.trace("check_version_thread:: For this type we have {} bootLoaders",  bootLoaders.size());
-
-                    // List který budu doplnovat
-                    List<Model_BootLoader> bootLoaders_for_add = new ArrayList<>();
 
                     // Pokud knihovnu
                     synchro_bootloaders:
@@ -220,19 +214,9 @@ public class Job_CheckBootloaderLibraries implements Job {
 
                         new_bootLoader.file = Model_Blob.upload(file_body, "application/octet-stream",  "bootloader.bin", new_bootLoader.get_path());
                         new_bootLoader.update();
-
-                        // Nefungovalo to korektně občas - tak se to ukládá oboustraně!
-                        new_bootLoader.file.boot_loader = new_bootLoader;
-                        new_bootLoader.file.update();
-                        new_bootLoader.refresh();
-
-                        bootLoaders_for_add.add(new_bootLoader);
-
-
                     }
 
-                    hardwareType.boot_loaders().addAll(bootLoaders_for_add);
-                    hardwareType.update();
+                    hardwareType.refresh();
 
                     // Clean Cache
                     hardwareType.idCache().removeAll(Model_BootLoader.class);
@@ -244,10 +228,7 @@ public class Job_CheckBootloaderLibraries implements Job {
                     hardwareType.idCache().removeAll(Model_BootLoader.class);
 
                     // Order by date of create
-                    bootloaders.stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())
-                            .forEach(o -> hardwareType.idCache().add(Model_BootLoader.class, o.id));
-
-
+                    hardwareType.idCache().add(Model_BootLoader.class, bootloaders.stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).map(o -> o.id).collect(Collectors.toList()));
                 }
 
 

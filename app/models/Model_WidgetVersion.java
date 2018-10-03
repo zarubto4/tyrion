@@ -1,24 +1,28 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.enums.EntityType;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
+import utilities.model.UnderProject;
 import utilities.model.VersionModel;
 import utilities.models_update_echo.EchoHandler;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
 @ApiModel( value = "WidgetVersion", description = "Model of WidgetVersion")
 @Table(name="WidgetVersion")
-public class Model_WidgetVersion extends VersionModel {
+public class Model_WidgetVersion extends VersionModel implements Permissible, UnderProject {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -47,16 +51,16 @@ public class Model_WidgetVersion extends VersionModel {
     }
 
     @JsonIgnore
-    public Model_Widget get_grid_widget() throws _Base_Result_Exception {
-        try {
-            return Model_Widget.find.byId(get_grid_widget_id());
-        }catch (Exception e) {
-            return null;
-        }
+    public Model_Widget getWidget() throws _Base_Result_Exception {
+        return isLoaded("widget") ? widget : Model_Widget.find.query().nullable().where().eq("versions.id", id).findOne();
     }
 
+    @JsonIgnore @Override
+    public Model_Project getProject() {
+        return this.getWidget().getProject();
+    }
 
-/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+    /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
     public void save() {
@@ -65,7 +69,7 @@ public class Model_WidgetVersion extends VersionModel {
         // Save Object
         super.save();
 
-        Model_Widget widget = get_grid_widget();
+        Model_Widget widget = getWidget();
 
         // Add to Cache
         if (widget != null) {
@@ -93,7 +97,7 @@ public class Model_WidgetVersion extends VersionModel {
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, get_grid_widget().getProjectId(), get_grid_widget_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getWidget().getProjectId(), get_grid_widget_id()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -111,14 +115,14 @@ public class Model_WidgetVersion extends VersionModel {
 
         // Remove from Cache Cache
         try {
-            get_grid_widget().idCache().remove(this.getClass(), id);
+            getWidget().idCache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, get_grid_widget().getProjectId(), get_grid_widget_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getWidget().getProjectId(), get_grid_widget_id()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -135,54 +139,14 @@ public class Model_WidgetVersion extends VersionModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { widget.check_update_permission();} // You have to access widget directly, because get_grid_widget() finds the widget by id of the version which is not yet created
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-                return;
-            }
-
-            get_grid_widget().check_read_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.WIDGET_VERSION;
     }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        try {
 
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-
-            get_grid_widget().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-                return;
-            }
-
-            get_grid_widget().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }
 
     public enum Permission {} // Not Required here

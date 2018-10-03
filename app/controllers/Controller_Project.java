@@ -20,6 +20,7 @@ import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.permission.Action;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
@@ -272,7 +273,7 @@ public class Controller_Project extends _BaseController {
             Model_Project project = Model_Project.find.byId(project_id);
 
             // Kontrola oprávnění
-            project.check_share_permission();
+            this.permissionService.check(person(), project, Action.INVITE);
 
             // Získání seznamu uživatelů, kteří jsou registrovaní(listIn) a kteří ne(listOut)
             List<Model_Person> listIn = new ArrayList<>();
@@ -455,7 +456,7 @@ public class Controller_Project extends _BaseController {
             Model_Project project = Model_Project.find.byId(project_id);
 
             // Kontrola oprávnění
-            project.check_share_permission();
+            this.permissionService.check(person(), project, Action.INVITE);
 
             List<Model_Person> list = new ArrayList<>();
 
@@ -633,7 +634,7 @@ public class Controller_Project extends _BaseController {
             // Second Make a copy to local database for actual Hardware and if hardware is not active in any other project, automatically activated that
 
             Model_Project project = Model_Project.find.byId(help.project_id);
-            this.permissionService.checkUpdate(person(), project);
+            this.checkUpdatePermission(project);
 
             Model_HardwareRegistrationEntity registration_authority = Model_HardwareRegistrationEntity.getbyFull_hash(help.registration_hash);
 
@@ -662,7 +663,8 @@ public class Controller_Project extends _BaseController {
                 for(UUID group_id : help.group_ids) {
 
                     Model_HardwareGroup group = Model_HardwareGroup.find.byId(group_id);
-                    group.check_update_permission();
+
+                    this.checkUpdatePermission(group);
 
                     group.getHardware().add(hardware);
 
@@ -763,13 +765,7 @@ public class Controller_Project extends _BaseController {
     @BodyParser.Of(BodyParser.Json.class)
     public Result project_removeHardware(UUID id) {
         try {
-
-            Model_Hardware hardware = Model_Hardware.find.byId(id);
-
-            hardware.delete();
-
-            return ok();
-
+            return delete(Model_Hardware.find.byId(id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -796,7 +792,11 @@ public class Controller_Project extends _BaseController {
 
             Model_Hardware hardware = Model_Hardware.find.byId(id);
 
-            hardware.check_deactivate_permission();
+            this.checkActivatePermission(hardware);
+
+            if (!hardware.dominant_entity) {
+                return badRequest("Already deactivated");
+            }
 
             hardware.dominant_entity = false;
             hardware.update();
@@ -839,12 +839,15 @@ public class Controller_Project extends _BaseController {
 
             Model_Hardware hardware = Model_Hardware.find.byId(id);
 
-            hardware.check_activate_permission();
+            this.checkActivatePermission(hardware);
+
+            if (hardware.dominant_entity) {
+                return badRequest("Already activated");
+            }
+
             hardware.dominant_entity = true;
             hardware.update();
 
-
-            //
             hardware.is_online_get_from_cache();
 
             logger.warn("project_activeHardware. Step 1 - is_online_get_from_cache");
@@ -856,7 +859,7 @@ public class Controller_Project extends _BaseController {
                 logger.warn("project_activeHardware. Step 2 - Yes we have not dominant hardware record");
 
                 WS_Model_Hardware_Temporary_NotDominant_record record = Model_Hardware.cache_not_dominant_hardware.get(hardware.full_id);
-                Model_HomerServer server = Model_HomerServer.find.byId(record.homer_server_id);
+                Model_HomerServer server = Model_HomerServer.find.byId(record.homer_server_id); // TODO properly handle not found exception
 
                 // Remove if exist in not dominant record on public server
                 Model_Hardware.cache_not_dominant_hardware.remove(hardware.full_id);

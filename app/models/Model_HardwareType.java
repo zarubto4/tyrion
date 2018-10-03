@@ -11,22 +11,27 @@ import utilities.Server;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.cache.Cached;
+import utilities.enums.EntityType;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
+import utilities.model.Publishable;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.swagger.input.Swagger_CompilationLibrary;
 import utilities.swagger.output.Swagger_Short_Reference;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
 @ApiModel(value = "HardwareType", description = "Model of HardwareType")
 @Table(name="HardwareType")
-public class Model_HardwareType extends NamedModel {
+public class Model_HardwareType extends NamedModel implements Permissible, Publishable {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -99,7 +104,7 @@ public class Model_HardwareType extends NamedModel {
         try {
 
             if ( cache_picture_link == null) {
-                Model_Blob file = Model_Blob.find.query().where().eq("hardware_type.id", id).select("id").findOne();
+                Model_Blob file = Model_Blob.find.query().where().eq("hardware_type.id", id).findOne();
                 if (file != null) cache_picture_link = file.get_file_path_for_direct_download();
             }
 
@@ -190,10 +195,11 @@ public class Model_HardwareType extends NamedModel {
 
     // Záměrně - kvuli dokumentaci a přehledu v Becki - nemá žádný podstatný vliv než jen umožnit vypsat přehled
     @JsonProperty @ApiModelProperty(value = "accessible only for persons with permissions", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
-    public List<Model_HardwareBatch> batchs () {
+    public List<Model_HardwareBatch> batches () {
         try {
 
-            if (test_c_program_edit_permission()) {
+            // TODO
+            if (true) {
                 return Model_HardwareBatch.getByTypeOfBoardId(this.compiler_target_name);
             }
 
@@ -216,7 +222,7 @@ public class Model_HardwareType extends NamedModel {
 
     @JsonIgnore // Pouze Pro synchronizaci s GitHubem - musí obsahovat i smazané
     public List<Model_BootLoader> boot_loaders_get_for_github_include_removed() {
-        return Model_BootLoader.find.query().where().eq("hardware_type.id",id).findList();
+        return Model_BootLoader.find.query().where().eq("hardware_type.id",id).setIncludeSoftDeletes().findList();
     }
 
     @JsonIgnore // Pouze Pro synchronizaci s GitHubem - musí obsahovat i smazané
@@ -245,14 +251,20 @@ public class Model_HardwareType extends NamedModel {
     public List<Model_BootLoader> get_bootloaders() {
         try {
 
-            List<Model_BootLoader> list = new ArrayList<>();
+            return Model_BootLoader.find.query().where()
+                    .eq("hardware_type.id", id)
+                    .ne("deleted", true)
+                    .order().desc("name")
+                    .findList();
+
+            /*List<Model_BootLoader> list = new ArrayList<>();
 
             for (UUID id : get_bootloaders_id()) {
                 // System.out.println("get_bootloaders id: " + id);
                 list.add(Model_BootLoader.find.byId(id));
             }
 
-            return list;
+            return list;*/
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
@@ -271,12 +283,7 @@ public class Model_HardwareType extends NamedModel {
 
     @JsonIgnore
     public Model_Producer get_producer() {
-
-        try {
-            return Model_Producer.find.byId(get_producer_id());
-        } catch (Exception e) {
-            return null;
-        }
+        return producer != null ? producer : Model_Producer.find.query().where().eq("hardware_types.id", id).findOne();
     }
 
     @JsonIgnore
@@ -291,12 +298,7 @@ public class Model_HardwareType extends NamedModel {
 
     @JsonIgnore
     public Model_Processor get_processor() {
-
-        try {
-            return Model_Processor.find.byId(get_processor_id());
-        } catch (Exception e) {
-            return null;
-        }
+        return processor != null ? processor : Model_Processor.find.query().where().eq("hardware_types.id", id).findOne();
     }
 
     @JsonIgnore
@@ -311,11 +313,7 @@ public class Model_HardwareType extends NamedModel {
 
     @JsonIgnore
     public Model_CProgram get_main_test_c_program() {
-        try {
-            return Model_CProgram.find.byId(get_main_test_c_program_id());
-        } catch (Exception e) {
-            return null;
-        }
+        return test_program != null ? test_program : Model_CProgram.find.query().where().eq("hardware_type_test.id", id).findOne();
     }
 
 
@@ -329,11 +327,7 @@ public class Model_HardwareType extends NamedModel {
 
     @JsonIgnore
     public Model_BootLoader get_main_boot_loader() throws _Base_Result_Exception {
-        try {
-            return Model_BootLoader.find.byId(get_main_boot_loader_id());
-        } catch (Exception e) {
-            return null;
-        }
+        return main_boot_loader != null ? main_boot_loader : Model_BootLoader.find.query().where().eq("main_hardware_type.id", id).findOne();
     }
 
     @JsonIgnore
@@ -348,14 +342,12 @@ public class Model_HardwareType extends NamedModel {
 
     @JsonIgnore
     public Model_CProgram get_main_c_program() {
+        return main_c_program != null ? main_c_program : Model_CProgram.find.query().where().eq("hardware_type_default.id", id).findOne();
+    }
 
-        try {
-            return Model_CProgram.find.byId(get_main_c_program_id());
-        } catch (Exception e) {
-            return null;
-        }
-
-
+    @JsonIgnore @Override
+    public boolean isPublic() {
+        return true;
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -363,6 +355,7 @@ public class Model_HardwareType extends NamedModel {
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
     public class Model_HardwareType_Main {}
+
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
@@ -377,79 +370,22 @@ public class Model_HardwareType extends NamedModel {
         }
     }
 
-/* HELPER CLASS  ----------------------------------------------------------------------------------------------------------*/
+/* HELPER CLASS --------------------------------------------------------------------------------------------------------*/
 
     // Používáme protože nemáme rezervní klíč pro cachoání backup c program verze v lokální chache
     public abstract class Model_CProgram_Test_FakeClass {}
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.HardwareType_create.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {}
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.HardwareType_update.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.HardwareType_delete.name())) return;
-        throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.HARDWARE_TYPE;
     }
 
-    @JsonIgnore @Transient public void check_register_new_device_permission() throws _Base_Result_Exception  {
-        if(_BaseController.person().has_permission(Permission.HardwareType_register_new_device.name())) return;
-        throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }
-
-    @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Boolean bootloader_edit_permission() throws _Base_Result_Exception {
-        try {
-            if (_BaseController.person().has_permission(Permission.HardwareType_bootloader.name())) return true;
-            return null;
-        } catch (_Base_Result_Exception e){
-            return null;
-        }
-    }
-
-    @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Boolean default_c_program_edit_permission() throws _Base_Result_Exception {
-        try {
-            if (_BaseController.person().has_permission(Permission.HardwareType_c_program_edit_permission.name())) return true;
-            return null;
-        } catch (_Base_Result_Exception e){
-            return null;
-        }
-    }
-
-    @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Boolean test_c_program_edit_permission() {
-        try {
-            if (_BaseController.person().has_permission(Permission.HardwareType_test_c_program_edit_permission.name())) return true;
-            return null;
-        } catch (_Base_Result_Exception e){
-            return null;
-        }
-    }
-
-    @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Boolean batch_register_permission() {
-        try {
-            if (_BaseController.person().has_permission(Permission.HardwareType_test_c_program_edit_permission.name())) return true;
-            return null;
-        } catch (_Base_Result_Exception e){
-            return null;
-        }
-    }
-
-    public enum Permission { HardwareType_create, HardwareType_edit, HardwareType_update, HardwareType_delete, HardwareType_register_new_device, HardwareType_bootloader,  HardwareType_c_program_edit_permission, HardwareType_test_c_program_edit_permission }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

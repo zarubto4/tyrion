@@ -12,17 +12,22 @@ import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.Server;
 import utilities.enums.BusinessModel;
+import utilities.enums.EntityType;
 import utilities.enums.PaymentMethod;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.OrderedNamedModel;
+import utilities.model.Publishable;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.swagger.input.Swagger_TariffLabel;
 import utilities.swagger.input.Swagger_TariffLabelList;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,7 +35,7 @@ import java.util.stream.Collectors;
 @Entity
 @ApiModel("Tariff")
 @Table(name="Tariff")
-public class Model_Tariff extends OrderedNamedModel {
+public class Model_Tariff extends OrderedNamedModel implements Permissible, Publishable {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -82,7 +87,7 @@ public class Model_Tariff extends OrderedNamedModel {
     @ApiModelProperty("Visible only for Administrator with Special Permission")
     @Transient public Double credit_for_beginning() {
         try {
-            this.check_update_permission();
+            // TODO this.check_update_permission();
             return credit_for_beginning.doubleValue();
         } catch (_Base_Result_Exception e){
             return null;
@@ -128,7 +133,7 @@ public class Model_Tariff extends OrderedNamedModel {
     public List<Model_TariffExtension> extensions_included() {
         // TODO order
         try {
-            this.check_update_permission();
+            // TODO this.check_update_permission();
             return extensions_included;
         } catch (_Base_Result_Exception e){
             return extensions_included.stream().filter(ex -> ex.active).collect(Collectors.toList());
@@ -139,7 +144,7 @@ public class Model_Tariff extends OrderedNamedModel {
     public List<Model_TariffExtension> extensions_recommended() {
         // TODO order
         try {
-            this.check_update_permission();
+            // TODO this.check_update_permission();
             return extensions_recommended;
         } catch (_Base_Result_Exception e){
             return extensions_recommended.stream().filter(ex -> ex.active).collect(Collectors.toList());
@@ -147,6 +152,11 @@ public class Model_Tariff extends OrderedNamedModel {
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Override
+    public boolean isPublic() {
+        return true;
+    }
 
     @JsonIgnore
     public final static String payment_methods = PaymentMethod.INVOICE_BASED + "|" + PaymentMethod.CREDIT_CARD; // TODO maybe editable one day
@@ -177,23 +187,15 @@ public class Model_Tariff extends OrderedNamedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if (_BaseController.person().has_permission(Permission.Tariff_create.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        // True
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if (_BaseController.person().has_permission(Permission.Tariff_update.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if (_BaseController.person().has_permission(Permission.Tariff_delete.name())) return;
-        throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.TARIFF;
     }
 
-    public enum Permission { Tariff_create, Tariff_read, Tariff_update, Tariff_delete }
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

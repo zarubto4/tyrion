@@ -3,17 +3,19 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.enums.EntityType;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
+import utilities.model.UnderProject;
 import utilities.model.VersionModel;
 import utilities.models_update_echo.EchoHandler;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.swagger.input.Swagger_Library_File_Load;
 import utilities.swagger.input.Swagger_Library_Record;
 import utilities.swagger.output.Swagger_Short_Reference;
@@ -21,13 +23,14 @@ import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
 @ApiModel( value = "LibraryVersion", description = "Model of LibraryVersion")
 @Table(name="LibraryVersion")
-public class Model_LibraryVersion extends VersionModel {
+public class Model_LibraryVersion extends VersionModel implements Permissible, UnderProject {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -91,14 +94,14 @@ public class Model_LibraryVersion extends VersionModel {
     }
 
     @JsonIgnore
-    public Model_Library get_library() throws _Base_Result_Exception {
-        try {
-            return Model_Library.find.byId(get_library_id());
-        }catch (Exception e) {
-            return null;
-        }
+    public Model_Library getLibrary() throws _Base_Result_Exception {
+        return isLoaded("library") ? library : Model_Library.find.query().nullable().where().eq("versions.id", id).findOne();
     }
 
+    @JsonIgnore @Override
+    public Model_Project getProject() {
+        return getLibrary().getProject();
+    }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -110,14 +113,14 @@ public class Model_LibraryVersion extends VersionModel {
         super.save();
 
         // Add to Cache
-        if(get_library() != null) {
-            get_library().getVersionIds();
-            get_library().idCache().add(this.getClass(), id);
+        if(getLibrary() != null) {
+            getLibrary().getVersionIds();
+            getLibrary().idCache().add(this.getClass(), id);
         }
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, get_library().getProjectId(), get_library_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getLibrary().getProjectId(), get_library_id()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -132,7 +135,7 @@ public class Model_LibraryVersion extends VersionModel {
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, get_library().getProjectId(), get_library_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, getLibrary().getProjectId(), get_library_id()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -145,18 +148,18 @@ public class Model_LibraryVersion extends VersionModel {
 
         logger.debug("delete::Delete object Id: {}",  this.id);
 
-        super.update();
+        super.delete();
 
         // Remove from Cache
         try {
-            get_library().idCache().remove(this.getClass(), id);
+            getLibrary().idCache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, get_library().getProjectId(), get_library_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, getLibrary().getProjectId(), get_library_id()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -164,9 +167,6 @@ public class Model_LibraryVersion extends VersionModel {
 
         return false;
     }
-
-/* Services --------------------------------------------------------------------------------------------------------*/
-
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
@@ -176,65 +176,22 @@ public class Model_LibraryVersion extends VersionModel {
         if(library != null) {
             return library.get_path() + "/version/" + this.id;
         }else {
-            return get_library().get_path() + "/version/" + this.id;
+            return getLibrary().get_path() + "/version/" + this.id;
         }
     }
 
 
- /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override public void check_create_permission() throws _Base_Result_Exception {
-        library.check_update_permission();
-    } // You have to access library directly, because get_library() finds the library by id of the version which is not yet created
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-                return;
-            }
-
-            get_library().check_read_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.LIBRARY_VERSION;
     }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        try {
 
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-
-            get_library().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-                return;
-            }
-
-            get_library().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    public enum Permission {} // Not Required here
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

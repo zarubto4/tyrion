@@ -7,15 +7,20 @@ import play.mvc.Http;
 import utilities.authentication.Attributes;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
+import utilities.enums.EntityType;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static controllers._BaseController.person;
@@ -23,7 +28,7 @@ import static controllers._BaseController.person;
 @Entity
 @ApiModel(value = "ServerError", description = "Model of ServerError")
 @Table(name = "ServerError")
-public class Model_ServerError extends NamedModel {
+public class Model_ServerError extends NamedModel implements Permissible {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -152,37 +157,17 @@ public class Model_ServerError extends NamedModel {
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override
-    public boolean delete() {
-
-        logger.debug("permanent delete :: Delete object Id: {} ", this.id);
-        return super.delete();
-
-    }
-
-/* PERMISSION ----------------------------------------------------------------------------------------------*/
-
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-       //
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        if(person().is_admin()) return;
-        if(person().has_permission(Permission.ServerError_read.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        // true
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.ERROR;
     }
 
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(person().has_permission(Permission.ServerError_delete.name())) return;
-        throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.READ, Action.UPDATE, Action.DELETE);
     }
-
-    public enum Permission { ServerError_crate, ServerError_read, ServerError_update, ServerError_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

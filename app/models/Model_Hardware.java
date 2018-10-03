@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.DocumentClientException;
-import controllers._BaseController;
 import io.ebean.Expr;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -25,8 +24,11 @@ import utilities.errors.ErrorCode;
 import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
+import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.swagger.input.Swagger_Board_Developer_parameters;
 import utilities.swagger.output.Swagger_Short_Reference;
 import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
@@ -48,7 +50,7 @@ import java.util.function.Consumer;
 @Entity
 @ApiModel(value = "Hardware", description = "Model of Hardware")
 @Table(name="Hardware")
-public class Model_Hardware extends TaggedModel {
+public class Model_Hardware extends TaggedModel implements Permissible, UnderProject {
 
 /* DOCUMENTATION -------------------------------------------------------------------------------------------------------*/
 
@@ -186,7 +188,7 @@ public class Model_Hardware extends TaggedModel {
 
     @JsonProperty public Swagger_Short_Reference project() {
         try {
-            Model_Project type  = this.get_project();
+            Model_Project type  = this.getProject();
             return new Swagger_Short_Reference(type.id, type.name, type.description);
         } catch (_Base_Result_Exception e){
             //nothing
@@ -283,7 +285,7 @@ public class Model_Hardware extends TaggedModel {
 
                             if (overview_board.status.equals("success") && overview_board.online_status) {
                                 cache_latest_know_ip_address = overview_board.ip;
-                                EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, get_project().id, this.id));
+                                EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, getProject().id, this.id));
                             } else {
                                 this.cache_latest_know_ip_address = "";
                             }
@@ -567,7 +569,7 @@ public class Model_Hardware extends TaggedModel {
 
                         cache_latest_online = new Date(record.time).getTime();
 
-                        EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, get_project().id, this.id));
+                        EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, getProject().id, this.id));
 
                     }
 
@@ -661,7 +663,7 @@ public class Model_Hardware extends TaggedModel {
         try {
 
             if ( this.idCache().get(Model_Blob.class) == null) {
-                Model_Blob fileRecord = Model_Blob.find.query().where().eq("hardware.id",id).select("id").findOne();
+                Model_Blob fileRecord = Model_Blob.find.query().where().eq("hardware.id",id).findOne();
                 if (fileRecord != null) {
                     this.idCache().add(Model_Blob.class,  fileRecord.id);
                 }
@@ -787,13 +789,7 @@ public class Model_Hardware extends TaggedModel {
 
     @JsonIgnore
     public Model_BootLoader get_actual_bootloader(){
-
-        try {
-            return Model_BootLoader.find.byId(get_actual_bootloader_id());
-        }catch (Exception e) {
-            return null;
-        }
-
+        return actual_boot_loader != null ? actual_boot_loader : Model_BootLoader.find.query().where().eq("hardware.id", id).findOne();
     }
 
     @JsonIgnore
@@ -854,12 +850,7 @@ public class Model_Hardware extends TaggedModel {
 
     @JsonIgnore
     public Model_HardwareType getHardwareTypeCache() throws _Base_Result_Exception {
-        try {
-            return Model_HardwareType.find.byId(getHardwareTypeCache_id());
-        }catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+        return hardware_type != null ? hardware_type : Model_HardwareType.find.query().where().eq("hardware.id", id).findOne();
     }
 
     @JsonIgnore
@@ -870,21 +861,11 @@ public class Model_Hardware extends TaggedModel {
         }
 
         return idCache().get(Model_Project.class);
-
     }
 
-    @JsonIgnore
-    public Model_Project get_project() throws _Base_Result_Exception {
-        try {
-            if (get_project_id() != null) {
-                return Model_Project.find.byId(get_project_id());
-            } else {
-                return null;
-            }
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+    @JsonIgnore @Override
+    public Model_Project getProject() throws _Base_Result_Exception {
+        return isLoaded("project") ? project : Model_Project.find.query().nullable().where().eq("hardware.id", id).findOne();
     }
 
     @JsonIgnore
@@ -3152,141 +3133,15 @@ public class Model_Hardware extends TaggedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override  public void check_create_permission() throws _Base_Result_Exception {
-        // Only for Garfield Registration or Manual Registration
-        if(project == null) {
-            return;
-        }
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.HARDWARE;
     }
 
-    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        try {
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-            if (_BaseController.person().has_permission(Permission.Hardware_read.name())) return;
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-            get_project().check_read_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-
-        } catch (_Base_Result_Exception e){
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.ACTIVATE);
     }
-
-    /**
-     * For this case - its not delete, but unregistration from Project
-     * @throws Error when _Base_Result_Exception
-     */
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception  {
-        try {
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-            if (_BaseController.person().has_permission(Permission.Hardware_delete.name())) return;
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-            get_project().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-        } catch (_Base_Result_Exception e){
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception  {
-        try {
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-            if (_BaseController.person().has_permission(Permission.Hardware_update.name())) return;
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-            // Speciální podmínka - protože registrace nového HW vyžaduje update nikoliv save!!!
-            if(this.project != null) {
-                // Speciální podmínka - protože registrace nového HW vyžaduje update nikoliv save!!!
-                this.project.check_update_permission();
-                _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-                return;
-            }
-
-            get_project().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-        } catch (_Base_Result_Exception e){
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-
-    @JsonIgnore @Transient public void check_deactivate_permission() throws _Base_Result_Exception  {
-        try {
-
-            // Its not possible deactivate deactivated device!!!
-            if(!dominant_entity) throw new Result_Error_PermissionDenied();
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-            if (_BaseController.person().has_permission(Permission.Hardware_update.name())) return;
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-            get_project().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-        } catch (_Base_Result_Exception e){
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-
-    @JsonIgnore @Transient public void check_activate_permission() throws _Base_Result_Exception  {
-        try {
-
-            // Its not possible activate activated device!!!
-            if(dominant_entity) {
-                throw new Result_Error_BadRequest("Its not possible active device, which is already activated");
-            }
-
-            // Its not possibkle ative device, if another copy of same device is active - user have to deactivate that first!
-            // For safety  - system will try to find all of them
-            List<UUID> ids = Model_Hardware.find.query().where().eq("full_id", full_id).eq("dominant_entity", true).select("id").findIds();
-
-            // Fix Shit situations where we have mote device's with dominance!
-            if(ids.size()>1){
-                for (int i = 1; i < ids.size(); i++) {
-
-                    Model_Hardware hardware = Model_Hardware.find.byId(ids.get(i));
-                    hardware.dominant_entity = false;
-                    hardware.update();
-
-                }
-            }
-
-            if(!ids.isEmpty()) {
-                Model_Hardware hardware = find.byId(ids.get(0));
-                throw new Result_Error_BadRequest("Its not possible active this device, because its already activated in Project  " + hardware.get_project().name + ". Please, deactivate hardware in project first." );
-            }
-
-
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-            if (_BaseController.person().has_permission(Permission.Hardware_update.name())) return;
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-            get_project().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-        } catch (_Base_Result_Exception e){
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-
-    public enum Permission {Hardware_create, Hardware_read, Hardware_update, Hardware_edit, Hardware_delete}
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -3314,10 +3169,10 @@ public class Model_Hardware extends TaggedModel {
         logger.debug("update - updating database, id: {}", this.id);
         logger.debug("update - updating database, actual synchronize to database is {} ", this.database_synchronize);
 
-        if (get_project() != null) {
-            if (get_project().id != null) {
+        if (getProject() != null) {
+            if (getProject().id != null) {
                 logger.warn("SEnding Update for device ID: {}", this.id);
-                new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, get_project().id, this.id))).start();
+                new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, getProject().id, this.id))).start();
             }
         }
 
@@ -3337,7 +3192,7 @@ public class Model_Hardware extends TaggedModel {
 
     @JsonIgnore
     public String getPath() {
-        return get_project().getPath() + "/hardware";
+        return getProject().getPath() + "/hardware";
     }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/

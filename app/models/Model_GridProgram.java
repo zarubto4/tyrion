@@ -57,7 +57,7 @@ public class Model_GridProgram extends TaggedModel implements Permissible, Under
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @Override
+    @JsonIgnore @Override
     public Model_Project getProject() {
         return this.get_grid_project().getProject();
     }
@@ -72,7 +72,7 @@ public class Model_GridProgram extends TaggedModel implements Permissible, Under
     }
 
     @JsonIgnore @Transient public Model_GridProject get_grid_project() throws _Base_Result_Exception  {
-        return  this.grid_project != null ? this.grid_project : Model_GridProject.find.query().where().eq("grid_programs.id", id).findOne();
+        return isLoaded("grid_project") ? this.grid_project : Model_GridProject.find.query().nullable().where().eq("grid_programs.id", id).findOne();
     }
 
     @JsonIgnore @Transient public List<UUID> get_versionsId() {
@@ -213,12 +213,12 @@ public class Model_GridProgram extends TaggedModel implements Permissible, Under
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @Override
+    @JsonIgnore @Override
     public EntityType getEntityType() {
         return EntityType.GRID_PROGRAM;
     }
 
-    @Override
+    @JsonIgnore @Override
     public List<Action> getSupportedActions() {
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }

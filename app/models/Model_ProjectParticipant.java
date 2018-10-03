@@ -9,6 +9,8 @@ import utilities.enums.ParticipantStatus;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
+import utilities.model.UnderProject;
+import utilities.permission.Permissible;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -80,11 +82,6 @@ public class Model_ProjectParticipant extends BaseModel {
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { }
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

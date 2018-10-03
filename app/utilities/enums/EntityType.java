@@ -7,6 +7,7 @@ public enum EntityType {
     @EnumValue("ARTICLE")                   ARTICLE,
     @EnumValue("AUTHORIZATION_TOKEN")       AUTHORIZATION_TOKEN,
     @EnumValue("BOOTLOADER")                BOOTLOADER,
+    @EnumValue("COMPILER")                  COMPILER,
     @EnumValue("GARFIELD")                  GARFIELD,
     @EnumValue("PERSON")                    PERSON,
     @EnumValue("PRODUCT")                   PRODUCT,
@@ -27,7 +28,26 @@ public enum EntityType {
     @EnumValue("INSTANCE")                  INSTANCE,
     @EnumValue("INSTANCE_SNAPSHOT")         INSTANCE_SNAPSHOT,
     @EnumValue("HARDWARE")                  HARDWARE,
-    @EnumValue("HARDWARE_GROUP")            HARDWARE_GROUP
+    @EnumValue("HARDWARE_GROUP")            HARDWARE_GROUP,
+    @EnumValue("HARDWARE_UPDATE")           HARDWARE_UPDATE,
+    @EnumValue("HARDWARE_BATCH")            HARDWARE_BATCH,
+    @EnumValue("HARDWARE_TYPE")             HARDWARE_TYPE,
+    @EnumValue("INVITATION")                INVITATION,
+    @EnumValue("INVOICE")                   INVOICE,
+    @EnumValue("PROCESSOR")                 PROCESSOR,
+    @EnumValue("PRODUCER")                  PRODUCER,
+    @EnumValue("NOTIFICATION")              NOTIFICATION,
+    @EnumValue("ROLE")                      ROLE,
+    @EnumValue("UPDATE_PROCEDURE")          UPDATE_PROCEDURE,
+    @EnumValue("PRODUCT_EXTENSION")         PRODUCT_EXTENSION,
+    @EnumValue("ERROR")                     ERROR,
+    @EnumValue("TARIFF")                    TARIFF,
+    @EnumValue("TARIFF_EXTENSION")          TARIFF_EXTENSION,
+    @EnumValue("PAYMENT_DETAILS")           PAYMENT_DETAILS,
+    @EnumValue("HOMER")                     HOMER,
+    @EnumValue("CUSTOMER")                  CUSTOMER,
+    @EnumValue("EMPLOYEE")                  EMPLOYEE,
+
 
     // TODO all objects
 }

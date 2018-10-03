@@ -7,7 +7,7 @@ public class Result_Error_NotFound extends _Base_Result_Exception {
     private Class entity;
 
     public Result_Error_NotFound(Class entity) {
-        super();
+        super("Could not find " + entity.getSimpleName());
         this.entity = entity;
     }
 

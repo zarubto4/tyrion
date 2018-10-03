@@ -17,11 +17,15 @@ import utilities.cache.CacheFinderField;
 import utilities.document_mongo_db.document_objects.DM_CompilationServer_Connect;
 import utilities.document_mongo_db.document_objects.DM_CompilationServer_Disconnect;
 import utilities.enums.CompilationStatus;
+import utilities.enums.EntityType;
 import utilities.enums.NetworkStatus;
 import utilities.errors.ErrorCode;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.model.BaseModel;
+import utilities.model.Publishable;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.threads.compilator_server.Compilation_After_BlackOut;
 import utilities.logger.Logger;
 import websocket.WS_Message;
@@ -35,7 +39,7 @@ import java.util.*;
 @Table(name="CompilationServer")
 @ApiModel(description = "Model of CompilationServer",
           value = "Compilation_Server")
-public class Model_CompilationServer extends BaseModel {
+public class Model_CompilationServer extends BaseModel implements Permissible, Publishable {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -99,6 +103,11 @@ public class Model_CompilationServer extends BaseModel {
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Override
+    public boolean isPublic() {
+        return true;
+    }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -255,11 +264,25 @@ public class Model_CompilationServer extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.COMPILER;
+    }
+
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
+    }
+
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     @CacheFinderField(Model_CompilationServer.class)
     public static CacheFinder<Model_CompilationServer> find = new CacheFinder<>(Model_CompilationServer.class);
+
+
+
+
 }
 

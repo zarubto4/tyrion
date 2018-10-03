@@ -13,6 +13,7 @@ import play.db.ebean.Transactional;
 import play.libs.Json;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
+import utilities.enums.EntityType;
 import utilities.enums.ProductEventType;
 import utilities.enums.ExtensionType;
 import utilities.errors.Exceptions.Result_Error_BadRequest;
@@ -23,6 +24,9 @@ import utilities.financial.extensions.consumptions.ResourceConsumption;
 import utilities.financial.extensions.extensions.Extension;
 import utilities.logger.Logger;
 import utilities.model.OrderedNamedModel;
+import utilities.model.UnderProduct;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 
 import javax.persistence.*;
 
@@ -35,7 +39,7 @@ import java.util.*;
 @Entity
 @ApiModel(value = "ProductExtension", description = "Model of ProductExtension")
 @Table(name="ProductExtension")
-public class Model_ProductExtension extends OrderedNamedModel {
+public class Model_ProductExtension extends OrderedNamedModel implements Permissible, UnderProduct {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -148,7 +152,12 @@ public class Model_ProductExtension extends OrderedNamedModel {
         return true;
     }
 
-    /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    @Override
+    public Model_Product getProduct() {
+        return null;
+    }
 
     @JsonIgnore
     public Extension createExtension() throws Exception {
@@ -431,61 +440,21 @@ public class Model_ProductExtension extends OrderedNamedModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.ProductExtension_create.name())) return;
-        if (product == null || product.owner == null) {
-            System.out.println("Model_ProductExtension:: check_create_permission:: product.customer is null - this.product name: " + this.name );
-            throw new Result_Error_PermissionDenied();
-        }
-        if(product.owner.isEmployee(_BaseController.person())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.ProductExtension_read.name())) return;
-        if (product == null) {
-           return;
-        }
-        if(product.owner.isEmployee(_BaseController.person())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.ProductExtension_update.name())) return;
-        if (product == null || product.owner == null) {
-            System.out.println("Model_ProductExtension:: check_update_permission:: product.customer is null - this.product name: " + this.name );
-            throw new Result_Error_PermissionDenied();
-        }
-        if(product.owner.isEmployee(_BaseController.person())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.ProductExtension_delete.name())) return;
-        if (product == null || product.owner == null) {
-            System.out.println("Model_ProductExtension:: check_delete_permission:: product.customer is null - this.product name: " + this.name );
-            throw new Result_Error_PermissionDenied();
-        }
-        throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.PRODUCT_EXTENSION;
     }
 
-    @JsonProperty @ApiModelProperty(required = true) public void check_act_deactivate_permission()  throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.ProductExtension_act_deactivate.name())) return;
-        if (product == null || product.owner == null) {
-            System.out.println("Model_ProductExtension:: check_act_deactivate_permission:: product.customer is null - this.product name: " + this.id );
-            throw new Result_Error_PermissionDenied();
-        }
-        if(product.owner.isEmployee(_BaseController.person())) return;
-        throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.ACTIVATE);
     }
 
-    public enum Permission { ProductExtension_create, ProductExtension_read, ProductExtension_update, ProductExtension_act_deactivate, ProductExtension_delete }
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    /* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-    /* FINDER -------------------------------------------------------------------------------------------------------------*/
+/* FINDER -------------------------------------------------------------------------------------------------------------*/
 
     @CacheFinderField(Model_ProductExtension.class)
     public static CacheFinder<Model_ProductExtension> find = new CacheFinder<>(Model_ProductExtension.class);

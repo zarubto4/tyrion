@@ -119,12 +119,12 @@ public class Model_BProgramVersion extends VersionModel implements Permissible, 
 
     @JsonIgnore
     public Model_BProgram getBProgram() throws _Base_Result_Exception {
-        return Model_BProgram.find.query().where().eq("versions.id", id).findOne();
+        return isLoaded("b_program") ? b_program : Model_BProgram.find.query().nullable().where().eq("versions.id", id).findOne();
     }
 
-    @Override
+    @JsonIgnore @Override
     public Model_Project getProject() {
-        return this.b_program != null ? this.b_program.getProject() : this.getBProgram().getProject();
+        return this.getBProgram().getProject();
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -201,12 +201,12 @@ public class Model_BProgramVersion extends VersionModel implements Permissible, 
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @Override
+    @JsonIgnore @Override
     public EntityType getEntityType() {
         return EntityType.BLOCKO_PROGRAM_VERSION;
     }
 
-    @Override
+    @JsonIgnore @Override
     public List<Action> getSupportedActions() {
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }

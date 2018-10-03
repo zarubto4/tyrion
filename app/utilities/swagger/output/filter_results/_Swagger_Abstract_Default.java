@@ -1,7 +1,7 @@
 package utilities.swagger.output.filter_results;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import play.libs.Json;
 import utilities.model.JsonSerializable;
 
@@ -13,8 +13,7 @@ public abstract class _Swagger_Abstract_Default implements JsonSerializable {
      */
     @JsonIgnore
     @Override
-    public JsonNode json() {
-        return Json.toJson(this);
+    public ObjectNode json() {
+        return (ObjectNode) Json.toJson(this);
     }
-
 }

@@ -26,6 +26,8 @@ import utilities.financial.extensions.consumptions.ResourceConsumption;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.slack.Slack;
 
 import javax.persistence.*;
@@ -36,7 +38,7 @@ import java.util.stream.Collectors;
 @Entity
 @ApiModel(value = "Product", description = "Model of Product")
 @Table(name="Product")
-public class Model_Product extends NamedModel {
+public class Model_Product extends NamedModel implements Permissible {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -436,6 +438,11 @@ public class Model_Product extends NamedModel {
         return owner.contact != null && owner.contact.fakturoid_subject_id != null && payment_details != null;
     }
 
+    @JsonIgnore
+    public boolean isRelated(Model_Person person) {
+        return this.owner.isEmployee(person);
+    }
+
 /* EVENTS --------------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
@@ -458,13 +465,7 @@ public class Model_Product extends NamedModel {
 
     @JsonIgnore @Override public void save() {
 
-
-        while(true) { // I need Unique Value
-            this.subscription_id =  UUID.randomUUID().toString().substring(0, 12);
-            if (Model_Product.find.query().where().eq("subscription_id", subscription_id ).findOne() == null) break;
-        }
-
-        //Save Object
+        this.subscription_id =  UUID.randomUUID().toString();
         super.save();
     }
 
@@ -696,34 +697,15 @@ public class Model_Product extends NamedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        // Not Limited now, Maybe max per user?
-        return;
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Product_read.name())) return;
-        if(owner.isEmployee(_BaseController.person())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception  {
-        if(_BaseController.person().has_permission(Permission.Product_update.name())) return;
-        if(owner.isEmployee(_BaseController.person())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception  {
-        if(_BaseController.person().has_permission(Permission.Product_delete.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient public void check_act_deactivate_permission()  throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Product_act_deactivate.name())) return;
-        if(owner.isEmployee(_BaseController.person())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient public void check_financial_permission(String action)  throws _Base_Result_Exception {
-        FinancialPermission.check_permission(this, action);
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.PRODUCT;
     }
 
-    public enum Permission {Product_create, Product_update, Product_read, Product_act_deactivate, Product_delete}
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.ACTIVATE);
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

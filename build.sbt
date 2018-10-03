@@ -9,7 +9,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayJava, PlayEbean)
 scalaVersion := "2.12.2"
 
 libraryDependencies ++= Seq(
-  "org.postgresql" % "postgresql" % "42.2.2",
+  "org.postgresql" % "postgresql" % "42.2.5",
   "com.microsoft.azure" % "azure-storage" % "6.1.0",
   "com.microsoft.azure" % "azure-documentdb" % "1.15.1",
   "com.mandrillapp.wrapper.lutung" % "lutung" % "0.0.8",

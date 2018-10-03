@@ -2,27 +2,30 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.cache.Cached;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import utilities.enums.EntityType;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
+import utilities.model.UnderProject;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.swagger.output.Swagger_Short_Reference;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
 @ApiModel(value = "HardwareGroup", description = "Model of Hardware Group")
 @Table(name="HardwareGroup")
-public class Model_HardwareGroup extends NamedModel {
+public class Model_HardwareGroup extends NamedModel implements Permissible, UnderProject {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -111,18 +114,12 @@ public class Model_HardwareGroup extends NamedModel {
         }
 
         return idCache().get(Model_Project.class);
-
     }
 
-    @JsonIgnore @Transient public Model_Project get_project() throws _Base_Result_Exception  {
-        try {
-            return Model_Project.find.byId(get_project_id());
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+    @JsonIgnore @Override
+    public Model_Project getProject() throws _Base_Result_Exception {
+        return isLoaded("project") ? project : Model_Project.find.query().nullable().where().eq("hardware_groups.id", id).findOne();
     }
-
 
     @JsonIgnore
     public List<UUID> getHardwareIds() {
@@ -137,7 +134,6 @@ public class Model_HardwareGroup extends NamedModel {
     public List<Model_Hardware> getHardware() {
         try {
 
-            System.out.println("Model_HardwareGroup: getHardware()");
             List<Model_Hardware> hardwares = new ArrayList<>();
 
             for (UUID types : getHardwareIds()) {
@@ -178,7 +174,7 @@ public class Model_HardwareGroup extends NamedModel {
         super.delete();
 
         try {
-            get_project().idCache().remove(this.getClass(), id);
+            getProject().idCache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }
@@ -199,63 +195,18 @@ public class Model_HardwareGroup extends NamedModel {
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
-/* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
-
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
-
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    // Create Permission is always JsonIgnore
-    @JsonIgnore @Override @Transient public void check_create_permission() throws _Base_Result_Exception {  project.check_update_permission(); }
-    @JsonIgnore @Override @Transient public void check_read_permission()   throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-                return;
-            }
-
-            get_project().check_read_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.HARDWARE_GROUP;
     }
-    @JsonIgnore @Override @Transient public void check_update_permission() throws _Base_Result_Exception {
-        try {
 
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-
-            get_project().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Override @Transient public void check_delete_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-                return;
-            }
-
-            get_project().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/

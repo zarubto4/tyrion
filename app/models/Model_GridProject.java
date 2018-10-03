@@ -92,8 +92,9 @@ public class Model_GridProject extends TaggedModel implements Permissible, Under
         return idCache().get(Model_Project.class);
     }
 
-    @JsonIgnore @Transient public Model_Project getProject() throws _Base_Result_Exception  {
-        return Model_Project.find.query().where().eq("grid_projects.id", id).findOne();
+    @JsonIgnore @Override
+    public Model_Project getProject() throws _Base_Result_Exception  {
+        return isLoaded("project") ? project : Model_Project.find.query().nullable().where().eq("grid_projects.id", id).findOne();
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -181,12 +182,12 @@ public class Model_GridProject extends TaggedModel implements Permissible, Under
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @Override
+    @JsonIgnore @Override
     public EntityType getEntityType() {
         return EntityType.GRID_PROJECT;
     }
 
-    @Override
+    @JsonIgnore @Override
     public List<Action> getSupportedActions() {
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }

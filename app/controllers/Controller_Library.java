@@ -20,6 +20,7 @@ import utilities.enums.Approval;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.Action;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
@@ -96,6 +97,8 @@ public class Controller_Library extends _BaseController {
                 }
             }
 
+            this.checkCreatePermission(library);
+
             // Ukládám objekt
             library.save();
 
@@ -148,15 +151,17 @@ public class Controller_Library extends _BaseController {
             // Vyhledám Objekt
             Model_Project project = Model_Project.find.byId(help.project_id);
 
-            Model_Library library_new =  new Model_Library();
+            Model_Library library_new = new Model_Library();
             library_new.name = help.name;
             library_new.description = help.description;
             library_new.hardware_types = library_old.hardware_types;
             library_new.project = project;
+
+            this.checkCreatePermission(library_new);
+
             library_new.save();
 
             library_new.refresh();
-
 
             for (Model_LibraryVersion version : library_old.versions) {
 
@@ -165,7 +170,7 @@ public class Controller_Library extends _BaseController {
                 copy_object.description     = version.description;
                 copy_object.library         = library_new;
                 copy_object.publish_type    = ProgramType.PRIVATE;
-                copy_object.author_id          = version.author_id;
+                copy_object.author_id       = version.author_id;
 
                 // Zkontroluji oprávnění
                 copy_object.save();
@@ -175,7 +180,6 @@ public class Controller_Library extends _BaseController {
 
                 copy_object.file = Model_Blob.upload(fileRecord.downloadString(), "library.json" , library_new.get_path());
                 copy_object.update();
-
             }
 
             library_new.refresh();
@@ -204,13 +208,7 @@ public class Controller_Library extends _BaseController {
     })
     public Result library_get(UUID library_id) {
         try {
-
-            // Kontrola objektu
-            Model_Library library = Model_Library.find.byId(library_id);
-
-            // Vrácneí objektu
-            return ok(library);
-
+            return read(Model_Library.find.byId(library_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -283,7 +281,7 @@ public class Controller_Library extends _BaseController {
             }
 
             if (help.pending_library) {
-                if (!person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return forbidden();
+                // TODO if (!person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return forbidden();
                 disjunction
                         .conjunction()
                         .eq("versions.approval_state", Approval.PENDING.name())
@@ -295,6 +293,8 @@ public class Controller_Library extends _BaseController {
 
             // Vyvoření odchozího JSON
             Swagger_Library_List result = new Swagger_Library_List(query,page_number, help);
+
+            // TODO permissions
 
             // Vrácneí objektu
             return ok(result);
@@ -338,6 +338,8 @@ public class Controller_Library extends _BaseController {
 
             // Vyhledání objektu
             Model_Library library = Model_Library.find.byId(library_id);
+
+            this.checkUpdatePermission(library);
 
             // Change values
             library.name = help.name;
@@ -390,6 +392,8 @@ public class Controller_Library extends _BaseController {
             // Kontrola objektu
             Model_Library library = Model_Library.find.byId(help.object_id);
 
+            this.checkUpdatePermission(library);
+
             library.addTags(help.tags);
 
             // Vrácení objektu
@@ -434,6 +438,8 @@ public class Controller_Library extends _BaseController {
             // Kontrola objektu
             Model_Library library = Model_Library.find.byId(help.object_id);
 
+            this.checkUpdatePermission(library);
+
             library.removeTags(help.tags);
 
             // Vrácení objektu
@@ -460,15 +466,7 @@ public class Controller_Library extends _BaseController {
     })
     public Result library_delete(UUID library_id) {
         try {
-
-            // Kontrola objektu
-            Model_Library library = Model_Library.find.byId(library_id);
-
-            library.delete();
-
-            // Vrácneí potvrzení
-            return ok();
-
+            return delete(Model_Library.find.byId(library_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -519,6 +517,8 @@ public class Controller_Library extends _BaseController {
             version.library          = library;
             version.publish_type     = ProgramType.PRIVATE;
 
+            this.checkCreatePermission(version);
+
             version.save();
 
             Swagger_Library_File_Load library_file_collection = new Swagger_Library_File_Load();
@@ -554,13 +554,7 @@ public class Controller_Library extends _BaseController {
     })
     public Result library_version_get(UUID version_id) {
         try {
-
-            // Vyhledám Objekt
-            Model_LibraryVersion version = Model_LibraryVersion.find.byId(version_id);
-
-            // Vracím Objekt
-            return ok(version);
-
+            return read(Model_LibraryVersion.find.byId(version_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -605,11 +599,8 @@ public class Controller_Library extends _BaseController {
             version.name = help.name;
             version.description = help.description;
 
-            // Uložení změn
-            version.update();
-
             // Vrácení objektu
-            return ok(version);
+            return update(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -624,7 +615,7 @@ public class Controller_Library extends _BaseController {
             protocols = "https"
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response =  Result_Ok.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
@@ -632,21 +623,11 @@ public class Controller_Library extends _BaseController {
     })
     public Result library_version_delete(UUID version_id) {
         try {
-
-            // Ověření objektu
-            Model_LibraryVersion version = Model_LibraryVersion.find.byId(version_id);
-
-            // Smažu zástupný objekt
-            version.delete();
-
-            // Vracím potvrzení o smazání
-            return ok();
-
+            return delete(Model_LibraryVersion.find.byId(version_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
     }
-
 
 // PUBLIC LIBRARIES ####################################################################################################
 
@@ -733,17 +714,13 @@ public class Controller_Library extends _BaseController {
             Model_Library library_old = version_old.library;
 
             // Zkontroluji oprávnění
-
-            if (!library_old.community_publishing_permission()) {
-                return forbidden();
-            }
+            this.checkPublishPermission(library_old);
 
             if (help.decision) {
 
                 // Odkomentuj až odzkoušíš že emaily jsou hezky naformátované - můžeš totiž Verzi hodnotit pořád dokola!!
                 version_old.approval_state = Approval.APPROVED;
                 version_old.update();
-
 
                 Model_Library library = Model_Library.find.byId(library_old.id); // TODO + "_public_copy");
 
@@ -755,7 +732,6 @@ public class Controller_Library extends _BaseController {
                     library.publish_type  = ProgramType.PUBLIC;
                     library.save();
                 }
-
 
                 Model_LibraryVersion version = new Model_LibraryVersion();
                 version.name             = help.version_name;
@@ -788,12 +764,11 @@ public class Controller_Library extends _BaseController {
                                 .divider()
                                 .text("We will publish it as soon as possible.")
                                 .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                                .send(version_old.get_library().get_project().getProduct().owner, "Publishing your Library" );
+                                .send(version_old.getLibrary().getProject().getProduct().owner, "Publishing your Library" );
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
                     }
-
 
                     // Admin to schválil ale měl nějaký keci k tomu
                 } else {
@@ -810,7 +785,7 @@ public class Controller_Library extends _BaseController {
                                 .text("We will publish it as soon as possible. We also had to make some changes to your program or rename something.")
                                 .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
                                 .text(Email.bold("Thanks!") + Email.newLine() + _BaseController.person().full_name())
-                                .send(version_old.get_library().get_project().getProduct().owner, "Publishing your program" );
+                                .send(version_old.getLibrary().getProject().getProduct().owner, "Publishing your program" );
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
@@ -835,7 +810,7 @@ public class Controller_Library extends _BaseController {
                                     "We are glad that you want to contribute to our public libraries. Here are some tips what to improve, so you can try it again.")
                             .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
                             .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                            .send(version_old.get_library().get_project().getProduct().owner, "Publishing your program");
+                            .send(version_old.getLibrary().getProject().getProduct().owner, "Publishing your program");
 
                 } catch (Exception e) {
                     logger.internalServerError(e);
@@ -849,5 +824,4 @@ public class Controller_Library extends _BaseController {
             return controllerServerError(e);
         }
     }
-
 }

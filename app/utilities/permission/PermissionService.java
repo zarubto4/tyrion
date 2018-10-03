@@ -13,9 +13,7 @@ import utilities.cache.ServerCache;
 import utilities.enums.EntityType;
 import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.logger.Logger;
-import utilities.model.BaseModel;
-import utilities.model.Personal;
-import utilities.model.UnderProject;
+import utilities.model.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -67,13 +65,15 @@ public class PermissionService {
      * Core method for checking permissions.
      * This method first tries to find a cached permission and if none is present,
      * it will try to look up some in the DB.
-     * @param person
-     * @param model
-     * @param action
-     * @throws ForbiddenException
-     * @throws NotSupportedException
+     * Method needs to be synchronized, because multiple threads can access it concurrently,
+     * which can result it ConcurrentModificationException for example.
+     * @param person who want to access the model
+     * @param model model that the permission is checked against
+     * @param action to be performed on the model
+     * @throws ForbiddenException if the access was denied
+     * @throws NotSupportedException if the given model does not support permissions
      */
-    public void check(Model_Person person, BaseModel model, Action action) throws ForbiddenException, NotSupportedException {
+    public synchronized void check(Model_Person person, BaseModel model, Action action) throws ForbiddenException, NotSupportedException {
 
         if (person == null) {
             throw new NullPointerException("Person argument was null.");
@@ -83,26 +83,44 @@ public class PermissionService {
             throw new NullPointerException("Model argument was null.");
         }
 
+        String modelName = model.getClass().getSimpleName();
+
         if (!(model instanceof Permissible)) {
-            throw new NotSupportedException("This model does not support permissions.");
+            throw new NotSupportedException("This model (" + modelName + ") does not support permissions.");
         }
 
         EntityType entityType = ((Permissible) model).getEntityType();
 
-        logger.debug("check - checking permission for type: {}, person id: {}, model id: {}, action: {}", entityType.name(), person.id, model.id, action.name());
+        logger.debug("check - ({}) checking permission for person id: {}, model id: {}, action: {}", modelName, person.id, model.id, action.name());
 
         if (!cache.containsKey(person.id)) {
             cache.put(person.id, new CachePermissionList());
         }
 
         UUID id = null;
+        boolean isPublic = false;
 
         if (model instanceof Personal) {
             id = ((Personal) model).getPerson().id;
-        } else if (model instanceof UnderProject) {
-            id = ((UnderProject) model).getProject().id;
-        } else if (model instanceof Model_Project) {
+        } else if (model instanceof Model_Person) {
             id = model.id;
+        } else if (model instanceof UnderProject) {
+
+            Model_Project project = ((UnderProject) model).getProject();
+            if (project != null) {
+                id = project.id;
+            } else if (model instanceof Publishable) {
+                isPublic = ((Publishable) model).isPublic();
+            }
+
+        } else if (model instanceof UnderProduct) {
+            id = ((UnderProduct) model).getProduct().id;
+        }
+
+        // TODO handle public ones better and other operations also
+        if (isPublic && action == Action.READ) {
+            logger.debug("check - ({}) allowed read for public model", modelName);
+            return;
         }
 
         // id needs to be final
@@ -119,7 +137,7 @@ public class PermissionService {
 
         if (optionalCachedPermission.isPresent()) {
 
-            logger.trace("check - found cached permission");
+            logger.trace("check - ({}) found cached permission", modelName);
 
             CachedPermission cachedPermission = optionalCachedPermission.get();
             if (!cachedPermission.permitted) {
@@ -128,7 +146,7 @@ public class PermissionService {
         } else {
             try {
 
-                logger.trace("check - finding the permission in the DB");
+                logger.trace("check - ({}) finding the permission in the DB", modelName);
 
                 // Try to find the permission in the DB
                 Model_Role role = Model_Role.find.query()
@@ -139,26 +157,37 @@ public class PermissionService {
                         .setMaxRows(1)
                         .findOne();
 
+                logger.trace("check - ({}) found role with the permission", modelName);
+
                 if (role.project == null) {
                     this.cache.get(person.id).add(new CachedPermission(null, entityType, action, true));
                 } else {
-                    this.cache.get(person.id).add(new CachedPermission(model.id, entityType, action, true));
+                    this.cache.get(person.id).add(new CachedPermission(id, entityType, action, true));
                 }
 
             } catch (Result_Error_NotFound e) {
 
                 // If there is no such permission
 
-                if (model instanceof Personal && ((Personal) model).getPerson().id.equals(person.id)) {
-                    this.cache.get(person.id).add(new CachedPermission(model.id, entityType, action, true));
+                if (model instanceof Personal) {
+                    this.cache.get(person.id).add(new CachedPermission(id, entityType, action, resolvePersonal(person, (Personal) model)));
+                } else if (model instanceof UnderProduct) {
+                    this.cache.get(person.id).add(new CachedPermission(id, entityType, action, resolveUnderProduct(person, (UnderProduct) model)));
                 } else {
-
-                    this.cache.get(person.id).add(new CachedPermission(model.id, entityType, action, false));
+                    this.cache.get(person.id).add(new CachedPermission(id, entityType, action, false));
                     throw new ForbiddenException();
                 }
             }
         }
 
-        logger.debug("check - access allowed for type: {}, person id: {}, model id: {}, action: {}", entityType.name(), person.id, model.id, action.name());
+        logger.debug("check - ({}) access allowed for person id: {}, model id: {}, action: {}", modelName, person.id, model.id, action.name());
+    }
+
+    private boolean resolvePersonal(Model_Person person, Personal personal) {
+        return personal.getPerson().id.equals(person.id);
+    }
+
+    private boolean resolveUnderProduct(Model_Person person, UnderProduct underProduct) {
+        return underProduct.getProduct().isRelated(person);
     }
 }

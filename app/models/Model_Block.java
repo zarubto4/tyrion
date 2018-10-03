@@ -9,8 +9,10 @@ import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
+import utilities.model.Publishable;
 import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
@@ -28,7 +30,7 @@ import java.util.UUID;
 @Entity
 @ApiModel( value = "Block", description = "Model of Block")
 @Table(name="Block")
-public class Model_Block extends TaggedModel implements Permissible, UnderProject {
+public class Model_Block extends TaggedModel implements Permissible, UnderProject, Publishable {
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 
@@ -109,6 +111,11 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Override
+    public boolean isPublic() {
+        return publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN;
+    }
+
     @JsonIgnore
     public UUID get_project_id() throws _Base_Result_Exception {
 
@@ -122,7 +129,7 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
 
     @JsonIgnore
     public Model_Project getProject() throws _Base_Result_Exception {
-        return this.project != null ? this.project : Model_Project.find.query().where().eq("blocks.id", id).findOne();
+        return isLoaded("project") ? this.project : Model_Project.find.query().nullable().where().eq("blocks.id", id).findOne();
     }
 
     @JsonIgnore
@@ -287,16 +294,17 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @Override
+    @JsonIgnore @Override
     public EntityType getEntityType() {
         return EntityType.BLOCK;
     }
 
-    @Override
+    @JsonIgnore @Override
     public List<Action> getSupportedActions() {
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.PUBLISH);
     }
 
+    // TODO permissions
     @JsonProperty @ApiModelProperty("Visible only for Administrator with permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
         /*try {
             // Cache už Obsahuje Klíč a tak vracím hodnotu

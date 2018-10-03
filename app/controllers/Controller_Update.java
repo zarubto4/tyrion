@@ -63,13 +63,7 @@ public class Controller_Update extends _BaseController {
     })
     public Result get_Actualization_Procedure(@ApiParam(required = true) UUID actualization_procedure_id) {
         try {
-
-            // Kontrola objektu
-            Model_UpdateProcedure procedure = Model_UpdateProcedure.find.byId(actualization_procedure_id);
-
-            // Vrácení objektu
-            return ok(procedure);
-
+            return read(Model_UpdateProcedure.find.byId(actualization_procedure_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -123,6 +117,8 @@ public class Controller_Update extends _BaseController {
             // Vyvoření odchozího JSON
             Swagger_ActualizationProcedure_List result = new Swagger_ActualizationProcedure_List(query,page_number, help);
 
+            // TODO permissions
+
             // Vrácení objektu
             return ok(result);
 
@@ -150,6 +146,8 @@ public class Controller_Update extends _BaseController {
 
             // Kontrola objektu
             Model_UpdateProcedure procedure = Model_UpdateProcedure.find.byId(procedure_id);
+
+            this.checkUpdatePermission(procedure);
 
             procedure.cancel_procedure();
 

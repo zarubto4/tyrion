@@ -31,10 +31,7 @@ public class Model_ChangePropertyToken extends BaseModel {
 
     @JsonIgnore @Override
     public boolean delete() {
-
-        logger.debug("permanent delete :: Delete object Id: {} ", this.id);
         return super.deletePermanent();
-
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

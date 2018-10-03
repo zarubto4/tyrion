@@ -120,6 +120,8 @@ public class Controller_ExternalServer extends _BaseController {
                 server.project =  Model_Project.find.byId(help.project_id);
             }
 
+            this.checkCreatePermission(server);
+
             server.save();
 
             server.setTags(help.tags);
@@ -190,6 +192,8 @@ public class Controller_ExternalServer extends _BaseController {
                 server.project =  Model_Project.find.byId(help.project_id);;
             }
 
+            this.checkCreatePermission(server);
+
             // Uložení objektu
             server.save();
 
@@ -234,9 +238,8 @@ public class Controller_ExternalServer extends _BaseController {
             }
 
             server.server_type = HomerType.MAIN;
-            server.update();
 
-            return ok(server);
+            return update(server);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -272,9 +275,8 @@ public class Controller_ExternalServer extends _BaseController {
             }
 
             server.server_type = HomerType.BACKUP;
-            server.update();
 
-            return ok(server);
+            return update(server);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -327,11 +329,7 @@ public class Controller_ExternalServer extends _BaseController {
             server.server_url = help.server_url;
             server.setTags(help.tags);
 
-            // Uložení objektu
-            server.update();
-
-            // Vrácení objektu
-            return ok(server);
+            return update(server);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -424,6 +422,8 @@ public class Controller_ExternalServer extends _BaseController {
             // Vyvoření odchozího JSON
             Swagger_HomerServer_List result = new Swagger_HomerServer_List(query, page_number, help);
 
+            // TODO permissions
+
             // Vrácení seznamu
             return ok(result);
 
@@ -448,13 +448,7 @@ public class Controller_ExternalServer extends _BaseController {
     @Security.Authenticated(Authentication.class)
     public Result homer_server_get(UUID homer_server_id) {
         try {
-
-            // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
-
-            // Vrácení objektu
-            return ok(server);
-
+            return read(Model_HomerServer.find.byId(homer_server_id));
         } catch (Exception e) {
            return controllerServerError(e);
         }
@@ -475,16 +469,7 @@ public class Controller_ExternalServer extends _BaseController {
     @Security.Authenticated(Authentication.class)
     public Result homer_server_delete(UUID homer_server_id) {
         try {
-
-            // Kontrola objektu
-            Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
-
-            // Smzání objektu
-            server.delete();
-
-            // Vrácení potvrzení
-            return ok();
-
+            return delete(Model_HomerServer.find.byId(homer_server_id));
         } catch (Exception e) {
            return controllerServerError(e);
         }
@@ -509,7 +494,7 @@ public class Controller_ExternalServer extends _BaseController {
             // Kontrola objektu
             Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
 
-            server.check_update_permission();
+            this.checkUpdatePermission(server);
 
             DigitalOceanTyrionService.powerOff(server);
 
@@ -540,7 +525,7 @@ public class Controller_ExternalServer extends _BaseController {
             // Kontrola objektu
             Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
 
-            server.check_update_permission();
+            this.checkUpdatePermission(server);
 
             DigitalOceanTyrionService.powerOn(server);
 
@@ -571,7 +556,7 @@ public class Controller_ExternalServer extends _BaseController {
             // Kontrola objektu
             Model_HomerServer server = Model_HomerServer.find.byId(homer_server_id);
 
-            server.check_update_permission();
+            this.checkUpdatePermission(server);
 
             DigitalOceanTyrionService.restartServer(server);
 
@@ -582,8 +567,6 @@ public class Controller_ExternalServer extends _BaseController {
             return controllerServerError(e);
         }
     }
-
-
 
 // COMPILATION SERVER ##################################################################################################
 
@@ -918,11 +901,12 @@ public class Controller_ExternalServer extends _BaseController {
             Model_BootLoader bootLoader = Model_BootLoader.find.byId(bootloader_id);
 
             logger.trace("cloud_file_get_bootloader - Bootloader: {}", bootLoader.version_identifier);
-            logger.trace("cloud_file_get_bootloader - File Path: {}",  bootLoader.file.path);
 
-            int slash = bootLoader.file.path.indexOf("/");
-            String container_name = bootLoader.file.path.substring(0,slash);
-            String real_file_path = bootLoader.file.path.substring(slash+1);
+            Model_Blob modelBlob = bootLoader.getBlob();
+
+            int slash = modelBlob.path.indexOf("/");
+            String container_name = modelBlob.path.substring(0,slash);
+            String real_file_path = modelBlob.path.substring(slash+1);
 
             logger.trace("cloud_file_get_bootloader - Container Name {} real_file_path {} ", container_name, real_file_path );
 

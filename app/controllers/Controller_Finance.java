@@ -1,6 +1,7 @@
 package controllers;
 
 import com.typesafe.config.Config;
+import exceptions.ForbiddenException;
 import io.ebean.Ebean;
 import io.swagger.annotations.*;
 import models.*;
@@ -21,6 +22,7 @@ import utilities.financial.extensions.consumptions.ResourceConsumption;
 import utilities.financial.goPay.GoPay;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.Action;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
@@ -73,7 +75,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             // Pokud má uživatel oprávnění vracím upravený SQL
-            if (person().has_permission(Model_Tariff.Permission.Tariff_update.name())) {
+            if (true) { // TODO permissions if (person().has_permission(Model_Tariff.Permission.Tariff_update.name())) {
                 List<Model_Tariff> tariffs = Model_Tariff.find.query().where().order().asc("order_position").findList();
                 return ok(tariffs);
 
@@ -536,8 +538,10 @@ public class Controller_Finance extends _BaseController {
     public Result tariffExtension_getAll() {
         try {
 
+            // TODO permissions
+
             // Pokud má uživatel oprávnění vracím upravený SQL
-            if (person().has_permission(Model_TariffExtension.Permission.TariffExtension_update.name())) {
+            if (true) {
 
                 return ok(Model_TariffExtension.find.query().where().order().asc("order_position").findList());
 
@@ -557,10 +561,10 @@ public class Controller_Finance extends _BaseController {
             notes = "", //TODO
             produces = "application/json",
             protocols = "https",
-            code = 201
+            code = 200
     )
     @ApiResponses({
-            @ApiResponse(code = 201, message = "Successfully created",      response = Model_TariffExtension.class),
+            @ApiResponse(code = 200, message = "Successfully created",      response = Model_TariffExtension.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -569,9 +573,7 @@ public class Controller_Finance extends _BaseController {
     })
     public Result tariffExtension_get(UUID extension_id) {
         try {
-            Model_TariffExtension extension = Model_TariffExtension.find.byId(extension_id);
-            return created(extension);
-
+            return read(Model_TariffExtension.find.byId(extension_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -645,9 +647,7 @@ public class Controller_Finance extends _BaseController {
                 return badRequest("Invalid ResourceConsumption Json");
             }
 
-            extension.save();
-
-            return created(extension);
+            return create(extension);
 
         } catch (IllegalStateException e) {
             return badRequest("Illegal or not Valid Config");
@@ -720,9 +720,7 @@ public class Controller_Finance extends _BaseController {
                 return badRequest("Invalid ResourceConsumption Json");
             }
 
-            extension.update();
-
-            return ok(extension);
+            return update(extension);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -748,9 +746,8 @@ public class Controller_Finance extends _BaseController {
 
             // Kontrola objektu
             Model_TariffExtension extension = Model_TariffExtension.find.byId(extension_id);
-            if(extension == null) {
-                return notFound("Invalid extension id.");
-            }
+
+            this.checkActivatePermission(extension);
 
             if (!extension.active) {
                 return badRequest("Tariff extension is already deactivated");
@@ -787,9 +784,8 @@ public class Controller_Finance extends _BaseController {
 
             // Kontrola objektu
             Model_TariffExtension extension = Model_TariffExtension.find.byId(extension_id);
-            if(extension == null) {
-                return notFound("Invalid extension id.");
-            }
+
+            this.checkActivatePermission(extension);
 
             if (extension.active) {
                 return badRequest("Tariff Extension is already activated");
@@ -879,17 +875,7 @@ public class Controller_Finance extends _BaseController {
     })
     public Result tariffExtension_delete(UUID extension_id) {
         try {
-
-            // Kontrola objektu
-            Model_TariffExtension extension = Model_TariffExtension.find.byId(extension_id);
-            if(extension == null) {
-                return notFound("Invalid extension id.");
-            }
-
-            extension.delete();
-
-            return ok();
-
+            return delete(Model_TariffExtension.find.byId(extension_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -1098,8 +1084,7 @@ public class Controller_Finance extends _BaseController {
             // Kontrola objektu
             Model_Product product = Model_Product.find.byId(product_id);
 
-            // Kontrola oprávnění
-            product.check_act_deactivate_permission();
+            this.checkActivatePermission(product);
 
             if (!product.active) return badRequest("Product is already deactivated");
 
@@ -1140,8 +1125,7 @@ public class Controller_Finance extends _BaseController {
             // Kontrola objektu
             Model_Product product = Model_Product.find.byId(product_id);
 
-            // Kontrola oprávnění
-            product.check_act_deactivate_permission();
+            this.checkActivatePermission(product);
 
             if (product.active) return badRequest("Product is already activated");
 
@@ -1240,18 +1224,7 @@ public class Controller_Finance extends _BaseController {
     })
     public Result product_delete(UUID product_id) {
         try {
-
-            // URČENO POUZE PRO ADMINISTRÁTORY S OPRÁVNĚNÍM MAZAT!
-
-            // Kontrola objektu
-            Model_Product product = Model_Product.find.byId(product_id);
-
-            // Trvalé odstranění produktu!
-            product.delete();
-
-            // Vrácení potvrzení
-            return ok();
-
+            return delete(Model_Product.find.byId(product_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -1287,7 +1260,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Contact_Update help  = baseFormFactory.formFromRequestWithValidation(Swagger_Contact_Update.class);
+            Swagger_Contact_Update help = baseFormFactory.formFromRequestWithValidation(Swagger_Contact_Update.class);
 
             // Kontrola Objektu
             Model_Customer customer = Model_Customer.find.byId(customer_id);
@@ -1340,7 +1313,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Contact_Update help  = baseFormFactory.formFromRequestWithValidation(Swagger_Contact_Update.class);
+            Swagger_Contact_Update help = baseFormFactory.formFromRequestWithValidation(Swagger_Contact_Update.class);
 
             // Kontrola Objektu
             Model_Contact contact = Model_Contact.find.byId(contact_id);
@@ -1674,7 +1647,7 @@ public class Controller_Finance extends _BaseController {
     public Result productExtension_activate(UUID extension_id) {
         try {
             Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
-            extension.check_act_deactivate_permission();
+            this.checkActivatePermission(extension);
             extension.setActive(true);
 
             return ok(extension);
@@ -1702,7 +1675,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
-            extension.check_act_deactivate_permission();
+            this.checkActivatePermission(extension);
             extension.setActive(false);
 
             return ok(extension);
@@ -1727,11 +1700,7 @@ public class Controller_Finance extends _BaseController {
     })
     public Result productExtension_delete(UUID extension_id) {
         try {
-            Model_ProductExtension extension = Model_ProductExtension.find.byId(extension_id);
-            extension.delete();
-
-            return ok();
-
+            return delete(Model_ProductExtension.find.byId(extension_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -1797,18 +1766,18 @@ public class Controller_Finance extends _BaseController {
             // Kontrola objektu
             Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
 
-            // kontrola oprávnění
-            invoice.check_read_permission();
+            this.checkReadPermission(invoice);
 
             Swagger_Invoice_FullDetails help = new Swagger_Invoice_FullDetails();
             help.invoice = invoice;
 
             try {
-                // kompletní detaily může získat pouze uživatel s oprávněním update!
-                invoice.check_update_permission();
+                this.checkUpdatePermission(invoice); // kompletní detaily může získat pouze uživatel s oprávněním update!
                 help.invoice_items = Model_InvoiceItem.find.query().where().eq("invoice.id", invoice_id).findList();
+
+            } catch (ForbiddenException e) {
+                // nothing
             }
-            catch (Exception e) {}
 
             return ok(help);
 
@@ -2002,8 +1971,7 @@ public class Controller_Finance extends _BaseController {
             // Kontrola objektu
             Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
 
-            // kontrola práv
-            invoice.check_update_permission();
+            this.checkUpdatePermission(invoice);
 
             try {
                 if (invoice.status == InvoiceStatus.UNCONFIRMED) {
@@ -2072,8 +2040,7 @@ public class Controller_Finance extends _BaseController {
             // Kontrola objektu
             Model_Invoice invoice = Model_Invoice.find.byId(invoice_id);
 
-            // kontrola práv
-            invoice.check_update_permission();
+            this.checkUpdatePermission(invoice);
 
             if(invoice.status != InvoiceStatus.UNCONFIRMED) {
                 return badRequest("Invoice is not in state UNCONFIRMED.");

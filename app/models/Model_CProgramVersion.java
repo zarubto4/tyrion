@@ -22,7 +22,6 @@ import utilities.cache.CacheFinderField;
 import utilities.enums.CompilationStatus;
 import utilities.enums.EntityType;
 import utilities.errors.Exceptions.Result_Error_NotFound;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.UnderProject;
@@ -195,13 +194,12 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
 
     @JsonIgnore
     public Model_CProgram get_c_program() throws _Base_Result_Exception {
-        UUID id = get_c_program_id();
-        return id != null ? Model_CProgram.find.byId(id) : null;
+        return isLoaded("c_program") ? c_program : Model_CProgram.find.query().nullable().where().eq("versions.id", id).findOne();
     }
 
-    @Override
+    @JsonIgnore @Override
     public Model_Project getProject() {
-        return this.c_program != null ? this.c_program.getProject() : this.get_c_program().getProject();
+        return this.get_c_program().getProject();
     }
 
 
@@ -376,7 +374,7 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
 
                     Model_LibraryVersion lib_version = Model_LibraryVersion.find.byId(lib_id);
 
-                    if (lib_version.get_library() == null) {
+                    if (lib_version.getLibrary() == null) {
                         logger.error("compile_C_Program_code:: library is null ");
                         return _BaseController.badRequest("Error getting libraries - some file is not a library");
                     }
@@ -580,12 +578,12 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @Override
+    @JsonIgnore @Override
     public EntityType getEntityType() {
         return EntityType.FIRMWARE_VERSION;
     }
 
-    @Override
+    @JsonIgnore @Override
     public List<Action> getSupportedActions() {
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.PUBLISH);
     }

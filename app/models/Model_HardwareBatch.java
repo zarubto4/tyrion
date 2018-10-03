@@ -215,6 +215,8 @@ public class Model_HardwareBatch extends MongoModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
+    // TODO rework permissions
+
     @JsonIgnore @Transient public void check_create_permission() throws _Base_Result_Exception {
         Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("compiler_target_name", compiler_target_name).findOne();
         if(hardwareType == null){

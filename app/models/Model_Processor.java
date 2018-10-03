@@ -5,19 +5,24 @@ import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
+import utilities.enums.EntityType;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
+import utilities.model.Publishable;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Entity
 @ApiModel(description = "Model of Processor", value = "Processor")
 @Table(name="Processor")
-public class Model_Processor extends NamedModel {
+public class Model_Processor extends NamedModel implements Permissible, Publishable {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -34,6 +39,11 @@ public class Model_Processor extends NamedModel {
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Override
+    public boolean isPublic() {
+        return true;
+    }
+
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -46,25 +56,15 @@ public class Model_Processor extends NamedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Processor_create.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        // Not limited now
-        return;
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.PROCESSOR;
     }
 
-    @JsonIgnore @Transient @Override public void check_update_permission()  throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Processor_update.name())) return;
-        throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }
-    @JsonIgnore @Transient @Override public void check_delete_permission()  throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Processor_delete.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-
-    public enum Permission { Processor_create, Processor_update, Processor_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

@@ -314,9 +314,14 @@ public class Server {
 
         List<UUID> permissionIds = role.permissions.stream().map(permission -> permission.id).collect(Collectors.toList());
 
+        logger.trace("setAdministrator - role contains {} permission(s)", permissionIds.size());
+
         List<Model_Permission> permissions = Model_Permission.find.query().where().notIn("id", permissionIds).findList();
 
+        logger.trace("setAdministrator - role is missing {} permission(s)", permissions.size());
+
         if (!permissions.isEmpty()) {
+            logger.debug("setAdministrator - adding {} permission(s)", permissions.size());
             role.permissions.addAll(permissions);
             role.update();
         }
@@ -343,6 +348,7 @@ public class Server {
         }
 
         if (!role.persons.contains(person)) {
+            logger.info("setAdministrator - adding admin account to role");
             role.persons.add(person);
             role.update();
         }

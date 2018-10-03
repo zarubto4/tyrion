@@ -57,15 +57,11 @@ public abstract class TaggedModel extends NamedModel {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     public void setTags(List<String> new_tags) throws _Base_Result_Exception {
-        System.out.println("setTags: List Tags: " + new_tags);
 
         List<String > tags = tags();
 
-        System.out.println("setTags: List already Tags: " + tags);
-
         boolean change = false;
         for(String value : new_tags) {
-            System.out.println("setTags: Spuštění For Cyklu tag: " + value);
             if(tags.contains(value)) {
                 continue;
             }
@@ -85,8 +81,7 @@ public abstract class TaggedModel extends NamedModel {
             }
         }
 
-        if(change) {
-            System.out.println("setTags: Change - true");
+        if (change) {
             this.update();
         }
     }

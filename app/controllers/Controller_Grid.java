@@ -1,7 +1,6 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.ebean.Ebean;
 import io.ebean.ExpressionList;
@@ -20,6 +19,7 @@ import utilities.enums.Approval;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.Action;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
@@ -1005,6 +1005,8 @@ public class Controller_Grid extends _BaseController {
                 widget.publish_type = ProgramType.PUBLIC;
             }
 
+            this.checkCreatePermission(widget);
+
             // Uložení objektu
             widget.save();
 
@@ -1050,17 +1052,10 @@ public class Controller_Grid extends _BaseController {
     @Security.Authenticated(Authentication.class)
     public Result widget_get(@ApiParam(value = "widget_id String path",   required = true) UUID grid_widget_id) {
         try {
-            // Kontrola objektu
-            Model_Widget gridWidget = Model_Widget.find.byId(grid_widget_id);
-            if (gridWidget == null) return notFound("GridWidget widget_id not found");
-
-            // Vrácení objektu
-            return ok(gridWidget);
-
+            return read(Model_Widget.find.byId(grid_widget_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
-
     }
 
     @ApiOperation(value = "get Widget List by Filter",
@@ -1137,6 +1132,8 @@ public class Controller_Grid extends _BaseController {
             // Vytvoření odchozího JSON
             Swagger_GridWidget_List result = new Swagger_GridWidget_List(query, page_number, help);
 
+            // TODO permissions
+
             // Vrácení výsledku
             return ok(result);
 
@@ -1185,11 +1182,8 @@ public class Controller_Grid extends _BaseController {
             widget.name        = help.name;
             widget.setTags(help.tags);
 
-            // Uložení objektu
-            widget.update();
-
             // Vrácení objektu
-            return ok(widget);
+            return update(widget);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1231,6 +1225,8 @@ public class Controller_Grid extends _BaseController {
 
             // Kontrola objektu
             Model_Widget widget = Model_Widget.find.byId(help.object_id);
+
+            this.checkUpdatePermission(widget);
 
             // Add Tags
             widget.addTags(help.tags);
@@ -1277,6 +1273,8 @@ public class Controller_Grid extends _BaseController {
             // Kontrola objektu
             Model_Widget widget = Model_Widget.find.byId(help.object_id);
 
+            this.checkUpdatePermission(widget);
+
             // Remnove Tags
             widget.removeTags(help.tags);
 
@@ -1304,16 +1302,7 @@ public class Controller_Grid extends _BaseController {
     @Security.Authenticated(Authentication.class)
     public Result widget_delete(@ApiParam(value = "widget_id String path",   required = true)  UUID grid_widget_id) {
         try {
-
-            // Kontrola objektu
-            Model_Widget gridWidget = Model_Widget.find.byId(grid_widget_id);
-
-            // Smazání objektu
-            gridWidget.delete();
-
-            // Vrácení potvrzení
-            return ok();
-
+            return delete(Model_Widget.find.byId(grid_widget_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -1350,7 +1339,7 @@ public class Controller_Grid extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Grid_Widget_Copy help  = formFromRequestWithValidation(Swagger_Grid_Widget_Copy.class);
+            Swagger_Grid_Widget_Copy help = formFromRequestWithValidation(Swagger_Grid_Widget_Copy.class);
 
             // Kontrola objekt
             Model_Widget grid_widget_old = Model_Widget.find.byId(help.widget_id);
@@ -1358,12 +1347,13 @@ public class Controller_Grid extends _BaseController {
             // Kontrola objekt
             Model_Project project = Model_Project.find.byId(help.project_id);
 
-            this.permissionService.checkUpdate(person(), project);
-
             Model_Widget grid_widget_new =  new Model_Widget();
             grid_widget_new.name = help.name;
             grid_widget_new.description = help.description;
             grid_widget_new.project = project;
+
+            this.checkCreatePermission(grid_widget_new);
+
             grid_widget_new.save();
 
             grid_widget_new.refresh();
@@ -1411,12 +1401,14 @@ public class Controller_Grid extends _BaseController {
         try {
 
             // Kontrola objekt
-            Model_Widget gridWidget = Model_Widget.find.byId(grid_widget_id);
+            Model_Widget widget = Model_Widget.find.byId(grid_widget_id);
 
-            if (!gridWidget.active) return badRequest("Model_Widget is already deactivated");
-            gridWidget.active = false;
+            this.checkActivatePermission(widget);
 
-            gridWidget.update();
+            if (!widget.active) return badRequest("Model_Widget is already deactivated");
+            widget.active = false;
+
+            widget.update();
 
             return ok();
 
@@ -1444,12 +1436,14 @@ public class Controller_Grid extends _BaseController {
         try {
 
             // Kontrola objekt
-            Model_Widget gridWidget = Model_Widget.find.byId(grid_widget_id);
+            Model_Widget widget = Model_Widget.find.byId(grid_widget_id);
 
-            if (gridWidget.active) return badRequest("Model_Widget is already activate");
-            gridWidget.active = true;
+            this.checkActivatePermission(widget);
 
-            gridWidget.update();
+            if (widget.active) return badRequest("Model_Widget is already activate");
+            widget.active = true;
+
+            widget.update();
 
             return ok();
 
@@ -1529,25 +1523,16 @@ public class Controller_Grid extends _BaseController {
             protocols = "https"
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result widgetVersion_delete(@ApiParam(value = "grid_widget_version_id String path",   required = true) UUID grid_widget_version_id) {
+    public Result widgetVersion_delete(@ApiParam(value = "version_id String path",   required = true) UUID version_id) {
         try {
-
-            // Kontrola objektu
-            Model_WidgetVersion version = Model_WidgetVersion.find.byId(grid_widget_version_id);
-
-            // Smazání objektu
-            version.delete();
-
-            // Vrácení potvrzení
-            return ok();
-
+            return delete(Model_WidgetVersion.find.byId(version_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -1567,22 +1552,22 @@ public class Controller_Grid extends _BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result widgetVersion_set_main(UUID grid_widget_version_id) {
+    public Result widgetVersion_set_main(UUID version_id) {
         try {
 
             // Kontrola objektu
-            Model_WidgetVersion version = Model_WidgetVersion.find.byId(grid_widget_version_id);
-            if (version == null) return notFound("GridWidgetVersion grid_widget_version_id not found");
+            Model_WidgetVersion version = Model_WidgetVersion.find.byId(version_id);
+            if (version == null) return notFound("GridWidgetVersion version_id not found");
 
             if (!version.get_grid_widget_id().equals("00000000-0000-0000-0000-000000000001")) {
-                return notFound("GridWidgetVersion grid_widget_version_id not from default program");
+                return notFound("GridWidgetVersion version_id not from default program");
             }
 
             Model_WidgetVersion old_version = Model_WidgetVersion.find.query().where().eq("publish_type", ProgramType.DEFAULT_VERSION.name()).select("id").findOne();
@@ -1694,12 +1679,8 @@ public class Controller_Grid extends _BaseController {
             version.design_json = help.design_json;
             version.logic_json = help.logic_json;
             version.widget = gridWidget;
-            
-            // Uložení objektu
-            version.save();
 
-            // Vrácení objektu
-            return created(gridWidget);
+            return create(gridWidget);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1722,15 +1703,9 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result widgetVersion_get(@ApiParam(value = "grid_widget_version_id String path",   required = true) UUID grid_widget_version_id) {
+    public Result widgetVersion_get(@ApiParam(value = "version_id String path",   required = true) UUID version_id) {
         try {
-            
-            // Kontrola objektu
-            Model_WidgetVersion version = Model_WidgetVersion.find.byId(grid_widget_version_id);
-       
-            // Vrácení objektu
-            return ok(version);
-
+            return read(Model_WidgetVersion.find.byId(version_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -1769,23 +1744,16 @@ public class Controller_Grid extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help  = formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             // Kontrola objektu
             Model_WidgetVersion version = Model_WidgetVersion.find.byId(version_id);
-
-            // Kontrola oprávnění
-            version.check_update_permission();
             
             // Úprava objektu
             version.name = help.name;
             version.description = help.description;
-            
-            // Uložení objektu
-            version.update();
 
-            // Vrácení objektu
-            return ok(version);
+            return update(version);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1817,14 +1785,16 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @Security.Authenticated(Authentication.class)
-    public Result widgetVersion_getAll(@ApiParam(value = "widget_id String path",   required = true) UUID grid_widget_id) {
+    public Result widgetVersion_getAll(@ApiParam(value = "widget_id String path",   required = true) UUID widget_id) {
         try {
 
             // Kontrola objektu
-            Model_Widget gridWidget = Model_Widget.find.byId(grid_widget_id);
+            Model_Widget widget = Model_Widget.find.byId(widget_id);
+
+            this.checkReadPermission(widget);
 
             // Vrácení objektu
-            return ok(gridWidget.versions);
+            return ok(widget.versions);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1875,16 +1845,12 @@ public class Controller_Grid extends _BaseController {
             // Kontrola nadřazeného objektu
             Model_Widget widget_old = Model_Widget.find.byId(privateGridWidgetVersion.get_grid_widget_id());
 
-            // Zkontroluji oprávnění
-            if (!widget_old.community_publishing_permission()) {
-                return forbidden();
-            }
+            this.checkPublishPermission(widget_old);
 
             if (help.decision) {
 
                 privateGridWidgetVersion.approval_state = Approval.APPROVED;
                 privateGridWidgetVersion.update();
-
 
                 UUID widget_previous_id = Model_Widget.find.query().where().eq("original_id", widget_old.id).select("id").findSingleAttribute();
 
@@ -1896,7 +1862,7 @@ public class Controller_Grid extends _BaseController {
                     widget.original_id = widget_old.id;
                     widget.name = help.program_name;
                     widget.description = help.program_description;
-                    widget.author_id = privateGridWidgetVersion.get_grid_widget().get_author().id;
+                    widget.author_id = privateGridWidgetVersion.getWidget().get_author().id;
                     widget.publish_type = ProgramType.PUBLIC;
                     widget.active = true;
                     widget.save();
@@ -1928,9 +1894,9 @@ public class Controller_Grid extends _BaseController {
                 try {
 
                     new Email()
-                            .text("Version of Widget " + privateGridWidgetVersion.get_grid_widget().name + ": " + Email.bold(privateGridWidgetVersion.name) + " was not approved for this reason: ")
+                            .text("Version of Widget " + privateGridWidgetVersion.getWidget().name + ": " + Email.bold(privateGridWidgetVersion.name) + " was not approved for this reason: ")
                             .text(help.reason)
-                            .send(privateGridWidgetVersion.get_grid_widget().get_author().email, "Version of Widget disapproved" );
+                            .send(privateGridWidgetVersion.getWidget().get_author().email, "Version of Widget disapproved" );
 
                 } catch (Exception e) {
                     logger.internalServerError(e);
@@ -1947,5 +1913,4 @@ public class Controller_Grid extends _BaseController {
             return controllerServerError(e);
         }
     }
-
 }

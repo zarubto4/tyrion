@@ -16,10 +16,7 @@ import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.document_mongo_db.document_objects.DM_HomerServer_Connect;
 import utilities.document_mongo_db.document_objects.DM_HomerServer_Disconnect;
-import utilities.enums.HomerType;
-import utilities.enums.LogLevel;
-import utilities.enums.NetworkStatus;
-import utilities.enums.ServerMode;
+import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import utilities.errors.Exceptions.Result_Error_BadRequest;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
@@ -28,7 +25,11 @@ import utilities.homer_auto_deploy.DigitalOceanThreadRegister;
 import utilities.homer_auto_deploy.DigitalOceanTyrionService;
 import utilities.homer_auto_deploy.models.common.Swagger_ExternalService;
 import utilities.logger.Logger;
+import utilities.model.Publishable;
 import utilities.model.TaggedModel;
+import utilities.model.UnderProject;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.slack.Slack;
 import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
 import websocket.WS_Message;
@@ -49,7 +50,7 @@ import java.util.function.Consumer;
 @Entity
 @ApiModel(description = "Model of HomerServer", value = "HomerServer")
 @Table(name="HomerServer")
-public class Model_HomerServer extends TaggedModel {
+public class Model_HomerServer extends TaggedModel implements Permissible, UnderProject, Publishable {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -110,7 +111,7 @@ public class Model_HomerServer extends TaggedModel {
     @ApiModelProperty(required = false, readOnly = true) @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public String connection_identificator() {
         try {
-            check_update_permission();
+            // TODO check_update_permission();
             return connection_identifier;
         } catch (_Base_Result_Exception e){
             //nothing
@@ -124,7 +125,7 @@ public class Model_HomerServer extends TaggedModel {
     @ApiModelProperty(required = false, readOnly = true) @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public String hash_certificate() {
         try {
-            check_update_permission();
+            // TODO check_update_permission();
             return hash_certificate;
         } catch (_Base_Result_Exception e){
             //nothing
@@ -167,13 +168,9 @@ public class Model_HomerServer extends TaggedModel {
 
     }
 
-    @JsonIgnore @Transient public Model_Project get_project() throws _Base_Result_Exception  {
-        try {
-            return Model_Project.find.byId(get_project_id());
-        }catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+    @JsonIgnore @Override
+    public Model_Project getProject() throws _Base_Result_Exception {
+        return isLoaded("project") ? project : Model_Project.find.query().nullable().where().eq("servers.id", id).findOne();
     }
 
     @JsonIgnore @Transient public Swagger_ExternalService external_settings() {
@@ -181,10 +178,14 @@ public class Model_HomerServer extends TaggedModel {
         return formFromJsonWithValidation(Swagger_ExternalService.class, Json.parse(json_additional_parameter));
     }
 
+    @JsonIgnore @Override
+    public boolean isPublic() {
+        return server_type != HomerType.PRIVATE;
+    }
+
     /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    @Override
+    @JsonIgnore @Override
     public void save() {
 
         logger.debug("save::Creating new Object");
@@ -200,8 +201,7 @@ public class Model_HomerServer extends TaggedModel {
         super.save();
     }
 
-    @JsonIgnore
-    @Override
+    @JsonIgnore @Override
     public boolean delete() {
 
         logger.debug("delete::Delete object Id: {}",  this.id);
@@ -707,8 +707,6 @@ public class Model_HomerServer extends TaggedModel {
         }
     }
 
-
-
 /* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
 
     // only with successfully connection
@@ -734,103 +732,19 @@ public class Model_HomerServer extends TaggedModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(project != null && server_type != HomerType.PRIVATE){
-            throw new Result_Error_BadRequest("Server must be PRIVATE if its registered with Project");
-        }
-
-        if(project != null) {
-            project.check_update_permission();
-            return;
-        }
-
-        if(_BaseController.person().has_permission(Permission.Homer_create.name())) return;
-
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        try {
-
-
-            if(server_type == HomerType.PUBLIC || server_type == HomerType.MAIN  || server_type == HomerType.BACKUP) return;
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName()  + "_read_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-                return;
-            }
-
-            if ( Model_HomerServer.find.query().where().where().eq("project.participants.person.id", _BaseController.person().id ).eq("id", id).findCount() > 0) {
-                _BaseController.person().cache_permission(this.getClass().getSimpleName()  + "_read_" + id, true);
-                return;
-            }
-
-            if (_BaseController.person().has_permission(Permission.Homer_read.name())) return;
-
-            throw new Result_Error_PermissionDenied();
-
-        // Přidávám do listu false a vracím false
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.HOMER;
     }
 
-    @JsonIgnore @Transient @Override public void check_update_permission()  throws _Base_Result_Exception {
-        try {
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() +  "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-
-            if ( Model_HomerServer.find.query().where().where().eq("project.participants.person.id", _BaseController.person().id ).eq("id", id).findCount() > 0) {
-                _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-                return;
-            }
-
-            if (_BaseController.person().has_permission(Permission.Homer_update.name())) return;
-
-            throw new Result_Error_PermissionDenied();
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }
-    @JsonIgnore @Transient @Override public void check_delete_permission()  throws _Base_Result_Exception {
-        try {
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-                return;
-            }
-
-            if (Model_HomerServer.find.query().where().where().eq("project.participants.person.id", _BaseController.person().id).eq("id", id).findCount() > 0) {
-                _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-                return;
-            }
-
-            if (_BaseController.person().has_permission(Permission.Homer_delete.name())) return;
-
-            throw new Result_Error_PermissionDenied();
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    public enum Permission { Homer_create, Homer_read, Homer_update, Homer_delete }
-
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-    public static List<Model_HomerServer> get_all() {
-        return find.all();
-    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

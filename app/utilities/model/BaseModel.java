@@ -1,12 +1,13 @@
 package utilities.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers._BaseController;
 import io.ebean.Model;
 import io.ebean.annotation.SoftDelete;
+import io.ebean.bean.EntityBean;
+import io.ebean.bean.EntityBeanIntercept;
 import io.swagger.annotations.ApiModelProperty;
 import models.Model_HomerServer;
 import org.ehcache.Cache;
@@ -243,7 +244,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         return this.getClass() + ":\n" + Json.prettyPrint(json());
     }
 
-    @Override
+    /*@Override
     public boolean equals(Object obj) {
 
         if (obj instanceof BaseModel) {
@@ -252,12 +253,12 @@ public abstract class BaseModel extends Model implements JsonSerializable {
             if (this.id == null) {
                 return this == model;
             } else {
-                return this.id.equals(model.id);
+                return this.id.equals(model.id) && ((this.created == null && model.created == null) || (this.created != null && this.created.equals(model.created)));
             }
         }
 
         return false;
-    }
+    }*/
 
 
     /**
@@ -577,6 +578,25 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         return fields;
     }
 
+    /**
+     * Helper method for checking if property is loaded
+     * without accidentally loading it.
+     * @param property to check
+     * @return true if it is loaded
+     */
+    protected boolean isLoaded(String property) {
+        if (this instanceof EntityBean) {
+            EntityBeanIntercept intercept = ((EntityBean) this)._ebean_intercept();
+            int index = intercept.findProperty(property);
+            if (index > -1) {
+                boolean loaded = intercept.isLoadedProperty(index);
+                logger.trace("isLoaded - property '{}' is {}", property, loaded ? "loaded" : "not loaded");
+                return loaded;
+            }
+        }
+
+        return true;
+    }
 
 /* Permission Contents ----------------------------------------------------------------------------------------------------*/
 

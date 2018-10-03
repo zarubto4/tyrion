@@ -302,6 +302,8 @@ public class Model_GSM extends TaggedModel {
 
     /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
+    // TODO permissions
+
     @JsonIgnore @Override
     public void check_read_permission() throws _Base_Result_Exception {
         try {

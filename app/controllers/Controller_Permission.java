@@ -460,7 +460,7 @@ public class Controller_Permission extends _BaseController {
 
             // Check Permission
             for(Model_Person person: persons){
-                person.check_update_permission();
+                this.checkUpdatePermission(person);
             }
 
             logger.debug("role_add_person: Adding {} person(s)", persons.size());

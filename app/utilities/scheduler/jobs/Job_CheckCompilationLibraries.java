@@ -43,7 +43,7 @@ import java.util.zip.ZipOutputStream;
 /**
  * This job synchronizes compilation libraries from GitHub releases.
  */
-///@Scheduled("0 0/5 * 1/1 * ? *")
+// @Scheduled("0 0/5 * 1/1 * ? *")
 public class Job_CheckCompilationLibraries implements Job {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -114,7 +114,7 @@ public class Job_CheckCompilationLibraries implements Job {
                 // Seznam Release z GitHubu v upravené podobě
                 List<Swagger_GitHubReleases> releases = help.list;
 
-                List<UUID> hardwareTypes_id = Model_HardwareType.find.query().where().findIds();
+                List<UUID> hardwareTypes_id = Model_HardwareType.find.query().select("id").findSingleAttributeList();
                 // Do každého typu desky - který má Tyrion v DB doplní podporované knihovny
 
                 for (UUID hwType_id : hardwareTypes_id) {
@@ -223,8 +223,6 @@ public class Job_CheckCompilationLibraries implements Job {
                     hardwareType.cache_library_list.addAll(library_list_for_add);
                     hardwareType.update();
 
-
-
                     // Sorting List
                     List<Swagger_CompilationLibrary> libraries = new ArrayList<>();
                     hardwareType.cache_library_list.stream().sorted((element1, element2) -> element2.name.compareTo(element1.name)).collect(Collectors.toList())
@@ -233,11 +231,7 @@ public class Job_CheckCompilationLibraries implements Job {
                     hardwareType.cache_library_list = libraries;
                 }
 
-
-
-
                 logger.trace("check_version_thread:: all Library type of Board synchronized");
-                logger.trace("check_version_thread:: all Bootloader in type of Board synchronized");
 
             } catch (F.PromiseTimeoutException e ) {
                 logger.error("Job_CheckCompilationLibraries:: PromiseTimeoutException! - Probably Network is unreachable", new Date());

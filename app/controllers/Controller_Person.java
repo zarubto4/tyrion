@@ -21,6 +21,7 @@ import utilities.enums.NotificationAction;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.notifications.NotificationActionHandler;
+import utilities.permission.Action;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
@@ -479,7 +480,7 @@ public class Controller_Person extends _BaseController {
 
             Model_Person person = Model_Person.find.byId(person_id);
 
-            person.check_activation_permission();
+            this.checkActivatePermission(person);
 
             if (!person.frozen) return badRequest("Person is already active.");
 
@@ -514,7 +515,7 @@ public class Controller_Person extends _BaseController {
 
             Model_Person person = Model_Person.find.byId(person_id);
 
-            person.check_activation_permission();
+            this.checkActivatePermission(person);
 
             if (person.frozen) return badRequest("Person is already deactivated.");
 
