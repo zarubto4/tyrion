@@ -116,14 +116,7 @@ public class Model_BootLoader extends NamedModel implements Permissible {
 
     @JsonIgnore
     public Model_HardwareType getMainHardwareType() {
-        try {
-            return main_hardware_type != null ? main_hardware_type : Model_HardwareType.find.query().where().eq("main_boot_loader.id", id).findOne();
-        } catch (Result_Error_NotFound e) {
-            // nothing
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-        return null;
+        return isLoaded("main_hardware_type") ? main_hardware_type : Model_HardwareType.find.query().nullable().where().eq("main_boot_loader.id", id).findOne();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

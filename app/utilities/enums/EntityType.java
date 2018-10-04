@@ -47,7 +47,7 @@ public enum EntityType {
     @EnumValue("HOMER")                     HOMER,
     @EnumValue("CUSTOMER")                  CUSTOMER,
     @EnumValue("EMPLOYEE")                  EMPLOYEE,
-
-
-    // TODO all objects
+    @EnumValue("GSM")                       GSM,
+    @EnumValue("CONTACT")                   CONTACT,
+    @EnumValue("INTEGRATOR_CLIENT")         INTEGRATOR_CLIENT
 }

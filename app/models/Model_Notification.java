@@ -4,16 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.*;
-import utilities.errors.Exceptions.Result_Error_NotFound;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -278,7 +274,7 @@ public class Model_Notification extends BaseModel implements Permissible, Person
                 element.id = version.id;
                 element.text = version.name;
                 element.program_id = version.get_grid_program_id();
-                element.project_id = version.get_grid_program().get_grid_project_id();
+                element.project_id = version.getGridProgram().get_grid_project_id();
                 break;
             }
 
@@ -415,12 +411,11 @@ public class Model_Notification extends BaseModel implements Permissible, Person
         } catch (NullPointerException npe) {
             logger.internalServerError(new Exception("Method probably misused, use this method only when you resend notifications. If notification contains person."));
         }
-
     }
 
     @Override
     public Model_Person getPerson() {
-        return person != null ? person : Model_Person.find.query().where().eq("notifications.id", id).findOne();
+        return isLoaded("person") ? person : Model_Person.find.query().where().eq("notifications.id", id).findOne();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -438,8 +433,6 @@ public class Model_Notification extends BaseModel implements Permissible, Person
     public List<Action> getSupportedActions() {
         return Arrays.asList(Action.READ, Action.UPDATE, Action.DELETE);
     }
-
-    public enum Permission {Notification_crete, Notification_update, Notification_read, Notification_delete}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

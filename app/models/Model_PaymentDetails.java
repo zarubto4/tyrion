@@ -9,7 +9,7 @@ import utilities.enums.EntityType;
 import utilities.enums.PaymentMethod;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
-import utilities.model.UnderProduct;
+import utilities.model.UnderCustomer;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
 
@@ -20,7 +20,7 @@ import java.util.*;
 @Entity
 @ApiModel(value = "PaymentDetails", description = "Details about product payment")
 @Table(name="Payment_Details")
-public class Model_PaymentDetails extends BaseModel implements Permissible, UnderProduct {
+public class Model_PaymentDetails extends BaseModel implements Permissible, UnderCustomer {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -74,9 +74,14 @@ public class Model_PaymentDetails extends BaseModel implements Permissible, Unde
         return monthly_limit == null ? BigDecimal.ZERO : monthly_limit;
     }
 
-    @Override
+    @JsonIgnore
     public Model_Product getProduct() {
-        return product != null ? product : Model_Product.find.query().where().eq("payment_details.id", id).findOne();
+        return isLoaded("product") ? product : Model_Product.find.query().where().eq("payment_details.id", id).findOne();
+    }
+
+    @JsonIgnore @Override
+    public Model_Customer getCustomer() {
+        return getProduct().getCustomer();
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/

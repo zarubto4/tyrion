@@ -56,10 +56,6 @@ public class Model_Compilation extends BaseModel {
     @JsonIgnore  public String firmware_build_id;
     @JsonIgnore  public Date firmware_build_datetime;
 
-/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Cached public UUID cache_blob_id;
-
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
@@ -73,63 +69,19 @@ public class Model_Compilation extends BaseModel {
     }
 
     @JsonIgnore
-    public Model_Blob blob()throws _Base_Result_Exception {
-        try {
-            return Model_Blob.find.byId(blob_id());
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+    public Model_Blob getBlob()throws _Base_Result_Exception {
+        return isLoaded("blob") ? blob : Model_Blob.find.query().where().eq("version.id", id).findOne();
     }
 
     @JsonProperty
     public String file_path() {
         try {
-
-            if (cache_blob_id != null ) {
-                String link = Model_Blob.cache_public_link.get(cache_blob_id);
-                if (link != null) return link;
-            }
-
-            if (blob == null) { // TODO Cachovat - a opravit kde je nevhodná návaznost
-                return null;
-            }
-
-            this.cache_blob_id = blob.id;
-
-            // Separace na Container a Blob
-            int slash = blob.path.indexOf("/");
-            String container_name = blob.path.substring(0, slash);
-            String real_file_path = blob.path.substring(slash + 1);
-
-            CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
-
-            // Create Policy
-            Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-            cal.setTime(new Date());
-            cal.add(Calendar.HOUR, 5);
-
-            SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
-            policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
-            policy.setSharedAccessExpiryTime(cal.getTime());
-
-            String sas = blob.generateSharedAccessSignature(policy, null);
-
-            String total_link = blob.getUri().toString() + "?" + sas;
-
-            logger.debug("path:: Total Link:: " + total_link);
-
-            Model_Blob.cache_public_link.put(cache_blob_id, total_link);
-
-            // Přesměruji na link
-            return total_link;
-
+            return getBlob().getPublicDownloadLink();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
     }
-
 
 /* EXECUTION METHODS ----------------------------------------------------------------------------------------------------*/
 
@@ -307,10 +259,6 @@ public class Model_Compilation extends BaseModel {
     }
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
-
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient public final static String virtual_input_output_docu = "dsafsdfsdf"; // TODO https://youtrack.byzance.cz/youtrack/issue/TYRION-304
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

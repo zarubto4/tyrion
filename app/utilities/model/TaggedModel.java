@@ -2,11 +2,7 @@ package utilities.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
-import models.Model_BProgramVersion;
 import models.Model_Tag;
-import utilities.cache.Cached;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 
@@ -15,7 +11,6 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @MappedSuperclass
@@ -105,8 +100,6 @@ public abstract class TaggedModel extends NamedModel {
     }
 
     public void removeTags(List<String> tags) throws _Base_Result_Exception {
-
-        check_update_permission();
 
         List<Model_Tag> toRemove = this.tags.stream().filter(tag -> tags.contains(tag.value)).collect(Collectors.toList());
         this.tags.removeAll(toRemove);

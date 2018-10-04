@@ -17,6 +17,7 @@ import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.enums.Approval;
 import utilities.enums.ProgramType;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.permission.Action;
@@ -856,25 +857,22 @@ public class Controller_Grid extends _BaseController {
             // Get and Validate Object
             Swagger_Grid_Terminal_Identf help  = formFromRequestWithValidation(Swagger_Grid_Terminal_Identf.class);
 
-            // Kontrola objektu
-            Model_GridTerminal terminal = Model_GridTerminal.find.byId(terminal_id);
+            Model_GridTerminal terminal;
 
-            if (terminal == null) {
+            try {
+                terminal = Model_GridTerminal.find.byId(terminal_id);
+                terminal.ws_permission = true;
+                terminal.m_program_access = true;
+                terminal.update();
 
+            } catch (Result_Error_NotFound e) {
                 terminal = new Model_GridTerminal();
                 terminal.device_name = help.device_name;
                 terminal.device_type = help.device_type;
                 terminal.save();
-
-                return ok(terminal);
-
-            } else {
-
-                terminal.ws_permission = true;
-                terminal.m_program_access = true;
-                terminal.update();
-                return ok(terminal);
             }
+
+            return ok(terminal);
 
         } catch (Exception e) {
             return controllerServerError(e);

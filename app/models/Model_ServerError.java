@@ -8,8 +8,6 @@ import utilities.authentication.Attributes;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.EntityType;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 import utilities.permission.Action;
@@ -18,12 +16,9 @@ import utilities.permission.Permissible;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
-import static controllers._BaseController.person;
 
 @Entity
 @ApiModel(value = "ServerError", description = "Model of ServerError")

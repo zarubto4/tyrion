@@ -62,24 +62,8 @@ public class Model_GridTerminal extends BaseModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        if(person.id.equals(_BaseController.person().id)) return;
-        throw new Result_Error_NotSupportedException();
-    }
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        // True
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        logger.error("check_update_permission: Not Supported");
-        throw new Result_Error_NotSupportedException();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        logger.error("check_delete_permission: Not Supported");
-        throw new Result_Error_NotSupportedException();
-    }
+
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

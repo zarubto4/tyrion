@@ -201,13 +201,6 @@ public class Model_HardwareRegistrationEntity extends MongoModel {
 
     public static Model_HardwareRegistrationEntity getbyFull_id(String full_id) throws _Base_Result_Exception, IOException {
 
-        // If its person operation
-        if(_BaseController.isAuthenticated()) {
-            if (!person().is_admin()) {
-                throw new Result_Error_PermissionDenied();
-            }
-        }
-
         BasicDBObject whereQuery_board_id = new BasicDBObject();
         whereQuery_board_id.put(Enum_Hardware_Registration_DB_Key.full_id.name(), full_id);
         Document device = collection(COLLECTION_NAME).find(whereQuery_board_id).first();

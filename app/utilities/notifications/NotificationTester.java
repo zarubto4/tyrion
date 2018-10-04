@@ -55,7 +55,7 @@ public class NotificationTester extends _BaseController {
     public Result test_chain_notifications(String mail) {
         try {
 
-            if(!person().is_admin()) {
+            if(!isAdmin()) {
                 return forbidden();
             }
 
@@ -166,7 +166,7 @@ public class NotificationTester extends _BaseController {
     public Result test_notifications() {
         try {
 
-            if(!person().is_admin()) {
+            if(!isAdmin()) {
                 return forbidden();
             }
 

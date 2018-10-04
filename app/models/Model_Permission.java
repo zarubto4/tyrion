@@ -5,9 +5,6 @@ import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.EntityType;
-import utilities.errors.Exceptions.Result_Error_NotSupportedException;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.permission.Action;
@@ -48,26 +45,6 @@ public class Model_Permission extends BaseModel {
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        // Netřeba komentář - záměrně bez logger.error
-        throw new Result_Error_NotSupportedException();
-    }
-
-    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        // Not limited now
-        return;
-    }
-
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        // if(_BaseController.person().has_permission(Permission.Permission_update.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        throw new Result_Error_NotSupportedException();
-    }
-
-    // public enum Permission { Permission_crate, Permission_edit_person_permission, Permission_update }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

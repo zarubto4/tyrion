@@ -72,7 +72,7 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
 
     @JsonIgnore @Override
     public Model_Project getProject() {
-        return this.get_grid_program().getProject();
+        return this.getGridProgram().getProject();
     }
 
     @JsonIgnore
@@ -87,7 +87,7 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
     }
 
     @JsonIgnore
-    public Model_GridProgram get_grid_program() throws _Base_Result_Exception {
+    public Model_GridProgram getGridProgram() throws _Base_Result_Exception {
         return isLoaded("grid_program") ? this.grid_program : Model_GridProgram.find.query().nullable().where().eq("versions.id", id).findOne();
     }
 
@@ -99,7 +99,7 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
 
         super.save();
 
-        Model_GridProgram program = get_grid_program();
+        Model_GridProgram program = getGridProgram();
 
         new Thread(() -> {
             try {
@@ -120,7 +120,7 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_GridProgram.class, get_grid_program().get_grid_project().get_project_id(), id));
+                EchoHandler.addToQueue(new WSM_Echo(Model_GridProgram.class, getGridProgram().get_grid_project().get_project_id(), id));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -135,14 +135,14 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
 
         // Remove from Cache
         try {
-            get_grid_program().idCache().remove(this.getClass(), id);
+            getGridProgram().idCache().remove(this.getClass(), id);
         } catch (_Base_Result_Exception e) {
             // Nothing
         }
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_GridProgram.class, get_grid_program().get_grid_project().get_project_id(), get_grid_program_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_GridProgram.class, getGridProgram().get_grid_project().get_project_id(), get_grid_program_id()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -155,12 +155,13 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public String get_path() {
-        if(get_grid_program() != null) {
-            return get_grid_program().get_path() + "/version/" + this.id;
+    @JsonIgnore @Transient
+    public String get_path() {
+        if (getGridProgram() != null) {
+            return getGridProgram().get_path() + "/version/" + this.id;
 
-        }else {
-            return get_grid_program().get_path() + "/version/" + this.id;
+        } else {
+            return getGridProgram().get_path() + "/version/" + this.id;
         }
     }
 

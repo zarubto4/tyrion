@@ -16,7 +16,7 @@ import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
-import utilities.model.UnderProduct;
+import utilities.model.UnderCustomer;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
@@ -36,7 +36,7 @@ import java.util.*;
 @ApiModel(value = "Project", description = "Model of Project")
 @Table(name="Project")
 @Permissions({ Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.INVITE, Action.ACTIVATE })
-public class Model_Project extends TaggedModel implements Permissible, UnderProduct {
+public class Model_Project extends TaggedModel implements Permissible, UnderCustomer {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -437,9 +437,13 @@ public class Model_Project extends TaggedModel implements Permissible, UnderProd
     }
 
     @JsonIgnore
-    @Override
     public Model_Product getProduct() {
-        return product != null ? product : Model_Product.find.query().where().eq("projects.id", id).findOne();
+        return isLoaded("product") ? product : Model_Product.find.query().where().eq("projects.id", id).findOne();
+    }
+
+    @Override
+    public Model_Customer getCustomer() {
+        return getProduct().getCustomer();
     }
 
 /* JSON IGNORE METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -638,16 +642,16 @@ public class Model_Project extends TaggedModel implements Permissible, UnderProd
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override public void save() {
-
-        financial_permission();
+    @JsonIgnore @Override
+    public void save() {
 
         super.save();
 
         product.idCache().add(this.getClass(), id);
     }
 
-    @JsonIgnore @Override public boolean delete() {
+    @JsonIgnore @Override
+    public boolean delete() {
         logger.debug("delete - deleting from database, id: {} ", this.id);
 
         List<UUID> hardware_list = Model_Hardware.find.query().where()
@@ -695,102 +699,6 @@ public class Model_Project extends TaggedModel implements Permissible, UnderProd
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.ACTIVATE, Action.INVITE);
     }
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception  {
-        /*if (_BaseController.person().has_permission(Permission.Project_read.name())) return;
-        if(!product.active) throw new Result_Error_PermissionDenied();
-        product.check_create_permission();*/
-    }
-
-    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-
-        /*// Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-            _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-            return;
-        }
-        if (_BaseController.person().has_permission(Permission.Project_read.name())) return;
-
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_Project.find.query().where().eq("participants.person.id", _BaseController.personId()).eq("id", id).findCount() > 0) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-            return;
-        }
-
-        // Přidávám do listu false a vracím false
-        _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-        throw new Result_Error_PermissionDenied();*/
-    }
-
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception   {
-        /*try {
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-            if (_BaseController.person().has_permission(Permission.Project_delete.name())) return;
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-            if ( Model_Project.find.query().where().eq("participants.person.id", _BaseController.personId()).eq("id", id).findCount() > 0) {
-                _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-                return;
-            }
-
-            throw new Result_Error_PermissionDenied();
-
-        } catch (_Base_Result_Exception e) {
-            // Přidávám do listu false a vracím false
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }*/
-    }
-
-    @JsonIgnore @Transient public void check_share_permission ()throws _Base_Result_Exception {
-
-        /*// Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_unshare_" + id)) {
-            _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_unshare_" + id);
-            return;
-        }
-
-        if (_BaseController.person().has_permission(Permission.Project_share.name())) return;
-
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if (Model_ProjectParticipant.find.query().where().eq("project.id", id).eq("person.id", _BaseController.personId()).disjunction().add(Expr.eq("state", ParticipantStatus.OWNER)).add(Expr.eq("state", ParticipantStatus.ADMIN)).findCount()> 0) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_unshare_" + id, true);
-            return;
-        }
-
-        // Přidávám do listu false a vracím false
-        _BaseController.person().cache_permission(this.getClass().getSimpleName() + "unshare_" + id, false);
-        throw new Result_Error_PermissionDenied();*/
-    }
-
-    @JsonIgnore @Transient public void admin_permission () throws _Base_Result_Exception {
-
-        /*// Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (_BaseController.person().has_permission("project_admin_permission_" + id)) if(!_BaseController.person().has_permission("project_admin_permission_"+ id)) throw new Result_Error_PermissionDenied();
-        if (_BaseController.person().has_permission(Permission.Project_admin.name())) return;
-
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if (Model_ProjectParticipant.find.query().where().eq("project.id", id).where().eq("person.id", _BaseController.personId()).where().disjunction().add(Expr.eq("state", ParticipantStatus.OWNER)).add(Expr.eq("state", ParticipantStatus.ADMIN)).findCount()> 0) {
-            _BaseController.person().cache_permission("project_admin_permission_" + id, true);
-            return;
-        }
-
-        // Přidávám do listu false a vracím false
-        _BaseController.person().cache_permission("project_admin_permission_" + id, false);
-        throw new Result_Error_PermissionDenied();*/
-    }
-
-    @JsonIgnore @Transient public void financial_permission() throws _Base_Result_Exception {
-        // TODO Doplnit oprávnění na tvorbu Projektů
-        //throw new Result_Error_PermissionDenied("You cannot create project right now. Buy an extension for projects.");
-        // return this.product.financial_permission("project");
-    }
-
-    // public enum Permission { Project_create, Project_update, Project_read, Project_unshare , Project_share, Project_delete, Project_admin }
-
 /* NOTIFICATION ---------------------------------------------------------------------------------------------------------------*/
 
     public static void becki_person_id_subscribe(UUID person_id) {
@@ -802,7 +710,7 @@ public class Model_Project extends TaggedModel implements Permissible, UnderProd
                 .endJunction()
                 .findList();
 
-        for (Model_Project project : list_of_projects ) {
+        for (Model_Project project : list_of_projects) {
 
             IdsList idlist = token_cache.get(project.id);
 
@@ -873,7 +781,6 @@ public class Model_Project extends TaggedModel implements Permissible, UnderProd
             return idlist.list;
         }
     }
-
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

@@ -18,6 +18,7 @@ import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
+import utilities.permission.JsonPermission;
 import utilities.permission.Permissible;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 import javax.persistence.*;
@@ -195,21 +196,6 @@ public class Model_Library extends TaggedModel implements Permissible, UnderProj
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-
-    // TODO permissions community
-    @JsonProperty @Transient @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
-        try {
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            // if(_BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return true;
-            return null;
-        }catch (_Base_Result_Exception exception){
-            return null;
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
     @JsonIgnore @Override
     public EntityType getEntityType() {
         return EntityType.LIBRARY;
@@ -219,6 +205,9 @@ public class Model_Library extends TaggedModel implements Permissible, UnderProj
     public List<Action> getSupportedActions() {
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }
+
+    @JsonPermission(Action.PUBLISH) @Transient
+    public boolean community_publishing_permission;
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

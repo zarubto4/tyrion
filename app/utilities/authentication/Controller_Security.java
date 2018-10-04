@@ -283,14 +283,13 @@ public class Controller_Security extends _BaseController {
                 Model_Person.token_cache.remove(token);
 
                 Model_AuthorizationToken token_model = Model_AuthorizationToken.getByToken(token);
-                if (token_model != null) {
 
-                    // Úklid přihlášených websocketů
-                    WS_Portal portal = Controller_WebSocket.portals.get(personId());
-                    if (portal != null) portal.close(token);
+                // Úklid přihlášených websocketů
+                WS_Portal portal = Controller_WebSocket.portals.get(personId());
+                if (portal != null) portal.close(token);
 
-                    token_model.delete();
-                }
+                token_model.delete();
+
             }
 
             return ok();

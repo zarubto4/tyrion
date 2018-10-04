@@ -1,25 +1,24 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
-import utilities.errors.Exceptions.Result_Error_NotFound;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 
 import javax.persistence.*;
-import java.beans.Transient;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Entity
 @ApiModel(value = "Customer", description = "Model of Customer")
 @Table(name="Customer")
-public class Model_Customer extends BaseModel {
+public class Model_Customer extends BaseModel implements Permissible {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -48,7 +47,7 @@ public class Model_Customer extends BaseModel {
                 return Model_Person.find.query().where().eq("employees.customer.id", this.id).findOne() != null;
             }
 
-            return employees.stream().anyMatch(e -> e.get_person().id.equals(person.id));
+            return employees.stream().anyMatch(e -> e.getPerson().id.equals(person.id));
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -66,31 +65,17 @@ public class Model_Customer extends BaseModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    // TODO rework permissions
-
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        //
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Model_Customer.Permission.Customer_read.name())) return;
-        if(isEmployee(_BaseController.person())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Model_Customer.Permission.Customer_update.name())) return;
-        if(isEmployee(_BaseController.person())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Model_Customer.Permission.Customer_delete.name())) return;
-        throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.CUSTOMER;
     }
 
-    public enum Permission { Customer_create, Customer_update, Customer_read, Customer_delete }
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

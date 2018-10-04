@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import controllers._BaseController;
 import io.ebean.Expr;
 import io.ebean.ExpressionList;
 import io.ebean.PagedList;
@@ -18,13 +17,12 @@ import utilities.emails.Email;
 import utilities.enums.*;
 import utilities.enums.Currency;
 import utilities.errors.Exceptions.Result_Error_BadRequest;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
-import utilities.financial.FinancialPermission;
 import utilities.financial.extensions.ExtensionInvoiceItem;
 import utilities.financial.extensions.consumptions.ResourceConsumption;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
+import utilities.model.UnderCustomer;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
@@ -38,7 +36,7 @@ import java.util.stream.Collectors;
 @Entity
 @ApiModel(value = "Product", description = "Model of Product")
 @Table(name="Product")
-public class Model_Product extends NamedModel implements Permissible {
+public class Model_Product extends NamedModel implements Permissible, UnderCustomer {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -148,7 +146,7 @@ public class Model_Product extends NamedModel implements Permissible {
 
     @JsonIgnore
     public List<UUID> getExtensionIds() {
-       return Model_ProductExtension.find
+        return Model_ProductExtension.find
                 .query()
                 .where().eq("product.id", id)
                 .ne("deleted", true)
@@ -424,7 +422,7 @@ public class Model_Product extends NamedModel implements Permissible {
         List<Model_Person> receivers = new ArrayList<>();
         try {
 
-            this.owner.getEmployees().forEach(employee -> receivers.add(employee.get_person()));
+            this.owner.getEmployees().forEach(employee -> receivers.add(employee.getPerson()));
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -440,7 +438,12 @@ public class Model_Product extends NamedModel implements Permissible {
 
     @JsonIgnore
     public boolean isRelated(Model_Person person) {
-        return this.owner.isEmployee(person);
+        return this.getCustomer().isEmployee(person);
+    }
+
+    @JsonIgnore
+    public Model_Customer getCustomer() {
+        return isLoaded("customer") ? owner : Model_Customer.find.query().where().eq("products.id", id).findOne();
     }
 
 /* EVENTS --------------------------------------------------------------------------------------------------------------*/

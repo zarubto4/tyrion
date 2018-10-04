@@ -5,6 +5,7 @@ import com.google.inject.Singleton;
 import exceptions.ForbiddenException;
 import exceptions.NotSupportedException;
 import io.ebean.Expr;
+import models.Model_Customer;
 import models.Model_Person;
 import models.Model_Project;
 import models.Model_Role;
@@ -45,6 +46,10 @@ public class PermissionService {
 
     public void checkDelete(Model_Person person, BaseModel model) throws ForbiddenException, NotSupportedException {
         this.check(person, model, Action.DELETE);
+    }
+
+    public boolean isAdmin(Model_Person person) {
+        return Model_Role.find.query().where().eq("persons.id", person.id).eq("name", "SuperAdmin").findCount() > 0; // TODO maybe more robust solution
     }
 
     /**
@@ -102,8 +107,8 @@ public class PermissionService {
 
         if (model instanceof Personal) {
             id = ((Personal) model).getPerson().id;
-        } else if (model instanceof Model_Person) {
-            id = model.id;
+        } else if (model instanceof UnderCustomer) {
+            id = ((UnderCustomer) model).getCustomer().id;
         } else if (model instanceof UnderProject) {
 
             Model_Project project = ((UnderProject) model).getProject();
@@ -113,8 +118,8 @@ public class PermissionService {
                 isPublic = ((Publishable) model).isPublic();
             }
 
-        } else if (model instanceof UnderProduct) {
-            id = ((UnderProduct) model).getProduct().id;
+        } else {
+            id = model.id;
         }
 
         // TODO handle public ones better and other operations also
@@ -169,14 +174,16 @@ public class PermissionService {
 
                 // If there is no such permission
 
-                if (model instanceof Personal) {
-                    this.cache.get(person.id).add(new CachedPermission(id, entityType, action, resolvePersonal(person, (Personal) model)));
-                } else if (model instanceof UnderProduct) {
-                    this.cache.get(person.id).add(new CachedPermission(id, entityType, action, resolveUnderProduct(person, (UnderProduct) model)));
+                if ((model instanceof Personal && resolvePersonal(person, (Personal) model))
+                        || (model instanceof UnderCustomer && resolveUnderCustomer(person, (UnderCustomer) model))
+                        || (model instanceof Model_Person && person.id.equals(id))
+                        || (model instanceof Model_Customer && ((Model_Customer) model).isEmployee(person))) {
+                    this.cache.get(person.id).add(new CachedPermission(id, entityType, action, true));
                 } else {
                     this.cache.get(person.id).add(new CachedPermission(id, entityType, action, false));
                     throw new ForbiddenException();
                 }
+
             }
         }
 
@@ -187,7 +194,7 @@ public class PermissionService {
         return personal.getPerson().id.equals(person.id);
     }
 
-    private boolean resolveUnderProduct(Model_Person person, UnderProduct underProduct) {
-        return underProduct.getProduct().isRelated(person);
+    private boolean resolveUnderCustomer(Model_Person person, UnderCustomer underProduct) {
+        return underProduct.getCustomer().isEmployee(person);
     }
 }

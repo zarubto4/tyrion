@@ -3,10 +3,8 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.ebean.Expr;
 import io.ebean.ExpressionList;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.db.ebean.Transactional;
@@ -17,14 +15,12 @@ import utilities.enums.EntityType;
 import utilities.enums.ProductEventType;
 import utilities.enums.ExtensionType;
 import utilities.errors.Exceptions.Result_Error_BadRequest;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.financial.extensions.configurations.*;
 import utilities.financial.extensions.consumptions.ResourceConsumption;
 import utilities.financial.extensions.extensions.Extension;
 import utilities.logger.Logger;
 import utilities.model.OrderedNamedModel;
-import utilities.model.UnderProduct;
+import utilities.model.UnderCustomer;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
 
@@ -39,7 +35,7 @@ import java.util.*;
 @Entity
 @ApiModel(value = "ProductExtension", description = "Model of ProductExtension")
 @Table(name="ProductExtension")
-public class Model_ProductExtension extends OrderedNamedModel implements Permissible, UnderProduct {
+public class Model_ProductExtension extends OrderedNamedModel implements Permissible, UnderCustomer {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -154,9 +150,14 @@ public class Model_ProductExtension extends OrderedNamedModel implements Permiss
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @Override
+    @JsonIgnore
     public Model_Product getProduct() {
-        return null;
+        return isLoaded("product") ? product : Model_Product.find.query().where().eq("extensions.id", id).findOne();
+    }
+
+    @JsonIgnore @Override
+    public Model_Customer getCustomer() {
+        return getProduct().getCustomer();
     }
 
     @JsonIgnore

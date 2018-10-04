@@ -80,22 +80,16 @@ public class Model_LibraryVersion extends VersionModel implements Permissible, U
         }
     }
 
-
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public UUID get_library_id() throws _Base_Result_Exception {
-
-        if (idCache().get(Model_Library.class) == null) {
-            idCache().add(Model_Library.class, (UUID) Model_Library.find.query().where().eq("versions.id", id).select("id").findSingleAttribute());
-        }
-
-        return idCache().get(Model_Library.class);
+    public UUID getLibraryId() throws _Base_Result_Exception {
+        return this.getLibrary().id;
     }
 
     @JsonIgnore
     public Model_Library getLibrary() throws _Base_Result_Exception {
-        return isLoaded("library") ? library : Model_Library.find.query().nullable().where().eq("versions.id", id).findOne();
+        return isLoaded("library") ? library : Model_Library.find.query().where().eq("versions.id", id).findOne();
     }
 
     @JsonIgnore @Override
@@ -108,8 +102,6 @@ public class Model_LibraryVersion extends VersionModel implements Permissible, U
     @JsonIgnore @Override
     public void save() {
 
-        logger.debug("save :: Creating new Object");
-
         super.save();
 
         // Add to Cache
@@ -120,7 +112,7 @@ public class Model_LibraryVersion extends VersionModel implements Permissible, U
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getLibrary().getProjectId(), get_library_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getLibrary().getProjectId(), getLibraryId()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -135,7 +127,7 @@ public class Model_LibraryVersion extends VersionModel implements Permissible, U
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, getLibrary().getProjectId(), get_library_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, getLibrary().getProjectId(), getLibraryId()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }
@@ -159,7 +151,7 @@ public class Model_LibraryVersion extends VersionModel implements Permissible, U
 
         new Thread(() -> {
             try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, getLibrary().getProjectId(), get_library_id()));
+                EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, getLibrary().getProjectId(), getLibraryId()));
             } catch (_Base_Result_Exception e) {
                 // Nothing
             }

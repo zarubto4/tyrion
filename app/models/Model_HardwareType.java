@@ -198,7 +198,7 @@ public class Model_HardwareType extends NamedModel implements Permissible, Publi
     public List<Model_HardwareBatch> batches () {
         try {
 
-            // TODO
+            // TODO admin filter
             if (true) {
                 return Model_HardwareBatch.getByTypeOfBoardId(this.compiler_target_name);
             }

@@ -2,22 +2,27 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
+import utilities.enums.EntityType;
 import utilities.enums.ParticipantStatus;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
+import utilities.model.UnderCustomer;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 
 import javax.persistence.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
 @ApiModel(value = "Employee", description = "Model of Employee")
 @Table(name="Employee")
-public class Model_Employee extends BaseModel {
+public class Model_Employee extends BaseModel implements Permissible, UnderCustomer {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -34,7 +39,7 @@ public class Model_Employee extends BaseModel {
     @JsonProperty
     public Model_Person person() {
         try{
-        return this.get_person();
+            return this.getPerson();
         } catch (_Base_Result_Exception e){
             //nothing
             return null;
@@ -56,16 +61,16 @@ public class Model_Employee extends BaseModel {
         return idCache().get(Model_Person.class);
     }
 
-    @Transient @JsonIgnore
-    public Model_Person get_person() {
-
-        try {
-            return Model_Person.find.byId(get_person_id());
-        } catch (Exception e) {
-            return null;
-
-        }
+    @JsonIgnore
+    public Model_Person getPerson() {
+        return isLoaded("person") ? person : Model_Person.find.query().where().eq("employees.id", id).findOne();
     }
+
+    @JsonIgnore @Override
+    public Model_Customer getCustomer() {
+        return isLoaded("customer") ? customer : Model_Customer.find.query().where().eq("employees.id", id).findOne();
+    }
+
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -76,34 +81,17 @@ public class Model_Employee extends BaseModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    // TODO rework permissions
-
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Employee_crate.name())) return;
-        if(person.id.equals(_BaseController.person().id)) return;
-        customer.check_update_permission();
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Employee_read.name())) return;
-        if(get_person_id().equals(_BaseController.person().id)) return;
-        customer.check_read_permission();
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Employee_update.name())) return;
-        if(get_person_id().equals(_BaseController.person().id)) return;
-        customer.check_update_permission();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Employee_delete.name())) return;
-        if(get_person_id().equals(_BaseController.person().id)) return;
-        customer.check_delete_permission();
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.EMPLOYEE;
     }
 
-    public enum Permission { Employee_crate, Employee_edit, Employee_read, Employee_update, Employee_delete }
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

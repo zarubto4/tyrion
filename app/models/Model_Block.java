@@ -9,7 +9,6 @@ import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.Publishable;
@@ -17,6 +16,7 @@ import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
+import utilities.permission.JsonPermission;
 import utilities.permission.Permissible;
 import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
@@ -69,7 +69,7 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
     @JsonProperty  @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company", required = false)
     public Swagger_Short_Reference producer() {
         try {
-            Model_Producer producer = get_producer();
+            Model_Producer producer = getProducer();
             if (producer == null) return null;
             return new Swagger_Short_Reference(producer.id, producer.name, producer.description);
         }catch (_Base_Result_Exception e){
@@ -174,19 +174,12 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
         }
 
         return idCache().get(Model_Producer.class);
-
     }
 
     @JsonIgnore
-    public Model_Producer get_producer() {
-
-        try {
-            return Model_Producer.find.byId(get_producerId());
-        } catch (Exception e) {
-            return null;
-        }
+    public Model_Producer getProducer() {
+        return isLoaded("producer") ? producer : Model_Producer.find.query().nullable().where().eq("blocks.id", id).findOne();
     }
-
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -248,7 +241,6 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
 
     @JsonIgnore
     public void up() throws _Base_Result_Exception {
-        check_update_permission();
 /*
         logger.trace("up :: Change Order Position! Up");
 
@@ -267,7 +259,6 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
 
     @JsonIgnore
     public void down() throws _Base_Result_Exception {
-        check_update_permission();
 /*
         logger.trace("down :: Change Order Position! DOWN ");
 
@@ -290,8 +281,6 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
@@ -304,24 +293,8 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.PUBLISH);
     }
 
-    // TODO permissions
-    @JsonProperty @ApiModelProperty("Visible only for Administrator with permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
-        /*try {
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) {
-                return true;
-            }
-            return null;
-        }catch (_Base_Result_Exception e){
-            return null;
-        } catch (Exception e){
-            logger.internalServerError(e);
-            return null;
-        }*/
-        return true;
-    }
-
-    // public enum Permission { Block_create, Block_read, Block_edit, Block_update, Block_delete }
+    @JsonPermission(Action.PUBLISH) @Transient
+    public boolean community_publishing_permission;
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

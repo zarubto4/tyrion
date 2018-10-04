@@ -61,7 +61,8 @@ public class Model_BProgramVersion extends VersionModel implements Permissible, 
         }
         return null;
     }
-    @JsonProperty @Transient public List<Model_BProgramVersionSnapGridProject> grid_project_snapshots() {
+    @JsonProperty
+    public List<Model_BProgramVersionSnapGridProject> grid_project_snapshots() {
         try {
             return get_grid_project_snapshots();
         } catch (_Base_Result_Exception e) {
@@ -83,7 +84,6 @@ public class Model_BProgramVersion extends VersionModel implements Permissible, 
         }
 
         return idCache().gets(Model_BProgramVersionSnapGridProject.class) != null ?  idCache().gets(Model_BProgramVersionSnapGridProject.class) : new ArrayList<>();
-
     }
 
     @JsonIgnore
@@ -104,8 +104,6 @@ public class Model_BProgramVersion extends VersionModel implements Permissible, 
         }
     }
 
-
-
     @JsonIgnore
     public UUID get_b_program_id() throws _Base_Result_Exception {
 
@@ -114,7 +112,6 @@ public class Model_BProgramVersion extends VersionModel implements Permissible, 
         }
 
         return idCache().get(Model_Project.class);
-
     }
 
     @JsonIgnore

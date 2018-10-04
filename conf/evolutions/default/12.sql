@@ -20,7 +20,8 @@ alter table permission
                                                                   'INSTANCE','INSTANCE_SNAPSHOT','HARDWARE','HARDWARE_GROUP','HARDWARE_UPDATE',
                                                                   'INVITATION','INVOICE','PROCESSOR','PRODUCER','NOTIFICATION','ROLE',
                                                                   'UPDATE_PROCEDURE','PRODUCT_EXTENSION','ERROR','TARIFF','TARIFF_EXTENSION',
-                                                                  'PAYMENT_DETAILS','HOMER','HARDWARE_BATCH','HARDWARE_TYPE','CUSTOMER','EMPLOYEE'));
+                                                                  'PAYMENT_DETAILS','HOMER','HARDWARE_BATCH','HARDWARE_TYPE','CUSTOMER',
+                                                                  'EMPLOYEE','GSM','CONTACT','INTEGRATOR_CLIENT'));
 
 alter table role
   add column project_id uuid;

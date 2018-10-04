@@ -1,6 +1,7 @@
 package controllers;
 
 import com.typesafe.config.Config;
+import exceptions.ForbiddenException;
 import io.ebean.Ebean;
 import io.ebean.ExpressionList;
 import io.ebean.Junction;
@@ -281,7 +282,9 @@ public class Controller_Library extends _BaseController {
             }
 
             if (help.pending_library) {
-                // TODO if (!person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return forbidden();
+                if (!isAdmin()) {
+                    throw new ForbiddenException();
+                }
                 disjunction
                         .conjunction()
                         .eq("versions.approval_state", Approval.PENDING.name())

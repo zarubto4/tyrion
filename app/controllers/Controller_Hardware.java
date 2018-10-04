@@ -1,6 +1,7 @@
 package controllers;
 
 import com.typesafe.config.Config;
+import exceptions.ForbiddenException;
 import io.ebean.Ebean;
 import io.ebean.Query;
 import io.swagger.annotations.*;
@@ -502,10 +503,11 @@ public class Controller_Hardware extends _BaseController {
 
             // Kontrola objektu
             Model_Producer producer = Model_Producer.find.byId(help.producer_id);
+            this.checkReadPermission(producer);
             
             // Kontrola objektu
             Model_Processor processor = Model_Processor.find.byId(help.processor_id);
-          
+            this.checkReadPermission(processor);
 
             // Tvorba objektu
             Model_HardwareType hardwareType = new Model_HardwareType();
@@ -515,6 +517,8 @@ public class Controller_Hardware extends _BaseController {
             hardwareType.processor = processor;
             hardwareType.producer = producer;
             hardwareType.connectible_to_internet = help.connectible_to_internet;
+
+            this.checkCreatePermission(hardwareType);
 
             // Uložení objektu do DB
             hardwareType.save();
@@ -585,10 +589,11 @@ public class Controller_Hardware extends _BaseController {
         
             // Kontrola objektu
             Model_Producer producer = Model_Producer.find.byId(help.producer_id);
+            this.checkReadPermission(producer);
   
             // Kontrola objektu
             Model_Processor processor = Model_Processor.find.byId(help.processor_id);
-        
+            this.checkReadPermission(processor);
 
             // Uprava objektu
             hardwareType.name = help.name;
@@ -598,11 +603,7 @@ public class Controller_Hardware extends _BaseController {
             hardwareType.producer = producer;
             hardwareType.connectible_to_internet = help.connectible_to_internet;
 
-            // Uložení do DB
-            hardwareType.update();
-
-            // Vrácení změny
-            return ok(hardwareType);
+            return update(hardwareType);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -626,16 +627,7 @@ public class Controller_Hardware extends _BaseController {
     })
     public Result hardwareType_delete(UUID hardware_type_id) {
         try {
-
-            // Kontrola objektu
-            Model_HardwareType hardwareType = Model_HardwareType.find.byId(hardware_type_id);
-            
-            // Smazání objektu
-            hardwareType.delete();
-
-            // Vrácení potvrzení
-            return ok();
-
+            return delete(Model_HardwareType.find.byId(hardware_type_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -694,13 +686,7 @@ public class Controller_Hardware extends _BaseController {
     })
     public Result hardwareType_get(UUID hardware_type_id) {
         try {
-
-            // Kontrola validity objektu
-            Model_HardwareType hardwareType = Model_HardwareType.find.byId(hardware_type_id);
-
-            // Vrácení validity objektu
-            return ok(hardwareType);
-
+            return read(Model_HardwareType.find.byId(hardware_type_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -737,11 +723,11 @@ public class Controller_Hardware extends _BaseController {
             Swagger_BASE64_FILE help = formFromRequestWithValidation(Swagger_BASE64_FILE.class);
 
             final byte[] utf8Bytes = help.file.getBytes("UTF-8");
-            System.out.println("hardwareType_uploadPicture - update picture: size in bits: " + utf8Bytes.length); // prints "11"
-
 
             // Kontrola objektu
             Model_HardwareType hardwareType = Model_HardwareType.find.byId(hardware_type_id);
+
+            this.checkUpdatePermission(hardwareType);
 
             logger.debug("hardwareType_uploadPicture - update picture");
 
@@ -819,6 +805,8 @@ public class Controller_Hardware extends _BaseController {
 
             // Kontrola objektu
             Model_HardwareType hardwareType = Model_HardwareType.find.byId(hardware_type_id);
+
+            this.checkUpdatePermission(hardwareType);
            
             // Tvorba objektu
             Model_HardwareBatch batch = new Model_HardwareBatch();
@@ -876,6 +864,8 @@ public class Controller_Hardware extends _BaseController {
 
             // Kontrola objektu
             Model_HardwareBatch batch = Model_HardwareBatch.getById(batch_id);
+
+            this.checkUpdatePermission(batch.getHardwareType());
       
             // Smazání objektu
             batch.delete();
@@ -922,6 +912,8 @@ public class Controller_Hardware extends _BaseController {
 
             // Kontrola objektu
             Model_HardwareBatch batch = Model_HardwareBatch.getById(batch_id);
+
+            this.checkUpdatePermission(batch.getHardwareType());
 
             // Tvorba objektu
             batch.revision = help.revision;
@@ -1371,8 +1363,8 @@ public class Controller_Hardware extends _BaseController {
     public Result hardware_get_registration_hash(String full_id) {
         try {
 
-            if(!person().is_admin()) {
-                throw new Result_Error_PermissionDenied();
+            if(!isAdmin()) {
+                throw new ForbiddenException();
             }
 
             if(!Model_HardwareRegistrationEntity.check_if_value_is_registered(full_id, Enum_Hardware_Registration_DB_Key.full_id)) {
@@ -1423,14 +1415,15 @@ public class Controller_Hardware extends _BaseController {
     public Result hardware_create_garfield() {
         try {
 
+            if (!isAdmin()) {
+                throw new ForbiddenException();
+            }
+
             // Get and Validate Object
             Swagger_Board_New_Garfield help = formFromRequestWithValidation(Swagger_Board_New_Garfield.class);
 
             // Kotrola objektu
             Model_HardwareType hardwareType = Model_HardwareType.find.byId(help.hardware_type_id);
-
-            // Kontorluji oprávnění
-            // TODO hardwareType.check_register_new_device_permission();
 
             // Kontrola Objektu
             Model_HardwareBatch batch = Model_HardwareBatch.getById(help.batch_id);
@@ -1994,7 +1987,7 @@ public class Controller_Hardware extends _BaseController {
                     || ( help.producers != null && !help.producers.isEmpty() )
                     || ( help.processors != null && !help.processors.isEmpty())
                     || ( help.hardware_groups_id != null && !help.hardware_groups_id.isEmpty())
-                ) && !person().is_admin()) {
+                ) && !isAdmin()) {
                 return ok(new Swagger_Hardware_List());
             }
 

@@ -914,7 +914,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
                 Model_Person person = _BaseController.person();
 
                 //Chekc Permission
-                check_read_permission();
+                // TODO check_read_permission();
 
                 Model_GridTerminal terminal = new Model_GridTerminal();
                 terminal.device_name = "Unknown";

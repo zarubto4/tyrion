@@ -29,6 +29,8 @@ public class PermissionSerializer extends StdSerializer<Boolean> implements Cont
 
     private PermissionSerializer deletePermissionSerializer;
 
+    private PermissionSerializer publishPermissionSerializer;
+
     private Action action;
 
     @Inject
@@ -37,6 +39,7 @@ public class PermissionSerializer extends StdSerializer<Boolean> implements Cont
         this.permissionService = permissionService;
         this.updatePermissionSerializer = new PermissionSerializer(permissionService, Action.UPDATE);
         this.deletePermissionSerializer = new PermissionSerializer(permissionService, Action.DELETE);
+        this.publishPermissionSerializer = new PermissionSerializer(permissionService, Action.PUBLISH);
     }
 
     private PermissionSerializer(PermissionService permissionService, Action action) {
@@ -54,12 +57,11 @@ public class PermissionSerializer extends StdSerializer<Boolean> implements Cont
             boolean permitted = true;
 
             try {
-                if (this.action == Action.UPDATE) {
-                    this.permissionService.checkUpdate(_BaseController.person(), model);
-                } else if (this.action == Action.DELETE) {
-                    this.permissionService.checkDelete(_BaseController.person(), model);
-                } else {
-                    throw new NotSupportedException("Unsupported action: " + this.action.name());
+                switch (this.action) {
+                    case UPDATE: this.permissionService.checkUpdate(_BaseController.person(), model); break;
+                    case DELETE: this.permissionService.checkDelete(_BaseController.person(), model); break;
+                    case PUBLISH: this.permissionService.check(_BaseController.person(), model, Action.PUBLISH); break;
+                    default: throw new NotSupportedException("Unsupported action: " + this.action.name());
                 }
             } catch (ForbiddenException e) {
                 permitted = false;
@@ -82,6 +84,8 @@ public class PermissionSerializer extends StdSerializer<Boolean> implements Cont
                     return this.updatePermissionSerializer;
                 } else if (jsonPermission.value() == Action.DELETE) {
                     return this.deletePermissionSerializer;
+                } else if (jsonPermission.value() == Action.PUBLISH) {
+                    return this.publishPermissionSerializer;
                 }
             }
         }

@@ -15,6 +15,7 @@ import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
+import utilities.permission.JsonPermission;
 import utilities.permission.Permissible;
 import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
@@ -87,7 +88,6 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
         try {
 
             if (getProjectId() != null) return null;
-            check_update_permission();
 
             return default_main_version;
 
@@ -265,10 +265,8 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.PUBLISH);
     }
 
-    // TODO permissions workaround
-    @JsonProperty @Transient @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
-        return true;
-    }
+    @JsonPermission(Action.PUBLISH) @Transient
+    public boolean community_publishing_permission;
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

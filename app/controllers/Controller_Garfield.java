@@ -1,6 +1,7 @@
 package controllers;
 
 import com.typesafe.config.Config;
+import exceptions.ForbiddenException;
 import io.swagger.annotations.*;
 import models.*;
 import play.Environment;
@@ -201,6 +202,9 @@ public class Controller_Garfield extends _BaseController {
     public Result print_label(UUID board_id) {
         try {
 
+            if (!isAdmin()) {
+                throw new ForbiddenException();
+            }
 
             // Kotrola objektu
             Model_Hardware hardware = Model_Hardware.find.byId(board_id);
@@ -264,14 +268,11 @@ public class Controller_Garfield extends _BaseController {
     public Result get_Garfield_list() {
         try {
 
-            // TODO permissions
-            // if (!person().has_permission(Model_Garfield.Permission.Garfield_read.name()))  return forbidden();
+            if (!isAdmin()) {
+                throw new ForbiddenException();
+            }
 
-            // Kontrola objektu
-            List<Model_Garfield> garfield_s = Model_Garfield.find.query().where().orderBy("UPPER(name) ASC").findList();
-
-            // Vrácení objektu
-            return ok(garfield_s);
+            return ok(Model_Garfield.find.query().where().orderBy("UPPER(name) ASC").findList());
 
         } catch (Exception e) {
             return controllerServerError(e);

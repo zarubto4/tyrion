@@ -16,6 +16,7 @@ import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
+import utilities.permission.JsonPermission;
 import utilities.permission.Permissible;
 import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
@@ -307,21 +308,6 @@ public class Model_Widget extends TaggedModel implements Permissible, UnderProje
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
-        try {
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            // TODO if (_BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) {
-                // return true;
-            //}
-            return null;
-        }catch (_Base_Result_Exception e){
-            return null;
-        } catch (Exception e){
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
     @JsonIgnore @Override
     public EntityType getEntityType() {
         return EntityType.WIDGET;
@@ -331,6 +317,9 @@ public class Model_Widget extends TaggedModel implements Permissible, UnderProje
     public List<Action> getSupportedActions() {
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.ACTIVATE);
     }
+
+    @JsonPermission(Action.PUBLISH) @Transient
+    public boolean community_publishing_permission;
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

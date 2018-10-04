@@ -1,7 +1,6 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import controllers._BaseController;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.ApiModel;
@@ -9,8 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.enums.EntityType;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.gsm_services.things_mobile.help_class.TM_Sim_Block;
 import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status;
@@ -19,17 +17,22 @@ import utilities.gsm_services.things_mobile.statistic_class.DataSim_DataGram;
 import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
+import utilities.model.UnderProject;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 
 import javax.persistence.*;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
 @ApiModel( value = "GSM", description = "Model of GSM")
 @Table(name="gsm")
-public class Model_GSM extends TaggedModel {
+public class Model_GSM extends TaggedModel implements Permissible, UnderProject {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -92,13 +95,9 @@ public class Model_GSM extends TaggedModel {
         return idCache().get(Model_Project.class);
     }
 
-    @JsonIgnore
-    public Model_Project get_project() {
-        try {
-            return Model_Project.find.byId(get_project_id());
-        } catch (Exception e) {
-            return null;
-        }
+    @JsonIgnore @Override
+    public Model_Project getProject() {
+        return isLoaded("project") ? project : Model_Project.find.query().nullable().where().eq("gsm.id", id).findOne();
     }
 
     @JsonIgnore
@@ -231,9 +230,6 @@ public class Model_GSM extends TaggedModel {
 
     // For users - owners of SIM modules
     public void block() {
-       // Kontrola oprávnění
-       this.check_update_permission();
-
        TM_Sim_Block result = Controller_Things_Mobile.sim_block(this.msi_number);
        if (result.done) {
            this.blocked = true;
@@ -244,9 +240,6 @@ public class Model_GSM extends TaggedModel {
 
     // For users - owners of SIM modules
     public void unblock() {
-        // Kontrola oprávnění
-        this.check_update_permission();
-
         TM_Sim_Unblock result = Controller_Things_Mobile.sim_unblock(this.msi_number);
         if (result.done) {
             this.blocked = false;
@@ -260,8 +253,6 @@ public class Model_GSM extends TaggedModel {
     public void set_trashholds(Long daily_traffic_threshold,   boolean daily_traffic_threshold_exceeded_limit,
                                Long monthly_traffic_threshold, boolean monthly_traffic_threshold_exceeded_limit,
                                Long total_traffic_threshold,   boolean total_traffic_threshold_exceeded_limit) {
-        // Kontrola oprávnění
-        this.check_update_permission();
 
         // https://www.thingsmobile.com/services/business- api/setupSimTrafficThreeshold
         // Pozor dokumentace říká "Block sim exceed limit (0 = false, 1 = true)"
@@ -277,8 +268,6 @@ public class Model_GSM extends TaggedModel {
     @JsonIgnore
     @Override
     public void save() {
-        logger.debug("save :: Creating new Object");
-
 
         // Defaultně vypnuté
         this.daily_traffic_threshold = -1L;
@@ -290,120 +279,23 @@ public class Model_GSM extends TaggedModel {
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
+/* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
 
-    /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-    /* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
-
-    /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
-
-    /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
-    /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
-    // TODO permissions
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
-    public void check_read_permission() throws _Base_Result_Exception {
-        try {
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-                return;
-            }
-
-            if (_BaseController.person().has_permission(Permission.GSM_read.name())) return;
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-            this.get_project().check_read_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    public EntityType getEntityType() {
+        return EntityType.GSM;
     }
 
     @JsonIgnore @Override
-    public void check_create_permission() throws _Base_Result_Exception {
-        logger.error("check_create_permission - mot allowed");
-        throw new Result_Error_PermissionDenied();
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.ACTIVATE);
     }
-
-    @JsonIgnore @Override
-    public void check_update_permission() throws _Base_Result_Exception {
-        try {
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-
-            if (_BaseController.person().has_permission(Permission.GSM_update.name())) return;
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-            this.get_project().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-
-    @JsonIgnore @Override
-    public void check_delete_permission() throws _Base_Result_Exception {
-        try {
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-                return;
-            }
-
-            if (_BaseController.person().has_permission(Permission.GSM_delete.name())) return;
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-            this.get_project().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-
-    public void registratione_permission() throws _Base_Result_Exception {
-        get_project().check_update_permission();
-    }
-    @JsonProperty @Transient
-    public boolean un_registration_permission() {
-        try {
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_un_register_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_un_register_" + id);
-                return true;
-            }
-
-            if (_BaseController.person().has_permission(Permission.GSM_update.name())) return true;
-
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-            this.get_project().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_un_register_" + id, true);
-
-            return true;
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_un_register_" + id, false);
-            return false;
-        }
-    }
-
-    public enum Permission { GSM_create, GSM_read, GSM_update, GSM_edit, GSM_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

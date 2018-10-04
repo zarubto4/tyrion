@@ -61,7 +61,7 @@ public class Model_AuthorizationToken extends BaseModel implements Permissible, 
 
     @JsonIgnore @Transient
     public Model_Person getPerson() {
-        return Model_Person.find.query().where().eq("authorization_tokens.id", id).select("id").findOne();
+        return isLoaded("person") ? person : Model_Person.find.query().where().eq("authorization_tokens.id", id).select("id").findOne();
     }
 
     @JsonIgnore @Transient

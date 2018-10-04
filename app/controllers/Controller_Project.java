@@ -97,7 +97,7 @@ public class Controller_Project extends _BaseController {
             for (Model_Employee employee : product.owner.getEmployees()) {
 
                 Model_ProjectParticipant participant = new Model_ProjectParticipant();
-                participant.person = employee.get_person();
+                participant.person = employee.getPerson();
                 participant.project = project;
                 participant.state = employee.state;
 
@@ -273,7 +273,7 @@ public class Controller_Project extends _BaseController {
             Model_Project project = Model_Project.find.byId(project_id);
 
             // Kontrola oprávnění
-            this.permissionService.check(person(), project, Action.INVITE);
+            this.checkInvitePermission(project);
 
             // Získání seznamu uživatelů, kteří jsou registrovaní(listIn) a kteří ne(listOut)
             List<Model_Person> listIn = new ArrayList<>();
@@ -400,8 +400,7 @@ public class Controller_Project extends _BaseController {
             // Kontrola objektu
             Model_Project project = Model_Project.find.byId(project_id);
 
-            // Kontrola oprávnění
-            project.admin_permission();
+            this.checkInvitePermission(project);
 
             // Kontrola objektu
             Model_ProjectParticipant participant = Model_ProjectParticipant.find.query().where().eq("person.id", help.person_id).eq("project.id", project_id).findOne();
@@ -456,7 +455,7 @@ public class Controller_Project extends _BaseController {
             Model_Project project = Model_Project.find.byId(project_id);
 
             // Kontrola oprávnění
-            this.permissionService.check(person(), project, Action.INVITE);
+            this.checkInvitePermission(project);
 
             List<Model_Person> list = new ArrayList<>();
 

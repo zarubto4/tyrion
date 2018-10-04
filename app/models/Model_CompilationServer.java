@@ -75,7 +75,7 @@ public class Model_CompilationServer extends BaseModel implements Permissible, P
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public String connection_identificator() {
         try {
-            check_update_permission();
+            // TODO permissions check_update_permission();
             return connection_identifier;
         } catch (_Base_Result_Exception e) {
             // nothing
@@ -90,7 +90,7 @@ public class Model_CompilationServer extends BaseModel implements Permissible, P
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public String hash_certificate() {
         try {
-            check_update_permission();
+            // TODO permissions check_update_permission();
             return hash_certificate;
 
         } catch (_Base_Result_Exception e){
@@ -157,14 +157,14 @@ public class Model_CompilationServer extends BaseModel implements Permissible, P
             request.put("error_message", ErrorCode.COMPILATION_SERVER_IS_OFFLINE.error_message());
             request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
             request.put("websocket_identificator", this.id.toString());
-            return request;
 
+            return request;
         }
     }
 
     @JsonIgnore
     public static boolean is_online() {
-        return  !Controller_WebSocket.compilers.isEmpty();
+        return !Controller_WebSocket.compilers.isEmpty();
     }
 
     @JsonIgnore
@@ -280,9 +280,4 @@ public class Model_CompilationServer extends BaseModel implements Permissible, P
 
     @CacheFinderField(Model_CompilationServer.class)
     public static CacheFinder<Model_CompilationServer> find = new CacheFinder<>(Model_CompilationServer.class);
-
-
-
-
 }
-

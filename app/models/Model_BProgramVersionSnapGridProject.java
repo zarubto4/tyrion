@@ -81,12 +81,7 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
 
     @JsonIgnore
     public Model_GridProject get_grid_project() throws _Base_Result_Exception {
-        try {
-            return Model_GridProject.find.byId(get_grid_project_id());
-        }catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return isLoaded("grid_project") ? grid_project : Model_GridProject.find.query().nullable().where().eq("snapshots.id", id).findOne();
     }
 
     @JsonIgnore
@@ -123,8 +118,6 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
-
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

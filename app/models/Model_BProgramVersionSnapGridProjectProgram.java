@@ -40,7 +40,7 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
     @JsonProperty @ApiModelProperty(required = true)
     public Swagger_Short_Reference grid_program() {
         try {
-            return new Swagger_Short_Reference(get_grid_version_program().get_grid_program().id, get_grid_version_program().get_grid_program().name, get_grid_version_program().get_grid_program().description);
+            return new Swagger_Short_Reference(get_grid_version_program().getGridProgram().id, get_grid_version_program().getGridProgram().name, get_grid_version_program().getGridProgram().description);
         } catch (_Base_Result_Exception e) {
             // nothing
             return null;
@@ -79,12 +79,7 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
 
     @JsonIgnore
     public Model_GridProgramVersion get_grid_version_program() throws _Base_Result_Exception {
-        try {
-            return Model_GridProgramVersion.find.byId(get_grid_program_version_id());
-        }catch (Exception e) {
-            // logger.internalServerError(e);
-            return null;
-        }
+        return isLoaded("grid_program_version") ? grid_program_version : Model_GridProgramVersion.find.query().where().eq("m_program_instance_parameters.id", id).findOne();
     }
 
     @JsonIgnore

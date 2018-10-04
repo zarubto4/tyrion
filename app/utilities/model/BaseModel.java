@@ -605,18 +605,5 @@ public abstract class BaseModel extends Model implements JsonSerializable {
 
     @JsonPermission(Action.DELETE) @Transient
     public boolean delete_permission;
-
-/* ABSTRACT METHODS ----------------------------------------------------------------------------------------------------*/
-
-    /*
-     * Required for all Models in Database.
-     * You can used this one, or Override this
-     *
-     */
-    @JsonIgnore public void check_create_permission() throws _Base_Result_Exception {};
-    @JsonIgnore public void check_read_permission()   throws _Base_Result_Exception {};
-    @JsonIgnore public void check_update_permission() throws _Base_Result_Exception {};
-    @JsonIgnore public void check_delete_permission() throws _Base_Result_Exception {};
-
 }
 

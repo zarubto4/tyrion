@@ -89,7 +89,7 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
        }
     }
 
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true, value = "Value can be empty, Server cannot guarantee that. External documentation: " + Model_Compilation.virtual_input_output_docu)
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true, value = "Value can be empty, Server cannot guarantee that.")
     public String virtual_input_output(){
         try{
         if(compilation != null) return compilation.virtual_input_output;

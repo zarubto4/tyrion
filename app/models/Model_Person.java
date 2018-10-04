@@ -1,10 +1,8 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import controllers._BaseController;
 import io.intercom.api.NotFoundException;
 import io.intercom.api.User;
 import io.swagger.annotations.ApiModel;
@@ -21,7 +19,6 @@ import utilities.enums.NotificationAction;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
 import utilities.errors.Exceptions.Result_Error_NotFound;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -85,7 +82,6 @@ public class Model_Person extends BaseModel implements Permissible {
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public HashMap<String, Boolean> cache_permissions_keys = new HashMap<>(); // Záměrně Private! Tak aby se přistupovalo z jedné metody
     @JsonIgnore @Transient public String cache_picture_link;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
@@ -208,9 +204,6 @@ public class Model_Person extends BaseModel implements Permissible {
 
         }
 
-
-
-
         super.update();
     }
 
@@ -232,9 +225,8 @@ public class Model_Person extends BaseModel implements Permissible {
                 .setButton( new Notification_Button().setAction(NotificationAction.CONFIRM_NOTIFICATION).setPayload("null").setColor(Becki_color.byzance_blue).setText("OK")  )
                 .send(this);
     }
-/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
@@ -246,43 +238,6 @@ public class Model_Person extends BaseModel implements Permissible {
     @JsonIgnore @Override
     public List<Action> getSupportedActions() {
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.ACTIVATE);
-    }
-
-    @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission") @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonIgnore public Boolean is_admin()  {
-        try {
-            if (_BaseController.person().has_permission(Permission.Byzance_employee.name())) return true;
-            return null;
-        }catch (_Base_Result_Exception e){
-            return null;
-        }
-    }
-
-
-
-    public enum Permission { Person_edit, Person_update, Person_delete, Person_activation, Byzance_employee }
-
-    @JsonIgnore
-    public boolean has_permission(String permission_key)  {
-        return true;
-        /*if (cache_permissions_keys.isEmpty()) {
-            for (Model_Permission m :  Model_Permission.find.query().where().eq("roles.persons.id", id).findList() ) cache_permission(m.name, true);
-        }
-        return this.cache_permissions_keys.containsKey(permission_key);*/
-    }
-
-    @JsonIgnore
-    public void valid_permission(String permission_key) throws _Base_Result_Exception {
-        if(this.cache_permissions_keys.get(permission_key)) {
-            return;
-        } else {
-            // throw new Result_Error_PermissionDenied();
-        }
-    }
-
-    @JsonIgnore
-    public void cache_permission(String permission_key, boolean value) {
-        this.cache_permissions_keys.put(permission_key, value);
     }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/

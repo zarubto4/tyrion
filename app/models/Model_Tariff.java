@@ -194,7 +194,7 @@ public class Model_Tariff extends OrderedNamedModel implements Permissible, Publ
 
     @JsonIgnore @Override
     public List<Action> getSupportedActions() {
-        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.ACTIVATE);
     }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/

@@ -115,6 +115,10 @@ public abstract class _BaseController {
         this.permissionService.check(person(), model, Action.PUBLISH);
     }
 
+    public void checkInvitePermission(BaseModel model) throws ForbiddenException, NotSupportedException {
+        this.permissionService.check(person(), model, Action.INVITE);
+    }
+
 // PERSON OPERATIONS ###################################################################################################
 
     /**
@@ -181,7 +185,22 @@ public abstract class _BaseController {
         }
     }
 
+    /**
+     * Checks whether the currently logged user is admin.
+     * @return true if he is admin
+     */
+    public boolean isAdmin() {
+        return isAdmin(person());
+    }
 
+    /**
+     * Checks whether the given person is admin.
+     * @param person to check
+     * @return true if he is admin
+     */
+    public boolean isAdmin(Model_Person person) {
+        return this.permissionService.isAdmin(person);
+    }
 
 // REQUEST OPERATIONS ###################################################################################################
 

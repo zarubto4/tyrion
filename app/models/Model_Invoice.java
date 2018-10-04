@@ -3,7 +3,6 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
@@ -11,11 +10,10 @@ import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.*;
 import utilities.enums.Currency;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
-import utilities.model.UnderProduct;
+import utilities.model.UnderCustomer;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
@@ -27,7 +25,7 @@ import java.util.*;
 @Entity
 @ApiModel( value = "Invoice", description = "Model of Invoice")
 @Table(name="Invoice")
-public class Model_Invoice extends BaseModel implements Permissible, UnderProduct {
+public class Model_Invoice extends BaseModel implements Permissible, UnderCustomer {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -95,7 +93,7 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderProduc
         // Only user with update permission should be able to see invoices which are not
         // synchronized with Facturoid nad without prices set from it - show the estimate.
         try {
-            check_update_permission();
+            // TODO check_update_permission();
             return getTotalPriceWithoutVatEstimate();
         } catch (_Base_Result_Exception e){
             return null;
@@ -120,7 +118,7 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderProduc
         // Only user with update permission should be able to see invoices which are not
         // synchronized with Facturoid nad without prices set from it - show the estimate.
         try {
-            check_update_permission();
+            // TODO check_update_permission();
             return getTotalPriceWithVatEstimate();
         } catch (_Base_Result_Exception e){
             return null;
@@ -260,10 +258,14 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderProduc
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override
+    @JsonIgnore
     public Model_Product getProduct() {
-        if (product == null) product = Model_Product.getByInvoice(this.id);
-        return product;
+        return isLoaded("product") ? product : Model_Product.getByInvoice(this.id);
+    }
+
+    @JsonIgnore @Override
+    public Model_Customer getCustomer() {
+        return getProduct().getCustomer();
     }
 
     /**
@@ -441,30 +443,6 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderProduc
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    // TODO rework permissions
-
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Invoice_create.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Invoice_read.name())) return;
-        if(!isIssued()) {
-            if(_BaseController.person().has_permission(Permission.Invoice_update.name())) return;
-            throw new Result_Error_PermissionDenied();
-        }
-
-        getProduct().owner.check_read_permission();
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Invoice_update.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Invoice_delete.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-
     @JsonIgnore @Override
     public EntityType getEntityType() {
         return EntityType.INVOICE;
@@ -474,8 +452,6 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderProduc
     public List<Action> getSupportedActions() {
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }
-
-    public enum Permission {Invoice_create, Invoice_update, Invoice_read, Invoice_delete}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

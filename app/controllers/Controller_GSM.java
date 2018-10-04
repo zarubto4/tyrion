@@ -88,16 +88,13 @@ public class Controller_GSM extends _BaseController {
             Model_GSM gsm = Model_GSM.find.query().where().eq("registration_hash", help.registration_hash).findOne();
             Model_Project project = Model_Project.find.byId(help.project_id);
 
-            //gsm.registratione_permission();
-
-            if(gsm.get_project() != null) {
+            if (gsm.getProject() != null) {
                 return badRequest("GSM Modul is already registred!");
             }
 
             gsm.project = project;
-            gsm.update();
 
-            return ok(gsm);
+            return update(gsm);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -117,15 +114,12 @@ public class Controller_GSM extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
     })
     public Result unregister_sim(UUID sim_id){
-        try{
+        try {
 
             Model_GSM sim = Model_GSM.find.byId(sim_id);
-            sim.un_registration_permission();
-
             sim.project = null;
-            sim.update();
 
-            return ok();
+            return update(sim);
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -146,12 +140,7 @@ public class Controller_GSM extends _BaseController {
     })
     public Result get_sim(UUID sim_id) {
         try {
-            // Najdu sim
-            Model_GSM sim = Model_GSM.find.byId(sim_id);
-
-            //vypíšu sim
-            return ok(sim);
-
+            return read(Model_GSM.find.byId(sim_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -222,19 +211,7 @@ public class Controller_GSM extends _BaseController {
     })
     public Result delete_sim(UUID sim_id){
         try{
-            // Kontrola objektu
-            Model_GSM gsm = Model_GSM.find.byId(sim_id);
-
-            if(!person().is_admin()) {
-                return forbidden();
-            }
-
-            // Smazání objektu
-            gsm.delete();
-
-            // Vrácení potvrzení
-            return ok();
-
+            return delete(Model_GSM.find.byId(sim_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -259,7 +236,7 @@ public class Controller_GSM extends _BaseController {
             // Najdu sim
             Model_GSM gsm = Model_GSM.find.byId(sim_id);
 
-            gsm.check_read_permission();
+            this.checkReadPermission(gsm);
 
             // Vytvořím PRINT SERVISE
             Printer_Api api = new Printer_Api();
@@ -278,7 +255,6 @@ public class Controller_GSM extends _BaseController {
         }
     }
 
-
     @ApiOperation(value = "activate Sim",
             tags = {"GSM"},
             notes = "",
@@ -295,10 +271,11 @@ public class Controller_GSM extends _BaseController {
     public Result active_sim(UUID sim_id) {
         try {
 
-            // Najdu sim
             Model_GSM gsm = Model_GSM.find.byId(sim_id);
 
-            gsm.block();
+            this.checkActivatePermission(gsm);
+
+            gsm.unblock();
 
             return ok();
 
@@ -323,10 +300,11 @@ public class Controller_GSM extends _BaseController {
     public Result de_active_sim(UUID sim_id) {
         try {
 
-            // Najdu sim
             Model_GSM gsm = Model_GSM.find.byId(sim_id);
 
-            gsm.unblock();
+            this.checkActivatePermission(gsm);
+
+            gsm.block();
 
             return ok();
 
@@ -365,6 +343,8 @@ public class Controller_GSM extends _BaseController {
             Swagger_GSM_Edit help = formFromRequestWithValidation(Swagger_GSM_Edit.class);
 
             Model_GSM gsm = Model_GSM.find.byId(sim_id);
+
+            this.checkUpdatePermission(gsm);
 
             gsm.name = help.name;
             gsm.description = help.description;
@@ -429,6 +409,8 @@ public class Controller_GSM extends _BaseController {
             // Kontrola projektu
             Model_Project.find.byId(project_id);
 
+            // TODO maybe permissions?
+
             // Kotrola objektu
             Model_GSM gsm = Model_GSM.find.query().where().eq("registration_hash", registration_hash).findOne();
 
@@ -480,11 +462,11 @@ public class Controller_GSM extends _BaseController {
     public Result credit_usage(UUID sim_id) {
         try {
 
-            // Swagger_GSM_Date help = formFromRequestWithValidation(Swagger_GSM_Date.class);
+            Model_GSM gsm = Model_GSM.find.byId(sim_id);
 
-            DataSim_overview overview = Model_GSM.find.byId(sim_id).get_dataSim_overview();
+            this.checkReadPermission(gsm);
 
-            return ok(overview);
+            return ok(gsm.get_dataSim_overview());
 
         } catch (Exception e) {
             return controllerServerError(e);
