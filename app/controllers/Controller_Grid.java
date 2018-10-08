@@ -17,10 +17,9 @@ import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.enums.Approval;
 import utilities.enums.ProgramType;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import exceptions.NotFoundException;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
-import utilities.permission.Action;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
@@ -865,7 +864,7 @@ public class Controller_Grid extends _BaseController {
                 terminal.m_program_access = true;
                 terminal.update();
 
-            } catch (Result_Error_NotFound e) {
+            } catch (NotFoundException e) {
                 terminal = new Model_GridTerminal();
                 terminal.device_name = help.device_name;
                 terminal.device_type = help.device_type;
@@ -1011,7 +1010,7 @@ public class Controller_Grid extends _BaseController {
             widget.setTags(help.tags);
 
             // Získání šablony
-            Model_WidgetVersion scheme = Model_WidgetVersion.find.query().where().eq("publish_type", ProgramType.DEFAULT_VERSION.name()).findOne();
+            Model_WidgetVersion scheme = Model_WidgetVersion.find.query().nullable().where().eq("publish_type", ProgramType.DEFAULT_VERSION.name()).findOne();
 
             // Kontrola objektu
             if (scheme == null) return created(widget);

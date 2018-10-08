@@ -11,7 +11,7 @@ import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.cache.IdsList;
 import utilities.enums.*;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import exceptions.NotFoundException;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
@@ -472,7 +472,7 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
                     .setButton(new Notification_Button().setAction(NotificationAction.ACCEPT_PROJECT_INVITATION).setPayload(invitation.id.toString()).setColor(Becki_color.byzance_green).setText("Yes"))
                     .setButton(new Notification_Button().setAction(NotificationAction.REJECT_PROJECT_INVITATION).setPayload(invitation.id.toString()).setColor(Becki_color.byzance_red).setText("No"))
                     .send(person);
-        } catch (Result_Error_NotFound e){
+        } catch (NotFoundException e){
             logger.error("notification_project_invitation::Result_Error_NotFound::Person Not Found");
         } catch (Exception e){
             logger.internalServerError(e);
@@ -494,8 +494,6 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
                     .setObject(this)
                     .setText(new Notification_Text().setText("."))
                     .send(owner);
-        } catch (Result_Error_NotFound e){
-            logger.error("notification_project_invitation_rejected::Result_Error_NotFound::Person Not Found");
         } catch (Exception e){
             logger.internalServerError(e);
         }
@@ -530,8 +528,6 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
                     .setText(new Notification_Text().setText(" to " + participant.state.name() + ". You have different permissions now."))
                     .send(participant.person);
 
-        } catch (Result_Error_NotFound e){
-            logger.error("notification_project_participant_change_status::Result_Error_NotFound::Person Not Found");
         } catch (Exception e){
             logger.internalServerError(e);
         }
@@ -773,7 +769,7 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
 
                 token_cache.put(project_id, idlist);
             }
-        } catch (Result_Error_NotFound exception){
+        } catch (NotFoundException exception){
             // Its Legal Operation
         } catch (Exception exception){
             logger.internalServerError(exception);

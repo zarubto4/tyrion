@@ -15,7 +15,7 @@ import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.enums.Approval;
 import utilities.enums.ProgramType;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import exceptions.NotFoundException;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.permission.Action;
@@ -1548,7 +1548,6 @@ public class Controller_Blocko extends _BaseController {
             // Get and Validate Object
             Swagger_NameAndDesc_ProjectIdOptional help = formFromRequestWithValidation(Swagger_NameAndDesc_ProjectIdOptional.class);
 
-
             Model_Project project = null;
 
             if (help.project_id == null) {
@@ -1592,7 +1591,7 @@ public class Controller_Blocko extends _BaseController {
                 blockoBlockVersion.block = block;
                 blockoBlockVersion.save();
 
-            } catch (Result_Error_NotFound e) {
+            } catch (NotFoundException e) {
                 // Nothing
             }
 

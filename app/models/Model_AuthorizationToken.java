@@ -1,6 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import exceptions.NotFoundException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
@@ -9,7 +10,6 @@ import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.EntityType;
 import utilities.enums.PlatformAccess;
-import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.model.Personal;
@@ -170,7 +170,6 @@ public class Model_AuthorizationToken extends BaseModel implements Permissible, 
         if (tokenValue == null) {
 
             Model_AuthorizationToken model = find.query().where().eq("token", token).select("id").findOne();
-            if (model == null) throw new Result_Error_NotFound(Model_AuthorizationToken.class);
 
             cache_token_name.put(token, model.id);
         }

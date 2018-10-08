@@ -26,7 +26,6 @@ import utilities.enums.ExtensionType;
 import utilities.enums.InvoiceStatus;
 import utilities.enums.PaymentMethod;
 import utilities.enums.ProductEventType;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.financial.extensions.ExtensionInvoiceItem;
 import utilities.financial.fakturoid.FakturoidService;
 import utilities.logger.Logger;

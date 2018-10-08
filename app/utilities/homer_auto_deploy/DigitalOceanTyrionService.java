@@ -14,7 +14,7 @@ import org.ehcache.Cache;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import utilities.Server;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import exceptions.NotFoundException;
 import utilities.homer_auto_deploy.models.common.*;
 import utilities.homer_auto_deploy.models.service.Swagger_BlueOcean;
 import utilities.logger.Logger;
@@ -76,7 +76,7 @@ public class DigitalOceanTyrionService {
 
         if(target_snapshot == null){
             logger.error("Shit happens. We don't find Homer Server Image {} !!!!", "homer-server-default-defaut-image");
-            throw new Result_Error_NotFound(Snapshot.class);
+            throw new NotFoundException(Snapshot.class);
         }
 
 
@@ -112,12 +112,12 @@ public class DigitalOceanTyrionService {
 
         if(target_size == null){
             logger.error("Shit happens. We don't find required server size by slug {}", server_size_slug);
-            throw new Result_Error_NotFound(Size.class);
+            throw new NotFoundException(Size.class);
         }
 
         if(target_region == null){
             logger.error("Shit happens. We don't find required server region by slug {}", region_slug);
-            throw new Result_Error_NotFound(Region.class);
+            throw new NotFoundException(Region.class);
         }
 
         String server_name = "homer-server-" + homer_server.id.toString();

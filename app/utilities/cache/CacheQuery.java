@@ -5,7 +5,7 @@ import io.ebean.ExpressionFactory;
 import io.ebeaninternal.server.deploy.BeanDescriptor;
 import io.ebeaninternal.server.querydefn.DefaultOrmQuery;
 import org.ehcache.Cache;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import exceptions.NotFoundException;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
@@ -57,7 +57,7 @@ public class CacheQuery<T extends BaseModel> extends DefaultOrmQuery<T> {
             T entity = super.findOne();
             if (entity == null) {
                 logger.trace("findOne - ({}) not found", entityName);
-                throw new Result_Error_NotFound(this.cacheFinder.getEntityType());
+                throw new NotFoundException(this.cacheFinder.getEntityType());
             }
 
             queryCache.put(hash, entity.id);
@@ -71,7 +71,7 @@ public class CacheQuery<T extends BaseModel> extends DefaultOrmQuery<T> {
 
             return entity;
 
-        } catch (Result_Error_NotFound e) {
+        } catch (NotFoundException e) {
             if (this.nullable) {
                 return null;
             } else {

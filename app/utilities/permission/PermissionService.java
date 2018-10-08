@@ -12,7 +12,7 @@ import models.Model_Role;
 import org.ehcache.Cache;
 import utilities.cache.ServerCache;
 import utilities.enums.EntityType;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import exceptions.NotFoundException;
 import utilities.logger.Logger;
 import utilities.model.*;
 
@@ -170,7 +170,7 @@ public class PermissionService {
                     this.cache.get(person.id).add(new CachedPermission(id, entityType, action, true));
                 }
 
-            } catch (Result_Error_NotFound e) {
+            } catch (NotFoundException e) {
 
                 // If there is no such permission
 

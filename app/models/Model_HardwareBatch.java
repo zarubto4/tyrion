@@ -12,12 +12,11 @@ import org.bson.Document;
 import play.data.validation.Constraints;
 import play.libs.Json;
 import utilities.errors.Exceptions.Result_Error_BadRequest;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import exceptions.NotFoundException;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.MongoModel;
 
-import javax.persistence.*;
 import java.io.IOException;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.ArrayList;
@@ -229,7 +228,7 @@ public class Model_HardwareBatch extends MongoModel {
         Document document = collection(COLLECTION_NAME).find(query).first();
 
         if(document == null) {
-            throw new Result_Error_NotFound(Model_HardwareBatch.class);
+            throw new NotFoundException(Model_HardwareBatch.class);
         }
 
         String string_json = document.toJson();

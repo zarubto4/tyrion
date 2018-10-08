@@ -3,12 +3,11 @@ package utilities.cache;
 import io.ebean.Finder;
 import io.ebeaninternal.server.querydefn.DefaultOrmQuery;
 import org.ehcache.Cache;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import exceptions.NotFoundException;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
 import javax.annotation.Nonnull;
-import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
 /**
@@ -46,7 +45,7 @@ public class CacheFinder<T extends BaseModel> extends Finder<UUID, T> implements
 
         if (entity == null) {
             logger.debug("byId - ({}) id: {} not found", this.entityType.getSimpleName(), id);
-            throw new Result_Error_NotFound(this.entityType);
+            throw new NotFoundException(this.entityType);
         }
 
         cache.put(id, entity);

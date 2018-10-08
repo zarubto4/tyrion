@@ -3,7 +3,6 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import io.intercom.api.NotFoundException;
 import io.intercom.api.User;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -18,7 +17,7 @@ import utilities.enums.EntityType;
 import utilities.enums.NotificationAction;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import exceptions.NotFoundException;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -192,7 +191,7 @@ public class Model_Person extends BaseModel implements Permissible {
                     .addCustomAttribute(io.intercom.api.CustomAttribute.newStringAttribute("alias", nick_name));
             User.update(user);
 
-        } catch (NotFoundException e) {
+        } catch (io.intercom.api.NotFoundException e) {
 
             io.intercom.api.User user = new io.intercom.api.User()
                     .setEmail(email)
@@ -259,9 +258,6 @@ public class Model_Person extends BaseModel implements Permissible {
         if (id == null) {
 
             Model_Person person = find.query().where().eq("authorization_tokens.token", token).findOne();
-            if (person == null) {
-                throw new Result_Error_NotFound(Model_Person.class);
-            }
 
             // cache.put(person.id, person);
             token_cache.put(token, person.id);

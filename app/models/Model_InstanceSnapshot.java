@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
+import exceptions.NotFoundException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
@@ -314,7 +315,6 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
 
         if (idCache().gets(Model_BProgramVersion.class) == null) {
             Model_BProgramVersion version = Model_BProgramVersion.find.query().where().eq("instances.id", id).select("id").findOne();
-            if (version == null) throw new Result_Error_NotFound(Model_BProgramVersion.class);
             idCache().add(Model_BProgramVersion.class, version.id);
         }
 
@@ -868,7 +868,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
 
         if (collection == null) {
             logger.error("SnapShotConfigurationFile is missing return null");
-            throw new Result_Error_NotFound(Swagger_InstanceSnapShotConfigurationFile.class);
+            throw new NotFoundException(Swagger_InstanceSnapShotConfigurationFile.class);
         }
 
         // Nastavení SSL

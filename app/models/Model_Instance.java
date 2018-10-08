@@ -15,7 +15,7 @@ import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import exceptions.NotFoundException;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
@@ -646,7 +646,7 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
 
                 if(settings == null){
                     logger.error("SnapShotConfiguration is missing return null");
-                    throw new Result_Error_NotFound(Swagger_InstanceSnapShotConfiguration.class);
+                    throw new NotFoundException(Swagger_InstanceSnapShotConfiguration.class);
                 }
 
                 for(Swagger_InstanceSnapShotConfigurationFile grids_collection : settings.grids_collections){
@@ -662,7 +662,7 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
 
                 if(collection == null){
                     logger.error("SnapShotConfigurationFile is missing return null");
-                    throw new Result_Error_NotFound(Swagger_InstanceSnapShotConfigurationFile.class);
+                    throw new NotFoundException(Swagger_InstanceSnapShotConfigurationFile.class);
                 }
 
                 logger.debug("Enum_MProgram_SnapShot_settings: {}", program.snapshot_settings);

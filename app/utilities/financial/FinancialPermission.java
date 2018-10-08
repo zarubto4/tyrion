@@ -2,7 +2,6 @@ package utilities.financial;
 
 import models.*;
 import utilities.enums.ExtensionType;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.financial.extensions.configurations.Configuration_Project;

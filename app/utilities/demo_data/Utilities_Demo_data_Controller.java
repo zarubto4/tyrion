@@ -12,7 +12,7 @@ import utilities.enums.BusinessModel;
 import utilities.enums.ExtensionType;
 import utilities.enums.HomerType;
 import utilities.enums.ProgramType;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import exceptions.NotFoundException;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
@@ -80,7 +80,7 @@ public class Utilities_Demo_data_Controller extends _BaseController {
 
             try {
                 Model_Garfield.find.query().where().eq("name", "Garfield").findOne();
-            } catch (Result_Error_NotFound e) {
+            } catch (NotFoundException e) {
                 Model_Garfield garfield = new Model_Garfield();
 
                 garfield.name = "Garfield";
@@ -113,7 +113,7 @@ public class Utilities_Demo_data_Controller extends _BaseController {
 
             try {
                 Model_Producer.find.query().where().eq("name", "Byzance ltd").findOne();
-            } catch (Result_Error_NotFound e) {
+            } catch (NotFoundException e) {
                 Model_Producer producer = new Model_Producer();
                 producer.name = "Byzance ltd";
                 producer.description = "Developed with love from Byzance";
@@ -132,7 +132,7 @@ public class Utilities_Demo_data_Controller extends _BaseController {
             try {
                 Model_Processor.find.query().where().eq("name", "ARM STM32 FR17").findOne();
                 return ok();
-            } catch (Result_Error_NotFound e) {
+            } catch (NotFoundException e) {
                 // Nothing
             }
 
@@ -220,7 +220,7 @@ public class Utilities_Demo_data_Controller extends _BaseController {
             try {
                 Model_HomerServer.find.query().where().eq("name", "Alfa").findOne();
                 return ok();
-            } catch (Result_Error_NotFound e) {
+            } catch (NotFoundException e) {
                 // Nothing
             }
 
@@ -291,7 +291,7 @@ public class Utilities_Demo_data_Controller extends _BaseController {
             try {
                 Model_Tariff.find.query().where().eq("name", "Alfa account").findOne();
                 return ok();
-            } catch (Result_Error_NotFound e) {
+            } catch (NotFoundException e) {
                 // Nothing
             }
 
@@ -350,7 +350,7 @@ public class Utilities_Demo_data_Controller extends _BaseController {
             try {
                 Model_Person.find.query().where().eq("nick_name", "Pepíno").findOne();
                 return ok();
-            } catch (Result_Error_NotFound e) {
+            } catch (NotFoundException e) {
                 // Nothing
             }
 

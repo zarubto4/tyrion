@@ -21,7 +21,7 @@ import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.CompilationStatus;
 import utilities.enums.EntityType;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import exceptions.NotFoundException;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.UnderProject;
@@ -163,7 +163,7 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
                         pair.library_version = new Swagger_Short_Reference(library_version.id, library_version.name, library_version.description);
 
                         c_program_versions.imported_libraries.add(pair);
-                    } catch (Result_Error_NotFound e) {
+                    } catch (NotFoundException e) {
                         // Nothing
                     }
                 }
@@ -555,8 +555,8 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
         }catch (_Base_Result_Exception error){
 
             // Result_Error_NotFound
-            if(error.getClass().getSimpleName().equals(Result_Error_NotFound.class.getSimpleName())){
-                Result_Error_NotFound not_found = (Result_Error_NotFound) error.getCause();
+            if(error.getClass().getSimpleName().equals(NotFoundException.class.getSimpleName())){
+                NotFoundException not_found = (NotFoundException) error.getCause();
                 return _BaseController.notFound(not_found.getEntity());
             }
             logger.internalServerError(error);

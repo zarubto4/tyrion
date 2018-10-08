@@ -1,6 +1,6 @@
 package exceptions;
 
-public class NotSupportedException extends Exception {
+public class NotSupportedException extends BaseException {
 
     public NotSupportedException() {}
 

@@ -18,7 +18,7 @@ import utilities.document_mongo_db.MongoDB;
 import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import exceptions.NotFoundException;
 import utilities.grid_support.utils.IP_Founder;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.homer_auto_deploy.DigitalOceanThreadRegister;
@@ -301,7 +301,7 @@ public class Server {
 
             logger.warn("setAdministrator - role SuperAdmin exists");
 
-        } catch (Result_Error_NotFound e) {
+        } catch (NotFoundException e) {
 
             logger.warn("setAdministrator - SuperAdmin role was not found, creating it");
 
@@ -333,7 +333,7 @@ public class Server {
 
             logger.warn("setAdministrator - admin is already created");
 
-        } catch (Result_Error_NotFound e) {
+        } catch (NotFoundException e) {
 
             logger.warn("setAdministrator - creating first admin account: admin@byzance.cz, password: 123456789");
 

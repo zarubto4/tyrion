@@ -18,7 +18,7 @@ import utilities.authentication.Authentication;
 import utilities.authentication.AuthenticationHomer;
 import utilities.enums.CompilationStatus;
 import utilities.enums.HomerType;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import exceptions.NotFoundException;
 import utilities.homer_auto_deploy.DigitalOceanTyrionService;
 import utilities.homer_auto_deploy.SelfDeployedThreadRegister;
 import utilities.homer_auto_deploy.models.common.Swagger_ServerRegistration_FormData;
@@ -804,11 +804,11 @@ public class Controller_ExternalServer extends _BaseController {
             Model_Compilation compilation = version.compilation;
 
             if (compilation == null) {
-                throw new Result_Error_NotFound(Model_Compilation.class);
+                throw new NotFoundException(Model_Compilation.class);
             }
 
             if (compilation.status != CompilationStatus.SUCCESS) {
-                throw new Result_Error_NotFound(Model_Blob.class);
+                throw new NotFoundException(Model_Blob.class);
             }
 
             byte[] bytes = Model_Blob.get_decoded_binary_string_from_Base64(compilation.blob.downloadString());
@@ -843,7 +843,7 @@ public class Controller_ExternalServer extends _BaseController {
             Model_Compilation compilation = Model_Compilation.find.byId(compilation_id);
 
             if (compilation.status != CompilationStatus.SUCCESS) {
-                throw new Result_Error_NotFound(Model_Blob.class);
+                throw new NotFoundException(Model_Blob.class);
             }
 
             // Separace na Container a Blob

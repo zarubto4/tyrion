@@ -4,9 +4,7 @@ package utilities.lablel_printer_service.labels;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.pdf.PdfWriter;
-import models.Model_Hardware;
 import models.Model_HardwareRegistrationEntity;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 

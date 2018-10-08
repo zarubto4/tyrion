@@ -14,8 +14,7 @@ import play.mvc.*;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
-import utilities.errors.Exceptions.Result_Error_NotFound;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
+import exceptions.NotFoundException;
 import utilities.hardware_registration_auhtority.Enum_Hardware_Registration_DB_Key;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_mm_package;
@@ -1123,7 +1122,7 @@ public class Controller_Hardware extends _BaseController {
 
             try {
                 boot_loader.getBlob().delete();
-            } catch (Result_Error_NotFound e) {
+            } catch (NotFoundException e) {
                 // Nothing
             }
 
@@ -1169,7 +1168,7 @@ public class Controller_Hardware extends _BaseController {
 
             try {
                 boot_loader.getBlob();
-            } catch (Result_Error_NotFound e) {
+            } catch (NotFoundException e) {
                 return badRequest("Bootloader is missing binary file");
             }
 
@@ -2295,7 +2294,7 @@ public class Controller_Hardware extends _BaseController {
             // Kontrola objektu
             Model_Hardware hardware = Model_Hardware.find.byId(help.hardware_id);
             if (help.command == null) {
-                throw new Result_Error_NotFound(BoardCommand.class);
+                throw new NotFoundException(BoardCommand.class);
             }
 
             this.checkUpdatePermission(hardware);
@@ -2656,7 +2655,7 @@ public class Controller_Hardware extends _BaseController {
             try {
                 Model_HardwareGroup.find.query().where().eq("name", help.name).eq("project.id", project.id).findOne();
                 return badRequest("Group name must be a unique!");
-            } catch (Result_Error_NotFound e) {
+            } catch (NotFoundException e) {
                 // nothing
             }
 
@@ -2711,7 +2710,7 @@ public class Controller_Hardware extends _BaseController {
             try {
                 Model_HardwareGroup.find.query().where().eq("name", help.name).eq("project.id", group.getProject().id).findOne();
                 return badRequest("Group name must be a unique!");
-            } catch (Result_Error_NotFound e) {
+            } catch (NotFoundException e) {
                 // nothing
             }
 

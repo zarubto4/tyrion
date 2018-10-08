@@ -8,7 +8,6 @@ import com.itextpdf.text.Element;
 import com.itextpdf.text.Image;
 import controllers._BaseController;
 import models.*;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 

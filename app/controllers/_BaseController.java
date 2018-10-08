@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import exceptions.ForbiddenException;
+import exceptions.NotFoundException;
 import exceptions.NotSupportedException;
 import io.swagger.annotations.ApiModel;
 import models.Model_Person;
@@ -24,7 +25,6 @@ import utilities.permission.Action;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.server_measurement.RequestLatency;
-import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import java.io.File;
 import java.io.InputStream;
@@ -559,9 +559,9 @@ public abstract class _BaseController {
 
                 return badRequest(Json.toJson(new Result_InvalidBody(((Result_Error_InvalidBody) error).getForm_error())));
 
-            } else if (error instanceof Result_Error_NotFound) {
+            } else if (error instanceof NotFoundException) {
 
-                return notFound(((Result_Error_NotFound) error).getEntity());
+                return notFound(((NotFoundException) error).getEntity());
 
             } else if (error instanceof Result_Error_PermissionDenied) {
 

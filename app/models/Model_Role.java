@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.EntityType;
-import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 import utilities.model.Publishable;
@@ -46,11 +45,7 @@ public class Model_Role extends NamedModel implements Permissible, UnderProject,
 
     @JsonIgnore @Override
     public boolean isPublic() {
-        try {
-            return getProject() == null;
-        } catch (Result_Error_NotFound e) {
-            return false;
-        }
+        return getProject() == null;
     }
 
     /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
