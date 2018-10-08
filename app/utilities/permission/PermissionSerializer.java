@@ -70,8 +70,11 @@ public class PermissionSerializer extends StdSerializer<Boolean> implements Cont
             }
 
             gen.writeBoolean(permitted);
-        } else {
+        } else if (!gen.canOmitFields()) {
+            logger.trace("serialize - field cannot be omitted");
             gen.writeBoolean(true);
+        } else {
+            gen.writeNull();
         }
     }
 

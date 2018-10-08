@@ -22,6 +22,7 @@ import utilities.model.OrderedNamedModel;
 import utilities.model.Publishable;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
+import utilities.permission.WithPermission;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -68,11 +69,9 @@ public class Model_TariffExtension extends OrderedNamedModel implements Permissi
         return getPrice().setScale(Server.financial_price_scale, Server.financial_price_rounding).doubleValue();
     }
 
-    @JsonProperty  @ApiModelProperty(required = false, value = "Visible only for Administrator with Special Permission")  @JsonInclude(JsonInclude.Include.NON_NULL)
+    @WithPermission @JsonProperty @ApiModelProperty(required = false, value = "Visible only for Administrator with Special Permission")  @JsonInclude(JsonInclude.Include.NON_NULL)
     public String config() {
         try {
-
-            // TODO check_update_permission();
             if (configuration == null) {
                 throw new NullPointerException();
             }
@@ -86,11 +85,10 @@ public class Model_TariffExtension extends OrderedNamedModel implements Permissi
         }
     }
 
-    @JsonProperty  @ApiModelProperty(required = false, value = "Visible only for Administrator with Special Permission")  @JsonInclude(JsonInclude.Include.NON_NULL)
+    @WithPermission @JsonProperty @ApiModelProperty(required = false, value = "Visible only for Administrator with Special Permission")  @JsonInclude(JsonInclude.Include.NON_NULL)
     public String consumption() {
         try {
 
-            // TODO check_update_permission();
             if (consumption == null) {
                 throw new NullPointerException();
             }

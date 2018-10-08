@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.documentdb.DocumentClientException;
-import controllers._BaseController;
 import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -18,8 +17,6 @@ import utilities.document_mongo_db.document_objects.DM_HomerServer_Connect;
 import utilities.document_mongo_db.document_objects.DM_HomerServer_Disconnect;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
-import utilities.errors.Exceptions.Result_Error_BadRequest;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.homer_auto_deploy.DigitalOceanThreadRegister;
 import utilities.homer_auto_deploy.DigitalOceanTyrionService;
@@ -30,6 +27,7 @@ import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
+import utilities.permission.WithPermission;
 import utilities.slack.Slack;
 import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
 import websocket.WS_Message;
@@ -108,32 +106,14 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
         }
     }
 
-    @ApiModelProperty(required = false, readOnly = true) @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    @WithPermission @ApiModelProperty(readOnly = true) @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public String connection_identificator() {
-        try {
-            // TODO check_update_permission();
-            return connection_identifier;
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return connection_identifier;
     }
 
-    @ApiModelProperty(required = false, readOnly = true) @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    @WithPermission @ApiModelProperty(readOnly = true) @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public String hash_certificate() {
-        try {
-            // TODO check_update_permission();
-            return hash_certificate;
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return hash_certificate;
     }
 
     @ApiModelProperty(required = false, readOnly = true, value = "Visible only when server is in deployment state")

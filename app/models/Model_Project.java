@@ -68,22 +68,10 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
     @JsonProperty @ApiModelProperty(required = true)
     public Swagger_Short_Reference product(){
         try {
-
             Model_Product product = getProduct();
-            if (product != null) {
-                return new Swagger_Short_Reference(product.id, product.name, product.description);
-            } else {
-                return null;
-            }
-
-
-        } catch (Result_Error_PermissionDenied e) {
-            return null;
-
-        } catch (_Base_Result_Exception e) {
-            return null;
-
+            return new Swagger_Short_Reference(product.id, product.name, product.description);
         } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -92,11 +80,8 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
     public boolean active(){
         try {
             return getProduct().active;
-
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return false;
         } catch (Exception e) {
+            logger.internalServerError(e);
             return false;
         }
     }
@@ -131,15 +116,11 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
                 }
 
             return project_participants;
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return new ArrayList<>();
         } catch (Exception e){
             logger.internalServerError(e);
             return new ArrayList<>();
         }
     }
-
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 

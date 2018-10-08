@@ -1,7 +1,6 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -169,7 +168,7 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore @Transient public Model_HardwareType getHardwareType()     {
-        return hardware_type != null ? hardware_type : Model_HardwareType.find.query().where().eq("c_programs.id", id).findOne();
+        return isLoaded("hardware_type") ? hardware_type : Model_HardwareType.find.query().where().eq("c_programs.id", id).findOne();
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/

@@ -114,12 +114,14 @@ public class PermissionService {
             Model_Project project = ((UnderProject) model).getProject();
             if (project != null) {
                 id = project.id;
-            } else if (model instanceof Publishable) {
-                isPublic = ((Publishable) model).isPublic();
             }
 
         } else {
             id = model.id;
+        }
+
+        if (model instanceof Publishable) {
+            isPublic = ((Publishable) model).isPublic();
         }
 
         // TODO handle public ones better and other operations also

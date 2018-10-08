@@ -16,6 +16,7 @@ import utilities.emails.Email;
 import utilities.enums.NetworkStatus;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
+import utilities.enums.ParticipantStatus;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.models_update_echo.EchoHandler;
@@ -91,8 +92,16 @@ public class Controller_Project extends _BaseController {
             project.description = help.description;
             project.product     = product;
 
+            this.checkCreatePermission(project);
+
             // Uložení objektu
             project.save();
+
+            Model_Role adminRole = Model_Role.createProjectAdminRole();
+            adminRole.project = project;
+
+            Model_Role memberRole = Model_Role.createProjectMemberRole();
+            memberRole.project = project;
 
             for (Model_Employee employee : product.owner.getEmployees()) {
 
@@ -103,7 +112,16 @@ public class Controller_Project extends _BaseController {
 
                 participant.save();
                 participant.person.idCache().add(Model_Project.class, project.id);
+
+                if (employee.state == ParticipantStatus.OWNER || employee.state == ParticipantStatus.ADMIN) {
+                    adminRole.persons.add(employee.getPerson());
+                } else {
+                    memberRole.persons.add(employee.getPerson());
+                }
             }
+
+            adminRole.save();
+            memberRole.save();
 
             project.refresh();
 

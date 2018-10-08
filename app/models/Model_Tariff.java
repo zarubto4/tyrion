@@ -21,6 +21,7 @@ import utilities.model.OrderedNamedModel;
 import utilities.model.Publishable;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
+import utilities.permission.WithPermission;
 import utilities.swagger.input.Swagger_TariffLabel;
 import utilities.swagger.input.Swagger_TariffLabelList;
 
@@ -83,22 +84,20 @@ public class Model_Tariff extends OrderedNamedModel implements Permissible, Publ
         return Collections.emptyList();
     }
 
-    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    @WithPermission @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     @ApiModelProperty("Visible only for Administrator with Special Permission")
-    @Transient public Double credit_for_beginning() {
+    public Double credit_for_beginning() {
         try {
-            // TODO this.check_update_permission();
             return credit_for_beginning.doubleValue();
-        } catch (_Base_Result_Exception e){
-            return null;
-        }catch (Exception e){
+        } catch (Exception e){
             logger.internalServerError(e);
             return null;
         }
     }
 
 
-    @JsonProperty public Double price() {
+    @JsonProperty
+    public Double price() {
         try {
             return total_per_month();
 

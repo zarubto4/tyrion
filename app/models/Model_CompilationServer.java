@@ -26,6 +26,7 @@ import utilities.model.BaseModel;
 import utilities.model.Publishable;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
+import utilities.permission.WithPermission;
 import utilities.threads.compilator_server.Compilation_After_BlackOut;
 import utilities.logger.Logger;
 import websocket.WS_Message;
@@ -71,35 +72,16 @@ public class Model_CompilationServer extends BaseModel implements Permissible, P
         }
     }
 
-    @ApiModelProperty(required = false, readOnly = true)
+    @WithPermission @ApiModelProperty(required = false, readOnly = true)
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public String connection_identificator() {
-        try {
-            // TODO permissions check_update_permission();
-            return connection_identifier;
-        } catch (_Base_Result_Exception e) {
-            // nothing
-            return null;
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return connection_identifier;
     }
 
-    @ApiModelProperty(required = false, readOnly = true)
+    @WithPermission @ApiModelProperty(required = false, readOnly = true)
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public String hash_certificate() {
-        try {
-            // TODO permissions check_update_permission();
-            return hash_certificate;
-
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return hash_certificate;
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/

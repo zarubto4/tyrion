@@ -5,6 +5,8 @@ import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import javax.inject.*;
 
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.typesafe.config.Config;
@@ -13,6 +15,7 @@ import play.libs.Json;
 import utilities.Server;
 import utilities.cache.ServerCache;
 import utilities.logger.ServerLogger;
+import utilities.permission.PermissionFilter;
 import utilities.permission.PermissionHandlerInstantiator;
 import utilities.scheduler.SchedulerController;
 
@@ -57,7 +60,9 @@ public class ApplicationStarter {
             this.cache.initialize();
 
             // For dependency injected serializer for permissions
-            Json.mapper().setHandlerInstantiator(injector.getInstance(PermissionHandlerInstantiator.class));
+            Json.mapper()
+                    .setFilterProvider(new SimpleFilterProvider().addFilter("permission", injector.getInstance(PermissionFilter.class)))
+                    .setHandlerInstantiator(injector.getInstance(PermissionHandlerInstantiator.class));
 
             Server.start(configuration, injector);
             this.scheduler.start();

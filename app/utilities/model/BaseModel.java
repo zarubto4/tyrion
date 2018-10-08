@@ -1,5 +1,6 @@
 package utilities.model;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
 
+@JsonFilter("permission")
 @MappedSuperclass
 public abstract class BaseModel extends Model implements JsonSerializable {
 
@@ -57,9 +59,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
     public boolean deleted;
 
 /* GENERAL OBJECT CACHE ------------------------------------------------------------------------------------------------*/
-    /**
-     *
-     */
+
    @JsonIgnore @Transient
     public IDCache idCache(){
 
@@ -600,10 +600,10 @@ public abstract class BaseModel extends Model implements JsonSerializable {
 
 /* Permission Contents ----------------------------------------------------------------------------------------------------*/
 
-    @JsonPermission @Transient
+    @JsonPermission @Transient @ApiModelProperty
     public boolean update_permission;
 
-    @JsonPermission(Action.DELETE) @Transient
+    @JsonPermission(Action.DELETE) @Transient @ApiModelProperty
     public boolean delete_permission;
 }
 

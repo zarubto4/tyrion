@@ -9,8 +9,6 @@ import utilities.enums.ParticipantStatus;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
-import utilities.model.UnderProject;
-import utilities.permission.Permissible;
 
 import javax.persistence.*;
 import java.util.UUID;
