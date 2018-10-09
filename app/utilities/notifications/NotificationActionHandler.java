@@ -1,5 +1,6 @@
 package utilities.notifications;
 
+import exceptions.NotFoundException;
 import models.*;
 import utilities.enums.NotificationAction;
 import utilities.enums.ParticipantStatus;
@@ -54,10 +55,7 @@ public class NotificationActionHandler {
             if (invitation == null) // TODO replace with not found exception
                 throw new IllegalArgumentException("Failed to add you to the project. Invitation no longer exists, it might have been drawn back.");
 
-            UUID person_id = Model_Person.find.query().where().eq("email", invitation.email).select("id").findSingleAttribute();
-            if (person_id == null) throw new Exception("Person does not exist.");
-
-            Model_Person person = Model_Person.find.byId(person_id);
+            Model_Person person = Model_Person.find.query().where().eq("email", invitation.email).findOne();
 
             Model_Project project_not_cached = invitation.project;
             if (project_not_cached == null)
@@ -65,21 +63,26 @@ public class NotificationActionHandler {
 
             Model_Project project = Model_Project.find.byId(project_not_cached.id);
 
-            if (Model_ProjectParticipant.find.query().where().eq("person.id", person.id).eq("project.id", project.id).findOne() == null) {
+            if (!project.persons.contains(person)) {
+                project.persons.add(person);
+                project.update();
 
-                Model_ProjectParticipant participant = new Model_ProjectParticipant();
-                participant.person = person;
-                participant.project = project;
-                participant.state = ParticipantStatus.MEMBER;
-
-                participant.save();
+                try {
+                    Model_Role role = Model_Role.find.query().where().eq("project.id", project.id).eq("default_role", true).findOne();
+                    if (!role.persons.contains(person)) {
+                        role.persons.add(person);
+                        role.update();
+                    }
+                } catch (NotFoundException e) {
+                    logger.warn("acceptProjectInvitation - unable to find default role for project, id {}", project.id);
+                }
             }
 
             person.get_user_access_projects();
             person.idCache().add(Model_Project.class, project_not_cached.id);
             project.notification_project_invitation_accepted(person, invitation.owner);
 
-            new Thread(() -> RefreshTouch_echo_handler.addToQueue(new WS_Message_RefreshTouch("ProjectsRefreshAfterInvite", person_id))).start();
+            new Thread(() -> RefreshTouch_echo_handler.addToQueue(new WS_Message_RefreshTouch("ProjectsRefreshAfterInvite", person.id))).start();
             new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, project_not_cached.id, project_not_cached.id))).start();
 
             invitation.delete();

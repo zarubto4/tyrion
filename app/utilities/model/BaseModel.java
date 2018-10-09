@@ -600,10 +600,10 @@ public abstract class BaseModel extends Model implements JsonSerializable {
 
 /* Permission Contents ----------------------------------------------------------------------------------------------------*/
 
-    @JsonPermission @Transient @ApiModelProperty
+    @JsonPermission @Transient @ApiModelProperty(readOnly = true, value = "True if user can update this object.")
     public boolean update_permission;
 
-    @JsonPermission(Action.DELETE) @Transient @ApiModelProperty
+    @JsonPermission(Action.DELETE) @Transient @ApiModelProperty(readOnly = true, value = "True if user can delete this object.")
     public boolean delete_permission;
 }
 

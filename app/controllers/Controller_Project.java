@@ -21,7 +21,6 @@ import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
-import utilities.permission.Action;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
@@ -33,6 +32,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Authentication.class)
@@ -86,11 +86,15 @@ public class Controller_Project extends _BaseController {
             // Kontrola objektu
             Model_Product product = Model_Product.find.byId(help.product_id);
 
+            List<Model_Employee> employees = product.owner.getEmployees();
+
             // Vytvoření objektu
             Model_Project project = new Model_Project();
             project.name        = help.name;
             project.description = help.description;
             project.product     = product;
+
+            project.persons.addAll(product.owner.getEmployees().stream().map(Model_Employee::getPerson).collect(Collectors.toList()));
 
             this.checkCreatePermission(project);
 
@@ -103,15 +107,7 @@ public class Controller_Project extends _BaseController {
             Model_Role memberRole = Model_Role.createProjectMemberRole();
             memberRole.project = project;
 
-            for (Model_Employee employee : product.owner.getEmployees()) {
-
-                Model_ProjectParticipant participant = new Model_ProjectParticipant();
-                participant.person = employee.getPerson();
-                participant.project = project;
-                participant.state = employee.state;
-
-                participant.save();
-                participant.person.idCache().add(Model_Project.class, project.id);
+            for (Model_Employee employee : employees) {
 
                 if (employee.state == ParticipantStatus.OWNER || employee.state == ParticipantStatus.ADMIN) {
                     adminRole.persons.add(employee.getPerson());
@@ -384,59 +380,6 @@ public class Controller_Project extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "change Project participant status",
-            tags = {"Project"},
-            notes = "Changes participant status ",
-            produces = "application/json",
-            protocols = "https"
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.input.Swagger_Project_Participant_status",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_ProjectParticipant.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result project_changeParticipantStatus(UUID project_id) {
-        try {
-
-            // Get and Validate Object
-            Swagger_Project_Participant_status help = formFromRequestWithValidation(Swagger_Project_Participant_status.class);
-
-            // Kontrola objektu
-            Model_Project project = Model_Project.find.byId(project_id);
-
-            this.checkInvitePermission(project);
-
-            // Kontrola objektu
-            Model_ProjectParticipant participant = Model_ProjectParticipant.find.query().where().eq("person.id", help.person_id).eq("project.id", project_id).findOne();
-            if (participant == null) return notFound("Participant not found");
-
-            // Uložení změn
-            participant.state = help.state;
-            participant.update();
-
-            // Odeslání notifikace uživateli
-            project.notification_project_participant_change_status(participant);
-
-            return ok(participant);
-        } catch (Exception e) {
-            return controllerServerError(e);
-        }
-    }
-
     @ApiOperation(value = "unshare Project",
             tags = {"Project"},
             notes = "unshare Project with all users in list: List<person_id>",
@@ -494,14 +437,14 @@ public class Controller_Project extends _BaseController {
                     invitations.add(invitation);
             }
 
-            for (Model_Person person : list) {
-                Model_ProjectParticipant participant = Model_ProjectParticipant.find.query().where().eq("person.id", person.id).eq("project.id", project.id).findOne();
-                if (participant != null) {
+            project.persons.removeAll(list);
+            project.update();
 
-                    // Úprava objektu
-                    participant.delete();
-                }
-            }
+            List<Model_Role> roles = Model_Role.find.query().where().eq("project.id", project.id).in("persons.id", list.stream().map(p -> p.id).collect(Collectors.toList())).findList();
+            roles.forEach(r -> {
+                r.persons.removeAll(list);
+                r.update();
+            });
 
             for (Model_Invitation invitation : invitations) {
                 invitation.delete_notification();

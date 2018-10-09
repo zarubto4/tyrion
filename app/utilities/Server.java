@@ -352,12 +352,6 @@ public class Server {
             role.persons.add(person);
             role.update();
         }
-
-        /*for (Model_Permission permission :  permissions) {
-            if(!person.permissions.contains(permission)) {
-                person.permissions.add(permission);
-            }
-        }*/
     }
 
     /**
@@ -419,9 +413,9 @@ public class Server {
 
         classes.forEach(cls -> {
             try {
-                Permissible permittable = cls.newInstance();
-                EntityType entityType = permittable.getEntityType();
-                List<Action> actions = permittable.getSupportedActions();
+                Permissible permissible = cls.newInstance();
+                EntityType entityType = permissible.getEntityType();
+                List<Action> actions = permissible.getSupportedActions();
 
                 actions.forEach(action -> {
                     if (permissions.stream().noneMatch(p -> p.action == action && p.entity_type == entityType)) {
@@ -443,7 +437,7 @@ public class Server {
         List<Model_Project> projects = Model_Project.find.query().where().isEmpty("roles").findList();
         projects.forEach(project -> {
 
-            List<Model_Person> persons = Model_Person.find.query().where().eq("projects_participant.project.id", project.id).findList();
+            List<Model_Person> persons = Model_Person.find.query().where().eq("projects.id", project.id).findList();
             Model_Role adminRole = Model_Role.createProjectAdminRole();
             adminRole.project = project;
             adminRole.persons.addAll(persons);

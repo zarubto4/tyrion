@@ -5,11 +5,11 @@ import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import javax.inject.*;
 
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.typesafe.config.Config;
+import play.api.db.evolutions.ApplicationEvolutions;
 import play.inject.ApplicationLifecycle;
 import play.libs.Json;
 import utilities.Server;
@@ -46,7 +46,7 @@ public class ApplicationStarter {
     private final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("application");
 
     @Inject
-    public ApplicationStarter(Clock clock, ApplicationLifecycle appLifecycle, Config configuration, Injector injector, SchedulerController scheduler, ServerCache cache) {
+    public ApplicationStarter(Clock clock, ApplicationLifecycle appLifecycle, Config configuration, Injector injector, SchedulerController scheduler, ServerCache cache, ApplicationEvolutions applicationEvolutions) {
 
         this.clock = clock;
         this.appLifecycle = appLifecycle;

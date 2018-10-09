@@ -24,7 +24,8 @@ alter table permission
                                                                   'EMPLOYEE','GSM','CONTACT','INTEGRATOR_CLIENT'));
 
 alter table role
-  add column project_id uuid;
+  add column project_id uuid,
+  add column default_role boolean default false not null;
 
 alter table role add constraint fk_role_project_id foreign key (project_id) references project (id) on delete restrict on update restrict;
 create index ix_role_project_id on role (project_id);
@@ -45,6 +46,25 @@ alter table bootloader
   add constraint uq_bootloader_file_id unique (file_id),
   add constraint fk_bootloader_file_id foreign key (file_id) references blob (id) on delete restrict on update restrict;
 
+alter table projectparticipant rename to project_person;
+
+alter table project_person
+  drop column if exists id cascade,
+  drop column if exists created cascade,
+  drop column if exists updated cascade,
+  drop column if exists removed cascade,
+  drop column if exists deleted cascade,
+  drop column if exists state cascade,
+  alter column project_id set not null,
+  alter column person_id set not null,
+  add constraint pk_project_person primary key (project_id, person_id);
+
+alter table project_person rename constraint fk_projectparticipant_project_id to fk_project_person_project_id;
+alter table project_person rename constraint fk_projectparticipant_person_id to fk_project_person_person_id;
+
+alter index ix_projectparticipant_project_id rename to ix_project_person_project_id;
+alter index ix_projectparticipant_person_id rename to ix_project_person_person_id;
+
 # --- !Downs
 
 delete from role_permission;
@@ -60,7 +80,8 @@ alter table permission
 delete from role where project_id is not null;
 
 alter table role
-  drop column if exists project_id cascade;
+  drop column if exists project_id cascade,
+  drop column if exists default_role cascade;
 
 drop index if exists ix_role_project_id;
 
@@ -79,3 +100,36 @@ alter table bootloader drop column if exists file_id cascade;
 alter table blob
   add constraint uq_blob_boot_loader_id unique (boot_loader_id),
   add constraint fk_blob_boot_loader_id foreign key (boot_loader_id) references bootloader (id) on delete restrict on update restrict;
+
+alter table project_person rename to projectparticipant;
+
+alter table projectparticipant
+  drop constraint if exists pk_project_person,
+  add column id uuid,
+  add column created timestamptz,
+  add column updated timestamptz,
+  add column removed timestamptz,
+  add column deleted boolean default false,
+  add column state varchar(7),
+  alter column project_id drop not null,
+  alter column person_id drop not null;
+
+update projectparticipant set
+    id = uuid_generate_v4(),
+    created = now(),
+    updated = now(),
+    deleted = false,
+    state = 'OWNER'
+  where id is null;
+
+alter table projectparticipant
+  alter column id set not null,
+  alter column deleted set not null,
+  add constraint pk_projectparticipant primary key (id),
+  add constraint ck_projectparticipant_state check ( state in ('OWNER','INVITED','ADMIN','MEMBER'));
+
+alter table projectparticipant rename constraint fk_project_person_project_id to fk_projectparticipant_project_id;
+alter table projectparticipant rename constraint fk_project_person_person_id to fk_projectparticipant_person_id;
+
+alter index ix_project_person_project_id rename to ix_projectparticipant_project_id;
+alter index ix_project_person_person_id rename to ix_projectparticipant_person_id;

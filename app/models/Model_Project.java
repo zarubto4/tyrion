@@ -12,7 +12,6 @@ import utilities.cache.CacheFinderField;
 import utilities.cache.IdsList;
 import utilities.enums.*;
 import exceptions.NotFoundException;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
@@ -24,6 +23,7 @@ import utilities.notifications.helps_objects.Notification_Text;
 import utilities.permission.Action;
 import utilities.permission.Permissions;
 import utilities.permission.Permissible;
+import utilities.swagger.output.Swagger_ProjectParticipant;
 import utilities.swagger.output.Swagger_ProjectStats;
 import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_online_status;
@@ -31,6 +31,7 @@ import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @ApiModel(value = "Project", description = "Model of Project")
@@ -46,6 +47,8 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Product product;
 
+    @JsonIgnore @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)  public List<Model_Person> persons = new ArrayList<>();
+
     @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Role>                  roles           = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_BProgram>              b_programs      = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_CProgram>              c_programs      = new ArrayList<>();
@@ -56,7 +59,6 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
     @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Hardware>              hardware        = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareGroup>         hardware_groups = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Invitation>            invitations     = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_ProjectParticipant>    participants    = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Instance>              instances       = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HomerServer>           servers         = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_GSM>                   gsm             = new ArrayList<>();
@@ -91,31 +93,15 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
      * @return Model_ProjectParticipant[]
      */
     @JsonProperty @ApiModelProperty(required = true)
-    public List<Model_ProjectParticipant> participants() {
-        try{
-            List<Model_ProjectParticipant> project_participants = new ArrayList<>(this.participants);
-
-            for (Model_Invitation invitation : invitations) {
-
-                    Model_Person person = Model_Person.getByEmail(invitation.email);
-
-                    Model_ProjectParticipant project_participant = new Model_ProjectParticipant();
-
-                    if (person != null) {
-
-                        project_participant.person = person;
-                    } else {
-                        project_participant.user_email = invitation.email;
-                    }
-
-                    project_participant.state = ParticipantStatus.INVITED;
-
-                    if (!project_participants.contains(project_participant)) {
-                        project_participants.add(project_participant);
-                    }
-                }
-
-            return project_participants;
+    public List<Swagger_ProjectParticipant> participants() {
+        try {
+            return getPersons().stream().map(person -> {
+                Swagger_ProjectParticipant participant = new Swagger_ProjectParticipant();
+                participant.id = person.id;
+                participant.email = person.email;
+                participant.full_name = person.full_name();
+                return participant;
+            }).collect(Collectors.toList());
         } catch (Exception e){
             logger.internalServerError(e);
             return new ArrayList<>();
@@ -125,6 +111,26 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* GET SQL PARAMETER - CACHE OBJECTS ------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public List<UUID> getPersonsIds() {
+
+        if (idCache().gets(Model_Person.class) == null) {
+            idCache().add(Model_Person.class, Model_Person.find.query().where().eq("projects.id", id).select("id").findSingleAttributeList());
+        }
+
+        return idCache().gets(Model_Person.class) != null ?  idCache().gets(Model_Person.class) : new ArrayList<>();
+    }
+
+    @JsonIgnore
+    public List<Model_Person> getPersons() {
+        try {
+            return getPersonsIds().stream().map(Model_Person.find::byId).collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return new ArrayList<>();
+        }
+    }
 
     @JsonIgnore
     public List<UUID> getHardwareIds() {
@@ -422,7 +428,7 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
         return isLoaded("product") ? product : Model_Product.find.query().where().eq("projects.id", id).findOne();
     }
 
-    @Override
+    @JsonIgnore @Override
     public Model_Customer getCustomer() {
         return getProduct().getCustomer();
     }
@@ -430,9 +436,10 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
 /* JSON IGNORE METHOD && VALUES --------------------------------------------------------------------------------------*/
 
 
-    @JsonIgnore  @Transient  public boolean isParticipant(Model_Person person) {
+    @JsonIgnore
+    public boolean isParticipant(Model_Person person) {
 
-        return participants.stream().anyMatch(participant -> participant.person.id.equals(person.id));
+        return getPersons().stream().anyMatch(p -> p.id.equals(person.id));
     }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
@@ -493,27 +500,6 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
                 .setText(new Notification_Text().setText("."))
                 .send(owner);
     }
-
-    @JsonIgnore @Transient
-    public void notification_project_participant_change_status(Model_ProjectParticipant participant) {
-        try {
-
-            Model_Person person = _BaseController.person();
-            new Model_Notification()
-                    .setImportance(NotificationImportance.NORMAL)
-                    .setLevel(NotificationLevel.INFO)
-                    .setText(new Notification_Text().setText("User "))
-                    .setObject(person)
-                    .setText(new Notification_Text().setText(" changed your status in project "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText(" to " + participant.state.name() + ". You have different permissions now."))
-                    .send(participant.person);
-
-        } catch (Exception e){
-            logger.internalServerError(e);
-        }
-    }
-
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -680,12 +666,7 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
 
     public static void becki_person_id_subscribe(UUID person_id) {
 
-        List<Model_Project> list_of_projects = Model_Project.find.query().where().eq("participants.person.id", person_id).disjunction()
-                .eq("state", ParticipantStatus.ADMIN)
-                .eq("state", ParticipantStatus.MEMBER)
-                .eq("state", ParticipantStatus.OWNER)
-                .endJunction()
-                .findList();
+        List<Model_Project> list_of_projects = Model_Project.find.query().where().eq("persons.id", person_id).findList();
 
         for (Model_Project project : list_of_projects) {
 
@@ -701,12 +682,7 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
 
     public static void becki_person_id_unsubscribe(UUID person_id) {
 
-        List<Model_Project> list_of_projects = Model_Project.find.query().where().eq("participants.person.id", person_id).disjunction()
-                .eq("state", ParticipantStatus.ADMIN)
-                .eq("state", ParticipantStatus.MEMBER)
-                .eq("state", ParticipantStatus.OWNER)
-                .endJunction()
-                .findList();
+        List<Model_Project> list_of_projects = Model_Project.find.query().where().eq("persons.id", person_id).findList();
 
         for (Model_Project project : list_of_projects ) {
 
@@ -741,12 +717,12 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
 
                 Model_Project project = find.byId(project_id);
 
-                for (Model_ProjectParticipant participant : project.participants) {
+                /* TODO for (Model_ProjectParticipant participant : project.participants) {
 
                     if (participant.state == ParticipantStatus.INVITED) continue;
 
                     if (!idlist.list.contains(participant.person.id)) idlist.list.add(participant.person.id);
-                }
+                }*/
 
                 token_cache.put(project_id, idlist);
             }

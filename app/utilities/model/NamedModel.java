@@ -3,8 +3,6 @@ package utilities.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
-import models.Model_Person;
-import utilities.errors.Exceptions._Base_Result_Exception;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;

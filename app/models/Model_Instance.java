@@ -718,7 +718,7 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
                     logger.debug("cloud_verification_token:: Grid_Terminal object has  own Person - its probably private or it can be public - Trying to find Instance with user ID and public value");
                     if (Model_Instance.find.query().where()
                             .eq("id", help.instance_id)
-                            .eq("project.participants.person.id", terminal.person.id)
+                            .eq("project.persons.id", terminal.person.id)
                             // .or(Expr.eq("project.participants.person.id", terminal.person.id), Expr.eq("actual_instance.version.public_version", true)) TODO find grid access settings
                             .findCount() > 0) {
                         logger.trace("cloud_verification_token_GRID:: Permission found");
@@ -762,7 +762,7 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
 
                 logger.debug("cloud_verification_token:: Server is public - try to find participants.person.id");
 
-                if (Model_Instance.find.query().where().eq("id", help.instance_id).eq("b_program.project.participants.person.id", floatingPersonToken.get_person_id()).findCount() > 0) {
+                if (Model_Instance.find.query().where().eq("id", help.instance_id).eq("b_program.project.persons.id", floatingPersonToken.get_person_id()).findCount() > 0) {
                     logger.warn("cloud_verification_token:: Yes - participants id found!");
                     homer.send(help.get_result(true));
                 } else {
@@ -775,7 +775,7 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
 
                 logger.warn("cloud_verification_token:: Its a private Server!");
 
-                if (Model_Project.find.query().where().eq("servers.id", server.id).eq("participants.person.id", floatingPersonToken.get_person_id()).select("id").findOne() != null) {
+                if (Model_Project.find.query().nullable().where().eq("servers.id", server.id).eq("persons.id", floatingPersonToken.get_person_id()).select("id").findOne() != null) {
                     logger.trace("validate_incoming_user_connection_to_hardware_logger:: Private Server Find fot this Person");
                     homer.send(help.get_result(true));
 

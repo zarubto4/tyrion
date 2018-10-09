@@ -29,6 +29,8 @@ public class Model_Role extends NamedModel implements Permissible, UnderProject,
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
+    public boolean default_role;
+
     @ManyToOne public Model_Project project;
 
     @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.LAZY) public List<Model_Person> persons = new ArrayList<>();
@@ -124,6 +126,7 @@ public class Model_Role extends NamedModel implements Permissible, UnderProject,
         Model_Role role = new Model_Role();
         role.name = "Project Member";
         role.permissions.addAll(permissions);
+        role.default_role = true;
 
         return role;
     }

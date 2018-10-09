@@ -656,7 +656,7 @@ public class Controller_Library extends _BaseController {
             Model_LibraryVersion version = Model_LibraryVersion.find.byId(version_id);
 
             if (Model_LibraryVersion.find.query().where().eq("approval_state", Approval.PENDING.name())
-                    .eq("library.project.participants.person.id", _BaseController.personId())
+                    .eq("library.project.persons.id", _BaseController.personId())
                     .findList().size() > 3) {
                 // TODO Notifikace uživatelovi
                 return badRequest("You can publish only 3 Libraries. Wait until the previous ones approved by the administrator. Thanks.");
@@ -666,14 +666,9 @@ public class Controller_Library extends _BaseController {
                 return badRequest("You cannot publish same program twice!");
             }
 
-            // Úprava objektu
             version.approval_state = Approval.PENDING;
 
-            // Uložení změn
-            version.update();
-
-            // Vrácení potvrzení
-            return ok();
+            return update(version);
 
         } catch (Exception e) {
             return controllerServerError(e);

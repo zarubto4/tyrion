@@ -17,7 +17,6 @@ import utilities.enums.EntityType;
 import utilities.enums.NotificationAction;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
-import exceptions.NotFoundException;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -69,11 +68,11 @@ public class Model_Person extends BaseModel implements Permissible {
     @JsonIgnore @OneToOne(mappedBy = "person") public Model_PasswordRecoveryToken passwordRecoveryToken;
     @JsonIgnore @OneToOne(mappedBy = "person") public Model_ChangePropertyToken   changePropertyToken;
 
+    @JsonIgnore @ManyToMany(mappedBy = "persons", fetch = FetchType.LAZY) public List<Model_Project> projects = new ArrayList<>();
     @JsonIgnore @ManyToMany(mappedBy = "persons", fetch = FetchType.LAZY) public List<Model_Role> roles = new ArrayList<>();
     @JsonIgnore @ManyToMany(fetch = FetchType.LAZY) public List<Model_Permission> permissions = new ArrayList<>();
 
     @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Employee>              employees            = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_ProjectParticipant>    projects_participant = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_AuthorizationToken>    authorization_tokens = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy = "owner",  cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Invitation>            invitations          = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Notification>          notifications        = new ArrayList<>();
@@ -114,7 +113,7 @@ public class Model_Person extends BaseModel implements Permissible {
         // Chache Add Projects
         if (idCache().gets(Model_Project.class) == null) {
             // Získání seznamu
-            idCache().add(Model_Project.class, Model_Project.find.query().where().eq("participants.person.id", id).select("id").findSingleAttributeList());
+            idCache().add(Model_Project.class, Model_Project.find.query().where().eq("persons.id", id).select("id").findSingleAttributeList());
         }
 
         List<Model_Project> projects = new ArrayList<>();

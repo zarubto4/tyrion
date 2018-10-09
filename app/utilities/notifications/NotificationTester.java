@@ -224,7 +224,7 @@ public class NotificationTester extends _BaseController {
                         .setText(new Notification_Text().setText(" test red color text, ").setColor(Becki_color.byzance_red))
                         .setLink(new Notification_Link().setUrl("Text linku na google ", "http://google.com"));
 
-                Model_Project project = Model_Project.find.query().where().eq("participants.person.id", person.id).eq("name", "První velkolepý projekt").findOne();
+                Model_Project project = Model_Project.find.query().nullable().where().eq("persons.id", person.id).eq("name", "První velkolepý projekt").findOne();
                 if (project != null) {
                     notification.setObject(project);
 

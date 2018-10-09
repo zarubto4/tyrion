@@ -502,7 +502,7 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
            // Kontrola oprávnění k serveru navíc
            } else {
 
-                if(Model_Project.find.query().where().eq("servers.id", server.id).eq("participants.person.id", person.id).select("id").findOne() != null) {
+                if(Model_Project.find.query().nullable().where().eq("servers.id", server.id).eq("persons.id", person.id).select("id").findOne() != null) {
                     logger.trace("validate_incoming_user_connection_to_hardware_logger:: Private Server Find fot this Person");
                     ws_homer.send(message.get_result(true));
                     return;

@@ -1480,7 +1480,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
                         return;
                     }
 
-                    Model_Project project = Model_Project.find.query().where().eq("participants.person.id", person.id).eq("id", board.project().id).findOne();
+                    Model_Project project = Model_Project.find.query().where().eq("persons.id", person.id).eq("id", board.project().id).findOne();
 
                     if (project == null) {
                         homer.send(request.get_result(false));
