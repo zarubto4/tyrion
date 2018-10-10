@@ -12,6 +12,7 @@ import models.Model_BProgram;
 import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
+import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
@@ -23,6 +24,8 @@ import utilities.swagger.input.Swagger_Article_CreateUpdate;
 import utilities.swagger.input.Swagger_Article_Filter;
 import utilities.swagger.output.filter_results.Swagger_Article_List;
 import java.util.UUID;
+
+import static play.mvc.Controller.request;
 
 @Security.Authenticated(Authentication.class)
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -76,6 +79,8 @@ public class Controller_Article extends _BaseController {
             Swagger_Article_CreateUpdate help  = formFromRequestWithValidation(Swagger_Article_CreateUpdate.class);
 
             // Kontrola objektu
+
+            String remote = request().remoteAddress();
 
 
             // Tvorba article

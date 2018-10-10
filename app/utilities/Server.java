@@ -4,13 +4,21 @@ import com.google.inject.Injector;
 import com.microsoft.azure.documentdb.*;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoDatabase;
 import com.typesafe.config.Config;
 import controllers.Controller_WebSocket;
 import controllers._BaseFormFactory;
 import io.intercom.api.Intercom;
 import models.*;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
+import org.mongodb.morphia.annotations.Entity;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import utilities.cache.ServerCache;
@@ -25,6 +33,7 @@ import utilities.homer_auto_deploy.DigitalOceanTyrionService;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
 import utilities.model.BaseModel;
+import utilities.model._Abstract_MongoModel;
 import utilities.models_update_echo.EchoHandler;
 import utilities.models_update_echo.RefreshTouch_echo_handler;
 import utilities.notifications.NotificationHandler;
@@ -110,9 +119,14 @@ public class Server {
 
     public static String link_api_swagger;
 
+
+    // Slack
+
     public static String slack_webhook_url_channel_servers;
     public static String slack_webhook_url_channel_homer;
     public static String slack_webhook_url_channel_hardware;
+
+    // Financial
 
     public static int financial_quantity_scale = 2;
     public static RoundingMode financial_quantity_rounding = RoundingMode.HALF_UP;
@@ -122,6 +136,15 @@ public class Server {
 
     public static int financial_tax_scale = 2;
     public static RoundingMode financial_tax_rounding = RoundingMode.UP;
+
+
+    // Mongo Databases
+    private static final Morphia morphia = new Morphia();
+    private static MongoClient mongoClient = null;
+
+    public static MongoDatabase main_database = null;
+    public static Datastore main_data_store = null;
+
 
     /**
      * Loads all configurations and start all server components.
@@ -143,6 +166,9 @@ public class Server {
         cleanUpdateMess();
 
         ServerCache.init();
+
+        // Init DocumentDB
+        init_mongo_database();
 
         try {
             setPermission();
@@ -487,6 +513,95 @@ public class Server {
         Controller_Things_Mobile.baseFormFactory   = Server.injector.getInstance(_BaseFormFactory.class);
     }
 
+
+    /**
+     * Initialization Mongo Databases from config file, all collection are checked, if some missing, this method will
+     * create it.
+     */
+    @SuppressWarnings("unchecked")
+    public static void init_mongo_database() {
+
+        // Připojení na MongoClient v Azure
+        logger.trace("init_mongo_database:: URL {}", configuration.getString("MongoDB." + Server.mode + ".url"));
+
+
+        MongoClientOptions.Builder options_builder = new MongoClientOptions.Builder();
+        options_builder.maxConnectionIdleTime(1000 * 60 * 60 *24);
+
+
+        MongoClientURI uri = new MongoClientURI(configuration.getString("MongoDB." + Server.mode + ".url"), options_builder);
+        Server.mongoClient = new MongoClient(uri);
+
+
+        mongoClient = new MongoClient(uri);
+
+        try {
+
+            mongoClient.getAddress();
+
+        } catch (Exception e) {
+            logger.error("init_mongo_database:: Mongo is down");
+            mongoClient.close();
+            return;
+        }
+
+        // Mongo ORM zástupný onbjekt pro lepší práci s databází
+        main_data_store = morphia.createDatastore(mongoClient, configuration.getString("MongoDB." + Server.mode + ".main_database_name"));
+
+        // Připojení na konkrétní Databázi clienta
+        main_database = mongoClient.getDatabase(configuration.getString("MongoDB." + Server.mode + ".main_database_name"));
+
+        if(main_data_store == null) {
+            logger.error("init_mongo_database:: Required Main Database not Exist!");
+        }
+
+        // Kontrola databáze
+        if(! mongoClient.getDatabaseNames().contains(configuration.getString("MongoDB." + Server.mode + ".main_database_name"))){
+            logger.error("init_mongo_database:: Required Main Database not Exist!");
+        }
+
+
+        // Kontrola kolekcí nad Mongo Databází
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+                .setUrls(ClasspathHelper.forPackage("models"))
+                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner()));
+
+        Set<Class<?>> classes = reflections.getTypesAnnotatedWith(Entity.class);
+
+        classes.forEach(cls -> {
+            try {
+
+                Class<? extends _Abstract_MongoModel> model = (Class<? extends _Abstract_MongoModel>) cls; // Cast to model
+                Entity annotation = model.getAnnotation(Entity.class);
+
+                String value = annotation.value();
+
+                if (annotation == null) {
+                    logger.error("init_mongo_database:: In Class {} is not set anotation  @Entity! FIX THAT!", cls.getSimpleName());
+                    return;
+                }
+
+                if (!main_database.listCollectionNames().into(new ArrayList<String>()).contains(annotation.value())) {
+                    logger.warn("init_mongo_database:: {} Collection:: {}  - not exist. System will create that! ", model.getSimpleName(), annotation.value());
+                    main_database.createCollection(annotation.value());
+
+                }
+
+            } catch (Exception e) {
+                logger.error("init_mongo_database:: {} Collection Class:: {}  - not exist. Its Required create that! ", main_database.getName(), cls.getSimpleName());
+                logger.internalServerError(e);
+            }
+        });
+
+    }
+
+    public static Datastore getMainMongoDatabase() {
+        if(Server.main_data_store == null) {
+            init_mongo_database();
+        }
+
+        return main_data_store;
+    }
 
     /**
      * Set configuration

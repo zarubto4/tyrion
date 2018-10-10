@@ -14,7 +14,7 @@ import play.mvc.Controller;
 
 import java.util.*;
 
-public class TestHelper extends Controller{
+public class TestHelper extends Controller {
 
     private static Logger logger = LoggerFactory.getLogger(TestCase.class);
 

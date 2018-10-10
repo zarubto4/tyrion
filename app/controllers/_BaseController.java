@@ -8,6 +8,8 @@ import models.Model_Person;
 import play.Environment;
 import play.libs.Json;
 import play.libs.ws.WSClient;
+import play.libs.ws.WSRequest;
+import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -18,15 +20,21 @@ import utilities.logger.ServerLogger;
 import utilities.logger.YouTrack;
 import utilities.model.BaseModel;
 import utilities.model.JsonSerializer;
+import utilities.model._Abstract_MongoModel;
 import utilities.scheduler.SchedulerController;
 import utilities.server_measurement.RequestLatency;
 import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URL;
+import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletionStage;
+
+import static play.mvc.Controller.request;
 
 /**
  * This class provides some common API for Tyrion REST Controller.
@@ -58,6 +66,14 @@ public abstract class _BaseController {
     }
 
 
+    /**
+     * Converts this model to printable string
+     * @return formatted string
+     */
+    public String prettyPrint(JsonNode node) {
+
+        return this.getClass() + ":\n" + Json.prettyPrint(node) + ":\n" ;
+    }
 
 // PERSON OPERATIONS ###################################################################################################
 
@@ -70,6 +86,17 @@ public abstract class _BaseController {
      */
     public <T> T formFromRequestWithValidation(Class<T> clazz) throws _Base_Result_Exception {
         return baseFormFactory.formFromRequestWithValidation(clazz);
+    }
+
+    /**
+     * Shortcuts for automatic validation and parsing of incoming JSON to MODEL class
+     * @param clazz
+     * @param <T>
+     * @return
+     * @throws _Base_Result_Exception
+     */
+    public <T> T formFromJsonWithValidation(Class<T> clazz, JsonNode node) throws _Base_Result_Exception {
+        return this.baseFormFactory.formFromJsonWithValidation(clazz, node);
     }
 
     /**
@@ -137,7 +164,7 @@ public abstract class _BaseController {
      */
     public JsonNode getBodyAsJson() {
         try {
-            return Controller.request().body().asJson();
+            return request().body().asJson();
         } catch (Exception e) {
             logger.error(" getBodyAsJson:: ERROR EXCEPTION");
             // logger.internalServerError(e);
@@ -183,6 +210,16 @@ public abstract class _BaseController {
         return Controller.created(object.json());
     }
 
+    /**
+     * Creates result created. Body of this result is some object itself instead of classic result json.
+     *
+     * @param object of BaseModel to send
+     * @return 201 result
+     */
+    public static Result created(_Abstract_MongoModel object) {
+        return Controller.created(object.json());
+    }
+
     public static Result created(_Swagger_Abstract_Default object) {
         return Controller.created(object.json());
     }
@@ -196,6 +233,8 @@ public abstract class _BaseController {
     public static Result ok() {
         return Controller.ok(Json.toJson(new Result_Ok()));
     }
+
+
 
     public static Result ok(List <? extends JsonSerializer> objects){
         check_latency();
@@ -221,6 +260,17 @@ public abstract class _BaseController {
         check_latency();
         return Controller.ok(object.json());
     }
+
+    /**
+     * Creates result created. Body of this result is some object itself instead of classic result json.
+     *
+     * @param object of _Abstract_MongoModel to send
+     * @return 200 result
+     */
+    public static Result ok(_Abstract_MongoModel object) {
+        return Controller.created(object.json());
+    }
+
 
     /**
      * Creates a result with the code 200 and provided json as the body.
@@ -519,7 +569,7 @@ public abstract class _BaseController {
         StackTraceElement current_stack = Thread.currentThread().getStackTrace()[2]; // Find the caller origin
 
         try {
-            ServerLogger.error(error, current_stack.getClassName() + "::" + current_stack.getMethodName(), Controller.request());
+            ServerLogger.error(error, current_stack.getClassName() + "::" + current_stack.getMethodName(), request());
         } catch (Exception e) {
             ServerLogger.error(error, current_stack.getClassName() + "::" + current_stack.getMethodName(), null);
         }
@@ -540,5 +590,92 @@ public abstract class _BaseController {
 
 
     //**********************************************************************************************************************
+
+    //**********************************************************************************************************************
+
+
+    protected JsonNode POST(URL url, int timeOut, String auth, JsonNode node) {
+        try {
+
+            logger.debug("URL:POST " + url + "  Json: " + node.toString());
+
+            WSRequest request = ws.url(url.toString())
+                    .setContentType("application/json")
+                    .setRequestTimeout(Duration.ofSeconds(timeOut));
+
+            if(auth != null) {
+                request.setAuth(auth);
+            }
+
+            CompletionStage<WSResponse> responsePromise  = request.post(node);
+
+            WSResponse wsResponse = responsePromise.toCompletableFuture().get();
+            JsonNode response = wsResponse.asJson();
+
+            logger.debug("REST:: POST:{}  Code: {} Result: {}", url.toString(), wsResponse.getStatus(), prettyPrint(response));
+            return response;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    protected JsonNode PUT(URL url, int timeOut, String auth, JsonNode node) {
+        try {
+            logger.debug("URL:PUT " + url + "  Json: " + node.toString());
+
+            WSRequest request = ws.url(url.toString())
+                    .setContentType("application/json")
+                    .setRequestTimeout(Duration.ofSeconds(timeOut));
+
+            if(auth != null) {
+                request.setAuth(auth);
+            }
+
+            CompletionStage<WSResponse> responsePromise  = request.put(node);
+
+            WSResponse wsResponse = responsePromise.toCompletableFuture().get();
+            JsonNode response = wsResponse.asJson();
+
+            logger.debug("REST:: PUT:{}  Code: {} Result: {}", url.toString(), wsResponse.getStatus(), prettyPrint(response));
+            return response;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    protected JsonNode GET(URL url, int timeOut, String auth) {
+        try {
+
+            logger.debug("URL:GET: " + url);
+
+            WSRequest request = ws.url(url.toString())
+                    .setContentType("application/json")
+                    .setRequestTimeout(Duration.ofSeconds(timeOut));
+
+            if(auth != null) {
+                request.setAuth(auth);
+            }
+
+
+            CompletionStage<WSResponse> responsePromise  = request.get();
+
+
+            WSResponse wsResponse = responsePromise.toCompletableFuture().get();
+            JsonNode response = wsResponse.asJson();
+
+            logger.debug("REST:: GET:{}  Code: {} Result: {}", url.toString(), wsResponse.getStatus(), prettyPrint(response));
+
+
+            return response;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
 
 }
