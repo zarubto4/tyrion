@@ -2,8 +2,7 @@ package controllers;
 
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
-import io.ebean.Ebean;
-import io.ebean.Expr;
+import io.ebean.*;
 import io.swagger.annotations.*;
 import models.Model_Permission;
 import models.Model_Person;
@@ -20,10 +19,8 @@ import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
-import utilities.swagger.input.Swagger_Invite_Person;
-import utilities.swagger.input.Swagger_NameAndDesc_ProjectIdOptional;
-import utilities.swagger.input.Swagger_NameAndDescription;
-import utilities.swagger.input.Swagger_Role_Add_Permission;
+import utilities.swagger.input.*;
+import utilities.swagger.output.filter_results.Swagger_Role_List;
 
 import java.util.List;
 import java.util.UUID;
@@ -111,6 +108,55 @@ public class Controller_Role extends _BaseController {
     public Result role_get(UUID role_id) {
         try {
             return read(Model_Role.find.byId(role_id));
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "get Role List by Filter",
+            tags = {"Role"},
+            notes = "get Role List",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_Role_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",             response = Swagger_Role_List.class),
+            @ApiResponse(code = 400, message = "Invalid body",          response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",  response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",     response = Result_InternalServerError.class)
+    })
+    public Result role_getByFilter(@ApiParam(value = "page_number is Integer. 1,2,3...n" + "For first call, use 1 (first page of list)", required = true) int page_number) {
+        try {
+
+            Swagger_Role_Filter help = formFromRequestWithValidation(Swagger_Role_Filter.class);
+
+            Query<Model_Role> query = Ebean.find(Model_Role.class);
+
+            query.where().eq("deleted", false);
+
+            if (help.project_id != null) {
+                Model_Project.find.byId(help.project_id);
+
+                query.where().eq("project.id", help.project_id);
+            }
+
+            Swagger_Role_List result = new Swagger_Role_List(query, page_number, help);
+
+            // TODO permissions
+
+            return ok(result);
+
         } catch (Exception e) {
             return controllerServerError(e);
         }

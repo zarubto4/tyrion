@@ -190,8 +190,8 @@ public class Server {
         version = configuration.getString("api.version");
 
         if (Server.mode == ServerMode.DEVELOPER) {
-            String mac_address = getMacAddress().toLowerCase();
-            logger.warn("setServerValues - local macAddress: {}", mac_address);
+            // String mac_address = getMacAddress().toLowerCase();
+            // logger.warn("setServerValues - local macAddress: {}", mac_address);
 
             // Speciální podmínka, která nastaví podklady sice v Developerském modu - ale s URL adresami tak, aby byly v síti přístupné
 
