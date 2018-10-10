@@ -30,6 +30,7 @@ import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -109,11 +110,18 @@ public class Controller_Project extends _BaseController {
 
             for (Model_Employee employee : employees) {
 
+                Model_Person person = employee.getPerson();
+
                 if (employee.state == ParticipantStatus.OWNER || employee.state == ParticipantStatus.ADMIN) {
-                    adminRole.persons.add(employee.getPerson());
+                    adminRole.persons.add(person);
                 } else {
-                    memberRole.persons.add(employee.getPerson());
+                    memberRole.persons.add(person);
                 }
+                if (person.idCache().gets(Model_Project.class) == null) {
+                    person.idCache().add(Model_Project.class, new ArrayList<>());
+                }
+
+                person.idCache().gets(Model_Project.class).add(project.id);
             }
 
             adminRole.save();

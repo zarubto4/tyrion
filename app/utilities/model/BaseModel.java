@@ -76,19 +76,19 @@ public abstract class BaseModel extends Model implements JsonSerializable {
     // Private Class not acceptable from other Tyrion Components
     public class IDCache {
 
-        private HashMap<Class, List<UUID>> cash_map = new HashMap<>();
+        private HashMap<Class, List<UUID>> cacheMap = new HashMap<>();
         private JsonNode cached_json_object_for_rest = null;
 
         public void add(Class c, List<UUID> ids){
             try {
                 if (ids != null) {
-                    if (!cash_map.containsKey(c)) {
-                        cash_map.put(c, ids);
+                    if (!cacheMap.containsKey(c)) {
+                        cacheMap.put(c, ids);
                     } else {
-                        if (cash_map.get(c) != null) {
-                            cash_map.get(c).addAll(0, ids);
+                        if (cacheMap.get(c) != null) {
+                            cacheMap.get(c).addAll(0, ids);
                         } else {
-                            cash_map.put(c, ids);
+                            cacheMap.put(c, ids);
                         }
 
                     }
@@ -103,7 +103,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
 
                 if (id != null) {
 
-                    if (!cash_map.containsKey(c)) {
+                    if (!cacheMap.containsKey(c)) {
                        // System.out.println("IDCache:: not contains KEy");
 
                         // Create List ArraList <- its not possible to use  Collections.singletonList(id))
@@ -112,11 +112,11 @@ public abstract class BaseModel extends Model implements JsonSerializable {
                         List<UUID> list = new ArrayList<>();
                         list.add(id);
 
-                        cash_map.put(c, list);
+                        cacheMap.put(c, list);
                     } else {
 
-                        if(!cash_map.get(c).contains(id)) {
-                            cash_map.get(c).add(id);
+                        if(!cacheMap.get(c).contains(id)) {
+                            cacheMap.get(c).add(id);
                         }
 
                     }
@@ -130,8 +130,8 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         public void remove(Class c, List<UUID> ids){
             try {
                 if(ids != null) {
-                    if (cash_map.containsKey(c)) {
-                        cash_map.get(c).removeAll(ids);
+                    if (cacheMap.containsKey(c)) {
+                        cacheMap.get(c).removeAll(ids);
                     }
                 }
             } catch (Exception e){
@@ -142,12 +142,12 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         public void remove(Class c, UUID id){
             try {
                 if(id != null)
-                if(cash_map.containsKey(c)){
+                if(cacheMap.containsKey(c)){
                     System.out.println("BaseModel Remove - Class " + c.getSimpleName() + " id " + id);
-                    System.out.println("BaseModel Remove - Content " + cash_map.get(c) );
-                    System.out.println("BaseModel Remove - Content size " + cash_map.get(c).size() );
-                    cash_map.get(c).remove(id);
-                    System.out.println("BaseModel Remove - Content " + cash_map.get(c) );
+                    System.out.println("BaseModel Remove - Content " + cacheMap.get(c) );
+                    System.out.println("BaseModel Remove - Content size " + cacheMap.get(c).size() );
+                    cacheMap.get(c).remove(id);
+                    System.out.println("BaseModel Remove - Content " + cacheMap.get(c) );
                 }
             } catch (Exception e){
                 logger.internalServerError(e);
@@ -156,40 +156,27 @@ public abstract class BaseModel extends Model implements JsonSerializable {
 
         public void removeAll(Class c){
             try {
-
-                if (cash_map.containsKey(c)) {
-                    cash_map.remove(c);
-                }
-
-            } catch (Exception e){
+                cacheMap.remove(c);
+            } catch (Exception e) {
                 logger.internalServerError(e);
             }
         }
 
-
         public List<UUID> gets(Class c){
-
-                if (cash_map.containsKey(c)) {
-                    // List<UUID> clone = cash_map.get(c).stream().collect(toList()); throws ConcurrentModificationException !!!
-                    return new ArrayList<>(cash_map.get(c));
-
-                } else {
-                    return null;
-                }
-
+            return cacheMap.getOrDefault(c, null);
         }
 
         public UUID get(Class c){
             try {
-                if (cash_map.containsKey(c)) {
-                    List<UUID> list = cash_map.get(c);
+                if (cacheMap.containsKey(c)) {
+                    List<UUID> list = cacheMap.get(c);
                     if (!list.isEmpty()) {
                         return list.get(0);
                     }
                 }
 
                 return null;
-            }catch (Exception e) {
+            } catch (Exception e) {
                 return null;
             }
         }
