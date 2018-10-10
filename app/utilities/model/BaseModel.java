@@ -364,7 +364,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         long start = System.currentTimeMillis();
         Class<? extends BaseModel> cls = this.getClass();
 
-        logger.trace("cache - finding cache finder for {}", cls.getSimpleName());
+        logger.debug("cache - finding cache finder for {}", cls.getSimpleName());
 
         for (Field field : cls.getDeclaredFields()) {
             if (field.isAnnotationPresent(CacheField.class)) {

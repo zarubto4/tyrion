@@ -33,11 +33,11 @@ POST      /logout                                                       utilitie
 
 POST      /apikey                                                       utilities.authentication.Controller_Security.apikey()
 
-GET       /login/facebook/*url                                          utilities.authentication.Controller_Security.facebook_oauth_get(url)
-GET       /login/github/*url                                            utilities.authentication.Controller_Security.github_oauth_get(url)
-
-POST      /facebook                                                     utilities.authentication.Controller_Security.Facebook()
-POST      /github                                                       utilities.authentication.Controller_Security.GitHub()
+# Facebook login
+PUT       /facebook/login/url-user                                       controllers.Controller_FacebookLogin.login_url_user()
+GET       /facebook/login/redirect-user/                                 controllers.Controller_FacebookLogin.login_redirect_user()
+PUT       /facebook/login/url                                            controllers.Controller_FacebookLogin.login_url()
+GET       /facebook/login/redirect                                       controllers.Controller_FacebookLogin.login_redirect()
 
 GET       /login/person                                                 utilities.authentication.Controller_Security.person_get_by_token()
 
@@ -563,6 +563,7 @@ DELETE    /admin/gsm/:sim_id                                            controll
 # Map static resources from the /public folder to the /assets URL path
 GET       /swagger.json                                                 controllers.ApiHelpController.getResources
 GET       /assets/*file                                                 controllers.Assets.at(path="/public", file)
+GET       /swagger_ui                                                   controllers.Assets.at(path="/public", file="swagger_ui.html")
 GET       /assets/*file                                                 controllers.Assets.versioned(path="/public", file: Asset)
 GET       /.well-known/acme-challenge/:file                             utilities.certificate.CertificateCheck.check(file)
 

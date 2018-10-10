@@ -82,6 +82,7 @@ public class Code extends TestHelper {
 
     @Rule
     public TestRule watchman = new TestWatcher() {
+
         public void starting(Description description) {
             logger.debug("Test \t<{}>\t is running.", description.getMethodName());
         }
