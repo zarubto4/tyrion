@@ -114,6 +114,8 @@ DELETE    /role/permission/:role_id/:permission_id                      controll
 PUT       /role/person/:role_id                                         controllers.Controller_Role.role_addPerson(role_id: java.util.UUID)
 DELETE    /role/person/:role_id/:person_id                              controllers.Controller_Role.role_removePerson(role_id: java.util.UUID, person_id: java.util.UUID)
 
+PUT       /role/list/:page_number                                       controllers.Controller_Role.role_getByFilter(page_number:Int)
+
 POST      /role                                                         controllers.Controller_Role.role_create()
 DELETE    /role/:role_id                                                controllers.Controller_Role.role_delete(role_id: java.util.UUID)
 PUT       /role/:role_id                                                controllers.Controller_Role.role_update(role_id: java.util.UUID)

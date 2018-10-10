@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@ApiModel(description = "Individual B_Program List",
-        value = "B_Program_List")
+@ApiModel(description = "Individual Role List",
+        value = "Role_List")
 public class Swagger_Role_List extends _Swagger_Filter_Common {
 
 
