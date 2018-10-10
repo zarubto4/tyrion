@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers._BaseController;
+import exceptions.ForbiddenException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
@@ -14,8 +14,6 @@ import utilities.Server;
 import utilities.enums.BusinessModel;
 import utilities.enums.EntityType;
 import utilities.enums.PaymentMethod;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.OrderedNamedModel;
 import utilities.model.Publishable;
@@ -101,8 +99,6 @@ public class Model_Tariff extends OrderedNamedModel implements Permissible, Publ
         try {
             return total_per_month();
 
-        }catch (_Base_Result_Exception e){
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return 0d;
@@ -119,9 +115,6 @@ public class Model_Tariff extends OrderedNamedModel implements Permissible, Publ
 
             return formFromJsonWithValidation(Swagger_TariffLabelList.class, request_list).labels;
 
-        } catch (_Base_Result_Exception e) {
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
@@ -134,7 +127,7 @@ public class Model_Tariff extends OrderedNamedModel implements Permissible, Publ
         try {
             // TODO this.check_update_permission();
             return extensions_included;
-        } catch (_Base_Result_Exception e){
+        } catch (ForbiddenException e){
             return extensions_included.stream().filter(ex -> ex.active).collect(Collectors.toList());
         }
     }
@@ -145,7 +138,7 @@ public class Model_Tariff extends OrderedNamedModel implements Permissible, Publ
         try {
             // TODO this.check_update_permission();
             return extensions_recommended;
-        } catch (_Base_Result_Exception e){
+        } catch (ForbiddenException e){
             return extensions_recommended.stream().filter(ex -> ex.active).collect(Collectors.toList());
         }
     }

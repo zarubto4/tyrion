@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.swagger.output.Swagger_Short_Reference;
@@ -40,10 +39,7 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
     @JsonProperty @ApiModelProperty(required = true)
     public Swagger_Short_Reference grid_program() {
         try {
-            return new Swagger_Short_Reference(get_grid_version_program().getGridProgram().id, get_grid_version_program().getGridProgram().name, get_grid_version_program().getGridProgram().description);
-        } catch (_Base_Result_Exception e) {
-            // nothing
-            return null;
+            return get_grid_version_program().getGridProgram().ref();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -53,11 +49,7 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
     @JsonProperty @ApiModelProperty(required = true)
     public Swagger_Short_Reference grid_program_version() {
         try {
-            return new Swagger_Short_Reference(get_grid_program_version_id(), get_grid_version_program().name, get_grid_version_program().description);
-
-        }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
+            return get_grid_version_program().ref();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -67,7 +59,7 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
 /* JSON IGNORE  ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public UUID get_grid_program_version_id() throws _Base_Result_Exception {
+    public UUID get_grid_program_version_id() {
 
         if (idCache().get(Model_GridProgramVersion.class) == null) {
             idCache().add(Model_GridProgramVersion.class, (UUID) Model_GridProgramVersion.find.query().where().eq("m_program_instance_parameters.id", id).select("id").findSingleAttribute());
@@ -78,12 +70,12 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
     }
 
     @JsonIgnore
-    public Model_GridProgramVersion get_grid_version_program() throws _Base_Result_Exception {
+    public Model_GridProgramVersion get_grid_version_program() {
         return isLoaded("grid_program_version") ? grid_program_version : Model_GridProgramVersion.find.query().where().eq("m_program_instance_parameters.id", id).findOne();
     }
 
     @JsonIgnore
-    public UUID get_b_program_grid_version_id() throws _Base_Result_Exception {
+    public UUID get_b_program_grid_version_id() {
 
         if (idCache().get(Model_BProgramVersionSnapGridProject.class) == null) {
             idCache().add(Model_BProgramVersionSnapGridProject.class, (UUID) Model_BProgramVersionSnapGridProject.find.query().where().eq("grid_programs.id", id).select("id").findSingleAttribute());
@@ -94,7 +86,7 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
     }
 
     @JsonIgnore
-    public Model_BProgramVersionSnapGridProject get_b_program_grid_version() throws _Base_Result_Exception {
+    public Model_BProgramVersionSnapGridProject get_b_program_grid_version() {
         try {
             return Model_BProgramVersionSnapGridProject.find.byId(get_b_program_grid_version_id());
         }catch (Exception e) {

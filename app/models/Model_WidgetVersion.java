@@ -5,7 +5,6 @@ import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.EntityType;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.UnderProject;
 import utilities.model.VersionModel;
@@ -41,7 +40,7 @@ public class Model_WidgetVersion extends VersionModel implements Permissible, Un
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public UUID get_grid_widget_id() throws _Base_Result_Exception {
+    public UUID get_grid_widget_id() {
 
         if (idCache().get(Model_Widget.class) == null) {
             idCache().add(Model_Widget.class, (UUID) Model_Widget.find.query().where().eq("versions.id", id).select("id").findSingleAttribute());
@@ -51,7 +50,7 @@ public class Model_WidgetVersion extends VersionModel implements Permissible, Un
     }
 
     @JsonIgnore
-    public Model_Widget getWidget() throws _Base_Result_Exception {
+    public Model_Widget getWidget() {
         return isLoaded("widget") ? widget : Model_Widget.find.query().nullable().where().eq("versions.id", id).findOne();
     }
 
@@ -78,13 +77,7 @@ public class Model_WidgetVersion extends VersionModel implements Permissible, Un
             widget.sort_Model_Model_GridProgramVersion_ids();
         }
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, widget.getProjectId(), widget.id));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, widget.getProjectId(), widget.id))).start();
     }
 
     @JsonIgnore @Override
@@ -95,14 +88,7 @@ public class Model_WidgetVersion extends VersionModel implements Permissible, Un
         // Update Object
         super.update();
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getWidget().getProjectId(), get_grid_widget_id()));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
-
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getWidget().getProjectId(), get_grid_widget_id()))).start();
     }
 
     @JsonIgnore @Override
@@ -113,20 +99,9 @@ public class Model_WidgetVersion extends VersionModel implements Permissible, Un
         // Delete
         super.delete();
 
-        // Remove from Cache Cache
-        try {
-            getWidget().idCache().remove(this.getClass(), id);
-        } catch (_Base_Result_Exception e) {
-            // Nothing
-        }
+        getWidget().idCache().remove(this.getClass(), id);
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getWidget().getProjectId(), get_grid_widget_id()));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getWidget().getProjectId(), get_grid_widget_id()))).start();
 
         return false;
     }

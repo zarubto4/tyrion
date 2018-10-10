@@ -7,7 +7,6 @@ import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.EntityType;
 import utilities.enums.ParticipantStatus;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.model.UnderCustomer;
@@ -40,10 +39,7 @@ public class Model_Employee extends BaseModel implements Permissible, UnderCusto
     public Model_Person person() {
         try{
             return this.getPerson();
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
+        } catch (Exception e){
             logger.internalServerError(e);
             return null;
         }
@@ -52,7 +48,7 @@ public class Model_Employee extends BaseModel implements Permissible, UnderCusto
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public UUID get_person_id() throws _Base_Result_Exception {
+    public UUID get_person_id() {
 
         if (idCache().get(Model_Person.class) == null) {
             idCache().add(Model_Person.class, (UUID) Model_Person.find.query().where().eq("employees.id", id).select("id").findSingleAttribute());

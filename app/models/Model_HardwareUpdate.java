@@ -10,7 +10,6 @@ import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.model.UnderProject;
@@ -71,10 +70,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
     public UpdateType type_of_update () {
         try {
             return getActualizationProcedure().type_of_update;
-        } catch (_Base_Result_Exception e) {
-            //nothing
-            return null;
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
@@ -84,9 +80,6 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
     public UUID actualization_procedure_id(){
         try {
             return getActualizationProcedureId();
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -95,11 +88,8 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
     @JsonProperty
     public Date date_of_planing() {
-        try{
+        try {
             return getActualizationProcedure().date_of_planing;
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -108,12 +98,9 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
     @JsonProperty
     public Date created() {
-        try{
+        try {
             return getActualizationProcedure().created;
-        }catch(_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch(Exception e){
+        } catch(Exception e) {
             logger.internalServerError(e);
             return null;
         }
@@ -134,9 +121,6 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
             return c_program_detail;
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -161,9 +145,6 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
             return bootloader_update_detail;
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -173,13 +154,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public Swagger_Short_Reference hardware() {
         try {
-
-            Model_Hardware hardware = getHardware();
-            return new Swagger_Short_Reference(hardware.id, hardware.name, hardware.description);
-
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
+            return getHardware().ref();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -191,9 +166,6 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
     public Model_Blob binary_file_detail() {
         try{
             return binary_file;
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;

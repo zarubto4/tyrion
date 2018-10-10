@@ -22,7 +22,6 @@ import utilities.cache.CacheFinderField;
 import utilities.enums.CompilationStatus;
 import utilities.enums.EntityType;
 import exceptions.NotFoundException;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.UnderProject;
 import utilities.model.VersionModel;
@@ -65,42 +64,17 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public CompilationStatus status(){
-        try {
-            return compilation != null ? compilation.status : CompilationStatus.UNDEFINED;
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return null;
-        }
+        return compilation != null ? compilation.status : CompilationStatus.UNDEFINED;
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public String compilation_version(){
-       try{
-          return  compilation != null ? compilation.firmware_version_lib : CompilationStatus.UNDEFINED.name();
-       } catch (_Base_Result_Exception e){
-           //nothing
-           return null;
-       }catch (Exception e){
-           logger.internalServerError(e);
-           return null;
-       }
+        return  compilation != null ? compilation.firmware_version_lib : CompilationStatus.UNDEFINED.name();
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true, value = "Value can be empty, Server cannot guarantee that.")
     public String virtual_input_output(){
-        try{
-        if(compilation != null) return compilation.virtual_input_output;
-        else return null;
-    } catch (_Base_Result_Exception e){
-        //nothing
-        return null;
-    }catch (Exception e){
-        logger.internalServerError(e);
-        return null;
-    }
+        return compilation != null ? compilation.virtual_input_output : null;
     }
 
     @JsonProperty @ApiModelProperty(required = false, readOnly = true, value = "Link for download file in Binary (Not in Base64). Its ready to manual Upload. Only if \"status\" == \"SUCCESS\"")
@@ -112,9 +86,6 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
                 return null;
             }
 
-        } catch (_Base_Result_Exception e) {
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -123,19 +94,7 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
 
     @JsonProperty @ApiModelProperty(value = "Visible only for Administrator with Special Permission", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
     public Boolean main_mark(){
-        try{
-        if(default_program != null){
-            return true;
-        }
-        return null;
-
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return null;
-        }
+        return default_program != null ? true : null;
     }
 
     @JsonProperty @ApiModelProperty(value = "Program", required = false)
@@ -183,7 +142,7 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public UUID get_c_program_id() throws _Base_Result_Exception {
+    public UUID get_c_program_id() {
 
         if (idCache().get(Model_CProgram.class) == null) {
             idCache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("deleted", false).eq("versions.id", id).select("id").findSingleAttribute());
@@ -193,8 +152,8 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
     }
 
     @JsonIgnore
-    public Model_CProgram get_c_program() throws _Base_Result_Exception {
-        return isLoaded("c_program") ? c_program : Model_CProgram.find.query().nullable().where().eq("versions.id", id).findOne();
+    public Model_CProgram get_c_program() {
+        return isLoaded("c_program") ? c_program : Model_CProgram.find.query().where().eq("versions.id", id).findOne();
     }
 
     @JsonIgnore @Override
@@ -222,13 +181,7 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
             program.sort_Model_Model_CProgramVersion_ids();
         }
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, program.getProjectId(), program.id));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, program.getProjectId(), program.id))).start();
     }
 
     @JsonIgnore @Override
@@ -237,13 +190,7 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
         logger.debug("update::Update object Id: {}",  this.id);
         super.update();
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, get_c_program().getProjectId(), get_c_program_id()));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, get_c_program().getProjectId(), get_c_program_id()))).start();
 
     }
 
@@ -254,20 +201,9 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
 
         super.delete();
 
-        // Add to Cache
-        try {
-            get_c_program().idCache().remove(this.getClass(), id);
-        } catch (_Base_Result_Exception e) {
-            // Nothing
-        }
+        get_c_program().idCache().remove(this.getClass(), id);
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, get_c_program().getProjectId(), get_c_program_id()));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, get_c_program().getProjectId(), get_c_program_id()))).start();
 
         return false;
     }
@@ -291,19 +227,7 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
             this.update();
         }
 
-        Thread compile_that = new Thread() {
-
-            @Override
-            public void run() {
-                try {
-                    version.compile_program_procedure();
-                } catch (Exception e) {
-                    logger.internalServerError(e);
-                }
-            }
-        };
-
-        compile_that.start();
+        new Thread(version::compile_program_procedure).start();
     }
 
     @JsonIgnore
@@ -399,7 +323,7 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
                         library_files.addAll(lib_file.files);
 
                     }
-                } catch (_Base_Result_Exception exception) {
+                } catch (NotFoundException exception) {
                     logger.error("compile_C_Program_code:: lib_version is null ");
                     return _BaseController.notFound("Error getting libraries - library version not found");
                 }
@@ -552,19 +476,11 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
 
             return _BaseController.externalServerError();
 
-        }catch (_Base_Result_Exception error){
-
-            // Result_Error_NotFound
-            if(error.getClass().getSimpleName().equals(NotFoundException.class.getSimpleName())){
-                NotFoundException not_found = (NotFoundException) error.getCause();
-                return _BaseController.notFound(not_found.getEntity());
-            }
-            logger.internalServerError(error);
-           return _BaseController.internalServerError(error);
-
-        }catch (Exception error){
-            logger.internalServerError(error);
-            return _BaseController.internalServerError(error);
+        } catch (NotFoundException e) {
+            return _BaseController.notFound(e.getEntity());
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return _BaseController.internalServerError(e);
         }
     }
 

@@ -14,7 +14,7 @@ import utilities.cache.CacheFinderField;
 import utilities.enums.EntityType;
 import utilities.enums.ProductEventType;
 import utilities.enums.ExtensionType;
-import utilities.errors.Exceptions.Result_Error_BadRequest;
+import exceptions.BadRequestException;
 import utilities.financial.extensions.configurations.*;
 import utilities.financial.extensions.consumptions.ResourceConsumption;
 import utilities.financial.extensions.extensions.Extension;
@@ -89,7 +89,7 @@ public class Model_ProductExtension extends OrderedNamedModel implements Permiss
     public void save() {
         boolean newExtension = id == null;
         if (newExtension && active) {
-            throw new Result_Error_BadRequest("Cannot save a new product with active == true. Use setActive to activate product.");
+            throw new BadRequestException("Cannot save a new product with active == true. Use setActive to activate product.");
         }
 
         super.save();
@@ -103,7 +103,7 @@ public class Model_ProductExtension extends OrderedNamedModel implements Permiss
     @Transactional
     public void setActive(boolean activeNew) throws Exception {
         if(this.active == activeNew) {
-            throw new Result_Error_BadRequest("Extension is already " + (activeNew ? "activated" : "deactivated"));
+            throw new BadRequestException("Extension is already " + (activeNew ? "activated" : "deactivated"));
         }
 
         try {

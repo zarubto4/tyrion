@@ -3,13 +3,13 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import exceptions.NotFoundException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.Publishable;
 import utilities.model.TaggedModel;
@@ -55,20 +55,20 @@ public class Model_Widget extends TaggedModel implements Permissible, UnderProje
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(value = "Visible only if user has permission to know it", required = false)
-    public Model_Person author() throws _Base_Result_Exception {
+    public Model_Person author() {
         try {
             if (author_id != null) {
                 return Model_Person.find.byId(author_id);
             }
 
             return null;
-        }catch (_Base_Result_Exception e){
+        } catch (NotFoundException e){
             //nothing
-            return null;
-        }catch (Exception e){
+        } catch (Exception e){
             logger.internalServerError(e);
-            return null;
         }
+
+        return null;
     }
 
     @JsonProperty
@@ -76,47 +76,29 @@ public class Model_Widget extends TaggedModel implements Permissible, UnderProje
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Swagger_Short_Reference producer(){
         try {
-            Model_Producer product = get_producer();
-            if(product != null) {
-                return new Swagger_Short_Reference(product.id, product.name, product.description);
-            } else {
-                return null;
+            Model_Producer producer = getProducer();
+            if (producer != null) {
+                return producer.ref();
             }
-        }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
-            return null;
         }
+        return null;
     }
-
 
     @JsonProperty @ApiModelProperty(required = true)
     public  List<Model_WidgetVersion> versions() {
-        try{
-        return get_versions();
-    }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
+        try {
+            return get_versions();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
     }
 
-
     @JsonProperty @ApiModelProperty(required = false, value = "Only for Community Administrator") @JsonInclude(JsonInclude.Include.NON_NULL)
     public Boolean active() {
-        try{
         return publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN ? active : null;
-    }catch (_Base_Result_Exception e){
-            //nothing
-            return false;
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return false;
-        }
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
@@ -127,7 +109,7 @@ public class Model_Widget extends TaggedModel implements Permissible, UnderProje
     }
 
     @JsonIgnore
-    public UUID getProjectId() throws _Base_Result_Exception {
+    public UUID getProjectId() {
 
         if (idCache().get(Model_Project.class) == null) {
             idCache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("widgets.id", id).select("id").findSingleAttribute());
@@ -137,7 +119,7 @@ public class Model_Widget extends TaggedModel implements Permissible, UnderProje
     }
 
     @JsonIgnore @Override
-    public Model_Project getProject() throws _Base_Result_Exception {
+    public Model_Project getProject() {
         return isLoaded("project") ? project : Model_Project.find.query().nullable().where().eq("widgets.id", id).findOne();
     }
 
@@ -184,23 +166,9 @@ public class Model_Widget extends TaggedModel implements Permissible, UnderProje
     }
 
     @JsonIgnore
-    public UUID get_producerId() {
-        if (idCache().get(Model_Producer.class) == null) {
-            idCache().add(Model_Producer.class, (UUID) Model_Producer.find.query().where().eq("widgets.id", id).select("id").findSingleAttribute());
-        }
-
-        return idCache().get(Model_Producer.class);
+    public Model_Producer getProducer() {
+        return isLoaded("producer") ? producer : Model_Producer.find.query().nullable().where().eq("widgets.id", id).findOne();
     }
-
-    @JsonIgnore
-    public Model_Producer get_producer() {
-        try {
-            return Model_Producer.find.byId(get_producerId());
-        }catch (Exception e) {
-            return null;
-        }
-    }
-
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -231,11 +199,7 @@ public class Model_Widget extends TaggedModel implements Permissible, UnderProje
 
         if(publish_type == ProgramType.PRIVATE) {
             new Thread(() -> {
-                try {
-                    EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getProjectId(), getProjectId()));
-                } catch (_Base_Result_Exception e) {
-                    // Nothing
-                }
+                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getProjectId(), getProjectId()));
             }).start();
         }
 
@@ -249,7 +213,7 @@ public class Model_Widget extends TaggedModel implements Permissible, UnderProje
         // Delete
         super.delete();
 
-        if(publish_type == ProgramType.PRIVATE) {
+        if (publish_type == ProgramType.PRIVATE) {
 
             try {
                 getProject().idCache().remove(this.getClass(), id);
@@ -269,42 +233,13 @@ public class Model_Widget extends TaggedModel implements Permissible, UnderProje
         return false;
     }
 
-/* ORDER  -------------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore
-    public void up() throws _Base_Result_Exception {
-
-        /*
-        Model_Widget up = Model_Widget.find.query().where().eq("order_position", (order_position-1) ).eq("type_of_widget.id", type_of_widget_id()).findOne();
-        if (up == null) return;
-
-        up.order_position += 1;
-        up.update();
-
-        this.order_position -= 1;
-        this.update();
-        */
-    }
-
-    @JsonIgnore @Transient
-    public void down() throws _Base_Result_Exception {
-        /*
-        Model_Widget down = Model_Widget.find.query().where().eq("order_position", (order_position+1) ).eq("type_of_widget.id", type_of_widget_id()).findOne();
-        if (down == null) return;
-
-        down.order_position -= 1;
-        down.update();
-
-        this.order_position += 1;
-        this.update();
-        */
-    }
+/* ORDER ---------------------------------------------------------------------------------------------------------------*/
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
-/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+/* BLOB DATA -----------------------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

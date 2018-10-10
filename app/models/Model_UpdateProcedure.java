@@ -3,6 +3,7 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import exceptions.NotFoundException;
 import io.ebean.Expr;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -10,7 +11,6 @@ import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.cache.Cached;
 import utilities.enums.*;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.model.UnderProject;
@@ -65,11 +65,8 @@ public class Model_UpdateProcedure extends BaseModel implements Permissible, Und
             }
 
             return null;
-        }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e){
-            // logger.internalServerError(e);
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -85,11 +82,8 @@ public class Model_UpdateProcedure extends BaseModel implements Permissible, Und
 
             return null;
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e){
-            // logger.internalServerError(e);
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -104,10 +98,7 @@ public class Model_UpdateProcedure extends BaseModel implements Permissible, Und
             }
             return null;
 
-        }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
+        } catch (Exception e){
             logger.internalServerError(e);
             return null;
         }
@@ -115,17 +106,7 @@ public class Model_UpdateProcedure extends BaseModel implements Permissible, Und
 
     @JsonProperty @ApiModelProperty(required = true )
     public Enum_Update_group_procedure_state state () {
-        try{
-
-
         return state;
-        }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return null;
-        }
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
@@ -137,12 +118,9 @@ public class Model_UpdateProcedure extends BaseModel implements Permissible, Und
 
             return size;
 
-        }catch (_Base_Result_Exception e){
-                //nothing
-                return null;
-        }catch (Exception e){
-                logger.internalServerError(e);
-                return null;
+        } catch (Exception e){
+            logger.internalServerError(e);
+            return null;
         }
     }
 
@@ -165,28 +143,8 @@ public class Model_UpdateProcedure extends BaseModel implements Permissible, Und
 
     @JsonIgnore @Transient public List<UUID> getUpdatesId() {
 
-        // TODO všechny  System.out.println odstranit
-        System.out.println("Model_UpdateProcedure:: getUpdatesId");
-        System.out.println("Model_UpdateProcedure:: getUpdatesId:: actualization_procedure.id: " + id );
-
-        System.out.println("Model_UpdateProcedure:: getUpdatesId:: Co jsem našel bez sort?:" + Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).select("id").findSingleAttributeList());
-        System.out.println("Model_UpdateProcedure:: getUpdatesId:: Co jsem našel se  sort?:" + Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).order().asc("date_of_finish").select("id").findSingleAttributeList());
-        System.out.println("Model_UpdateProcedure:: getUpdatesId:: Co jsem našel se  sort2?:" + Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).orderBy("date_of_finish").select("id").findSingleAttributeList());
-
         if (idCache().gets(Model_HardwareUpdate.class) == null) {
-            System.out.println("Model_UpdateProcedure:: getUpdatesId cache je prázdná! Hledám");
-            System.out.println("Model_UpdateProcedure:: Co ukládám do Cache Paměti:: " + Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).select("id").findSingleAttributeList());
-
             idCache().add( Model_HardwareUpdate.class, Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).select("id").findSingleAttributeList());
-
-
-            System.out.println("Model_UpdateProcedure:: co jsem uložit? " +  idCache().gets(Model_HardwareUpdate.class));
-        }
-
-        System.out.println("Model_UpdateProcedure:: co vracím? : " + idCache().gets(Model_HardwareUpdate.class));
-
-        if(idCache().gets(Model_HardwareUpdate.class).isEmpty()) {
-            System.out.println("Model_UpdateProcedure:: getUpdatesId:: žádný jsem nenašel v cache paěti ");
         }
 
         return idCache().gets(Model_HardwareUpdate.class) != null ?  idCache().gets(Model_HardwareUpdate.class) : new ArrayList<>();
@@ -235,7 +193,7 @@ public class Model_UpdateProcedure extends BaseModel implements Permissible, Und
     }
 
     @JsonIgnore @Override
-    public Model_Project getProject() throws _Base_Result_Exception  {
+    public Model_Project getProject() throws NotFoundException {
         return Model_Project.find.byId(project_id);
     }
 

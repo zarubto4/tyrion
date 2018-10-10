@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.documentdb.DocumentClientException;
-import controllers._BaseController;
 import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -20,8 +19,6 @@ import utilities.enums.CompilationStatus;
 import utilities.enums.EntityType;
 import utilities.enums.NetworkStatus;
 import utilities.errors.ErrorCode;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.model.BaseModel;
 import utilities.model.Publishable;
 import utilities.permission.Action;
@@ -60,12 +57,8 @@ public class Model_CompilationServer extends BaseModel implements Permissible, P
     @ApiModelProperty(required = true, readOnly = true) @JsonProperty
 
     public NetworkStatus online_state() {
-        try{
-        return Controller_WebSocket.compilers.containsKey(this.id) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
-
-        } catch (_Base_Result_Exception e) {
-            // nothing
-            return null;
+        try {
+            return Controller_WebSocket.compilers.containsKey(this.id) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;

@@ -12,7 +12,6 @@ import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.cache.Cached;
 import utilities.enums.EntityType;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 import utilities.model.Publishable;
@@ -232,7 +231,7 @@ public class Model_HardwareType extends NamedModel implements Permissible, Publi
     }
 
     @JsonIgnore
-    public UUID get_main_boot_loader_id() throws _Base_Result_Exception {
+    public UUID get_main_boot_loader_id() {
         if (idCache().get(Model_HardwareType.Model_HardwareType_Main.class) == null) {
             idCache().add(Model_HardwareType.Model_HardwareType_Main.class, (UUID) Model_BootLoader.find.query().where().eq("main_hardware_type.id", id).select("id").findSingleAttribute());
         }
@@ -240,7 +239,7 @@ public class Model_HardwareType extends NamedModel implements Permissible, Publi
     }
 
     @JsonIgnore
-    public Model_BootLoader get_main_boot_loader() throws _Base_Result_Exception {
+    public Model_BootLoader get_main_boot_loader() {
         return isLoaded("main_boot_loader") ? main_boot_loader : Model_BootLoader.find.query().nullable().where().eq("main_hardware_type.id", id).findOne();
     }
 

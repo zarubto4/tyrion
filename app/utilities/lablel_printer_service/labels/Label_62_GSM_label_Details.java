@@ -1,10 +1,8 @@
 package utilities.lablel_printer_service.labels;
 
-
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import models.Model_GSM;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 
 import java.io.ByteArrayOutputStream;
@@ -81,7 +79,7 @@ public class Label_62_GSM_label_Details {
     }
 
 
-    private PdfPCell device_hash_for_Add() throws DocumentException, _Base_Result_Exception, IOException {
+    private PdfPCell device_hash_for_Add() throws DocumentException, IOException {
 
         // QR Code for ADD
         BarcodeQRCode barcodeQRCode = new BarcodeQRCode(gsm.registration_hash.toString(), 1000, 1000, null);
@@ -107,7 +105,7 @@ public class Label_62_GSM_label_Details {
 
     }
 
-    private PdfPTable details() throws DocumentException, _Base_Result_Exception, IOException {
+    private PdfPTable details() throws DocumentException, IOException {
 
         // 62 = 100%
         // 12 + 30

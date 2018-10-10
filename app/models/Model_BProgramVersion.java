@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.EntityType;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.UnderProject;
 import utilities.model.VersionModel;
@@ -54,8 +53,6 @@ public class Model_BProgramVersion extends VersionModel implements Permissible, 
             Model_Blob blob = Model_Blob.find.query().where().eq("b_program_version.id", id).eq("name", "blocko.json").findOne();
             return blob.getPublicDownloadLink();
 
-        } catch (_Base_Result_Exception e) {
-            // nothing
         } catch (Exception e) {
             logger.internalServerError(e);
         }
@@ -65,9 +62,6 @@ public class Model_BProgramVersion extends VersionModel implements Permissible, 
     public List<Model_BProgramVersionSnapGridProject> grid_project_snapshots() {
         try {
             return get_grid_project_snapshots();
-        } catch (_Base_Result_Exception e) {
-            // nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -77,7 +71,7 @@ public class Model_BProgramVersion extends VersionModel implements Permissible, 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public List<UUID> get_grid_snapshot_ids() throws _Base_Result_Exception {
+    public List<UUID> get_grid_snapshot_ids() {
 
         if (idCache().gets(Model_BProgramVersionSnapGridProject.class) == null) {
             idCache().add(Model_BProgramVersionSnapGridProject.class, Model_BProgramVersionSnapGridProject.find.query().where().eq("b_program_version.id", id).select("id").findSingleAttributeList());
@@ -105,7 +99,7 @@ public class Model_BProgramVersion extends VersionModel implements Permissible, 
     }
 
     @JsonIgnore
-    public UUID get_b_program_id() throws _Base_Result_Exception {
+    public UUID get_b_program_id() {
 
         if (idCache().get(Model_Project.class) == null) {
             idCache().add(Model_Project.class, Model_BProgram.find.query().where().eq("versions.id", id).select("id").findSingleAttributeList());
@@ -115,7 +109,7 @@ public class Model_BProgramVersion extends VersionModel implements Permissible, 
     }
 
     @JsonIgnore
-    public Model_BProgram getBProgram() throws _Base_Result_Exception {
+    public Model_BProgram getBProgram() {
         return isLoaded("b_program") ? b_program : Model_BProgram.find.query().nullable().where().eq("versions.id", id).findOne();
     }
 
@@ -153,13 +147,7 @@ public class Model_BProgramVersion extends VersionModel implements Permissible, 
         logger.debug("update::Update object Id: {}",  this.id);
         super.update();
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, getBProgram().getProjectId(), get_b_program_id()));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, getBProgram().getProjectId(), get_b_program_id()))).start();
 
     }
 
@@ -168,22 +156,12 @@ public class Model_BProgramVersion extends VersionModel implements Permissible, 
 
         logger.debug("delete::Delete object Id: {}",  this.id);
 
-        // Remove from Cache
-        try {
-            getBProgram().idCache().remove(this.getClass(), id);
-        } catch (_Base_Result_Exception e) {
-            // Nothing
-        }
-
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, getBProgram().getProjectId(), get_b_program_id()));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
-
         super.delete();
+
+        // Remove from Cache
+        getBProgram().idCache().remove(this.getClass(), id);
+
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, getBProgram().getProjectId(), get_b_program_id()))).start();
 
         return false;
     }

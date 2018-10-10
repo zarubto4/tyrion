@@ -3,7 +3,6 @@ package utilities.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import models.Model_Tag;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 
 import javax.persistence.ManyToMany;
@@ -51,13 +50,13 @@ public abstract class TaggedModel extends NamedModel {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    public void setTags(List<String> new_tags) throws _Base_Result_Exception {
+    public void setTags(List<String> new_tags) {
 
         List<String > tags = tags();
 
         boolean change = false;
-        for(String value : new_tags) {
-            if(tags.contains(value)) {
+        for (String value : new_tags) {
+            if (tags.contains(value)) {
                 continue;
             }
 
@@ -81,7 +80,7 @@ public abstract class TaggedModel extends NamedModel {
         }
     }
 
-    public void addTags(List<String> new_tags) throws _Base_Result_Exception {
+    public void addTags(List<String> new_tags) {
         new_tags.forEach(value -> {
             Model_Tag tag = Model_Tag.getByValue(value);
 
@@ -99,7 +98,7 @@ public abstract class TaggedModel extends NamedModel {
         this.update();
     }
 
-    public void removeTags(List<String> tags) throws _Base_Result_Exception {
+    public void removeTags(List<String> tags) {
 
         List<Model_Tag> toRemove = this.tags.stream().filter(tag -> tags.contains(tag.value)).collect(Collectors.toList());
         this.tags.removeAll(toRemove);

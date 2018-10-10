@@ -1975,7 +1975,7 @@ public class Controller_Blocko extends _BaseController {
             Model_Block block = Model_Block.find.byId(block_id);
 
             // Shift order up
-            block.up();
+            // block.up();
 
             return ok();
 
@@ -2005,7 +2005,7 @@ public class Controller_Blocko extends _BaseController {
             Model_Block block =  Model_Block.find.byId(block_id);
 
             // Shift order down
-            block.down();
+            // block.down();
 
             return ok();
 

@@ -12,7 +12,6 @@ import utilities.cache.CacheFinderField;
 import utilities.cache.IdsList;
 import utilities.enums.*;
 import exceptions.NotFoundException;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.model.UnderCustomer;
@@ -585,7 +584,7 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
                 this.project_stats = project_stats;
                 EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, this.id, this.id));
 
-            } catch (_Base_Result_Exception e) {
+            } catch (NotFoundException e) {
                 // Nothing
 
             }

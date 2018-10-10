@@ -17,7 +17,6 @@ import utilities.document_mongo_db.document_objects.DM_HomerServer_Connect;
 import utilities.document_mongo_db.document_objects.DM_HomerServer_Disconnect;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.homer_auto_deploy.DigitalOceanThreadRegister;
 import utilities.homer_auto_deploy.DigitalOceanTyrionService;
 import utilities.homer_auto_deploy.models.common.Swagger_ExternalService;
@@ -97,9 +96,6 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
             }
 
             return Controller_WebSocket.homers.containsKey(id) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -127,9 +123,6 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
 
             return null;
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -138,7 +131,7 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public UUID get_project_id() throws _Base_Result_Exception  {
+    @JsonIgnore @Transient public UUID get_project_id() {
 
         if (idCache().get(Model_Project.class) == null) {
             idCache().add(Model_Project.class, Model_Project.find.query().where().eq("servers.id", id).select("id").findSingleAttributeList());
@@ -149,7 +142,7 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
     }
 
     @JsonIgnore @Override
-    public Model_Project getProject() throws _Base_Result_Exception {
+    public Model_Project getProject() {
         return isLoaded("project") ? project : Model_Project.find.query().nullable().where().eq("servers.id", id).findOne();
     }
 

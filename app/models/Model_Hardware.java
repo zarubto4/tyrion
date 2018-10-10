@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.DocumentClientException;
+import exceptions.NotFoundException;
 import io.ebean.Expr;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -21,7 +22,6 @@ import utilities.cache.Cached;
 import utilities.document_mongo_db.document_objects.*;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
-import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
@@ -144,57 +144,34 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public BackupMode backup_mode() {
-        try{
-
-            return backup_mode ? BackupMode.AUTO_BACKUP : BackupMode.STATIC_BACKUP;
-
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
-            this.logger.internalServerError(e);
-            return null;
-        }
+    @JsonProperty
+    public BackupMode backup_mode() {
+        return backup_mode ? BackupMode.AUTO_BACKUP : BackupMode.STATIC_BACKUP;
     }
 
     @JsonProperty public Swagger_Short_Reference hardware_type() {
         try {
-
-            Model_HardwareType type = this.getHardwareTypeCache();
-            return new Swagger_Short_Reference(type.id, type.name, type.description);
-
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
+            return this.getHardwareType().ref();
         } catch (Exception e){
-            this.logger.internalServerError(e);
+            logger.internalServerError(e);
             return null;
         }
     }
 
     @JsonProperty public Swagger_Short_Reference producer() {
         try {
-            Model_Producer type = this.get_producer();
-            return new Swagger_Short_Reference(type.id, type.name, type.description);
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
+            return this.get_producer().ref();
         } catch (Exception e){
-            this.logger.internalServerError(e);
+            logger.internalServerError(e);
             return null;
         }
     }
 
     @JsonProperty public Swagger_Short_Reference project() {
         try {
-            Model_Project type  = this.getProject();
-            return new Swagger_Short_Reference(type.id, type.name, type.description);
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
-            this.logger.internalServerError(e);
+            return this.getProject().ref();
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -202,11 +179,8 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     @JsonProperty public Model_BootLoader actual_bootloader() {
         try {
             return get_actual_bootloader();
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
-            this.logger.internalServerError(e);
+        } catch (Exception e){
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -241,9 +215,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
             return Model_BootLoader.find.byId(idCache().get(Model_hardware_update_update_in_progress_bootloader.class));
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null; // Raději true než false aby to uživatel neodpálil další update
@@ -254,11 +225,8 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Model_BootLoader available_latest_bootloader()  {
         try {
-            return getHardwareTypeCache().main_boot_loader();
-        }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e) {
+            return getHardwareType().main_boot_loader();
+        } catch (Exception e) {
             logger.internalServerError(e);
             return null; // Raději true než false aby to uživatel neodpálil další update
         }
@@ -316,9 +284,9 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
             // Dont Cache IT!!!!!!!!!!!!!!
             Model_Project project = Model_Project.find.byId(uuid);
-            return new Swagger_Short_Reference(project.id, project.name, project.description);
+            return project.ref();
 
-        }catch (_Base_Result_Exception e){
+        } catch (NotFoundException e){
             // Uživatel na tento projekt nemá oprávnění - alew i tak by měl vědět že někde existuje
             return new Swagger_Short_Reference(null,"No Permission", "");
         }catch (Exception e) {
@@ -342,9 +310,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
                 list.add(BoardAlert.BOOTLOADER_REQUIRED);
             return list;
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
@@ -354,19 +319,10 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     @JsonProperty
     @ApiModelProperty(required = false, readOnly = true, value = "Basic alerts for potential collisions when deploying or updating new programs")
     public BoardUpdateCollision collision(){
-        try{
-            if (connected_instance_id == null) {
-                return BoardUpdateCollision.NO_COLLISION;
-            } else {
-                return BoardUpdateCollision.ALREADY_IN_INSTANCE;
-            }
-
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
+        if (connected_instance_id == null) {
+            return BoardUpdateCollision.NO_COLLISION;
+        } else {
+            return BoardUpdateCollision.ALREADY_IN_INSTANCE;
         }
     }
 
@@ -387,9 +343,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
             return config;
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -412,9 +365,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
             return c_program_plans;
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
@@ -425,11 +375,11 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     public Model_HomerServer server() {
         try{
 
-            if (connected_server_id == null) return null; return Model_HomerServer.find.byId(connected_server_id);
+            if (connected_server_id == null)
+                return null;
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
+            return Model_HomerServer.find.byId(connected_server_id);
+
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;}
@@ -440,17 +390,14 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
         try {
             Model_Instance i = get_instance();
 
-            if(i != null){
-                Swagger_Short_Reference instance = new Swagger_Short_Reference(i.id, i.name, i.description);
+            if (i != null){
+                Swagger_Short_Reference instance = i.ref();
                 instance.online_state = i.online_state();
                 return instance;
-            }else {
+            } else {
                 return null;
             }
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
@@ -460,15 +407,12 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     public Swagger_Short_Reference actual_c_program() {
         try {
             Model_CProgram type = this.get_actual_c_program();
-            if(type != null) {
-                return new Swagger_Short_Reference(type.id, type.name, type.description);
-            }else {
+            if (type != null) {
+                return type.ref();
+            } else {
                 return null;
             }
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
@@ -478,15 +422,12 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     public Swagger_Short_Reference actual_c_program_version() {
         try {
             Model_CProgramVersion version = this.get_actual_c_program_version();
-            if(version != null) {
-                return new Swagger_Short_Reference(version.id, version.name, version.description);
+            if (version != null) {
+                return version.ref();
             } else {
                 return null;
             }
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
@@ -496,15 +437,12 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     public Swagger_Short_Reference actual_c_program_backup() {
         try{
             Model_CProgram program = this.get_backup_c_program();
-            if(program != null) {
-                return new Swagger_Short_Reference(program.id, program.name, program.description);
-            }else {
+            if (program != null) {
+                return program.ref();
+            } else {
                 return null;
             }
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
+        } catch (Exception e){
             logger.internalServerError(e);
             return null;
         }
@@ -514,15 +452,12 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     public Swagger_Short_Reference actual_c_program_backup_version() {
         try{
             Model_CProgramVersion version = this.get_backup_c_program_version();
-            if(version != null) {
-                return new Swagger_Short_Reference(version.id, version.name, version.description);
+            if (version != null) {
+                return version.ref();
             } else {
                 return null;
             }
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
@@ -580,8 +515,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
             return Long.MIN_VALUE;
 
-        }catch (_Base_Result_Exception e){
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -629,9 +562,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
                 return NetworkStatus.UNKNOWN_LOST_CONNECTION_WITH_SERVER;
             }
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return NetworkStatus.OFFLINE;
@@ -644,15 +574,12 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
             List<Swagger_Short_Reference> l = new ArrayList<>();
 
             for (Model_HardwareGroup m : get_hardware_groups()) {
-                l.add(new Swagger_Short_Reference(m.id, m.name, m.description));
+                l.add(m.ref());
             }
 
             return l;
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
@@ -663,9 +590,9 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
         try {
 
             if ( this.idCache().get(Model_Blob.class) == null) {
-                Model_Blob fileRecord = Model_Blob.find.query().where().eq("hardware.id",id).findOne();
-                if (fileRecord != null) {
-                    this.idCache().add(Model_Blob.class,  fileRecord.id);
+                Model_Blob blob = Model_Blob.find.query().nullable().where().eq("hardware.id",id).findOne();
+                if (blob != null) {
+                    this.idCache().add(Model_Blob.class,  blob.id);
                 }
             }
 
@@ -676,9 +603,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
             return null;
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -789,11 +713,11 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
     @JsonIgnore
     public Model_BootLoader get_actual_bootloader(){
-        return actual_boot_loader != null ? actual_boot_loader : Model_BootLoader.find.query().where().eq("hardware.id", id).findOne();
+        return isLoaded("actual_boot_loader") ? actual_boot_loader : Model_BootLoader.find.query().nullable().where().eq("hardware.id", id).findOne();
     }
 
     @JsonIgnore
-    public UUID get_backup_c_program_id() throws _Base_Result_Exception {
+    public UUID get_backup_c_program_id() {
 
         if (idCache().get(Model_CProgram.class) == null) {
             UUID uuid = Model_CProgram.find.query().where().eq("versions.c_program_version_backup_boards.id", id).select("id").findSingleAttribute();
@@ -805,7 +729,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
-    public Model_CProgram get_backup_c_program()throws _Base_Result_Exception {
+    public Model_CProgram get_backup_c_program() {
 
         try {
             return Model_CProgram.find.byId(get_backup_c_program_id());
@@ -816,7 +740,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
-    public UUID get_backup_c_program_version_id() throws _Base_Result_Exception {
+    public UUID get_backup_c_program_version_id() {
 
         if (idCache().get(Model_CProgramVersion.class) == null) {
 
@@ -840,7 +764,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
-    public UUID getHardwareTypeCache_id() throws _Base_Result_Exception {
+    public UUID getHardwareTypeCache_id() {
 
         if (idCache().get(Model_HardwareType.class) == null) {
             idCache().add(Model_HardwareType.class, (UUID) Model_HardwareType.find.query().where().eq("hardware.id", id).select("id").findSingleAttribute());
@@ -849,12 +773,12 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
-    public Model_HardwareType getHardwareTypeCache() throws _Base_Result_Exception {
-        return hardware_type != null ? hardware_type : Model_HardwareType.find.query().where().eq("hardware.id", id).findOne();
+    public Model_HardwareType getHardwareType() {
+        return isLoaded("hardware_type") ? hardware_type : Model_HardwareType.find.query().where().eq("hardware.id", id).findOne();
     }
 
     @JsonIgnore
-    public UUID get_project_id()throws _Base_Result_Exception {
+    public UUID get_project_id() {
 
         if (idCache().get(Model_Project.class) == null) {
             idCache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("hardware.id", id).select("id").findSingleAttribute());
@@ -864,12 +788,12 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore @Override
-    public Model_Project getProject() throws _Base_Result_Exception {
+    public Model_Project getProject() {
         return isLoaded("project") ? project : Model_Project.find.query().nullable().where().eq("hardware.id", id).findOne();
     }
 
     @JsonIgnore
-    public List<UUID> get_hardware_group_ids() throws _Base_Result_Exception{
+    public List<UUID> get_hardware_group_ids() {
 
         if (idCache().gets(Model_HardwareGroup.class) == null) {
             idCache().add(Model_HardwareGroup.class,  Model_HardwareGroup.find.query().where().eq("hardware.id", id).select("id").findSingleAttributeList());
@@ -881,7 +805,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
-    public List<Model_HardwareGroup> get_hardware_groups() throws _Base_Result_Exception{
+    public List<Model_HardwareGroup> get_hardware_groups() {
         try {
 
             List<Model_HardwareGroup> groups  = new ArrayList<>();
@@ -900,8 +824,8 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
     @JsonIgnore
     public boolean update_boot_loader_required() {
-        if (getHardwareTypeCache().main_boot_loader() == null || get_actual_bootloader() == null) return true;
-        return (!this.getHardwareTypeCache().get_main_boot_loader_id().equals(get_actual_bootloader_id()));
+        if (getHardwareType().main_boot_loader() == null || get_actual_bootloader() == null) return true;
+        return (!this.getHardwareType().get_main_boot_loader_id().equals(get_actual_bootloader_id()));
     }
 
 /* JSON IGNORE  --------------------------------------------------------------------------------------------------------*/
@@ -917,7 +841,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     public static final String CHANNEL = "hardware";
 
     // Messenger
-    public static void Messages(WS_Homer homer, ObjectNode json) throws _Base_Result_Exception {
+    public static void Messages(WS_Homer homer, ObjectNode json) {
         new Thread(() -> {
             try {
 
@@ -1009,13 +933,9 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
                     }
                 }
 
-            }catch (_Base_Result_Exception e) {
-                logger.error("Invalid incoming message");
-                // Nothing
             } catch (Exception e) {
                 if (!json.has("message_type")) {
                     homer.send(json.put("error_message", "Your message not contains message_type").put("error_code", 400));
-                    return;
                 } else {
                     logger.internalServerError(e);
                 }
@@ -1077,9 +997,8 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
             // který by vyřešil zbytečné dotazování
             device.hardware_firmware_state_check();
 
-        } catch (_Base_Result_Exception e) {
+        } catch (NotFoundException e) {
             logger.warn("Hardware not found. Message from Homer server: ID = " + help.websocket_identificator + ". Unregistered Hardware Id: " + help.uuid);
-            return;
         } catch (Exception e) {
             logger.internalServerError(e);
         }
@@ -1126,8 +1045,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
             Model_Hardware.cache_status.put(device.id, false);
 
-        } catch (_Base_Result_Exception e) {
-            // Nothing
         } catch (Exception e) {
             logger.internalServerError(e);
         }
@@ -2489,32 +2406,32 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
                 // Ověřím - jestli nemám nově nahraný firmware na Hardwaru (to je ten co je teď výcohí firmware pro aktuální typ hardwaru)
                 if (overview.binaries != null && overview.binaries.firmware != null
                         && overview.binaries.firmware.build_id != null
-                        && getHardwareTypeCache().get_main_c_program().default_main_version != null
-                        && getHardwareTypeCache().get_main_c_program().default_main_version.compilation.firmware_build_id != null
-                        && overview.binaries.firmware.build_id.equals(getHardwareTypeCache().get_main_c_program().default_main_version.compilation.firmware_build_id)
+                        && getHardwareType().get_main_c_program().default_main_version != null
+                        && getHardwareType().get_main_c_program().default_main_version.compilation.firmware_build_id != null
+                        && overview.binaries.firmware.build_id.equals(getHardwareType().get_main_c_program().default_main_version.compilation.firmware_build_id)
                         ) {
 
                     logger.debug("check_firmware:: Device id: {}  hardware is brand new, but already has required default hardware type firmware", this.id);
 
                     // SET MAIN
-                    this.actual_c_program_version = getHardwareTypeCache().get_main_c_program().default_main_version;
+                    this.actual_c_program_version = getHardwareType().get_main_c_program().default_main_version;
 
                     // Clean Cache
                     this.idCache().removeAll(Model_CProgram.class);
                     this.idCache().removeAll(Model_CProgramVersion.class);
 
-                    this.idCache().add(Model_CProgram.class, getHardwareTypeCache().get_main_c_program().id);
-                    this.idCache().add(Model_CProgramVersion.class, getHardwareTypeCache().get_main_c_program().default_main_version.id);
+                    this.idCache().add(Model_CProgram.class, getHardwareType().get_main_c_program().id);
+                    this.idCache().add(Model_CProgramVersion.class, getHardwareType().get_main_c_program().default_main_version.id);
 
                     // SET BACKUP
-                    this.actual_backup_c_program_version = getHardwareTypeCache().get_main_c_program().default_main_version; // Udělám rovnou zálohu, protože taková by tam měla být
+                    this.actual_backup_c_program_version = getHardwareType().get_main_c_program().default_main_version; // Udělám rovnou zálohu, protože taková by tam měla být
 
                     // Clean Cache
                     this.idCache().removeAll(Model_CProgramFakeBackup.class);
                     this.idCache().removeAll(Model_CProgramVersionFakeBackup.class);
 
-                    this.idCache().add(Model_CProgramFakeBackup.class, getHardwareTypeCache().get_main_c_program().id);
-                    this.idCache().add(Model_CProgramVersionFakeBackup.class, getHardwareTypeCache().get_main_c_program().default_main_version.id);
+                    this.idCache().add(Model_CProgramFakeBackup.class, getHardwareType().get_main_c_program().id);
+                    this.idCache().add(Model_CProgramVersionFakeBackup.class, getHardwareType().get_main_c_program().default_main_version.id);
 
                     this.update();
                     return;
@@ -2522,15 +2439,15 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
                 // Nastavím default firmware podle schématu Tyriona!
                 // Defaultní firmware je v v backandu určený výchozí program k typu desky.
-                if (getHardwareTypeCache().get_main_c_program() != null && getHardwareTypeCache().get_main_c_program().default_main_version != null) {
+                if (getHardwareType().get_main_c_program() != null && getHardwareType().get_main_c_program().default_main_version != null) {
 
-                    logger.debug("check_firmware:: Device id: {} Yes, Default Version for Type Of Device {} is set", this.id , getHardwareTypeCache().name);
+                    logger.debug("check_firmware:: Device id: {} Yes, Default Version for Type Of Device {} is set", this.id , getHardwareType().name);
 
                     List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
 
                     WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
                     b_pair.hardware = this;
-                    b_pair.c_program_version = getHardwareTypeCache().get_main_c_program().default_main_version;
+                    b_pair.c_program_version = getHardwareType().get_main_c_program().default_main_version;
 
                     b_pairs.add(b_pair);
 
@@ -2541,7 +2458,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
                 } else {
                     logger.error("check_firmware:: Device id: {} Attention please! This is not a critical bug - Tyrion server is not just set for this type of device! Set main C_Program and version!", this.id  );
-                    logger.error("check_firmware:: Device id: {} Default main code version is not set for Type Of Board {} please set that!", this.id , getHardwareTypeCache().name);
+                    logger.error("check_firmware:: Device id: {} Default main code version is not set for Type Of Board {} please set that!", this.id , getHardwareType().name);
                 }
             }
         } catch (Exception e) {
@@ -2815,8 +2732,8 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
 
 
-            if (getHardwareTypeCache().main_boot_loader() == null) {
-                logger.error("check_bootloader::Main Bootloader for Type Of Board {} is not set for update device {}", this.getHardwareTypeCache().name, this.id);
+            if (getHardwareType().main_boot_loader() == null) {
+                logger.error("check_bootloader::Main Bootloader for Type Of Board {} is not set for update device {}", this.getHardwareType().name, this.id);
                 return;
             }
 
@@ -2825,7 +2742,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
             WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
             b_pair.hardware = this;
 
-            if (this.get_actual_bootloader() == null) b_pair.bootLoader =  getHardwareTypeCache().main_boot_loader();
+            if (this.get_actual_bootloader() == null) b_pair.bootLoader =  getHardwareType().main_boot_loader();
             else b_pair.bootLoader = this.get_actual_bootloader();
 
             b_pairs.add(b_pair);

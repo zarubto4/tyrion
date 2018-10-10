@@ -2,12 +2,10 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.swagger.output.Swagger_Short_Reference;
@@ -42,10 +40,7 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
     @JsonProperty @ApiModelProperty(required = true)
     public Swagger_Short_Reference grid_project() {
         try {
-            return new Swagger_Short_Reference(get_grid_project_id(), get_grid_project().name, get_grid_project().description);
-        } catch (_Base_Result_Exception e) {
-            // nothing
-            return null;
+            return get_grid_project().ref();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -57,9 +52,6 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
         try {
             return get_grid_programs();
 
-        } catch (_Base_Result_Exception e) {
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -69,7 +61,7 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public UUID get_grid_project_id() throws _Base_Result_Exception {
+    public UUID get_grid_project_id() {
 
         if (idCache().get(Model_GridProject.class) == null) {
             idCache().add(Model_GridProject.class, (UUID) Model_GridProject.find.query().where().eq("snapshots.id", id).select("id").findSingleAttribute());
@@ -80,7 +72,7 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
     }
 
     @JsonIgnore
-    public Model_GridProject get_grid_project() throws _Base_Result_Exception {
+    public Model_GridProject get_grid_project() {
         return isLoaded("grid_project") ? grid_project : Model_GridProject.find.query().nullable().where().eq("snapshots.id", id).findOne();
     }
 

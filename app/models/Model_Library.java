@@ -1,17 +1,12 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.Publishable;
 import utilities.model.TaggedModel;
@@ -53,16 +48,7 @@ public class Model_Library extends TaggedModel implements Permissible, UnderProj
     @JsonProperty
     public List<Model_LibraryVersion> versions() {
         try {
-            List<Model_LibraryVersion> versions = new ArrayList<>();
-            for (Model_LibraryVersion version : this.getVersions()) {
-                versions.add(version);
-            }
-
-            return versions;
-        } catch (_Base_Result_Exception e) {
-            //nothing
-            return null;
-
+            return this.getVersions();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -82,7 +68,7 @@ public class Model_Library extends TaggedModel implements Permissible, UnderProj
     }
 
     @JsonIgnore @Override
-    public Model_Project getProject() throws _Base_Result_Exception {
+    public Model_Project getProject() {
         return isLoaded("project") ? project : Model_Project.find.query().nullable().where().eq("libraries.id", id).findOne();
     }
 
@@ -176,11 +162,7 @@ public class Model_Library extends TaggedModel implements Permissible, UnderProj
 
         super.delete();
 
-        try{
-            getProject().idCache().remove(this.getClass(),id);
-        }catch (_Base_Result_Exception exception){
-            // Nothing
-        }
+        getProject().idCache().remove(this.getClass(),id);
 
         return false;
     }

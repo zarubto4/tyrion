@@ -2,10 +2,7 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.azure.storage.blob.CloudAppendBlob;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
-import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
 import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
@@ -13,11 +10,9 @@ import org.apache.commons.io.FileExistsException;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.Server;
-import utilities.cache.Cached;
 import utilities.enums.CompilationStatus;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.models_update_echo.EchoHandler;
@@ -60,7 +55,7 @@ public class Model_Compilation extends BaseModel {
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-    public UUID blob_id()throws _Base_Result_Exception {
+    public UUID blob_id() {
         if (idCache().get(Model_Blob.class) == null) {
             idCache().add(Model_Blob.class, (UUID) Model_Blob.find.query().where().eq("version.id", id).select("id").findSingleAttribute());
         }
@@ -69,7 +64,7 @@ public class Model_Compilation extends BaseModel {
     }
 
     @JsonIgnore
-    public Model_Blob getBlob()throws _Base_Result_Exception {
+    public Model_Blob getBlob() {
         return isLoaded("blob") ? blob : Model_Blob.find.query().where().eq("version.id", id).findOne();
     }
 
@@ -135,14 +130,7 @@ public class Model_Compilation extends BaseModel {
         // Call notification about model update
 
         if(version != null) {
-            new Thread(() -> {
-                try {
-
-                    EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, version.get_c_program().getProjectId(), version.get_c_program_id()));
-                } catch (_Base_Result_Exception e) {
-                    // Nothing
-                }
-            }).start();
+            new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, version.get_c_program().getProjectId(), version.get_c_program_id()))).start();
         }
 
         super.update();

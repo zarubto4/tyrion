@@ -7,7 +7,6 @@ import io.swagger.annotations.ApiModel;
 import utilities.Server;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.financial.extensions.consumptions.ResourceConsumption;
 import utilities.financial.extensions.extensions.Extension;
 import utilities.logger.Logger;

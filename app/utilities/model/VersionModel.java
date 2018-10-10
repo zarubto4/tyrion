@@ -7,7 +7,6 @@ import io.swagger.annotations.ApiModelProperty;
 import models.*;
 import utilities.enums.Approval;
 import utilities.enums.ProgramType;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.permission.JsonPermission;
 
@@ -37,7 +36,7 @@ public abstract class VersionModel extends NamedModel {
 /* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(value = "Visible only if user has permission to know it", required = false)
-    public Model_Person author() throws _Base_Result_Exception {
+    public Model_Person author() {
         try {
 
             if (author_id != null) {

@@ -229,14 +229,14 @@ public class Controller_Garfield extends _BaseController {
             // Label 62 mm
             try {
                 // Test for creating - Controlling all prerequisites and requirements
-                new Label_62_mm_package(entity, batch, hardware.getHardwareTypeCache(), garfield);
+                new Label_62_mm_package(entity, batch, hardware.getHardwareType(), garfield);
             } catch (IllegalArgumentException e) {
                 logger.error("print_label:: Label_62_mm_package printer info Error, " + e.getMessage());
                 return badRequest("Something is wrong: " + e.getMessage());
             }
 
             // Label 62 mm
-            Label_62_mm_package label_62_mmPackage = new Label_62_mm_package(entity, batch, hardware.getHardwareTypeCache(), garfield);
+            Label_62_mm_package label_62_mmPackage = new Label_62_mm_package(entity, batch, hardware.getHardwareType(), garfield);
             api.printFile(garfield.print_sticker_id, 1, "Garfield Print Label", label_62_mmPackage.get_label(), null);
 
             // Label qith QR kode on Ethernet connector

@@ -6,7 +6,6 @@ import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
@@ -47,7 +46,7 @@ private static final Logger logger = new Logger(Model_InvoiceItem.class);
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public Model_Invoice getInvoice() throws _Base_Result_Exception {
+    public Model_Invoice getInvoice() {
         return isLoaded("invoice") ? invoice : Model_Invoice.find.query().where().eq("invoice_items.id", id).findOne();
     }
 

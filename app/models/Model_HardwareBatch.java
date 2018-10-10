@@ -11,9 +11,8 @@ import io.swagger.annotations.ApiModelProperty;
 import org.bson.Document;
 import play.data.validation.Constraints;
 import play.libs.Json;
-import utilities.errors.Exceptions.Result_Error_BadRequest;
+import exceptions.BadRequestException;
 import exceptions.NotFoundException;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.MongoModel;
 
@@ -158,7 +157,7 @@ public class Model_HardwareBatch extends MongoModel {
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    public void save() throws _Base_Result_Exception {
+    public void save() {
         try {
 
             // Set ID
@@ -178,7 +177,7 @@ public class Model_HardwareBatch extends MongoModel {
 
         } catch (Exception e){
             logger.internalServerError(e);
-            throw new Result_Error_BadRequest("Save To Mongo DB faild");
+            throw new RuntimeException("Save To Mongo DB faild");
         }
     }
 
@@ -196,7 +195,7 @@ public class Model_HardwareBatch extends MongoModel {
 
         } catch (Exception e){
             logger.internalServerError(e);
-            throw new Result_Error_BadRequest("Save To Mongo DB faild");
+            throw new BadRequestException("Save To Mongo DB faild");
         }
     }
 
@@ -215,11 +214,11 @@ public class Model_HardwareBatch extends MongoModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_HardwareBatch getById(UUID id) throws _Base_Result_Exception, IOException {
+    public static Model_HardwareBatch getById(UUID id) throws IOException {
         return getById(id.toString());
     }
 
-    public static Model_HardwareBatch getById(String id) throws _Base_Result_Exception, IOException {
+    public static Model_HardwareBatch getById(String id) throws NotFoundException, IOException {
 
         BasicDBObject query = new BasicDBObject();
         query.put("batch_id", id);

@@ -10,7 +10,6 @@ import play.libs.Json;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.*;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.model.Personal;
@@ -57,29 +56,11 @@ public class Model_Notification extends BaseModel implements Permissible, Person
     @ApiModelProperty(required = true, example = WS_Portal.CHANNEL) @Transient @JsonProperty public static final String message_channel = WS_Portal.CHANNEL;
 
     @JsonProperty @ApiModelProperty(required = true) public String message_type() {
-        try {
-            return message_type;
-        } catch (_Base_Result_Exception e) {
-          //nothing
-            return null;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return message_type;
     }
 
     @JsonProperty @ApiModelProperty(required = true) public String message_channel() {
-        try{
-            return message_channel;
-    }catch (_Base_Result_Exception e){
-        //nothing
-        return null;
-
-    }catch (Exception e){
-        logger.internalServerError(e);
-        return null;
-    }
+        return message_channel;
     }
 
     @JsonProperty @ApiModelProperty(required = true)

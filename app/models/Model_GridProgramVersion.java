@@ -8,7 +8,6 @@ import play.libs.Json;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.EntityType;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.UnderProject;
 import utilities.model.VersionModel;
@@ -48,7 +47,7 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
     @JsonProperty @Transient public String program_version() {
         try {
 
-            Model_Blob fileRecord = Model_Blob.find.query().where().eq("grid_program_version.id", id).eq("name", "grid_program.json").findOne();
+            Model_Blob fileRecord = Model_Blob.find.query().nullable().where().eq("grid_program_version.id", id).eq("name", "grid_program.json").findOne();
 
             if (fileRecord != null) {
 
@@ -57,12 +56,9 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
 
             }
 
-            return  null;
-
-        } catch (_Base_Result_Exception e){
-            //nothing
             return null;
-        }catch (Exception e){
+
+        } catch (Exception e){
             logger.internalServerError(e);
             return null;
         }
@@ -76,7 +72,7 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
     }
 
     @JsonIgnore
-    public UUID get_grid_program_id() throws _Base_Result_Exception {
+    public UUID get_grid_program_id() {
 
 
         if (idCache().get(Model_GridProgram.class) == null) {
@@ -87,7 +83,7 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
     }
 
     @JsonIgnore
-    public Model_GridProgram getGridProgram() throws _Base_Result_Exception {
+    public Model_GridProgram getGridProgram() {
         return isLoaded("grid_program") ? this.grid_program : Model_GridProgram.find.query().nullable().where().eq("versions.id", id).findOne();
     }
 
@@ -101,13 +97,7 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
 
         Model_GridProgram program = getGridProgram();
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, program.get_grid_project().get_project_id(), program.id));
-            } catch (_Base_Result_Exception e) {
-               // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, program.get_grid_project().get_project_id(), program.id))).start();
 
         program.idCache().add(this.getClass(), id);
         program.sort_Model_Model_GridProgramVersion_ids();
@@ -118,14 +108,7 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
         logger.debug("update::Update object Id: {}",  this.id);
         super.update();
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_GridProgram.class, getGridProgram().get_grid_project().get_project_id(), id));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
-
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_GridProgram.class, getGridProgram().get_grid_project().get_project_id(), id))).start();
     }
 
     @JsonIgnore @Override
@@ -133,20 +116,9 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
         logger.debug("delete::Delete object Id: {}",  this.id);
         super.delete();
 
-        // Remove from Cache
-        try {
-            getGridProgram().idCache().remove(this.getClass(), id);
-        } catch (_Base_Result_Exception e) {
-            // Nothing
-        }
+        getGridProgram().idCache().remove(this.getClass(), id);
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_GridProgram.class, getGridProgram().get_grid_project().get_project_id(), get_grid_program_id()));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_GridProgram.class, getGridProgram().get_grid_project().get_project_id(), get_grid_program_id()))).start();
 
         return false;
     }

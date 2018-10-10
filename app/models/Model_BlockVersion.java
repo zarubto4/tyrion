@@ -6,7 +6,6 @@ import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.Approval;
 import utilities.enums.EntityType;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.UnderProject;
 import utilities.model.VersionModel;
@@ -78,11 +77,7 @@ public class Model_BlockVersion extends VersionModel implements Permissible, Und
         }
 
         new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, getBlock().get_project_id(), getBlock().id));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
+            EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, getBlock().get_project_id(), getBlock().id));
         }).start();
 
     }
@@ -93,11 +88,7 @@ public class Model_BlockVersion extends VersionModel implements Permissible, Und
         super.update();
 
         new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, getBlock().get_project_id(), getBlock().id));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
+            EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, getBlock().get_project_id(), getBlock().id));
         }).start();
 
     }
@@ -107,11 +98,7 @@ public class Model_BlockVersion extends VersionModel implements Permissible, Und
 
 
         new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, getBlock().get_project_id(), getBlock().id));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
+            EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, getBlock().get_project_id(), getBlock().id));
         }).start();
 
 
@@ -127,8 +114,6 @@ public class Model_BlockVersion extends VersionModel implements Permissible, Und
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
-
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSIONS ---------------------------------------------------------------------------------------------------------*/
 

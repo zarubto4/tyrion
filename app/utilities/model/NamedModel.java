@@ -3,6 +3,7 @@ package utilities.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.swagger.output.Swagger_Short_Reference;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
@@ -16,4 +17,8 @@ public abstract class NamedModel extends BaseModel {
 
     @JsonIgnore public UUID author_id;
 
+    @JsonIgnore
+    public Swagger_Short_Reference ref() {
+        return new Swagger_Short_Reference(id, name, description);
+    }
 }

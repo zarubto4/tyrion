@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers._BaseController;
+import exceptions.InvalidBodyException;
 import io.ebean.Model;
 import io.ebean.annotation.SoftDelete;
 import io.ebean.bean.EntityBean;
@@ -18,7 +19,6 @@ import utilities.cache.CacheField;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.cache.Cached;
-import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
@@ -256,7 +256,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
      * @throws _Base_Result_Exception
      */
     @JsonIgnore
-    public static <T> T formFromJsonWithValidation(Class<T> clazz, JsonNode jsonNode) throws _Base_Result_Exception {
+    public static <T> T formFromJsonWithValidation(Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException {
         return Server.baseFormFactory.formFromJsonWithValidation(clazz, jsonNode);
     }
 
@@ -268,7 +268,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
      * @param <T>
      * @return a copy of this form filled with the new data
      */
-    public static  <T> T formFromJsonWithValidation(Model_HomerServer server, Class<T> clazz, JsonNode jsonNode) throws _Base_Result_Exception, IOException {
+    public static  <T> T formFromJsonWithValidation(Model_HomerServer server, Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException, IOException {
         return Server.baseFormFactory.formFromJsonWithValidation(server, clazz, jsonNode);
     }
 
@@ -280,18 +280,14 @@ public abstract class BaseModel extends Model implements JsonSerializable {
      * @param <T>
      * @return a copy of this form filled with the new data
      */
-    public static  <T> T formFromJsonWithValidation(WS_Homer server, Class<T> clazz, JsonNode jsonNode) throws _Base_Result_Exception, IOException {
+    public static  <T> T formFromJsonWithValidation(WS_Homer server, Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException, IOException {
         return Server.baseFormFactory.formFromJsonWithValidation(server, clazz, jsonNode);
     }
 
-    /* COMMON METHODS ------------------------------------------------------------------------------------------------------*/
+/* COMMON METHODS ------------------------------------------------------------------------------------------------------*/
 
-    /**
-     * Default save method - Permission is checked inside
-     * System will evytime check permission for this operation. But sometime, its done by system without "logged person" token
-     */
     @Override
-    public void save() throws _Base_Result_Exception {
+    public void save() {
 
         logger.debug("save - saving new {}", this.getClass().getSimpleName());
 
@@ -323,34 +319,17 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         }
     }
 
-    /**
-     * Default update method - Permission is checked inside
-     */
-    @JsonIgnore @Override
-    public void update() throws _Base_Result_Exception {
-        try {
+    @Override
+    public void update() {
+        logger.debug("update - updating {}, id: {}", this.getClass().getSimpleName(), this.id);
 
-            logger.debug("update - updating {}, id: {}", this.getClass().getSimpleName(), this.id);
-
-            this.updated = new Date();
-            super.update();
-            new Thread(this::cache).start();
-
-        } catch (Result_Error_PermissionDenied e) {
-            logger.warn("update::Unauthorized UPDATE operation, its required remove everything from Cache");
-            throw new Result_Error_PermissionDenied();
-        } catch (Exception e){
-            logger.internalServerError(e);
-            throw new Result_Error_PermissionDenied();
-        }
+        this.updated = new Date();
+        super.update();
+        new Thread(this::cache).start();
     }
 
-    /**
-     * Default delete method - Permission is checked inside
-     * Its not removed permanently!
-     */
     @Override
-    public boolean delete() throws _Base_Result_Exception {
+    public boolean delete() {
         logger.debug("delete - soft deleting {}, id: {}", this.getClass().getSimpleName(), this.id);
 
         super.delete();

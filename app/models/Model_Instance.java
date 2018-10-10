@@ -16,7 +16,6 @@ import utilities.cache.CacheFinderField;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import exceptions.NotFoundException;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
@@ -69,14 +68,11 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
 
             List<Swagger_Short_Reference> references = new ArrayList<>();
             for(Model_InstanceSnapshot snapshot :  getSnapShots()) {
-                references.add(new Swagger_Short_Reference(snapshot.id, snapshot.name, snapshot.description));
+                references.add(snapshot.ref());
             }
 
             return references;
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -86,13 +82,7 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public Swagger_Short_Reference b_program(){
         try {
-
-            Model_BProgram program = get_BProgram();
-            return new Swagger_Short_Reference(program.id, program.name, program.description);
-
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
+            return get_BProgram().ref();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -102,10 +92,7 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public Model_HomerServer server(){
         try {
-            return getHomerServer();
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
+            return getServer();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -113,17 +100,15 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Model_InstanceSnapshot current_snapshot() throws _Base_Result_Exception  {
+    public Model_InstanceSnapshot current_snapshot() {
         try {
             if (this.current_snapshot_id != null) {
                 Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(this.current_snapshot_id);
-                if (snapshot != null) {
-                    return snapshot;
-                }
+                return snapshot;
             }
             return null;
 
-        } catch (_Base_Result_Exception e){
+        } catch (NotFoundException e){
             //nothing
             return null;
         } catch (Exception e) {
@@ -183,9 +168,6 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
                 return NetworkStatus.UNKNOWN_LOST_CONNECTION_WITH_SERVER;
             }
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             // Záměrný Exception - Občas se nedosynchronizuje Cach - ale system stejnak po zvalidování dorovná stav
            return NetworkStatus.UNKNOWN_LOST_CONNECTION_WITH_SERVER;
@@ -204,9 +186,6 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
                     return "wss://" + Model_HomerServer.find.byId(getServer_id()).server_url + ":" + Model_HomerServer.find.byId(getServer_id()).web_view_port + "/" + id + "/#token";
                 }
             }
-            return null;
-        } catch (_Base_Result_Exception e){
-            //nothing
             return null;
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -234,27 +213,12 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
-    public UUID get_b_program_id() throws _Base_Result_Exception {
-
-       if (idCache().get(Model_BProgram.class) == null) {
-           idCache().add(Model_BProgram.class, Model_BProgram.find.query().where().eq("instances.id", id).select("id").findSingleAttributeList());
-       }
-
-       return idCache().get(Model_BProgram.class);
+    public Model_BProgram get_BProgram() {
+        return isLoaded("b_program") ? b_program : Model_BProgram.find.query().where().eq("instances.id", id).findOne();
     }
 
     @JsonIgnore
-    public Model_BProgram get_BProgram() throws _Base_Result_Exception {
-        try {
-            return Model_BProgram.find.byId(get_b_program_id());
-        }catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    @JsonIgnore
-    public List<UUID> getHardwareIds() throws _Base_Result_Exception  {
+    public List<UUID> getHardwareIds() {
 
         return current_snapshot().getHardwareIds();
     }
@@ -272,14 +236,12 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
 
     @JsonIgnore
     public Model_HomerServer getServer() {
-
-        return Model_HomerServer.find.byId(getServer_id());
-
+        return isLoaded("server_main") ? server_main : Model_HomerServer.find.query().where().eq("instances.id", id).findOne();
     }
 
 
     @JsonIgnore
-    public List<UUID> getSnapShotsIds() throws _Base_Result_Exception  {
+    public List<UUID> getSnapShotsIds() {
 
         if (idCache().gets(Model_InstanceSnapshot.class) == null) {
             idCache().add(Model_InstanceSnapshot.class,  Model_InstanceSnapshot.find.query().where().ne("deleted", true).eq("instance.id", id).order().desc("created").select("id").findSingleAttributeList());
@@ -289,7 +251,7 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
-    public List<Model_InstanceSnapshot> getSnapShots() throws _Base_Result_Exception {
+    public List<Model_InstanceSnapshot> getSnapShots() {
         try {
 
             List<Model_InstanceSnapshot> list = new ArrayList<>();
@@ -304,7 +266,7 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
 
             return list;
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
@@ -319,18 +281,6 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
                 .forEach(o -> this.idCache().add(Model_InstanceSnapshot.class, o.id));
 
     }
-
-
-    @JsonIgnore
-    public Model_HomerServer getHomerServer() {
-        try {
-            return Model_HomerServer.find.byId(getServer_id());
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
 
 /* JSON Override  Method -----------------------------------------------------------------------------------------*/
 

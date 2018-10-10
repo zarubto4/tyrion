@@ -3,19 +3,15 @@ package controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.Model_Hardware;
 import models.Model_HomerServer;
 import play.data.Form;
 import play.data.FormFactory;
 import play.data.format.Formatters;
 import play.i18n.Lang;
 import play.i18n.MessagesApi;
-import utilities.errors.Exceptions.Result_Error_InvalidBody;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import exceptions.InvalidBodyException;
 import utilities.logger.Logger;
 import websocket.WS_Interface;
-import websocket.WS_Message;
-import websocket.interfaces.WS_Homer;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -46,7 +42,7 @@ public class _BaseFormFactory extends FormFactory {
      * @param clazz    the class to map to a form.
      * @return a new form that wraps the specified class.
      */
-    public <T> T formFromRequestWithValidation(Class<T> clazz) throws _Base_Result_Exception {
+    public <T> T formFromRequestWithValidation(Class<T> clazz) throws InvalidBodyException {
 
         Form<T> form = super.form(clazz);
         Form<T> bind = form.bindFromRequest();
@@ -55,7 +51,7 @@ public class _BaseFormFactory extends FormFactory {
             logger.error("formFromJsonWithValidation::InvalidBody::JsonFor ParserControl:: {}", bind.toString());
             JsonNode node_errors = bind.errorsAsJson(Lang.forCode("en-US"));
             logger.error("formFromJsonWithValidation::InvalidBody::ErrorList::{}", node_errors.toString());
-            throw new Result_Error_InvalidBody(node_errors);
+            throw new InvalidBodyException(node_errors);
         }
 
         return bind.get();
@@ -68,7 +64,7 @@ public class _BaseFormFactory extends FormFactory {
      * @param <T>
      * @return a copy of this form filled with the new data
      */
-    public <T> T formFromJsonWithValidation(Class<T> clazz, JsonNode jsonNode) throws _Base_Result_Exception {
+    public <T> T formFromJsonWithValidation(Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException {
 
         Form<T> form =  super.form(clazz);
         Form<T> bind =  form.bind(jsonNode);
@@ -76,7 +72,7 @@ public class _BaseFormFactory extends FormFactory {
         if (bind.hasErrors()){
             logger.error("formFromJsonWithValidation::InvalidBody::JsonFor ParserControl:: {}", jsonNode.toString());
             logger.error("formFromJsonWithValidation::InvalidBody::ErrorList::{}", bind.errorsAsJson(Lang.forCode("en-US")).toString());
-            throw new Result_Error_InvalidBody(bind.errorsAsJson(Lang.forCode("en-US")));
+            throw new InvalidBodyException(bind.errorsAsJson(Lang.forCode("en-US")));
         }
 
         return bind.get();
@@ -91,7 +87,7 @@ public class _BaseFormFactory extends FormFactory {
      * @param <T>
      * @return a copy of this form filled with the new data
      */
-    public <T> T formFromJsonWithValidation(Model_HomerServer server, Class<T> clazz, JsonNode jsonNode) throws _Base_Result_Exception, IOException {
+    public <T> T formFromJsonWithValidation(Model_HomerServer server, Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException, IOException {
 
         Form<T> form =  super.form(clazz);
         Form<T> bind =  form.bind(jsonNode);
@@ -107,7 +103,7 @@ public class _BaseFormFactory extends FormFactory {
                 server.write_without_confirmation(error);
             }
 
-            throw new Result_Error_InvalidBody(bind.errorsAsJson());
+            throw new InvalidBodyException(bind.errorsAsJson());
 
         }
 
@@ -124,7 +120,7 @@ public class _BaseFormFactory extends FormFactory {
      * @param <T>
      * @return a copy of this form filled with the new data
      */
-    public <T> T formFromJsonWithValidation(WS_Interface ws_interface, Class<T> clazz, JsonNode jsonNode) throws _Base_Result_Exception, IOException {
+    public <T> T formFromJsonWithValidation(WS_Interface ws_interface, Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException, IOException {
 
         Form<T> form =  super.form(clazz);
         Form<T> bind =  form.bind(jsonNode);
@@ -141,7 +137,7 @@ public class _BaseFormFactory extends FormFactory {
                 ws_interface.send(error);
             }
 
-            throw new Result_Error_InvalidBody(bind.errorsAsJson());
+            throw new InvalidBodyException(bind.errorsAsJson());
         }
 
         return bind.get();

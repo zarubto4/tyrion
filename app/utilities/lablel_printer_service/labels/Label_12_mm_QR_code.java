@@ -4,7 +4,6 @@ package utilities.lablel_printer_service.labels;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import models.Model_HardwareRegistrationEntity;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 
 import java.io.ByteArrayOutputStream;
@@ -72,7 +71,7 @@ public class Label_12_mm_QR_code {
     }
 
 
-    private PdfPTable device_hash_for_Add() throws DocumentException, _Base_Result_Exception, IOException {
+    private PdfPTable device_hash_for_Add() throws DocumentException, IOException {
 
         PdfPTable table = new PdfPTable(1);
                 table.setTotalWidth(Label_12_mm.getWidth());

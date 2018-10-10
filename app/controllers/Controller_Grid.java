@@ -1471,7 +1471,7 @@ public class Controller_Grid extends _BaseController {
             Model_Widget gridWidget = Model_Widget.find.byId(grid_widget_id);
 
             // Shift Order Up
-            gridWidget.up();
+            // gridWidget.up();
 
             return ok();
 
@@ -1501,7 +1501,7 @@ public class Controller_Grid extends _BaseController {
             Model_Widget gridWidget =  Model_Widget.find.byId(grid_widget_id);
 
             // Shift Order down
-            gridWidget.down();
+            //gridWidget.down();
 
             return ok();
 

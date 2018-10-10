@@ -8,7 +8,6 @@ import com.itextpdf.text.Element;
 import com.itextpdf.text.Image;
 import controllers._BaseController;
 import models.*;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 
 import java.text.ParseException;
@@ -214,7 +213,7 @@ public class Label_62_mm_package {
         return table;
     }
 
-    private PdfPTable device_id_barcode() throws DocumentException, _Base_Result_Exception, IOException {
+    private PdfPTable device_id_barcode() throws DocumentException, IOException {
 
 
         PdfPTable table = new PdfPTable(2);

@@ -3,6 +3,7 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import exceptions.NotFoundException;
 import io.intercom.api.User;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -17,7 +18,6 @@ import utilities.enums.EntityType;
 import utilities.enums.NotificationAction;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.notifications.helps_objects.Becki_color;
@@ -86,7 +86,7 @@ public class Model_Person extends BaseModel implements Permissible {
 
     @JsonProperty @ApiModelProperty(required = true)
     public String picture_link() {
-        try{
+        try {
                 if (this.alternative_picture_link != null && alternative_picture_link.contains("http")) {
                 cache_picture_link = alternative_picture_link;  // Its probably link from GitHub or profile picture from facebook
             }
@@ -94,11 +94,8 @@ public class Model_Person extends BaseModel implements Permissible {
                 cache_picture_link = picture.get_file_path_for_direct_download();
             }
             return cache_picture_link;
-         }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
 
-        }catch (Exception e){
+        } catch (Exception e){
             logger.internalServerError(e);
             return null;
         }
@@ -122,7 +119,7 @@ public class Model_Person extends BaseModel implements Permissible {
             try {
                 Model_Project project = Model_Project.find.byId(project_id);
                 projects.add(project);
-            }catch (_Base_Result_Exception e){
+            } catch (NotFoundException e){
                 // Nothing
             }
         }
@@ -247,11 +244,11 @@ public class Model_Person extends BaseModel implements Permissible {
         return find.query().where().eq("email", email).findOne();
     }
 
-    public static Model_Person getByAuthToken(String token)  throws _Base_Result_Exception  {
+    public static Model_Person getByAuthToken(String token) throws NotFoundException {
         return getByAuthToken(UUID.fromString(token));
     }
 
-    public static Model_Person getByAuthToken(UUID token) throws _Base_Result_Exception  {
+    public static Model_Person getByAuthToken(UUID token) throws NotFoundException {
 
         UUID id = token_cache.get(token);
         if (id == null) {

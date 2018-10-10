@@ -3,13 +3,13 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import exceptions.NotFoundException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.Publishable;
 import utilities.model.TaggedModel;
@@ -54,16 +54,15 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(value = "Visible only if user has permission to know it", required = false)
-    public Model_Person author() throws _Base_Result_Exception {
+    public Model_Person author()  {
         try {
             return get_author();
-        }catch(_Base_Result_Exception e){
-            //nothing
+        } catch(NotFoundException e){
             return null;
-        }catch (Exception e){
+        } catch (Exception e){
             logger.internalServerError(e);
-            return null;
         }
+        return null;
     }
 
     @JsonProperty  @ApiModelProperty(readOnly = true, value = "can be hidden, if BlockoBlock is created by User not by Company", required = false)
@@ -72,9 +71,6 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
             Model_Producer producer = getProducer();
             if (producer == null) return null;
             return new Swagger_Short_Reference(producer.id, producer.name, producer.description);
-        }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -86,27 +82,15 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
     public  List<Model_BlockVersion> versions() {
         try {
             return getVersions();
-
-        }catch(_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch(Exception e){
+        } catch(Exception e) {
             logger.internalServerError(e);
             return null;
         }
     }
 
-    @JsonProperty(required = false) @ApiModelProperty(required = false, value = "Only for Community Administrator") @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty @ApiModelProperty(required = false, value = "Only for Community Administrator") @JsonInclude(JsonInclude.Include.NON_NULL)
     public Boolean active() {
-        try {
-            return publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN ? active : null;
-        }catch(_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch(Exception e){
-            logger.internalServerError(e);
-            return null;
-        }
+        return publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN ? active : null;
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
@@ -117,7 +101,7 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
     }
 
     @JsonIgnore
-    public UUID get_project_id() throws _Base_Result_Exception {
+    public UUID get_project_id() {
 
         if (idCache().get(Model_Project.class) == null) {
             idCache().add(Model_Project.class, Model_Project.find.query().where().eq("blocks.id", id).select("id").findSingleAttributeList());
@@ -128,7 +112,7 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
     }
 
     @JsonIgnore
-    public Model_Project getProject() throws _Base_Result_Exception {
+    public Model_Project getProject() {
         return isLoaded("project") ? this.project : Model_Project.find.query().nullable().where().eq("blocks.id", id).findOne();
     }
 
@@ -160,7 +144,7 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
     }
 
     @JsonIgnore
-    public Model_Person get_author() {
+    public Model_Person get_author() throws NotFoundException {
         if(author_id != null) {
             return Model_Person.find.byId(author_id);
         } else return null;
@@ -199,11 +183,7 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
         // Call notification about model update
         if (publish_type == ProgramType.PRIVATE) {
             new Thread(() -> {
-                try {
-                    EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, get_project_id(), this.id));
-                } catch (_Base_Result_Exception e) {
-                    // Nothing
-                }
+                EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, get_project_id(), this.id));
             }).start();
         }
     }
@@ -235,44 +215,6 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
         }
 
         return false;
-    }
-
-/* ORDER ---------------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore
-    public void up() throws _Base_Result_Exception {
-/*
-        logger.trace("up :: Change Order Position! Up");
-
-        Model_Block up = find.query().where().eq("order_position", (order_position-1) ).eq("type_of_block.id", type_of_block.id).findOne();
-        if (up == null) {
-            logger.warn("up :: illegal operation (out of index)! ");
-            return;
-        }
-
-        up.order_position += 1;
-        up.update();
-
-        this.order_position -= 1;
-        this.update();*/
-    }
-
-    @JsonIgnore
-    public void down() throws _Base_Result_Exception {
-/*
-        logger.trace("down :: Change Order Position! DOWN ");
-
-        Model_Block down = find.query().where().eq("order_position", (order_position+1) ).eq("type_of_block.id", type_of_block.id).findOne();
-        if (down == null) {
-            logger.warn("down :: illegal operation (out of index)! ");
-            return;
-        }
-
-        down.order_position -= 1;
-        down.update();
-
-        this.order_position += 1;
-        this.update();*/
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

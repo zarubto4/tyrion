@@ -10,7 +10,6 @@ import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.*;
 import utilities.enums.Currency;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.model.UnderCustomer;
@@ -95,7 +94,7 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderCustom
         try {
             // TODO check_update_permission();
             return getTotalPriceWithoutVatEstimate();
-        } catch (_Base_Result_Exception e){
+        } catch (Exception e){
             return null;
         }
     }
@@ -120,7 +119,7 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderCustom
         try {
             // TODO check_update_permission();
             return getTotalPriceWithVatEstimate();
-        } catch (_Base_Result_Exception e){
+        } catch (Exception e){
             return null;
         }
     }
@@ -129,9 +128,6 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderCustom
     public String invoice_pdf_link()  {
         try{
             return fakturoid_pdf_url != null ?  Server.httpAddress + "/invoice/pdf/invoice/" + id : null;
-            } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -142,9 +138,6 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderCustom
     public String proforma_pdf_link() {
         try {
             return proforma_pdf_url != null ?  Server.httpAddress + "/invoice/pdf/proforma/" + id : null;
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -155,9 +148,6 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderCustom
     public boolean require_payment()  {
         try{
             return status == InvoiceStatus.PENDING || status == InvoiceStatus.OVERDUE;
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return false;
         } catch (Exception e) {
             logger.internalServerError(e);
             return false;
@@ -170,9 +160,6 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderCustom
         if (status == InvoiceStatus.PENDING || status == InvoiceStatus.OVERDUE) return this.gw_url;
 
         return null;
-       } catch (_Base_Result_Exception e){
-           //nothing
-           return null;
        } catch (Exception e) {
            logger.internalServerError(e);
            return null;
@@ -192,11 +179,7 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderCustom
                 default             : return  "Undefined state";
             }
 
-        }catch (_Base_Result_Exception e){
-            logger.internalServerError(e);
-            return null;
-
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
@@ -209,11 +192,7 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderCustom
 
             return Model_InvoiceItem.find.query().where().eq("invoice.id", this.id).findList();
 
-         }catch (_Base_Result_Exception e){
-            logger.internalServerError(e);
-            return null;
-
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }

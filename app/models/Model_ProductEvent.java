@@ -10,7 +10,6 @@ import utilities.cache.CacheFinderField;
 import utilities.enums.ProductEventReferenceType;
 import utilities.enums.ProductEventType;
 import utilities.enums.ProductEventTypeReadPermission;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
@@ -44,7 +43,7 @@ public class Model_ProductEvent extends BaseModel {
 /* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
 
     @Override
-    public void save() throws _Base_Result_Exception {
+    public void save() {
         if(event_type != null && read_permission == null) {
            read_permission = event_type.getDefaultReadPermission();
         }

@@ -9,7 +9,6 @@ import play.libs.Json;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.EntityType;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.UnderProject;
 import utilities.model.VersionModel;
@@ -49,12 +48,9 @@ public class Model_LibraryVersion extends VersionModel implements Permissible, U
         try {
             List<Swagger_Short_Reference> pairs = new ArrayList<>();
             for (Model_CProgram cProgram : examples) {
-                pairs.add(new Swagger_Short_Reference(cProgram.id, cProgram.name, cProgram.description));
+                pairs.add(cProgram.ref());
             }
             return pairs;
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e){
             logger.internalServerError(e);
             return null;
@@ -70,11 +66,7 @@ public class Model_LibraryVersion extends VersionModel implements Permissible, U
             return formFromJsonWithValidation(Swagger_Library_File_Load.class, json).files;
 
 
-        }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
@@ -83,12 +75,12 @@ public class Model_LibraryVersion extends VersionModel implements Permissible, U
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public UUID getLibraryId() throws _Base_Result_Exception {
+    public UUID getLibraryId() {
         return this.getLibrary().id;
     }
 
     @JsonIgnore
-    public Model_Library getLibrary() throws _Base_Result_Exception {
+    public Model_Library getLibrary() {
         return isLoaded("library") ? library : Model_Library.find.query().where().eq("versions.id", id).findOne();
     }
 
@@ -110,13 +102,7 @@ public class Model_LibraryVersion extends VersionModel implements Permissible, U
             getLibrary().idCache().add(this.getClass(), id);
         }
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getLibrary().getProjectId(), getLibraryId()));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getLibrary().getProjectId(), getLibraryId()))).start();
     }
 
     @JsonIgnore @Override
@@ -125,13 +111,7 @@ public class Model_LibraryVersion extends VersionModel implements Permissible, U
         logger.debug("update::Update object Id: {}",  this.id);
         super.update();
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, getLibrary().getProjectId(), getLibraryId()));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, getLibrary().getProjectId(), getLibraryId()))).start();
 
     }
 
@@ -142,20 +122,9 @@ public class Model_LibraryVersion extends VersionModel implements Permissible, U
 
         super.delete();
 
-        // Remove from Cache
-        try {
-            getLibrary().idCache().remove(this.getClass(), id);
-        } catch (_Base_Result_Exception e) {
-            // Nothing
-        }
+        getLibrary().idCache().remove(this.getClass(), id);
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, getLibrary().getProjectId(), getLibraryId()));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, getLibrary().getProjectId(), getLibraryId()))).start();
 
         return false;
     }

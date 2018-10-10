@@ -2,6 +2,7 @@ package controllers;
 
 import com.typesafe.config.Config;
 import exceptions.ForbiddenException;
+import exceptions.NotSupportedException;
 import io.ebean.Ebean;
 import io.swagger.annotations.*;
 import models.*;
@@ -16,7 +17,6 @@ import utilities.financial.fakturoid.FakturoidService;
 import utilities.financial.services.ProductService;
 import utilities.authentication.Authentication;
 import utilities.enums.*;
-import utilities.errors.Exceptions.Result_Error_NotSupportedException;
 import utilities.financial.extensions.configurations.Configuration;
 import utilities.financial.extensions.consumptions.ResourceConsumption;
 import utilities.financial.goPay.GoPay;
@@ -1902,7 +1902,7 @@ public class Controller_Finance extends _BaseController {
 
             //Fakturoid_Controller.fakturoid_delete()
             logger.error("invoice_delete: Not Supported");
-            throw new Result_Error_NotSupportedException();
+            throw new NotSupportedException();
 
 
         } catch (Exception e) {
@@ -1947,7 +1947,7 @@ public class Controller_Finance extends _BaseController {
             }
 
             logger.error("invoice_synchronizeFakturoid: Not Supported for Status {}.", invoice.status);
-            throw new Result_Error_NotSupportedException();
+            throw new NotSupportedException();
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -1973,7 +1973,7 @@ public class Controller_Finance extends _BaseController {
 
             // TODO invoice_set_as_paid
             logger.error("invoice_set_as_paid: Not Supported");
-            throw new Result_Error_NotSupportedException();
+            throw new NotSupportedException();
 
         } catch (Exception e) {
             return controllerServerError(e);

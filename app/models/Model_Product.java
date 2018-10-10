@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import exceptions.NotFoundException;
 import io.ebean.Expr;
 import io.ebean.ExpressionList;
 import io.ebean.PagedList;
@@ -16,8 +17,7 @@ import utilities.cache.CacheFinderField;
 import utilities.emails.Email;
 import utilities.enums.*;
 import utilities.enums.Currency;
-import utilities.errors.Exceptions.Result_Error_BadRequest;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import exceptions.BadRequestException;
 import utilities.financial.extensions.ExtensionInvoiceItem;
 import utilities.financial.extensions.consumptions.ResourceConsumption;
 import utilities.logger.Logger;
@@ -90,7 +90,7 @@ public class Model_Product extends NamedModel implements Permissible, UnderCusto
     @Transactional
     public void setActive(boolean activeNew) throws Exception {
         if(this.active == activeNew) {
-            throw new Result_Error_BadRequest("Extension is already " + (activeNew ? "activated" : "deactivated"));
+            throw new BadRequestException("Extension is already " + (activeNew ? "activated" : "deactivated"));
         }
 
         if(activeNew) {
@@ -398,7 +398,7 @@ public class Model_Product extends NamedModel implements Permissible, UnderCusto
     }
 
     @JsonIgnore
-    public List<Model_Project> get_projects() throws _Base_Result_Exception {
+    public List<Model_Project> get_projects() {
         List<Model_Project>  projects = new ArrayList<>();
 
         for (UUID id : get_projects_ids()) {
@@ -480,7 +480,7 @@ public class Model_Product extends NamedModel implements Permissible, UnderCusto
         super.update();
     }
 
-    @JsonIgnore @Override public boolean delete() throws _Base_Result_Exception {
+    @JsonIgnore @Override public boolean delete() {
         boolean allExtensionDeactivated = true;
 
         List<Model_ProductExtension> activeExtensions = extensions.stream().filter(e -> e.active).collect(Collectors.toList());
@@ -712,15 +712,15 @@ public class Model_Product extends NamedModel implements Permissible, UnderCusto
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Product getByInvoice(UUID invoice_id) throws _Base_Result_Exception  {
+    public static Model_Product getByInvoice(UUID invoice_id) throws NotFoundException {
         return find.query().where().eq("invoices.id", invoice_id).findOne();
     }
 
-    public static List<Model_Product> getByOwner(UUID owner_id) throws _Base_Result_Exception  {
+    public static List<Model_Product> getByOwner(UUID owner_id) {
         return find.query().where().disjunction().eq("owner.employees.person.id", owner_id).findList();
     }
 
-    public static List<Model_Product> getApplicableByOwner(UUID owner_id) throws _Base_Result_Exception {
+    public static List<Model_Product> getApplicableByOwner(UUID owner_id) {
         return find.query().where().eq("active",true).eq("owner.employees.person.id", owner_id).select("id").select("name").findList();
     }
 

@@ -4,16 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
-import controllers._BaseController;
 import controllers._BaseFormFactory;
 import io.swagger.annotations.ApiModelProperty;
 import org.bson.Document;
 import play.data.validation.Constraints;
 import play.libs.Json;
-import utilities.errors.Exceptions.Result_Error_BadRequest;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions.Result_Error_Registration_Fail;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import exceptions.BadRequestException;
 import utilities.hardware_registration_auhtority.Enum_Hardware_Registration_DB_Key;
 import utilities.logger.Logger;
 import utilities.model.MongoModel;
@@ -23,7 +19,6 @@ import java.util.Date;
 import java.util.UUID;
 
 import static com.mongodb.client.model.Filters.eq;
-import static controllers._BaseController.person;
 
 /**
  * Zástupný model pro Mongo Databázi synchronizjící a zastupující virtuální registraci hardwaru.
@@ -109,7 +104,7 @@ public class Model_HardwareRegistrationEntity extends MongoModel {
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
 
-    public void save() throws _Base_Result_Exception {
+    public void save() {
         try {
 
             this.hash_for_adding = generate_hash();
@@ -129,7 +124,7 @@ public class Model_HardwareRegistrationEntity extends MongoModel {
 
         } catch (Exception e){
             logger.internalServerError(e);
-            throw new Result_Error_BadRequest("Save To Mongo DB faild");
+            throw new RuntimeException("Save To Mongo DB faild");
         }
     }
 
@@ -146,7 +141,7 @@ public class Model_HardwareRegistrationEntity extends MongoModel {
 
         } catch (Exception e){
             logger.internalServerError(e);
-            throw new Result_Error_BadRequest("Save To Mongo DB faild");
+            throw new BadRequestException("Save To Mongo DB faild");
         }
     }
 
@@ -165,7 +160,7 @@ public class Model_HardwareRegistrationEntity extends MongoModel {
                     " not find in Database - Please Create it! Please Contact Technical Support!";
             logger.error(error_description);
             logger.error("synchronize_hardware - synchronization is canceled!");
-            throw new Result_Error_Registration_Fail(error_description);
+            throw new RuntimeException(error_description);
         }
 
         Model_Hardware hardware = new Model_Hardware();
@@ -199,7 +194,7 @@ public class Model_HardwareRegistrationEntity extends MongoModel {
         return false;
     }
 
-    public static Model_HardwareRegistrationEntity getbyFull_id(String full_id) throws _Base_Result_Exception, IOException {
+    public static Model_HardwareRegistrationEntity getbyFull_id(String full_id) throws IOException {
 
         BasicDBObject whereQuery_board_id = new BasicDBObject();
         whereQuery_board_id.put(Enum_Hardware_Registration_DB_Key.full_id.name(), full_id);
@@ -215,7 +210,7 @@ public class Model_HardwareRegistrationEntity extends MongoModel {
         return baseFormFactory.formFromJsonWithValidation(Model_HardwareRegistrationEntity.class, json);
     }
 
-    public static Model_HardwareRegistrationEntity getbyFull_hash(String hash) throws _Base_Result_Exception, IOException {
+    public static Model_HardwareRegistrationEntity getbyFull_hash(String hash) throws IOException {
         try {
 
             BasicDBObject whereQuery_board_id = new BasicDBObject();
@@ -236,7 +231,7 @@ public class Model_HardwareRegistrationEntity extends MongoModel {
         }
     }
 
-    public static Model_HardwareRegistrationEntity getbyFull_macAddress(String mac_address) throws _Base_Result_Exception, IOException {
+    public static Model_HardwareRegistrationEntity getbyFull_macAddress(String mac_address) throws IOException {
         try {
 
             BasicDBObject whereQuery_board_id = new BasicDBObject();

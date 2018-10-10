@@ -8,7 +8,6 @@ import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
@@ -57,11 +56,7 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
     @JsonProperty @ApiModelProperty(required = true)
     public Swagger_Short_Reference hardware_type(){
         try {
-            Model_HardwareType type = getHardwareType();
-            return new Swagger_Short_Reference(type.id, type.name, type.description);
-        } catch (_Base_Result_Exception e) {
-            // nothing
-            return null;
+            return getHardwareType().ref();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -73,9 +68,6 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
 
             return getVersions();
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
@@ -90,10 +82,7 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
 
             return default_main_version;
 
-        }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
+        } catch (Exception e){
             logger.internalServerError(e);
             return null;
         }
@@ -102,9 +91,9 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public UUID getProjectId() throws _Base_Result_Exception  {
+    @JsonIgnore @Transient public UUID getProjectId() {
 
-        if(publish_type == ProgramType.PRIVATE) {
+        if (publish_type == ProgramType.PRIVATE) {
 
             if (idCache().get(Model_Project.class) == null) {
                 idCache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("c_programs.id", id).select("id").findSingleAttribute());
@@ -191,13 +180,7 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
 
         // Call notification about model update
         if(publish_type == ProgramType.PRIVATE) {
-            new Thread(() -> {
-                try {
-                    EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, getProjectId(), this.id));
-                } catch (_Base_Result_Exception e) {
-                    // Nothing
-                }
-            }).start();
+            new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, getProjectId(), this.id))).start();
         }
 
         super.update();
@@ -209,7 +192,7 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
         super.delete();
 
         // Remove from Project Cache
-        if(publish_type == ProgramType.PRIVATE) {
+        if (publish_type == ProgramType.PRIVATE) {
 
             try {
                 getProject().idCache().remove(this.getClass(), id);

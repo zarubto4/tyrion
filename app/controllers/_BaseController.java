@@ -3,9 +3,7 @@ package controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
-import exceptions.ForbiddenException;
-import exceptions.NotFoundException;
-import exceptions.NotSupportedException;
+import exceptions.*;
 import io.swagger.annotations.ApiModel;
 import models.Model_Person;
 import play.Environment;
@@ -15,7 +13,6 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import responses.*;
-import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
 import utilities.logger.YouTrack;
@@ -126,9 +123,9 @@ public abstract class _BaseController {
      * @param clazz
      * @param <T>
      * @return
-     * @throws _Base_Result_Exception
+     * @throws InvalidBodyException
      */
-    public <T> T formFromRequestWithValidation(Class<T> clazz) throws _Base_Result_Exception {
+    public <T> T formFromRequestWithValidation(Class<T> clazz) throws InvalidBodyException {
         return baseFormFactory.formFromRequestWithValidation(clazz);
     }
 
@@ -138,7 +135,7 @@ public abstract class _BaseController {
      *
      * @return current person {@link Model_Person}
      */
-    public static Model_Person person() throws Result_Error_Unauthorized {
+    public static Model_Person person() throws UnauthorizedException {
         try {
 
             Model_Person person = (Model_Person) Controller.ctx().args.get("person");
@@ -146,10 +143,10 @@ public abstract class _BaseController {
             if (person != null) {
                 return person;
             } else {
-                throw new Result_Error_Unauthorized();
+                throw new UnauthorizedException();
             }
         } catch (Exception e) {
-            throw new Result_Error_Unauthorized();
+            throw new UnauthorizedException();
         }
     }
 
@@ -159,16 +156,16 @@ public abstract class _BaseController {
      *
      * @return current person id {@link UUID}
      */
-    public static UUID personId() throws _Base_Result_Exception {
+    public static UUID personId() throws UnauthorizedException {
         try {
             UUID id = ((Model_Person) Controller.ctx().args.get("person")).id;
             if(id != null) {
                 return id;
             } else {
-                throw new Result_Error_Unauthorized();
+                throw new UnauthorizedException();
             }
         } catch (Exception e) {
-            throw new Result_Error_Unauthorized();
+            throw new UnauthorizedException();
         }
     }
 
@@ -551,31 +548,27 @@ public abstract class _BaseController {
     public static Result controllerServerError(Throwable error) {
         try {
 
-            if (error instanceof Result_Error_BadRequest) {
+            if (error instanceof BadRequestException) {
 
                 return badRequest(error.getMessage());
 
-            } else if (error instanceof Result_Error_InvalidBody) {
+            } else if (error instanceof InvalidBodyException) {
 
-                return badRequest(Json.toJson(new Result_InvalidBody(((Result_Error_InvalidBody) error).getForm_error())));
+                return badRequest(Json.toJson(new Result_InvalidBody(((InvalidBodyException) error).getErrors())));
 
             } else if (error instanceof NotFoundException) {
 
                 return notFound(((NotFoundException) error).getEntity());
 
-            } else if (error instanceof Result_Error_PermissionDenied) {
-
-                return forbidden();
-
             } else if (error instanceof ForbiddenException) {
 
                 return forbidden();
 
-            } else if (error instanceof Result_Error_Unauthorized) {
+            } else if (error instanceof UnauthorizedException) {
 
                 return unauthorized();
 
-            } else if (error instanceof Result_Error_NotSupportedException) {
+            } else if (error instanceof NotSupportedException) {
 
                 return badRequest(Json.toJson(new Result_UnsupportedException()));
             }

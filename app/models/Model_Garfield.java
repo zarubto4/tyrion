@@ -3,11 +3,11 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import exceptions.NotFoundException;
 import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.EntityType;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 import utilities.permission.Action;
@@ -60,7 +60,7 @@ public class Model_Garfield extends NamedModel implements Permissible {
             if (hardware_type_id != null) return Model_HardwareType.find.byId(hardware_type_id);
             return null;
 
-        } catch (_Base_Result_Exception e){
+        } catch (NotFoundException e){
             //nothing
             return null;
         }catch (Exception e){
@@ -76,7 +76,7 @@ public class Model_Garfield extends NamedModel implements Permissible {
             if (producer_id != null) return Model_Producer.find.byId(producer_id);
             return null;
 
-        } catch (_Base_Result_Exception e){
+        } catch (NotFoundException e){
             //nothing
             return null;
         }catch (Exception e){

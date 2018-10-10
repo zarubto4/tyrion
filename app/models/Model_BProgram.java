@@ -7,7 +7,6 @@ import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.enums.EntityType;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
@@ -44,9 +43,6 @@ public class Model_BProgram extends TaggedModel implements Permissible, UnderPro
     public List<Model_BProgramVersion> program_versions() {
         try {
             return getVersions();
-        } catch(_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
@@ -131,13 +127,7 @@ public class Model_BProgram extends TaggedModel implements Permissible, UnderPro
 
         super.update();
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo( Model_BProgram.class, getProjectId(), id));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_BProgram.class, getProjectId(), id))).start();
 
     }
 
@@ -148,20 +138,9 @@ public class Model_BProgram extends TaggedModel implements Permissible, UnderPro
         super.delete();
 
         // Remove from Project Cache
-        try {
-            getProject().idCache().remove(this.getClass(), id);
-        } catch (_Base_Result_Exception e) {
-            // Nothing
-        }
+        getProject().idCache().remove(this.getClass(), id);
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, getProjectId(), getProjectId()));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
-
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, getProjectId(), getProjectId()))).start();
 
         return false;
     }

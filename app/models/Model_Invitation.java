@@ -2,12 +2,12 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import exceptions.NotFoundException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
@@ -36,10 +36,7 @@ public class Model_Invitation extends BaseModel {
     @JsonProperty @ApiModelProperty(required = true)
     public Model_Person invited_person() {
         try {
-            return Model_Person.find.query().where().eq("email", this.email).findOne();
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
+            return Model_Person.find.query().nullable().where().eq("email", this.email).findOne();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;

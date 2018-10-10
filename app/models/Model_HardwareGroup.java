@@ -8,7 +8,6 @@ import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.cache.Cached;
 import utilities.enums.EntityType;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 import utilities.model.UnderProject;
@@ -52,10 +51,7 @@ public class Model_HardwareGroup extends NamedModel implements Permissible, Unde
 
             return cache_group_size;
 
-        }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e) {
+        } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
@@ -117,7 +113,7 @@ public class Model_HardwareGroup extends NamedModel implements Permissible, Unde
     }
 
     @JsonIgnore @Override
-    public Model_Project getProject() throws _Base_Result_Exception {
+    public Model_Project getProject() {
         return isLoaded("project") ? project : Model_Project.find.query().nullable().where().eq("hardware_groups.id", id).findOne();
     }
 
@@ -173,11 +169,7 @@ public class Model_HardwareGroup extends NamedModel implements Permissible, Unde
 
         super.delete();
 
-        try {
-            getProject().idCache().remove(this.getClass(), id);
-        } catch (_Base_Result_Exception e) {
-            // Nothing
-        }
+        getProject().idCache().remove(this.getClass(), id);
 
 
         // TODO opravit Info o updatu

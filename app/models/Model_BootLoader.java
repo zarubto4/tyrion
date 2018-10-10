@@ -11,7 +11,6 @@ import utilities.enums.EntityType;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
 import utilities.enums.NotificationType;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 import utilities.notifications.helps_objects.Becki_color;
@@ -48,12 +47,7 @@ public class Model_BootLoader extends NamedModel implements Permissible {
 
     @JsonProperty public boolean main_bootloader() {
         try {
-
             return getMainHardwareType() != null;
-
-        } catch (_Base_Result_Exception e){
-            logger.internalServerError(e);
-            return false;
         } catch(Exception e){
             logger.internalServerError(e);
             return false;
@@ -63,12 +57,7 @@ public class Model_BootLoader extends NamedModel implements Permissible {
     @JsonProperty
     public String  file_path() {
         try {
-
             return getBlob().getPublicDownloadLink();
-
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -79,7 +68,7 @@ public class Model_BootLoader extends NamedModel implements Permissible {
 
     @JsonIgnore
     public Model_Blob getBlob() {
-        return file != null ? file : Model_Blob.find.query().where().eq("boot_loader.id", id).findOne();
+        return isLoaded("file") ? file : Model_Blob.find.query().where().eq("boot_loader.id", id).findOne();
     }
 
     @JsonIgnore
@@ -93,7 +82,7 @@ public class Model_BootLoader extends NamedModel implements Permissible {
 
     @JsonIgnore
     public Model_HardwareType getHardwareType() {
-        return hardware_type != null ? hardware_type : Model_HardwareType.find.query().where().eq("boot_loaders.id", id).findOne();
+        return isLoaded("hardware_type") ? hardware_type : Model_HardwareType.find.query().where().eq("boot_loaders.id", id).findOne();
     }
 
     @JsonIgnore
