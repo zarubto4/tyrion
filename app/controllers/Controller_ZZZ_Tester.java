@@ -30,6 +30,9 @@ import utilities.enums.PaymentMethod;
 import utilities.enums.ProductEventType;
 import utilities.financial.extensions.ExtensionInvoiceItem;
 import utilities.financial.fakturoid.FakturoidService;
+import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
+import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_Credit_list;
+import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_Status;
 import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.logger.Logger;
 
@@ -43,6 +46,7 @@ import java.util.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import utilities.logger.YouTrack;
 import utilities.scheduler.SchedulerController;
+import utilities.scheduler.jobs.Job_ThingsMobileSimListOnlySynchronizer;
 import utilities.swagger.output.Swagger_Hardware_Registration_Hash;
 
 
@@ -64,13 +68,15 @@ public class Controller_ZZZ_Tester extends _BaseController {
     private FakturoidService fakturoid;
 
 // CONTROLLER CONTENT ##################################################################################################
+
     @ApiOperation(value = "Hidden test Method", hidden = true)
      public Result test1() {
          try {
 
+             new Job_ThingsMobileSimListOnlySynchronizer().execute(null);
 
+             return ok();
 
-             return ok("Valid version for mode");
          } catch (Exception e) {
              logger.internalServerError(e);
              return badRequest();
@@ -81,6 +87,14 @@ public class Controller_ZZZ_Tester extends _BaseController {
     public Result test2() {
         try {
 
+           //  TM_Sim_Credit_list credit_list = Controller_Things_Mobile.sim_credit();
+
+
+            TM_Sim_Status status = Controller_Things_Mobile.sim_status(882360002156971L);
+
+            System.out.print("Credit:: \n"  + status.prettyPrint());
+
+            /*
             List<String> places = Arrays.asList("002100373136510236363332","004100273136510236363332","002900363136510236363332","002C00443136510236363332","003500443036511935353233",
                     "004300443136510236363332","002700373136510236363332","004900283136510236363332","003E00363136510236363332");
 
@@ -99,8 +113,10 @@ public class Controller_ZZZ_Tester extends _BaseController {
             }
 
             System.out.println(registration_hash);
+            */
 
-           return ok();
+           return ok(status);
+
         } catch (Exception e) {
             logger.internalServerError(e);
             return badRequest();
@@ -112,6 +128,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
         try {
 
 
+            /*
             List<Model_Person> persons = Model_Person.find.all();
 
             for(Model_Person person : persons) {
@@ -124,8 +141,8 @@ public class Controller_ZZZ_Tester extends _BaseController {
                         // .addCustomAttribute(io.intercom.api.CustomAttribute.newBooleanAttribute("browncoat", true))
                         .setUserId(person.id.toString());
                 User.create(user);
-
             }
+            */
 
 
 

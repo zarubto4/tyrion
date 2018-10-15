@@ -41,7 +41,7 @@ public class Controller_Grid extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    @javax.inject.Inject
+    @Inject
     public Controller_Grid(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
         super(environment, ws, formFactory, youTrack, config, scheduler);
     }

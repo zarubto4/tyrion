@@ -384,9 +384,7 @@ public class Controller_GSM extends _BaseController {
 
             gsm.update();
 
-
             gsm.setTags(help.tags);
-
 
             // Set Trashold to Things Mobile
             gsm.set_trashholds(

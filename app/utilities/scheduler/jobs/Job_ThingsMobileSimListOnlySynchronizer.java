@@ -5,8 +5,8 @@ import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
-import utilities.gsm_services.things_mobile.help_class.TM_Sim_List;
-import utilities.gsm_services.things_mobile.help_class.TM_Sim_List_list;
+import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_List;
+import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_List_list;
 import utilities.logger.Logger;
 import utilities.scheduler.Scheduled;
 
@@ -37,17 +37,33 @@ public class Job_ThingsMobileSimListOnlySynchronizer implements Job {
         @Override
         public void run() {
             try {
+
+                logger.trace("run:: Executing Job_ThingsMobileSimListOnlySynchronizer");
+
                 Controller_Things_Mobile things_mobile = new Controller_Things_Mobile();
+
+                logger.trace("run:: Get SimList");
                 TM_Sim_List_list list = things_mobile.sim_list();
+
+
+                logger.trace("run:: list:: " + list.prettyPrint());
+
                 //procházím list a hledám pokud v něm sim s msi_number existuje
                 //pokud ne vytvářím si novou a ukládám jí do databáze
                 for (TM_Sim_List sim : list.sims) {
+
+                    logger.trace("fpr:: msisdn:{} ", sim.msisdn + " \n overview:: " + sim.prettyPrint());
+
                     if (Model_GSM.find.query().where().eq("msi_number", sim.msisdn).findCount() == 0) {
+
                         Model_GSM gsm = new Model_GSM();
                         gsm.msi_number = sim.msisdn;
                         gsm.provider = "ThingsMobile";
                         gsm.registration_hash = UUID.randomUUID();
                         gsm.save();
+
+                    }else {
+                        logger.warn("fpr:: msisdn:{} ", sim.msisdn + " found already in database");
                     }
                 }
 

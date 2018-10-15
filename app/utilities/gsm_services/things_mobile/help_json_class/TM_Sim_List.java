@@ -1,11 +1,13 @@
-package utilities.gsm_services.things_mobile.help_class;
+package utilities.gsm_services.things_mobile.help_json_class;
+
+import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TM_Sim_Status {
+public class TM_Sim_List extends _Swagger_Abstract_Default {
 
-    public TM_Sim_Status() {}
+    public TM_Sim_List() {}
 
     public String activationDate;
     public Integer balance;
@@ -19,7 +21,7 @@ public class TM_Sim_Status {
     public String lastConnectionDate;
     public Integer monthlyTraffic;
     public Integer monthlyTrafficThreshold;
-    public String msisdn;
+    public Long msisdn;
     public String name;
     public String plan;
     public String status;
@@ -27,11 +29,7 @@ public class TM_Sim_Status {
     public Integer totalTraffic;
     public Integer totalTrafficThreshold;
 
-    public List<TM_Sim_Status_cdr> cdrs = new ArrayList<>();
+    public List<TM_Sim_List_cdr> cdrs = new ArrayList<>();
 
-
-    public boolean done;
-    public Integer errorCode;
-    public String errorMessage;
 
 }

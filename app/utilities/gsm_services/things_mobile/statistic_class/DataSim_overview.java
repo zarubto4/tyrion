@@ -6,9 +6,12 @@ import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class DataSim_overview extends _Swagger_Abstract_Default {
+
     public void DataSim_overview(){}
     public List<DataSim_DataGram> datagram = new ArrayList<>();
+
 }
 
 // TODO MARTIN - Takto by měl vypadat na konci zpracovan datagram

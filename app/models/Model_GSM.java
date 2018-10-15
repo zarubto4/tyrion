@@ -7,14 +7,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
+import utilities.Server;
 import utilities.cache.CacheFinder;
 import utilities.cache.CacheFinderField;
 import utilities.errors.Exceptions.Result_Error_PermissionDenied;
 import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
-import utilities.gsm_services.things_mobile.help_class.TM_Sim_Block;
-import utilities.gsm_services.things_mobile.help_class.TM_Sim_Status;
-import utilities.gsm_services.things_mobile.help_class.TM_Sim_Unblock;
+import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_Block;
+import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_Status;
+import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_Unblock;
 import utilities.gsm_services.things_mobile.statistic_class.DataSim_DataGram;
 import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.logger.Logger;
@@ -24,6 +25,7 @@ import javax.persistence.*;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -255,6 +257,27 @@ public class Model_GSM extends TaggedModel {
         }
     }
 
+    public void setTags(List<String> new_tags) throws _Base_Result_Exception {
+
+        //  set Tags to database
+        super.setTags(new_tags);
+
+
+        // clean all tags from ThingsMobile
+        Controller_Things_Mobile.clean_all_sim_tags(msi_number);
+
+        // Add Tags
+        for(String tag: new_tags) {
+            Controller_Things_Mobile.update_sim_tag(msi_number, tag);
+        }
+
+        Controller_Things_Mobile.update_sim_tag(msi_number, "project_id::" + get_project_id());
+        Controller_Things_Mobile.update_sim_tag(msi_number, "server_mode::" + Server.mode);
+        Controller_Things_Mobile.update_sim_tag(msi_number, "product_id_::" + get_project().getProductId());
+        Controller_Things_Mobile.update_sim_tag(msi_number, "customer_id_::" + get_project().getProduct().owner.id);
+
+    }
+
     // For users - owners of SIM modules
     // TODO 3.10. Setup sim traffic threshold z PDF dokumentace
     public void set_trashholds(Long daily_traffic_threshold,   boolean daily_traffic_threshold_exceeded_limit,
@@ -285,6 +308,9 @@ public class Model_GSM extends TaggedModel {
         this.total_traffic_threshold = -1L;
 
         super.save();
+
+        // Set name to local ID
+        Controller_Things_Mobile.update_sim_name(this.msi_number, this.id.toString());
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

@@ -144,6 +144,7 @@ public class DigitalOceanTyrionService {
             tags.add("product_id_" + product.id);
             tags.add("customer_id_" + product.owner.id);
         }
+
         tags.add(homer_server.server_type.name());
         tags.add(Server.mode.name());
         logger.trace("create_server::Time to add Tags: {}", tags);

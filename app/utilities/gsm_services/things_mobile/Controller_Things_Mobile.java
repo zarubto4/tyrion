@@ -7,13 +7,15 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.Server;
-import utilities.gsm_services.things_mobile.help_class.*;
+import utilities.gsm_services.things_mobile.help_json_class.*;
+import utilities.gsm_services.things_mobile.helpers.TMKey;
+import utilities.gsm_services.things_mobile.helpers.TMKeyStoreSender;
 import utilities.logger.Logger;
 
+import java.security.KeyStore;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletionStage;
@@ -28,30 +30,14 @@ public class Controller_Things_Mobile {
     // Logger
     private static final Logger logger = new Logger(Controller_Things_Mobile.class);
 
-
 // * CONFIFG VALUES -------------------------------------------------------------------------------------------------------------*/
 
-    private static String api_key = null;
-    private static String email = null;
+    private static String api_key = Server.configuration.getString("mobile_things.token");
+    private static String email = Server.configuration.getString("mobile_things.username");
     private static final String things_mobile_url = "https://www.thingsmobile.com";
 
  /* HELPER PRIVATE CLASS   ----------------------------------------------------------------------------------------------*/
 
-    /**
-     * Slouží k vytváření n klíčů jako dodatečný filtr parametr pro API thins_mobile.
-     * Je nutné se přispůsobit jejich požadavkům podle application/x-www-form-urlencoded
-     *
-     */
-    public static class KeyStore {
-
-        public KeyStore(String key, List<String> values){
-            this.key = key;
-            this.values = values;
-        }
-
-        public String key;
-        public List<String> values = new ArrayList<>();
-    }
 
 /* Object API  ---------------------------------------------------------------------------------------------------------*/
 
@@ -59,20 +45,11 @@ public class Controller_Things_Mobile {
     public static TM_Sim_Active sim_active(String msisdn, String simBarcode) {
         try {
 
+            TMKeyStoreSender sender = new TMKeyStoreSender();
+            sender.addKey("msisdn", msisdn);
+            sender.addKey("simBarcode", simBarcode);
 
-            KeyStore k1 =  new KeyStore("msisdn", new ArrayList<String>() {{
-                add(msisdn);
-            }});
-
-            KeyStore k2 = new KeyStore("simBarcode", new ArrayList<String>() {{
-                add(simBarcode);
-            }});
-
-            KeyStore[] stores = new KeyStore[2];
-            stores[0] = k1;
-            stores[1] = k2;
-
-            Document response = post("/services/business-api/activateSim", stores);
+            Document response = post("/services/business-api/activateSim", sender);
 
             TM_Sim_Active node = new TM_Sim_Active();
             if (response.getElementsByTagName("done").item(0).getTextContent().equals("true")) {
@@ -104,9 +81,10 @@ public class Controller_Things_Mobile {
     public static TM_Sim_Block sim_block(Long msi_number) {
         try {
 
-            Document response = post("/services/business-api/blockSim", new KeyStore("msisdn", new ArrayList<String>() {{
-                add(msi_number.toString());
-            }}));
+            TMKeyStoreSender sender = new TMKeyStoreSender();
+            sender.addKey("msisdn", msi_number.toString());
+
+            Document response = post("/services/business-api/blockSim", sender);
 
             TM_Sim_Block node = new TM_Sim_Block();
             if (response.getElementsByTagName("done").item(0).getTextContent().equals("true")) {
@@ -137,9 +115,11 @@ public class Controller_Things_Mobile {
     public static TM_Sim_Unblock sim_unblock(Long msi_number) {
         try {
 
-            Document response = post("/services/business-api/unblockSim", new KeyStore("msisdn", new ArrayList<String>() {{
-                add(msi_number.toString());
-            }}));
+            TMKeyStoreSender sender = new TMKeyStoreSender();
+            sender.addKey("msisdn", msi_number.toString());
+
+
+            Document response = post("/services/business-api/unblockSim", sender);
 
             TM_Sim_Unblock node = new TM_Sim_Unblock();
             if (response.getElementsByTagName("done").item(0).getTextContent().equals("true")) {
@@ -170,7 +150,7 @@ public class Controller_Things_Mobile {
     public static TM_Sim_List_list sim_list() {
         try {
 
-            Document response = post("/services/business-api/simList");
+            Document response = post("/services/business-api/simList", new TMKeyStoreSender());
             response.getDocumentElement().normalize();
 
             TM_Sim_List_list list = new TM_Sim_List_list();
@@ -255,9 +235,10 @@ public class Controller_Things_Mobile {
     public static TM_Sim_Status sim_status(Long msi_number) {
         try {
 
-            Document response = post("/services/business-api/simStatus", new KeyStore("msisdn",new ArrayList<String>() {{
-                add(msi_number.toString());
-            }}));
+            TMKeyStoreSender sender = new TMKeyStoreSender();
+            sender.addKey("msisdn", msi_number.toString());
+
+            Document response = post("/services/business-api/simStatus", sender);
 
             TM_Sim_Status_list list = new TM_Sim_Status_list();
 
@@ -338,9 +319,15 @@ public class Controller_Things_Mobile {
     }
 
     //CREDIT
+
+    /**
+     * Poměrně neužitečná funkce zjištující jaké celkové útraty byzance má
+     * @return
+     */
     public static TM_Sim_Credit_list sim_credit() {
         try {
-            Document response = post("/services/business-api/credit");
+
+            Document response = post("/services/business-api/credit", new TMKeyStoreSender());
             response.getDocumentElement().normalize();
 
             TM_Sim_Credit_list credit = new TM_Sim_Credit_list();
@@ -389,24 +376,15 @@ public class Controller_Things_Mobile {
         }
     }
 
-    //UPDATE SIM NAME
-    public static TM_Update_Sim_Name update_sim_name(Long id, String name) {
+    //UPDATE SIM NAME - We use that for set name asi ID of Model_GSM.id
+    public static TM_Update_Sim_Name update_sim_name(Long msi_number, String name) {
         try {
 
+            TMKeyStoreSender sender = new TMKeyStoreSender();
+            sender.addKey("msisdn", msi_number.toString());
+            sender.addKey("name", name);
 
-            KeyStore k1 =  new KeyStore("msisdn", new ArrayList<String>() {{
-                add(id.toString());
-            }});
-
-            KeyStore k2 = new KeyStore("name", new ArrayList<String>() {{
-                add(name);
-            }});
-
-            KeyStore[] stores = new KeyStore[2];
-            stores[0] = k1;
-            stores[1] = k2;
-
-            Document response = post("/services/business-api/updateSimName", stores);
+            Document response = post("/services/business-api/updateSimName", sender);
 
             TM_Update_Sim_Name node = new TM_Update_Sim_Name();
             if (response.getElementsByTagName("done").item(0).getTextContent().equals("true")) {
@@ -436,21 +414,21 @@ public class Controller_Things_Mobile {
     }
 
     //UPDATE SIM TAG
-    public static TM_Update_Sim_Tag update_sim_tag(Long id, String tag){
+    public static void clean_all_sim_tags(Long id) {
+            // TODO!
+    }
+
+
+    //UPDATE SIM TAG
+    public static TM_Update_Sim_Tag update_sim_tag(Long msisdn, String tag) {
         try {
-            KeyStore k1 =  new KeyStore("msisdn", new ArrayList<String>() {{
-                add(id.toString());
-            }});
 
-            KeyStore k2 = new KeyStore("tag", new ArrayList<String>() {{
-                add(tag);
-            }});
 
-            KeyStore[] stores = new KeyStore[2];
-            stores[0] = k1;
-            stores[1] = k2;
+            TMKeyStoreSender sender = new TMKeyStoreSender();
+            sender.addKey("msisdn", msisdn.toString());
+            sender.addKey("name", tag);
 
-            Document response = post("/services/business-api/updateSimTag", stores);
+            Document response = post("/services/business-api/updateSimTag", sender);
 
             TM_Update_Sim_Tag node = new TM_Update_Sim_Tag();
 
@@ -485,35 +463,13 @@ public class Controller_Things_Mobile {
     /**
      Metoda, která vypisuje XML a přidává k němu inputy
     */
-    private static Document post(String url, KeyStore... optional_keys) throws Exception {
+    private static Document post(String url, TMKeyStoreSender sender) throws Exception {
 
-        logger.debug("Request Controller_Things_Mobile: url {} key stores {}", url, optional_keys);
-        if(api_key == null) {
-            api_key = configuration.getString("mobile_things.token");
-            email = configuration.getString("mobile_things.username");
-        }
+        logger.debug("Request Controller_Things_Mobile: url {} key stores {}", url, sender.prettyPrint());
 
         //vytvoření hashmapy která majo klíč String a jako hodnotu pole Stringů
-        Map<String, List<String>> map = new HashMap<>();
-
-        //do pole se vkládá klíč "username"
-        map.put("username", new ArrayList<String>() {{
-            add(email);
-        }});
-
-        //do pole se vkládá klíč "token"
-        map.put("token", new ArrayList<String>() {{
-            add(api_key);
-        }});
-
-
-        //podmínka která v případě že je optional klíčů více než 0, tak je všechny přidá do do HasMapy map
-        if(optional_keys.length > 0) {
-            for(KeyStore store : optional_keys) {
-                map.put(store.key, store.values);
-            }
-        }
-
+        sender.addKey("username", email);
+        sender.addKey("token", api_key);
 
         logger.trace("Things_Mobile:: GET: URL: " + things_mobile_url + url);
 
@@ -523,11 +479,11 @@ public class Controller_Things_Mobile {
                 .setContentType("application/x-www-form-urlencoded")
                 //nastavuje jak dlouho se bude pokusit připojit než vyhodí chybu
                 .setRequestTimeout(Duration.ofSeconds(5))
-                .setQueryString(map)
-                .post(map.toString());
+                .setQueryString(sender.getHash())
+                .post(sender.getHash().toString());
 
-    //vztvářím si objekt, který teprv bude existovat a poté na něj volám metodu getStatus
-        Integer status = responsePromise.toCompletableFuture().get().getStatus();
+        //vztvářím si objekt, který teprv bude existovat a poté na něj volám metodu getStatus
+        int status = responsePromise.toCompletableFuture().get().getStatus();
 
         //pokud metoda neprobehne bez problemu vyhodí chybu
         if(status != 200 && status != 201) {
