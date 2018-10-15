@@ -1,9 +1,8 @@
 package utilities.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers._BaseController;
 import io.swagger.annotations.ApiModelProperty;
 import org.bson.types.ObjectId;
@@ -15,8 +14,6 @@ import play.libs.Json;
 import utilities.cache.CacheField;
 import utilities.cache.CacheFinderField;
 import utilities.cache.CacheMongoFinder;
-import utilities.cache.CacheMongoFinder;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 
 import java.lang.reflect.Field;
@@ -32,7 +29,7 @@ import java.util.List;
                 }
         )
 })
-public abstract class _Abstract_MongoModel implements JsonSerializer {
+public abstract class _Abstract_MongoModel implements JsonSerializable {
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 
@@ -93,7 +90,7 @@ public abstract class _Abstract_MongoModel implements JsonSerializer {
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
 
-    @JsonIgnore public void save() throws _Base_Result_Exception {
+    @JsonIgnore public void save() {
 
         // Someone call Save when object is already created in database
         if(created != null && this.id != null) {
@@ -110,8 +107,7 @@ public abstract class _Abstract_MongoModel implements JsonSerializer {
 
         // new Thread(this::cache).start(); // Caches the object
 
-        if(its_person_operation()) {
-            check_create_permission();
+        if (its_person_operation()) {
             save_author();
         }
 
@@ -129,15 +125,10 @@ public abstract class _Abstract_MongoModel implements JsonSerializer {
         }
     }
 
-    @JsonIgnore public void update() throws _Base_Result_Exception {
+    @JsonIgnore public void update() {
 
         // Set Time
         this.updated = System.currentTimeMillis() / 1000L;
-
-        // Check Permission if this operation is by person, not by this server
-        if (its_person_operation()) {
-            check_update_permission();
-        }
 
         // Save Document do Mongo Database
         getFinder().save(this);
@@ -148,14 +139,8 @@ public abstract class _Abstract_MongoModel implements JsonSerializer {
     /**
      * Its not Real Delete from Database, but only set as deleted with one common boolean value!
      * For Real Remove use {@link #deletePermanent() } instead
-     * @throws _Base_Result_Exception
      */
-    @JsonIgnore public void delete() throws _Base_Result_Exception {
-
-        // Check Permission if this operation is by person, not by this server
-        if(its_person_operation()) {
-            check_delete_permission();
-        }
+    @JsonIgnore public void delete() {
 
         // Set Time
         this.removed = System.currentTimeMillis() / 1000L;
@@ -172,14 +157,8 @@ public abstract class _Abstract_MongoModel implements JsonSerializer {
      * Permanently remove from Mongo DB,
      * its not possible to resque that without backup on database!!!
      * Do it only if you know, what you are doing!
-     * @throws _Base_Result_Exception
      */
-    @JsonIgnore public void deletePermanent() throws _Base_Result_Exception {
-
-        // Check Permission if this operation is by person, not by this server
-        if(its_person_operation()) {
-            check_delete_permission();
-        }
+    @JsonIgnore public void deletePermanent() {
 
         // Remove Permanently
         getFinder().delete(this);
@@ -306,8 +285,6 @@ public abstract class _Abstract_MongoModel implements JsonSerializer {
         }
     }
 
-
-
     /**
      * Here we can log who do this operation. User or System.
      * Just a idea..
@@ -345,70 +322,19 @@ public abstract class _Abstract_MongoModel implements JsonSerializer {
         return fields;
     }
 
-
-    /* Permission Contents ----------------------------------------------------------------------------------------------------*/
-
+/* Permission Contents ----------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(readOnly = true, value = "can be hidden", required = true)
-    @JsonProperty
-    public boolean update_permission(){
-        try{
-
-            if(!its_person_operation()) {
-                return true;
-            }
-
-            check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-            return true;
-        }catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            return false;
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return false;
-        }
-    }
+    public boolean update_permission; // TODO
 
     @ApiModelProperty(readOnly = true, value = "can be hidden", required = true)
-    @JsonProperty
-    public boolean delete_permission(){
-        try{
-
-            if(!its_person_operation()) {
-                return true;
-            }
-
-            check_delete_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-            return true;
-        }catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            return false;
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return false;
-        }
-    }
-
-    /*
-     * Required for all Models in Database.
-     * You can used this one, or Override this
-     *
-     */
-    @JsonIgnore public abstract void check_create_permission() throws _Base_Result_Exception;
-    @JsonIgnore public abstract void check_read_permission()   throws _Base_Result_Exception;
-    @JsonIgnore public abstract void check_update_permission() throws _Base_Result_Exception;
-    @JsonIgnore public abstract void check_delete_permission() throws _Base_Result_Exception;
-
+    public boolean delete_permission; // TODO
 
     /**
      * Converts this model to JSON
      * @return JSON representation of this model
      */
-    public JsonNode json() {
+    public ObjectNode json() {
 
         /*
 
@@ -422,7 +348,7 @@ public abstract class _Abstract_MongoModel implements JsonSerializer {
         return cache().get_cached_json();
         */
 
-        return Json.toJson(this);
+        return (ObjectNode) Json.toJson(this);
 
     }
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

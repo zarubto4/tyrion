@@ -24,8 +24,8 @@ public class Model_Permission extends BaseModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Enumerated(EnumType.STRING) public Action action;
-    @Enumerated(EnumType.STRING) public EntityType entity_type;
+    public Action action;
+    public EntityType entity_type;
 
     @JsonIgnore @ManyToMany(mappedBy = "permissions") public List<Model_Person>  persons = new ArrayList<>();
     @JsonIgnore @ManyToMany(mappedBy = "permissions") public List<Model_Role>    roles   = new ArrayList<>();

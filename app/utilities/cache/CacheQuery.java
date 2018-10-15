@@ -1,7 +1,7 @@
 package utilities.cache;
 
-import io.ebean.EbeanServer;
 import io.ebean.ExpressionFactory;
+import io.ebeaninternal.api.SpiEbeanServer;
 import io.ebeaninternal.server.deploy.BeanDescriptor;
 import io.ebeaninternal.server.querydefn.DefaultOrmQuery;
 import org.ehcache.Cache;
@@ -20,7 +20,7 @@ public class CacheQuery<T extends BaseModel> extends DefaultOrmQuery<T> {
 
     private boolean nullable;
 
-    public CacheQuery(CacheFinder<T> cacheFinder, BeanDescriptor<T> desc, EbeanServer server, ExpressionFactory expressionFactory) {
+    public CacheQuery(CacheFinder<T> cacheFinder, BeanDescriptor<T> desc, SpiEbeanServer server, ExpressionFactory expressionFactory) {
         super(desc, server, expressionFactory);
 
         this.cacheFinder = cacheFinder;

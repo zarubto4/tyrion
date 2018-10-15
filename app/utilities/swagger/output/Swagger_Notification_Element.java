@@ -17,7 +17,7 @@ public class Swagger_Notification_Element extends _Swagger_Abstract_Default {
 
     public Swagger_Notification_Element() {}
 
-    @ApiModelProperty(required =  true)  @Enumerated(EnumType.STRING)               public NotificationElement type = null;
+    @ApiModelProperty(required =  true)                                 public NotificationElement type = null;
 
 
     @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL) public String text = null;

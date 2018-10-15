@@ -4,7 +4,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
-import utilities.model.JsonSerializer;
 import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import java.util.ArrayList;

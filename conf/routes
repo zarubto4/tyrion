@@ -34,8 +34,8 @@ POST      /logout                                                       utilitie
 POST      /apikey                                                       utilities.authentication.Controller_Security.apikey()
 
 # Facebook login
-PUT       /facebook/login/url-user                                       controllers.Controller_FacebookLogin.login_url_user()
-GET       /facebook/login/redirect-user/                                 controllers.Controller_FacebookLogin.login_redirect_user()
+PUT       /facebook/login/url-user                                       controllers.Controller_FacebookLogin.login_url_person()
+GET       /facebook/login/redirect-user/                                 controllers.Controller_FacebookLogin.login_redirect_person()
 PUT       /facebook/login/url                                            controllers.Controller_FacebookLogin.login_url()
 GET       /facebook/login/redirect                                       controllers.Controller_FacebookLogin.login_redirect()
 

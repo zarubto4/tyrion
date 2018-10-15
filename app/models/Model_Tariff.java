@@ -46,7 +46,7 @@ public class Model_Tariff extends OrderedNamedModel implements Permissible, Publ
 
                             public boolean active;
 
-    @Enumerated(EnumType.STRING) @JsonIgnore public BusinessModel business_model;
+                @JsonIgnore public BusinessModel business_model;
 
                             public boolean owner_details_required;
                             public boolean payment_details_required;

@@ -14,6 +14,7 @@ import play.inject.ApplicationLifecycle;
 import play.libs.Json;
 import utilities.Server;
 import utilities.cache.ServerCache;
+import utilities.enums.ServerMode;
 import utilities.logger.ServerLogger;
 import utilities.permission.PermissionFilter;
 import utilities.permission.PermissionHandlerInstantiator;
@@ -57,6 +58,10 @@ public class ApplicationStarter {
 
             ServerLogger.init(configuration);
 
+            // TODO ugly!!! should be completely reworked to use DI
+            Server.configuration = configuration;
+            Server.mode = configuration.getEnum(ServerMode.class,"server.mode");
+
             this.cache.initialize();
 
             // For dependency injected serializer for permissions
@@ -64,7 +69,7 @@ public class ApplicationStarter {
                     .setFilterProvider(new SimpleFilterProvider().addFilter("permission", injector.getInstance(PermissionFilter.class)))
                     .setHandlerInstantiator(injector.getInstance(PermissionHandlerInstantiator.class));
 
-            Server.start(configuration, injector);
+            Server.start(injector);
             this.scheduler.start();
         } catch (Exception e) {
             logger.error("Error starting the application", e);

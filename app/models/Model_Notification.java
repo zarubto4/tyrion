@@ -35,10 +35,10 @@ public class Model_Notification extends BaseModel implements Permissible, Person
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-          @Enumerated(EnumType.STRING) public NotificationLevel notification_level;   // Typ zprávy
-          @Enumerated(EnumType.STRING) public NotificationImportance notification_importance; // Důležitost (podbarvení zprávy)
-          @Transient                   public NotificationType notification_type; // Typ zprávy pro long pool - chain message.
-          @Enumerated(EnumType.STRING) public NotificationState state; // Machinace s notifikací na straně Becki
+    public NotificationLevel notification_level;   // Typ zprávy
+    public NotificationImportance notification_importance; // Důležitost (podbarvení zprávy)
+    public NotificationState state; // Machinace s notifikací na straně Becki
+    @Transient public NotificationType notification_type; // Typ zprávy pro long pool - chain message.
 
     @Column(columnDefinition = "TEXT") private String content_string;  // Obsah v podobě Json.toString().
     @Column(columnDefinition = "TEXT") private String buttons_string;

@@ -23,8 +23,8 @@ public abstract class VersionModel extends NamedModel {
 
     @JsonIgnore @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER) public Model_Blob file; // TODO Cache 
 
-    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Only if user make request for publishing") @Enumerated(EnumType.STRING) public Approval approval_state;
-    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Only for main / default program - and access only for administrators") @Enumerated(EnumType.STRING) public ProgramType publish_type;
+    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Only if user make request for publishing") public Approval approval_state;
+    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(required = false, value = "Only for main / default program - and access only for administrators") public ProgramType publish_type;
 
     @JsonIgnore public boolean working_copy;
 

@@ -22,7 +22,6 @@ import utilities.model.BaseModel;
 import utilities.model.JsonSerializable;
 import utilities.permission.Action;
 import utilities.permission.PermissionService;
-import utilities.model._Abstract_MongoModel;
 import utilities.scheduler.SchedulerController;
 import utilities.server_measurement.RequestLatency;
 
@@ -151,9 +150,8 @@ public abstract class _BaseController {
      * @param clazz
      * @param <T>
      * @return
-     * @throws _Base_Result_Exception
      */
-    public <T> T formFromJsonWithValidation(Class<T> clazz, JsonNode node) throws _Base_Result_Exception {
+    public <T> T formFromJsonWithValidation(Class<T> clazz, JsonNode node) {
         return this.baseFormFactory.formFromJsonWithValidation(clazz, node);
     }
 
@@ -283,16 +281,6 @@ public abstract class _BaseController {
         return Controller.created(object.json());
     }
 
-    /**
-     * Creates result created. Body of this result is some object itself instead of classic result json.
-     *
-     * @param object of BaseModel to send
-     * @return 201 result
-     */
-    public static Result created(_Abstract_MongoModel object) {
-        return Controller.created(object.json());
-    }
-
 // OK JSON! - 200 ######################################################################################################
 
     /**
@@ -328,29 +316,6 @@ public abstract class _BaseController {
         check_latency();
         return Controller.ok(object.json());
     }
-
-    /**
-     * Creates result created. Body of this result is some object itself instead of classic result json.
-     *
-     * @param object of _Abstract_MongoModel to send
-     * @return 200 result
-     */
-    public static Result ok(_Abstract_MongoModel object) {
-        return Controller.created(object.json());
-    }
-
-
-    /**
-     * Creates a result with the code 200 and provided json as the body.
-     *
-     * @param object _Swagger_Abstract_Default serialized object
-     * @return 200 result ok with json
-     */
-    /*public static Result ok(_Swagger_Abstract_Default object) {
-        check_latency();
-        return Controller.ok(object.json());
-    }*/
-
 
     /**
      * Creates an ok result with given message.

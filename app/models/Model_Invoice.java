@@ -66,11 +66,11 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderCustom
     @JsonIgnore @OneToMany(mappedBy="invoice",
             cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<Model_InvoiceItem> invoice_items = new ArrayList<>();
 
- @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Currency currency;
- @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public PaymentMethod method;
+    public Currency currency;
+    public PaymentMethod method;
 
-                    @JsonIgnore   @Enumerated(EnumType.STRING)   public InvoiceStatus status;
-                    @JsonIgnore   @Enumerated(EnumType.STRING)   public PaymentWarning warning;
+    @JsonIgnore public InvoiceStatus status;
+    @JsonIgnore public PaymentWarning warning;
 
 /* JSON PROPERTY VALUES -----------------------------------------------------------------------------------------------*/
 

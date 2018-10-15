@@ -32,7 +32,7 @@ public class Model_PaymentDetails extends BaseModel implements Permissible, Unde
 
                                                    @JsonIgnore public String payment_methods; // PaymentMethod values separated by |
 
-                                  @Enumerated(EnumType.STRING) public PaymentMethod payment_method;
+                                                               public PaymentMethod payment_method;
 
                                                    @JsonIgnore public boolean on_demand;            // Jestli je povoleno a zaregistrováno, že Tyrion muže žádat o provedení platby
 

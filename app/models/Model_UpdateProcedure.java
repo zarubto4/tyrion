@@ -45,7 +45,7 @@ public class Model_UpdateProcedure extends BaseModel implements Permissible, Und
     @ApiModelProperty(required = true, value = "UNIX time in ms", dataType = "number")  public Date date_of_planing;
     @ApiModelProperty(required = true, value = "UNIX time in ms", dataType = "number")  public Date date_of_finish;
 
-    @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public UpdateType type_of_update;
+    @ApiModelProperty(required = true)  public UpdateType type_of_update;
 
     @JsonIgnore public UUID project_id; // For Faster Find
 

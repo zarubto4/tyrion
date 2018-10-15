@@ -37,12 +37,12 @@ public class Model_TariffExtension extends OrderedNamedModel implements Permissi
 
     /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                       @ApiModelProperty(required = true) public String color;
+    @ApiModelProperty(required = true) public String color;
+    @ApiModelProperty(required = true) public ExtensionType type;
 
-          @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public ExtensionType type;
-                           @Column(columnDefinition = "TEXT") @JsonIgnore public String configuration;
-                           @Column(columnDefinition = "TEXT") @JsonIgnore public String consumption;
-                         @JsonProperty @ApiModelProperty(required = true) public boolean active;
+      @Column(columnDefinition = "TEXT") @JsonIgnore public String configuration;
+      @Column(columnDefinition = "TEXT") @JsonIgnore public String consumption;
+    @JsonProperty @ApiModelProperty(required = true) public boolean active;
 
        @JoinTable(name = "tariff_extensions_included")
        @JsonIgnore @ManyToMany(mappedBy="extensions_included", fetch = FetchType.LAZY)  public List<Model_Tariff> tariffs_included = new ArrayList<>();

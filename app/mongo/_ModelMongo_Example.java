@@ -1,18 +1,17 @@
-package models;
+package mongo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBObject;
 import io.swagger.annotations.ApiModel;
+import models.Model_Person;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.*;
 import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.utils.IndexType;
 import utilities.cache.CacheFinderField;
 import utilities.cache.CacheMongoFinder;
-import utilities.errors.Exceptions.Result_Error_NotSupportedException;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model._Abstract_MongoModel;
 
@@ -95,40 +94,7 @@ public class _ModelMongo_Example extends _Abstract_MongoModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
-    /**
-     * Definition of Static permission key, with static keys, we can buid groups of permisions and so on the Roles.
-     * Admin with all permissions
-     * Editors with some permissions
-     * Feminism with no permission for anything! <3
-     */
-    public enum Permission { ExampleModelName_create, ExampleModelName_read, ExampleModelName_update, ExampleModelName_delete }
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Override
-    public void check_read_permission()   throws _Base_Result_Exception {
-        
-    }
-
-    @JsonIgnore @Override
-    public void check_create_permission() throws _Base_Result_Exception {
-        logger.error("check_create_permission: Not Supported");
-        throw new Result_Error_NotSupportedException();
-    }
-
-    @JsonIgnore @Override
-    public void check_update_permission() throws _Base_Result_Exception {
-        logger.error("check_update_permission: Not Supported");
-        throw new Result_Error_NotSupportedException();
-    }
-
-    @JsonIgnore @Override
-    public void check_delete_permission() throws _Base_Result_Exception {
-        logger.error("check_delete_permission: Not Supported");
-        throw new Result_Error_NotSupportedException();
-    }
 
 /* SPECIAL QUERY -------------------------------------------------------------------------------------------------------*/
 

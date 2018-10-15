@@ -31,8 +31,6 @@ import utilities.grid_support.utils.IP_Founder;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.homer_auto_deploy.DigitalOceanThreadRegister;
 import utilities.logger.Logger;
-import utilities.logger.ServerLogger;
-import utilities.model.BaseModel;
 import utilities.model._Abstract_MongoModel;
 import utilities.models_update_echo.EchoHandler;
 import utilities.models_update_echo.RefreshTouch_echo_handler;
@@ -46,6 +44,7 @@ import javax.persistence.PersistenceException;
 import java.math.RoundingMode;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -145,16 +144,12 @@ public class Server {
 
     /**
      * Loads all configurations and start all server components.
-     * @param config file
      * @param injector default application injector
      * @throws Exception if error occurs when starting the server
      */
-    public static void start(Config config, Injector injector) throws Exception {
-        Server.configuration = config;
+    public static void start(Injector injector) throws Exception {
         Server.injector = injector;
         Server.baseFormFactory = Server.injector.getInstance(_BaseFormFactory.class);
-
-        Server.mode = configuration.getEnum(ServerMode.class,"server.mode");
 
         setConstants();
 
@@ -500,14 +495,14 @@ public class Server {
     public static void init_mongo_database() {
 
         // Připojení na MongoClient v Azure
-        logger.trace("init_mongo_database:: URL {}", configuration.getString("MongoDB." + Server.mode + ".url"));
+        logger.trace("init_mongo_database:: URL {}", configuration.getString("MongoDB." + Server.mode.name().toLowerCase() + ".url"));
 
 
         MongoClientOptions.Builder options_builder = new MongoClientOptions.Builder();
         options_builder.maxConnectionIdleTime(1000 * 60 * 60 *24);
 
 
-        MongoClientURI uri = new MongoClientURI(configuration.getString("MongoDB." + Server.mode + ".url"), options_builder);
+        MongoClientURI uri = new MongoClientURI(configuration.getString("MongoDB." + Server.mode.name().toLowerCase() + ".url"), options_builder);
         Server.mongoClient = new MongoClient(uri);
 
 

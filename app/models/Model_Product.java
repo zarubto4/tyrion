@@ -45,7 +45,7 @@ public class Model_Product extends NamedModel implements Permissible, UnderCusto
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
 
-                                       @JsonIgnore @Enumerated(EnumType.STRING) public BusinessModel business_model;
+                                                                    @JsonIgnore public BusinessModel business_model;
 
                                              @ApiModelProperty(required = true) public String subscription_id;
 

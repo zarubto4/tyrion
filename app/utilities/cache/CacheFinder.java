@@ -1,6 +1,7 @@
 package utilities.cache;
 
 import io.ebean.Finder;
+import io.ebeaninternal.api.SpiEbeanServer;
 import io.ebeaninternal.server.querydefn.DefaultOrmQuery;
 import org.ehcache.Cache;
 import exceptions.NotFoundException;
@@ -56,7 +57,7 @@ public class CacheFinder<T extends BaseModel> extends Finder<UUID, T> implements
     @Override
     public CacheQuery<T> query() {
         DefaultOrmQuery<T> query = (DefaultOrmQuery<T>) super.query();
-        return new CacheQuery<>(this, query.getBeanDescriptor(), db(), query.getExpressionFactory());
+        return new CacheQuery<>(this, query.getBeanDescriptor(), (SpiEbeanServer) db(), query.getExpressionFactory());
     }
 
     public void setCache(Cache<UUID, T> cache) {

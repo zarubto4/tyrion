@@ -51,14 +51,14 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
                                                     example = "1466163478925")  public Date date_of_finish;
 
               @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                    public Model_Hardware hardware; // Deska k aktualizaci
-              @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public FirmwareType firmware_type;          // Typ Firmwaru
+                                            @ApiModelProperty(required = true)  public FirmwareType firmware_type;          // Typ Firmwaru
 
                                                                                 // Aktualizace je vázána buď na verzi C++ kodu nebo na soubor, nahraný uživatelem
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                 public Model_CProgramVersion c_program_version_for_update; // C_program k aktualizaci
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_BootLoader bootloader;                      // Když nahrávám Firmware
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_Blob binary_file;                     // Soubor, když firmware nahrává uživatel sám mimo flow
 
-                                                   @Enumerated(EnumType.STRING) public HardwareUpdateState state;
+                                                                                public HardwareUpdateState state;
                                                                     @JsonIgnore public Integer count_of_tries;                         // Počet celkovbých pokusu doručit update (změny z wait to progres atd..
 
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Only if state is critical_error or Homer record some error")  public String error;

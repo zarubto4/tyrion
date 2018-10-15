@@ -45,7 +45,7 @@ public class Model_ProductExtension extends OrderedNamedModel implements Permiss
 
                                         @ApiModelProperty(required = true) public String color;
 
-           @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public ExtensionType type;
+                                        @ApiModelProperty(required = true) public ExtensionType type;
                             @Column(columnDefinition = "TEXT") @JsonIgnore public String configuration;
 
                          /**
@@ -335,6 +335,7 @@ public class Model_ProductExtension extends OrderedNamedModel implements Permiss
     @JsonIgnore
     public Model_ExtensionFinancialEvent getFinancialEventLast() {
         Model_ExtensionFinancialEvent lastFinancialEvent = Model_ExtensionFinancialEvent.find.query()
+                .nullable()
                 .where()
                 .eq("product_extension.id", id)
                 .order().desc("event_start")
