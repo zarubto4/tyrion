@@ -17,4 +17,14 @@ public abstract class _Swagger_Abstract_Default implements JsonSerializer {
         return Json.toJson(this);
     }
 
+
+    /**
+     * Converts this model to printable string
+     * @return formatted string
+     */
+    @JsonIgnore
+    public String prettyPrint() {
+        return this.getClass() + ":\n" + Json.prettyPrint(json());
+    }
+
 }

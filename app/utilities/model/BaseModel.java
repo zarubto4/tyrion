@@ -53,7 +53,8 @@ public abstract class BaseModel extends Model implements JsonSerializer {
     public boolean deleted;
 
 /* GENERAL OBJECT CACHE ------------------------------------------------------------------------------------------------*/
-    /**
+
+   /**
      *
      */
    @JsonIgnore @Transient

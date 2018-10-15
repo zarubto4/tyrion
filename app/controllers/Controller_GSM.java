@@ -14,6 +14,7 @@ import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.enums.BoardRegistrationStatus;
+import utilities.errors.Exceptions.Result_Error_NotFound;
 import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_GSM_label_Details;
@@ -430,9 +431,17 @@ public class Controller_GSM extends _BaseController {
             Model_Project.find.byId(project_id);
 
             // Kotrola objektu
-            Model_GSM gsm = Model_GSM.find.query().where().eq("registration_hash", registration_hash).findOne();
+            Model_GSM gsm;
 
-            if (gsm == null) {
+            try {
+                gsm = Model_GSM.find.query().where().eq("registration_hash", registration_hash).findOne();
+
+                if (gsm == null) {
+                    status.status = BoardRegistrationStatus.NOT_EXIST;
+                    return ok(status);
+                }
+
+            } catch (Result_Error_NotFound e) {
                 status.status = BoardRegistrationStatus.NOT_EXIST;
                 return ok(status);
             }
@@ -482,7 +491,12 @@ public class Controller_GSM extends _BaseController {
 
             // Swagger_GSM_Date help = formFromRequestWithValidation(Swagger_GSM_Date.class);
 
-            DataSim_overview overview = Model_GSM.find.byId(sim_id).get_dataSim_overview();
+            Model_GSM gsm = Model_GSM.find.byId(sim_id);
+
+
+            DataSim_overview overview = gsm.get_dataSim_overview();
+
+            System.out.println("DataSim_overview:: " + overview.prettyPrint());
 
             return ok(overview);
 

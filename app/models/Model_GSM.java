@@ -279,7 +279,6 @@ public class Model_GSM extends TaggedModel {
     public void save() {
         logger.debug("save :: Creating new Object");
 
-
         // Defaultně vypnuté
         this.daily_traffic_threshold = -1L;
         this.monthly_traffic_threshold = -1L;
