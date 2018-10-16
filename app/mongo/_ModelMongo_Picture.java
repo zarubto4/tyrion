@@ -5,8 +5,7 @@ import io.swagger.annotations.ApiModel;
 import org.bson.types.ObjectId;
 import org.ehcache.Cache;
 import org.mongodb.morphia.annotations.Entity;
-import utilities.cache.CacheField;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.cache.CacheMongoFinder;
 import utilities.logger.Logger;
 import utilities.model._Abstract_MongoModel;
@@ -48,7 +47,7 @@ public class _ModelMongo_Picture extends _Abstract_MongoModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = File.class, keyType = String.class, duration = 72000, maxElements = 20000, name = "Picture_Cache")
+    @InjectCache(value = File.class, keyType = String.class, duration = 72000, maxElements = 20000, name = "Picture_Cache")
     public static Cache<String, File> picture_cache;
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
@@ -56,7 +55,7 @@ public class _ModelMongo_Picture extends _Abstract_MongoModel {
     @Override @JsonIgnore
     public CacheMongoFinder<?> getFinder() { return find; }
 
-    @CacheFinderField(value = _ModelMongo_Picture.class, keyType = ObjectId.class)
+    @InjectCache(value = _ModelMongo_Picture.class, keyType = ObjectId.class)
     public static CacheMongoFinder<_ModelMongo_Picture> find = new CacheMongoFinder<>(_ModelMongo_Picture.class);
 
 

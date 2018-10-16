@@ -6,7 +6,7 @@ import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import io.swagger.annotations.ApiModel;
 import utilities.Server;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
@@ -270,6 +270,6 @@ public class Model_BootLoader extends NamedModel implements Permissible {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_BootLoader.class)
+    @InjectCache(Model_BootLoader.class)
     public static CacheFinder<Model_BootLoader> find = new CacheFinder<>(Model_BootLoader.class);
 }

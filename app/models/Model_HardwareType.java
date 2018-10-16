@@ -9,7 +9,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.cache.Cached;
 import utilities.enums.EntityType;
 import utilities.logger.Logger;
@@ -289,6 +289,6 @@ public class Model_HardwareType extends NamedModel implements Permissible, Publi
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_HardwareType.class)
+    @InjectCache(Model_HardwareType.class)
     public static CacheFinder<Model_HardwareType> find = new CacheFinder<>(Model_HardwareType.class);
 }

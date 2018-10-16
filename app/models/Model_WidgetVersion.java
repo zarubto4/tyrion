@@ -3,7 +3,7 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.UnderProject;
@@ -130,6 +130,6 @@ public class Model_WidgetVersion extends VersionModel implements Permissible, Un
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_WidgetVersion.class)
+    @InjectCache(Model_WidgetVersion.class)
     public static CacheFinder<Model_WidgetVersion> find = new CacheFinder<>(Model_WidgetVersion.class);
 }

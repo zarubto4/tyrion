@@ -1,13 +1,11 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import exceptions.NotFoundException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
-import utilities.cache.CacheField;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.enums.PlatformAccess;
 import utilities.logger.Logger;
@@ -161,8 +159,8 @@ public class Model_AuthorizationToken extends BaseModel implements Permissible, 
      * For this case, we have Model_AuthorizationToken objects in storage, but ID is not a TOKEN name!
      * So, thets why we have two cache storage one for Model, one for connection from Token to Model (M:N)!
      */
-    @CacheField(value = UUID.class, duration = CacheField.TwoDayCacheConstant, maxElements = 100000, name = "Model_AuthorizationToken_Token<->UUID")
-    public static Cache<UUID, UUID> cache_token_name; // < TOKEN in UUID; UUID id of Model_AuthorizationToken>
+    @InjectCache(value = UUID.class, duration = InjectCache.DayCacheConstant, maxElements = 10000, name = "Model_AuthorizationToken_Token")
+    public static Cache<UUID, UUID> cache_token_name;
 
     public static Model_AuthorizationToken getByToken(UUID token) {
 
@@ -178,6 +176,6 @@ public class Model_AuthorizationToken extends BaseModel implements Permissible, 
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_AuthorizationToken.class)
+    @InjectCache(Model_AuthorizationToken.class)
     public static final CacheFinder<Model_AuthorizationToken> find = new CacheFinder<>(Model_AuthorizationToken.class);
 }

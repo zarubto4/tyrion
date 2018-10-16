@@ -8,7 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.enums.ExtensionType;
 import utilities.financial.extensions.configurations.Configuration;
@@ -144,6 +144,6 @@ public class Model_TariffExtension extends OrderedNamedModel implements Permissi
 
     /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_TariffExtension.class)
+    @InjectCache(Model_TariffExtension.class)
     public static CacheFinder<Model_TariffExtension> find = new CacheFinder<>(Model_TariffExtension.class);
 }

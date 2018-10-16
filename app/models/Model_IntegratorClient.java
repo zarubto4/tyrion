@@ -3,7 +3,7 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -70,6 +70,6 @@ public class Model_IntegratorClient extends BaseModel implements Permissible, Un
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_IntegratorClient.class)
+    @InjectCache(Model_IntegratorClient.class)
     public static CacheFinder<Model_IntegratorClient> find = new CacheFinder<>(Model_IntegratorClient.class);
 }

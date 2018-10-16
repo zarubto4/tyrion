@@ -12,7 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.document_mongo_db.document_objects.DM_HomerServer_Connect;
 import utilities.document_mongo_db.document_objects.DM_HomerServer_Disconnect;
 import utilities.enums.*;
@@ -721,6 +721,6 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_HomerServer.class)
+    @InjectCache(Model_HomerServer.class)
     public static CacheFinder<Model_HomerServer> find = new CacheFinder<>(Model_HomerServer.class);
 }

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import exceptions.NotFoundException;
 import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
@@ -167,6 +167,6 @@ public class Model_Garfield extends NamedModel implements Permissible {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Garfield.class)
+    @InjectCache(Model_Garfield.class)
     public static CacheFinder<Model_Garfield> find = new CacheFinder<>(Model_Garfield.class);
 }

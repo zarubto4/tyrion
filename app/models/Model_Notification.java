@@ -8,7 +8,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.*;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -419,6 +419,6 @@ public class Model_Notification extends BaseModel implements Permissible, Person
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Notification.class)
+    @InjectCache(Model_Notification.class)
     public static CacheFinder<Model_Notification> find = new CacheFinder<>(Model_Notification.class);
 }

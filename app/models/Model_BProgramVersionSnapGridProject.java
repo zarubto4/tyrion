@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.swagger.output.Swagger_Short_Reference;
@@ -117,6 +117,6 @@ public class Model_BProgramVersionSnapGridProject extends BaseModel {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_BProgramVersionSnapGridProject.class)
+    @InjectCache(Model_BProgramVersionSnapGridProject.class)
     public static CacheFinder<Model_BProgramVersionSnapGridProject> find = new CacheFinder<>(Model_BProgramVersionSnapGridProject.class);
 }

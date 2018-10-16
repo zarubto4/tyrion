@@ -12,7 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.document_mongo_db.document_objects.DM_CompilationServer_Connect;
 import utilities.document_mongo_db.document_objects.DM_CompilationServer_Disconnect;
 import utilities.enums.CompilationStatus;
@@ -253,6 +253,6 @@ public class Model_CompilationServer extends BaseModel implements Permissible, P
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_CompilationServer.class)
+    @InjectCache(Model_CompilationServer.class)
     public static CacheFinder<Model_CompilationServer> find = new CacheFinder<>(Model_CompilationServer.class);
 }

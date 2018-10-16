@@ -10,9 +10,8 @@ import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.Server;
-import utilities.cache.CacheField;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import exceptions.NotFoundException;
@@ -761,11 +760,11 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Boolean.class, name = "Model_Instance_Status")
+    @InjectCache(value = Boolean.class, name = "Model_Instance_Status")
     public static Cache<UUID, Boolean> cache_status;
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Instance.class)
+    @InjectCache(Model_Instance.class)
     public static CacheFinder<Model_Instance> find = new CacheFinder<>(Model_Instance.class);
 }

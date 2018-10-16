@@ -2,12 +2,11 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import exceptions.NotFoundException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
@@ -73,6 +72,6 @@ public class Model_Invitation extends BaseModel {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Invitation.class)
+    @InjectCache(Model_Invitation.class)
     public static CacheFinder<Model_Invitation> find = new CacheFinder<>(Model_Invitation.class);
 }

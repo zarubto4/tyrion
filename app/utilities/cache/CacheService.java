@@ -2,6 +2,7 @@ package utilities.cache;
 
 import com.google.inject.Singleton;
 import controllers.Controller_WebSocket;
+import exceptions.NotSupportedException;
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
@@ -23,13 +24,13 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Singleton
-public class ServerCache {
+public class CacheService {
 
-    private static final Logger logger = new Logger(ServerCache.class);
+    private static final Logger logger = new Logger(CacheService.class);
 
     private final CacheManager cacheManager;
 
-    public ServerCache() {
+    public CacheService() {
         this.cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true);
     }
 
@@ -49,65 +50,31 @@ public class ServerCache {
 
         logger.info("init - scanning classes took {} ms", System.currentTimeMillis() - start);
 
-        Set<Field> caches = reflections.getFieldsAnnotatedWith(CacheField.class);
+        Set<Field> fields = reflections.getFieldsAnnotatedWith(InjectCache.class);
 
-        caches.forEach(field -> {
-
-            CacheField annotation = field.getAnnotation(CacheField.class);
-
-            String name = annotation.name();
-
-            if (name.equals("")) {
-                name = field.getDeclaringClass().getSimpleName();
-            }
-
-            logger.debug("init - setting cache: {}", name);
-
+        fields.forEach(field -> {
             try {
+                InjectCache annotation = field.getAnnotation(InjectCache.class);
 
-                Duration duration = Duration.of(annotation.duration(), TimeUnit.SECONDS);
+                String name = annotation.name();
 
-                field.set(null, this.cacheManager.createCache(name,
-                        CacheConfigurationBuilder.newCacheConfigurationBuilder(annotation.keyType(), annotation.value(),
-                                ResourcePoolsBuilder.heap(annotation.maxElements()))
-                                .withExpiry(annotation.automaticProlonging() ? Expirations.timeToIdleExpiration(duration) : Expirations.timeToLiveExpiration(duration)).build()));
+                if (name.equals("")) {
+                    name = field.getDeclaringClass().getSimpleName();
+                }
 
-            } catch (Exception e) {
-                logger.error("init - cache init failed:", e);
-                System.exit(1);
-            }
-        });
+                logger.debug("init - setting cache: {}", name);
 
-        Set<Field> cacheFinders = reflections.getFieldsAnnotatedWith(CacheFinderField.class);
+                Object obj = field.get(null);
 
-        cacheFinders.forEach(field -> {
-
-            CacheFinderField annotation = field.getAnnotation(CacheFinderField.class);
-
-            String name = annotation.name();
-
-            if (name.equals("")) {
-                name = field.getDeclaringClass().getSimpleName();
-            }
-
-            logger.debug("init - setting cache: {}", name);
-
-            try {
-
-                Duration duration = Duration.of(annotation.duration(), TimeUnit.SECONDS);
-
-                CacheFinder cacheFinder = (CacheFinder) field.get(null);
-
-                cacheFinder.setCache(this.cacheManager.createCache(name,
-                        CacheConfigurationBuilder.newCacheConfigurationBuilder(annotation.keyType(), annotation.value(),
-                                ResourcePoolsBuilder.heap(annotation.maxElements()))
-                                .withExpiry(annotation.automaticProlonging() ? Expirations.timeToIdleExpiration(duration) : Expirations.timeToLiveExpiration(duration)).build()));
-
-                cacheFinder.setQueryCache(this.cacheManager.createCache(name + "_query",
-                        CacheConfigurationBuilder.newCacheConfigurationBuilder(Integer.class, UUID.class,
-                                ResourcePoolsBuilder.heap(annotation.maxElements()))
-                                .withExpiry(annotation.automaticProlonging() ? Expirations.timeToIdleExpiration(duration) : Expirations.timeToLiveExpiration(duration)).build()));
-
+                if (obj instanceof ModelCache) {
+                    ModelCache modelCache = (ModelCache) obj;
+                    modelCache.setCache(this.getCache(name, annotation.keyType(), annotation.value(), annotation.maxElements(), annotation.duration(), annotation.automaticProlonging()));
+                    modelCache.setQueryCache(this.getCache(name + "_Query", Integer.class, annotation.keyType(), annotation.maxElements(), annotation.duration(), annotation.automaticProlonging()));
+                } else if (field.getType().equals(Cache.class)) {
+                    field.set(null, this.getCache(name, annotation.keyType(), annotation.value(), annotation.maxElements(), annotation.duration(), annotation.automaticProlonging()));
+                } else {
+                    throw new NotSupportedException("Cannot inject cache into " + obj.getClass() + ", because it does not implement ModelCache interface.");
+                }
 
             } catch (Exception e) {
                 logger.error("init - cache init failed:", e);

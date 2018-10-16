@@ -10,7 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
 import play.db.ebean.Transactional;
 import play.libs.Json;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.enums.ProductEventType;
 import utilities.enums.ExtensionType;
@@ -458,7 +458,7 @@ public class Model_ProductExtension extends OrderedNamedModel implements Permiss
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_ProductExtension.class)
+    @InjectCache(Model_ProductExtension.class)
     public static CacheFinder<Model_ProductExtension> find = new CacheFinder<>(Model_ProductExtension.class);
 
     public static List<Model_ProductExtension> getByUser(UUID personId) {

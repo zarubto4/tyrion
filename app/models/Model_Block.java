@@ -7,7 +7,7 @@ import exceptions.NotFoundException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
@@ -246,6 +246,6 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Block.class)
+    @InjectCache(Model_Block.class)
     public static CacheFinder<Model_Block> find = new CacheFinder<>(Model_Block.class);
 }

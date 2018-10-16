@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.UnderProject;
@@ -158,6 +158,6 @@ public class Model_LibraryVersion extends VersionModel implements Permissible, U
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_LibraryVersion.class)
+    @InjectCache(Model_LibraryVersion.class)
     public static CacheFinder<Model_LibraryVersion> find = new CacheFinder<>(Model_LibraryVersion.class);
 }

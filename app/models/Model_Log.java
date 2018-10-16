@@ -3,7 +3,7 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 
@@ -57,6 +57,6 @@ public class Model_Log extends NamedModel {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Log.class)
+    @InjectCache(Model_Log.class)
     public static CacheFinder<Model_Log> find = new CacheFinder<>(Model_Log.class);
 }

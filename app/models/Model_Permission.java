@@ -3,7 +3,7 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -50,6 +50,6 @@ public class Model_Permission extends BaseModel {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Permission.class)
+    @InjectCache(Model_Permission.class)
     public static final CacheFinder<Model_Permission> find = new CacheFinder<>(Model_Permission.class);
 }

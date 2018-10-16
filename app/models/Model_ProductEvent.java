@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.ProductEventReferenceType;
 import utilities.enums.ProductEventType;
 import utilities.enums.ProductEventTypeReadPermission;
@@ -120,6 +120,6 @@ public class Model_ProductEvent extends BaseModel {
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_ProductEvent.class)
+    @InjectCache(Model_ProductEvent.class)
     public static CacheFinder<Model_ProductEvent> find = new CacheFinder<>(Model_ProductEvent.class);
 }

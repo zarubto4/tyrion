@@ -1,21 +1,14 @@
 package utilities.cache;
 
 import org.ehcache.Cache;
-import utilities.model.BaseModel;
 
-import java.util.UUID;
+public interface ModelCache<K, V> {
 
-public interface ModelCache<T extends BaseModel> {
+    void setCache(Cache<K, V> cache);
 
-    void setCache(Cache<UUID, T> cache);
+    Cache<K, V> getCache();
 
-    Cache<UUID, T> getCache();
+    void setQueryCache(Cache<Integer, K> cache);
 
-    void setQueryCache(Cache<Integer, UUID> cache);
-
-    Cache<Integer, UUID> getQueryCache();
-
-    void cache(UUID key, T value);
-
-    void evict(UUID key);
+    Cache<Integer, K> getQueryCache();
 }

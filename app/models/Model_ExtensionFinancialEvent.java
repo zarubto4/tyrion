@@ -6,7 +6,7 @@ import io.ebean.ExpressionList;
 import io.swagger.annotations.ApiModel;
 import utilities.Server;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.financial.extensions.consumptions.ResourceConsumption;
 import utilities.financial.extensions.extensions.Extension;
 import utilities.logger.Logger;
@@ -103,7 +103,7 @@ public class Model_ExtensionFinancialEvent extends BaseModel {
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_ExtensionFinancialEvent.class)
+    @InjectCache(Model_ExtensionFinancialEvent.class)
     public static CacheFinder<Model_ExtensionFinancialEvent> find = new CacheFinder<>(Model_ExtensionFinancialEvent.class);
 
     public static List<Model_ExtensionFinancialEvent> getFinancialEvents(UUID product_id, UUID invoice_id, UUID extension_id, Date from, Date to, boolean ascending) {

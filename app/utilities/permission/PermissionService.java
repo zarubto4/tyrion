@@ -10,7 +10,7 @@ import models.Model_Person;
 import models.Model_Project;
 import models.Model_Role;
 import org.ehcache.Cache;
-import utilities.cache.ServerCache;
+import utilities.cache.CacheService;
 import utilities.enums.EntityType;
 import exceptions.NotFoundException;
 import utilities.logger.Logger;
@@ -28,7 +28,7 @@ public class PermissionService {
     private Cache<UUID, CachePermissionList> cache;
 
     @Inject
-    public PermissionService(ServerCache serverCache) {
+    public PermissionService(CacheService serverCache) {
         this.cache = serverCache.getCache("PermissionServiceCache", UUID.class, CachePermissionList.class, 500, 3600, true);
     }
 

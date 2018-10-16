@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Expr;
 import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
@@ -133,6 +133,6 @@ public class Model_Role extends NamedModel implements Permissible, UnderProject,
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Role.class)
+    @InjectCache(Model_Role.class)
     public static CacheFinder<Model_Role> find = new CacheFinder<>(Model_Role.class);
 }

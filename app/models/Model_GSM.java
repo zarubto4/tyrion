@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.gsm_services.things_mobile.help_class.TM_Sim_Block;
@@ -301,6 +301,6 @@ public class Model_GSM extends TaggedModel implements Permissible, UnderProject 
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_GSM.class)
+    @InjectCache(Model_GSM.class)
     public static CacheFinder<Model_GSM> find = new CacheFinder<>(Model_GSM.class);
 }

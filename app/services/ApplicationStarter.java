@@ -13,7 +13,7 @@ import play.api.db.evolutions.ApplicationEvolutions;
 import play.inject.ApplicationLifecycle;
 import play.libs.Json;
 import utilities.Server;
-import utilities.cache.ServerCache;
+import utilities.cache.CacheService;
 import utilities.enums.ServerMode;
 import utilities.logger.ServerLogger;
 import utilities.permission.PermissionFilter;
@@ -42,12 +42,12 @@ public class ApplicationStarter {
     private final Config configuration;
     private final Instant start;
     private final SchedulerController scheduler;
-    private final ServerCache cache;
+    private final CacheService cache;
 
     private final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("application");
 
     @Inject
-    public ApplicationStarter(Clock clock, ApplicationLifecycle appLifecycle, Config configuration, Injector injector, SchedulerController scheduler, ServerCache cache, ApplicationEvolutions applicationEvolutions) {
+    public ApplicationStarter(Clock clock, ApplicationLifecycle appLifecycle, Config configuration, Injector injector, SchedulerController scheduler, CacheService cache, ApplicationEvolutions applicationEvolutions) {
 
         this.clock = clock;
         this.appLifecycle = appLifecycle;

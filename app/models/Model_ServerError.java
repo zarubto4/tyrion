@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiModel;
 import play.mvc.Http;
 import utilities.authentication.Attributes;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
@@ -168,6 +168,6 @@ public class Model_ServerError extends NamedModel implements Permissible {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_ServerError.class)
+    @InjectCache(Model_ServerError.class)
     public static CacheFinder<Model_ServerError> find = new CacheFinder<>(Model_ServerError.class);
 }

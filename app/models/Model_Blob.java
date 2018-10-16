@@ -5,9 +5,8 @@ import com.microsoft.azure.storage.blob.*;
 import io.swagger.annotations.ApiModel;
 import org.ehcache.Cache;
 import utilities.Server;
-import utilities.cache.CacheField;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
@@ -282,14 +281,14 @@ public class Model_Blob extends BaseModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = String.class, duration = CacheField.DayCacheConstant, maxElements = 1000, automaticProlonging = false, name = "Model_Blob_Link")
+    @InjectCache(value = String.class, duration = InjectCache.DayCacheConstant, maxElements = 1000, automaticProlonging = false, name = "Model_Blob_Link")
     public static Cache<UUID, String> cache_public_link;
 
-    @CacheField(value = String.class, duration = CacheField.DayCacheConstant, maxElements = 500, name = "Model_Blob_File")
+    @InjectCache(value = String.class, duration = InjectCache.DayCacheConstant, maxElements = 500, name = "Model_Blob_File")
     public static Cache<UUID, String> cache_string_file;
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Blob.class)
+    @InjectCache(Model_Blob.class)
     public static CacheFinder<Model_Blob> find = new CacheFinder<>(Model_Blob.class);
 }

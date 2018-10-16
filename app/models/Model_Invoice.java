@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.*;
 import utilities.enums.Currency;
 import utilities.logger.Logger;
@@ -436,6 +436,6 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderCustom
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Invoice.class)
+    @InjectCache(Model_Invoice.class)
     public static CacheFinder<Model_Invoice> find = new CacheFinder<>(Model_Invoice.class);
 }

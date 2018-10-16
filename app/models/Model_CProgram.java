@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
@@ -254,7 +254,7 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_CProgram.class)
+    @InjectCache(Model_CProgram.class)
     public static CacheFinder<Model_CProgram> find = new CacheFinder<>(Model_CProgram.class);
 }
 

@@ -6,9 +6,8 @@ import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
-import utilities.cache.CacheField;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.cache.IdsList;
 import utilities.enums.*;
 import exceptions.NotFoundException;
@@ -736,11 +735,11 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = IdsList.class, name = "Model_Project_Person_Ids")
+    @InjectCache(value = IdsList.class, name = "Model_Project_Person_Ids")
     public static Cache<UUID, IdsList> token_cache;
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Project.class)
+    @InjectCache(Model_Project.class)
     public static CacheFinder<Model_Project> find = new CacheFinder<>(Model_Project.class);
 }

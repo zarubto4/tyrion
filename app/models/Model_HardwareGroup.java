@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.cache.Cached;
 import utilities.enums.EntityType;
 import utilities.logger.Logger;
@@ -205,6 +205,6 @@ public class Model_HardwareGroup extends NamedModel implements Permissible, Unde
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_HardwareGroup.class)
+    @InjectCache(Model_HardwareGroup.class)
     public static CacheFinder<Model_HardwareGroup> find = new CacheFinder<>(Model_HardwareGroup.class);
 }

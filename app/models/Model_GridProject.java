@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
@@ -170,6 +170,6 @@ public class Model_GridProject extends TaggedModel implements Permissible, Under
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_GridProject.class)
+    @InjectCache(Model_GridProject.class)
     public static CacheFinder<Model_GridProject> find = new CacheFinder<>(Model_GridProject.class);
 }

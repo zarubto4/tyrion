@@ -8,7 +8,7 @@ import io.ebean.Expr;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.cache.Cached;
 import utilities.enums.*;
 import utilities.logger.Logger;
@@ -682,6 +682,6 @@ public class Model_UpdateProcedure extends BaseModel implements Permissible, Und
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_UpdateProcedure.class)
+    @InjectCache(Model_UpdateProcedure.class)
     public static CacheFinder<Model_UpdateProcedure> find = new CacheFinder<>(Model_UpdateProcedure.class);
 }

@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
@@ -171,6 +171,6 @@ public class Model_Contact extends BaseModel implements Permissible, UnderCustom
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Contact.class)
+    @InjectCache(Model_Contact.class)
     public static CacheFinder<Model_Contact> find = new CacheFinder<>(Model_Contact.class);
 }

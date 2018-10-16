@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import utilities.logger.Logger;
@@ -890,6 +890,6 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_HardwareUpdate.class)
+    @InjectCache(Model_HardwareUpdate.class)
     public static CacheFinder<Model_HardwareUpdate> find = new CacheFinder<>(Model_HardwareUpdate.class);
 }

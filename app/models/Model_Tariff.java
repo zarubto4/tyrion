@@ -9,7 +9,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.Server;
 import utilities.enums.BusinessModel;
 import utilities.enums.EntityType;
@@ -193,6 +193,6 @@ public class Model_Tariff extends OrderedNamedModel implements Permissible, Publ
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Tariff.class)
+    @InjectCache(Model_Tariff.class)
     public static CacheFinder<Model_Tariff> find = new CacheFinder<>(Model_Tariff.class);
 }

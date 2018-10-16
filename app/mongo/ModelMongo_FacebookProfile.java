@@ -5,8 +5,7 @@ import io.swagger.annotations.ApiModel;
 import org.bson.types.ObjectId;
 import org.ehcache.Cache;
 import org.mongodb.morphia.annotations.Entity;
-import utilities.cache.CacheField;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.cache.CacheMongoFinder;
 import utilities.logger.Logger;
 import utilities.model._Abstract_MongoModel;
@@ -60,8 +59,7 @@ public class ModelMongo_FacebookProfile extends _Abstract_MongoModel {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = String.class, keyType = UUID.class, duration = 240, maxElements = 10000, name = "Redirect_Link")
-    @JsonIgnore
+    @InjectCache(value = String.class, duration = 240, maxElements = 10000, name = "Redirect_Link")
     public static Cache<UUID, String> redirect_link_cache;
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
@@ -72,8 +70,6 @@ public class ModelMongo_FacebookProfile extends _Abstract_MongoModel {
         return find;
     }
 
-    @JsonIgnore
-    @CacheFinderField(value = ModelMongo_FacebookProfile.class, keyType = ObjectId.class)
+    @InjectCache(value = ModelMongo_FacebookProfile.class, keyType = ObjectId.class)
     public static CacheMongoFinder<ModelMongo_FacebookProfile> find = new CacheMongoFinder<>(ModelMongo_FacebookProfile.class);
-
 }

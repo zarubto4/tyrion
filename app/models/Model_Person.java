@@ -11,9 +11,8 @@ import org.ehcache.Cache;
 import org.hibernate.validator.constraints.Email;
 import org.mindrot.jbcrypt.BCrypt;
 import utilities.Server;
-import utilities.cache.CacheField;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.enums.NotificationAction;
 import utilities.enums.NotificationImportance;
@@ -237,7 +236,7 @@ public class Model_Person extends BaseModel implements Permissible {
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = UUID.class, duration = 3600, maxElements = 200, name = "Model_Person_Token")
+    @InjectCache(value = UUID.class, duration = 3600, maxElements = 200, name = "Model_Person_Token")
     public static Cache<UUID, UUID> token_cache;
 
     public static Model_Person getByEmail(String email) {
@@ -267,6 +266,6 @@ public class Model_Person extends BaseModel implements Permissible {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Person.class)
+    @InjectCache(Model_Person.class)
     public static CacheFinder<Model_Person> find = new CacheFinder<>(Model_Person.class);
 }

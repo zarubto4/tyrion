@@ -18,7 +18,7 @@ import play.mvc.Result;
 import responses.*;
 import utilities.Server;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.CompilationStatus;
 import utilities.enums.EntityType;
 import exceptions.NotFoundException;
@@ -508,6 +508,6 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_CProgramVersion.class)
+    @InjectCache(Model_CProgramVersion.class)
     public static CacheFinder<Model_CProgramVersion> find = new CacheFinder<>(Model_CProgramVersion.class);
 }

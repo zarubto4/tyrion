@@ -11,8 +11,7 @@ import org.mongodb.morphia.Key;
 import org.mongodb.morphia.annotations.*;
 import play.data.validation.Constraints;
 import play.libs.Json;
-import utilities.cache.CacheField;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.cache.CacheMongoFinder;
 import utilities.logger.Logger;
 
@@ -179,25 +178,7 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
         logger.trace("cache - finding cache finder for {}", cls.getSimpleName());
 
         for (Field field : cls.getDeclaredFields()) {
-            if (field.isAnnotationPresent(CacheField.class)) {
-                try {
-                    CacheField annotation = field.getAnnotation(CacheField.class);
-                    if (annotation.value() == cls) {
-                        Cache<ObjectId, _Abstract_MongoModel> cache = (Cache<ObjectId, _Abstract_MongoModel>) field.get(null);
-                        if (cache.containsKey(this.id)) {
-                            cache.replace(this.id, this);
-                        } else {
-                            cache.put(this.id, this);
-                        }
-                        logger.trace("cache - finding cache took {} ms", System.currentTimeMillis() - start);
-                        break;
-                    }
-                } catch (Exception e) {
-                    logger.internalServerError(e);
-                }
-            }
-
-            if (field.isAnnotationPresent(CacheFinderField.class) && field.getType().equals(CacheMongoFinder.class)) {
+            if (field.isAnnotationPresent(InjectCache.class) && field.getType().equals(CacheMongoFinder.class)) {
                 try {
 
                     logger.debug("cache - found cache finder field");
@@ -226,21 +207,7 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
         logger.trace("evict - finding cache finder for {}", cls.getSimpleName());
 
         for (Field field : cls.getDeclaredFields()) {
-            if (field.isAnnotationPresent(CacheField.class)) {
-                try {
-                    CacheField annotation = field.getAnnotation(CacheField.class);
-                    if (annotation.value() == cls) {
-                        Cache<ObjectId, _Abstract_MongoModel> cache = (Cache<ObjectId, _Abstract_MongoModel>) field.get(null);
-                        cache.remove(this.id);
-                        logger.trace("evict - finding cache took {} ms", System.currentTimeMillis() - start);
-                        break;
-                    }
-                } catch (Exception e) {
-                    logger.internalServerError(e);
-                }
-            }
-
-            if (field.isAnnotationPresent(CacheFinderField.class) && field.getType().equals(CacheMongoFinder.class)) {
+            if (field.isAnnotationPresent(InjectCache.class) && field.getType().equals(CacheMongoFinder.class)) {
                 try {
 
                     logger.debug("evict - found cache finder field");

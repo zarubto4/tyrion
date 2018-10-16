@@ -15,9 +15,8 @@ import org.ehcache.Cache;
 import org.mindrot.jbcrypt.BCrypt;
 import play.libs.Json;
 import utilities.Server;
-import utilities.cache.CacheField;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.cache.Cached;
 import utilities.document_mongo_db.document_objects.*;
 import utilities.enums.*;
@@ -3114,10 +3113,10 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Boolean.class,  maxElements = 100000, duration = CacheField.DayCacheConstant, name = "Model_Hardware_Status")
+    @InjectCache(value = Boolean.class,  maxElements = 10000, duration = InjectCache.DayCacheConstant, name = "Model_Hardware_Status")
     public static Cache<UUID, Boolean> cache_status;
 
-    @CacheField(value = WS_Model_Hardware_Temporary_NotDominant_record.class, keyType = String.class,  maxElements = 100000, duration = CacheField.MonthCacheConstant, name = "Model_Hardware_NOT_DOMINANT_HARDWARE")
+    @InjectCache(value = WS_Model_Hardware_Temporary_NotDominant_record.class, keyType = String.class,  maxElements = 10000, duration = InjectCache.DayCacheConstant, name = "Model_Hardware_NOT_DOMINANT_HARDWARE")
     public static Cache<String, WS_Model_Hardware_Temporary_NotDominant_record> cache_not_dominant_hardware;  // FULL_ID, HOMER_SERVER_ID
 
     /**
@@ -3180,6 +3179,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Hardware.class)
+    @InjectCache(Model_Hardware.class)
     public static CacheFinder<Model_Hardware> find = new CacheFinder<>(Model_Hardware.class);
 }

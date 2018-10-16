@@ -14,7 +14,7 @@ import utilities.model._Abstract_MongoModel;
 
 import java.util.List;
 
-public class CacheMongoFinder<T extends _Abstract_MongoModel> {
+public class CacheMongoFinder<T extends _Abstract_MongoModel> implements ModelCache<ObjectId, T> {
 
     /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -25,7 +25,7 @@ public class CacheMongoFinder<T extends _Abstract_MongoModel> {
     /**
      * The name of the EbeanServer, null for the default server.
      */
-    private final Datastore main_data_store;
+    private final Datastore datastore;
 
     /**
      * The entity bean type.
@@ -39,7 +39,7 @@ public class CacheMongoFinder<T extends _Abstract_MongoModel> {
 
     public CacheMongoFinder(Class<T > cls) {
         this.entityType = cls;
-        this.main_data_store = Server.getMainMongoDatabase(); // TODO use DI instead
+        this.datastore = Server.getMainMongoDatabase(); // TODO use DI instead
     }
 
     public T byId(String id) throws NotFoundException {
@@ -81,7 +81,7 @@ public class CacheMongoFinder<T extends _Abstract_MongoModel> {
      */
     public T bySingleArgument(String key, Object value) {
         try {
-            return this.main_data_store.find(entityType).field(key).equal(value).order("created").get();
+            return this.datastore.find(entityType).field(key).equal(value).order("created").get();
         } catch (Exception e) {
             return null;
         }
@@ -97,7 +97,7 @@ public class CacheMongoFinder<T extends _Abstract_MongoModel> {
      * @return the keys of the entity
      */
     public <T> Key<T> save(T entity) {
-        return this.main_data_store.save(entity);
+        return this.datastore.save(entity);
     }
 
     /**
@@ -108,7 +108,7 @@ public class CacheMongoFinder<T extends _Abstract_MongoModel> {
      * @return results of the delete
      */
     public <T> WriteResult delete(T entity) {
-        return this.main_data_store.delete(entity);
+        return this.datastore.delete(entity);
     }
 
     /**
@@ -116,7 +116,7 @@ public class CacheMongoFinder<T extends _Abstract_MongoModel> {
      * @return
      */
     public Query<T> find(){
-        return this.main_data_store.find(entityType);
+        return this.datastore.find(entityType);
     }
 
     /**
@@ -124,7 +124,7 @@ public class CacheMongoFinder<T extends _Abstract_MongoModel> {
      * @return the query
      */
     public Query<T> query() {
-        return this.main_data_store.createQuery(entityType);
+        return this.datastore.createQuery(entityType);
     }
 
     /**
@@ -132,7 +132,7 @@ public class CacheMongoFinder<T extends _Abstract_MongoModel> {
      * @return
      */
     public List<T> all(){
-        return this.main_data_store.find(entityType).asList();
+        return this.datastore.find(entityType).asList();
     }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/

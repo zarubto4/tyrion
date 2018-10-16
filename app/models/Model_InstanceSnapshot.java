@@ -15,7 +15,7 @@ import play.mvc.Http;
 import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.*;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
@@ -1043,6 +1043,6 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_InstanceSnapshot.class)
+    @InjectCache(Model_InstanceSnapshot.class)
     public static CacheFinder<Model_InstanceSnapshot> find = new CacheFinder<>(Model_InstanceSnapshot.class);
 }

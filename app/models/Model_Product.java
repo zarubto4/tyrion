@@ -13,7 +13,7 @@ import io.swagger.annotations.ApiModelProperty;
 import play.db.ebean.Transactional;
 import utilities.Server;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.emails.Email;
 import utilities.enums.*;
 import utilities.enums.Currency;
@@ -726,6 +726,6 @@ public class Model_Product extends NamedModel implements Permissible, UnderCusto
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Product.class)
+    @InjectCache(Model_Product.class)
     public static CacheFinder<Model_Product> find = new CacheFinder<>(Model_Product.class);
 }

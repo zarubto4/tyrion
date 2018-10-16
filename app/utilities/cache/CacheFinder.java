@@ -17,7 +17,7 @@ import java.util.UUID;
  * the record was cached or not. The caching is implemented only for single record queries.
  * @param <T> Type of the stored entity.
  */
-public class CacheFinder<T extends BaseModel> extends Finder<UUID, T> implements ModelCache<T> {
+public class CacheFinder<T extends BaseModel> extends Finder<UUID, T> implements ModelCache<UUID, T> {
 
     private static final Logger logger = new Logger(CacheFinder.class);
 

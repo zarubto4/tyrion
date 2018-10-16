@@ -15,9 +15,8 @@ import models.Model_HomerServer;
 import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.Server;
-import utilities.cache.CacheField;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.cache.Cached;
 import utilities.logger.Logger;
 import utilities.models_update_echo.EchoHandler;
@@ -253,7 +252,6 @@ public abstract class BaseModel extends Model implements JsonSerializable {
      * @param clazz
      * @param <T>
      * @return
-     * @throws _Base_Result_Exception
      */
     @JsonIgnore
     public static <T> T formFromJsonWithValidation(Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException {
@@ -367,25 +365,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         logger.debug("cache - finding cache finder for {}", cls.getSimpleName());
 
         for (Field field : cls.getDeclaredFields()) {
-            if (field.isAnnotationPresent(CacheField.class)) {
-                try {
-                    CacheField annotation = field.getAnnotation(CacheField.class);
-                    if (annotation.value() == cls) {
-                        Cache<UUID, BaseModel> cache = (Cache<UUID, BaseModel>) field.get(null);
-                        if (cache.containsKey(this.id)) {
-                            cache.replace(this.id, this);
-                        } else {
-                            cache.put(this.id, this);
-                        }
-                        logger.trace("cache - finding cache took {} ms", System.currentTimeMillis() - start);
-                        break;
-                    }
-                } catch (Exception e) {
-                    logger.internalServerError(e);
-                }
-            }
-
-            if (field.isAnnotationPresent(CacheFinderField.class) && field.getType().equals(CacheFinder.class)) {
+            if (field.isAnnotationPresent(InjectCache.class) && field.getType().equals(CacheFinder.class)) {
                 try {
 
                     logger.debug("cache - found cache finder field");
@@ -414,21 +394,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         logger.trace("evict - finding cache finder for {}", cls.getSimpleName());
 
         for (Field field : cls.getDeclaredFields()) {
-            if (field.isAnnotationPresent(CacheField.class)) {
-                try {
-                    CacheField annotation = field.getAnnotation(CacheField.class);
-                    if (annotation.value() == cls) {
-                        Cache<UUID, BaseModel> cache = (Cache<UUID, BaseModel>) field.get(null);
-                        cache.remove(this.id);
-                        logger.trace("evict - finding cache took {} ms", System.currentTimeMillis() - start);
-                        break;
-                    }
-                } catch (Exception e) {
-                    logger.internalServerError(e);
-                }
-            }
-
-            if (field.isAnnotationPresent(CacheFinderField.class) && field.getType().equals(CacheFinder.class)) {
+            if (field.isAnnotationPresent(InjectCache.class) && field.getType().equals(CacheFinder.class)) {
                 try {
 
                     logger.debug("evict - found cache finder field");

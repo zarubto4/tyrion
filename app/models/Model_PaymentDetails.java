@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.enums.PaymentMethod;
 import utilities.logger.Logger;
@@ -112,6 +112,6 @@ public class Model_PaymentDetails extends BaseModel implements Permissible, Unde
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_PaymentDetails.class)
+    @InjectCache(Model_PaymentDetails.class)
     public static CacheFinder<Model_PaymentDetails> find = new CacheFinder<>(Model_PaymentDetails.class);
 }

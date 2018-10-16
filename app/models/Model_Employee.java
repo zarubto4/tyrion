@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.enums.ParticipantStatus;
 import utilities.logger.Logger;
@@ -93,6 +93,6 @@ public class Model_Employee extends BaseModel implements Permissible, UnderCusto
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Employee.class)
+    @InjectCache(Model_Employee.class)
     public static CacheFinder<Model_Employee> find = new CacheFinder<>(Model_Employee.class);
 }
