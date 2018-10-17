@@ -494,19 +494,18 @@ public class Server {
     @SuppressWarnings("unchecked")
     public static void init_mongo_database() {
 
+        String mode = Server.mode.name().toLowerCase();
+
         // Připojení na MongoClient v Azure
-        logger.trace("init_mongo_database:: URL {}", configuration.getString("MongoDB." + Server.mode.name().toLowerCase() + ".url"));
+        logger.trace("init_mongo_database:: URL {}", configuration.getString("MongoDB." + mode + ".url"));
 
 
         MongoClientOptions.Builder options_builder = new MongoClientOptions.Builder();
         options_builder.maxConnectionIdleTime(1000 * 60 * 60 *24);
+        options_builder.retryWrites(true);
 
-
-        MongoClientURI uri = new MongoClientURI(configuration.getString("MongoDB." + Server.mode.name().toLowerCase() + ".url"), options_builder);
+        MongoClientURI uri = new MongoClientURI(configuration.getString("MongoDB." + mode + ".url"), options_builder);
         Server.mongoClient = new MongoClient(uri);
-
-
-        mongoClient = new MongoClient(uri);
 
         try {
 
@@ -519,17 +518,17 @@ public class Server {
         }
 
         // Mongo ORM zástupný onbjekt pro lepší práci s databází
-        main_data_store = morphia.createDatastore(mongoClient, configuration.getString("MongoDB." + Server.mode + ".main_database_name"));
+        main_data_store = morphia.createDatastore(mongoClient, configuration.getString("MongoDB." + mode + ".main_database_name"));
 
         // Připojení na konkrétní Databázi clienta
-        main_database = mongoClient.getDatabase(configuration.getString("MongoDB." + Server.mode + ".main_database_name"));
+        main_database = mongoClient.getDatabase(configuration.getString("MongoDB." + mode + ".main_database_name"));
 
         if(main_data_store == null) {
             logger.error("init_mongo_database:: Required Main Database not Exist!");
         }
 
         // Kontrola databáze
-        if(! mongoClient.getDatabaseNames().contains(configuration.getString("MongoDB." + Server.mode + ".main_database_name"))){
+        if(! mongoClient.getDatabaseNames().contains(configuration.getString("MongoDB." + mode + ".main_database_name"))){
             logger.error("init_mongo_database:: Required Main Database not Exist!");
         }
 
