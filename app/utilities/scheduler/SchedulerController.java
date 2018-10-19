@@ -21,7 +21,6 @@ import java.util.Calendar;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
-import static org.quartz.SimpleScheduleBuilder.repeatHourlyForever;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 @Singleton

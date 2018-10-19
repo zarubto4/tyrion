@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import controllers._BaseController;
+import exceptions.NotFoundException;
 import io.ebean.Expr;
 import io.ebean.ExpressionList;
 import io.ebean.PagedList;
@@ -13,19 +13,19 @@ import io.swagger.annotations.ApiModelProperty;
 import play.db.ebean.Transactional;
 import utilities.Server;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.emails.Email;
 import utilities.enums.*;
 import utilities.enums.Currency;
-import utilities.errors.Exceptions.Result_Error_BadRequest;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
-import utilities.financial.FinancialPermission;
+import exceptions.BadRequestException;
 import utilities.financial.extensions.ExtensionInvoiceItem;
 import utilities.financial.extensions.consumptions.ResourceConsumption;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
+import utilities.model.UnderCustomer;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.slack.Slack;
 
 import javax.persistence.*;
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 @Entity
 @ApiModel(value = "Product", description = "Model of Product")
 @Table(name="Product")
-public class Model_Product extends NamedModel {
+public class Model_Product extends NamedModel implements Permissible, UnderCustomer {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -45,7 +45,7 @@ public class Model_Product extends NamedModel {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
 
-                                       @JsonIgnore @Enumerated(EnumType.STRING) public BusinessModel business_model;
+                                                                    @JsonIgnore public BusinessModel business_model;
 
                                              @ApiModelProperty(required = true) public String subscription_id;
 
@@ -90,7 +90,7 @@ public class Model_Product extends NamedModel {
     @Transactional
     public void setActive(boolean activeNew) throws Exception {
         if(this.active == activeNew) {
-            throw new Result_Error_BadRequest("Extension is already " + (activeNew ? "activated" : "deactivated"));
+            throw new BadRequestException("Extension is already " + (activeNew ? "activated" : "deactivated"));
         }
 
         if(activeNew) {
@@ -146,7 +146,7 @@ public class Model_Product extends NamedModel {
 
     @JsonIgnore
     public List<UUID> getExtensionIds() {
-       return Model_ProductExtension.find
+        return Model_ProductExtension.find
                 .query()
                 .where().eq("product.id", id)
                 .ne("deleted", true)
@@ -398,7 +398,7 @@ public class Model_Product extends NamedModel {
     }
 
     @JsonIgnore
-    public List<Model_Project> get_projects() throws _Base_Result_Exception {
+    public List<Model_Project> get_projects() {
         List<Model_Project>  projects = new ArrayList<>();
 
         for (UUID id : get_projects_ids()) {
@@ -422,7 +422,7 @@ public class Model_Product extends NamedModel {
         List<Model_Person> receivers = new ArrayList<>();
         try {
 
-            this.owner.getEmployees().forEach(employee -> receivers.add(employee.get_person()));
+            this.owner.getEmployees().forEach(employee -> receivers.add(employee.getPerson()));
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -434,6 +434,16 @@ public class Model_Product extends NamedModel {
     @JsonIgnore
     public boolean isBillingReady() {
         return owner.contact != null && owner.contact.fakturoid_subject_id != null && payment_details != null;
+    }
+
+    @JsonIgnore
+    public boolean isRelated(Model_Person person) {
+        return this.getCustomer().isEmployee(person);
+    }
+
+    @JsonIgnore
+    public Model_Customer getCustomer() {
+        return isLoaded("customer") ? owner : Model_Customer.find.query().where().eq("products.id", id).findOne();
     }
 
 /* EVENTS --------------------------------------------------------------------------------------------------------------*/
@@ -458,13 +468,7 @@ public class Model_Product extends NamedModel {
 
     @JsonIgnore @Override public void save() {
 
-
-        while(true) { // I need Unique Value
-            this.subscription_id =  UUID.randomUUID().toString().substring(0, 12);
-            if (Model_Product.find.query().where().eq("subscription_id", subscription_id ).findOne() == null) break;
-        }
-
-        //Save Object
+        this.subscription_id =  UUID.randomUUID().toString();
         super.save();
     }
 
@@ -476,7 +480,7 @@ public class Model_Product extends NamedModel {
         super.update();
     }
 
-    @JsonIgnore @Override public boolean delete() throws _Base_Result_Exception {
+    @JsonIgnore @Override public boolean delete() {
         boolean allExtensionDeactivated = true;
 
         List<Model_ProductExtension> activeExtensions = extensions.stream().filter(e -> e.active).collect(Collectors.toList());
@@ -696,51 +700,32 @@ public class Model_Product extends NamedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        // Not Limited now, Maybe max per user?
-        return;
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Product_read.name())) return;
-        if(owner.isEmployee(_BaseController.person())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception  {
-        if(_BaseController.person().has_permission(Permission.Product_update.name())) return;
-        if(owner.isEmployee(_BaseController.person())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception  {
-        if(_BaseController.person().has_permission(Permission.Product_delete.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient public void check_act_deactivate_permission()  throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Product_act_deactivate.name())) return;
-        if(owner.isEmployee(_BaseController.person())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient public void check_financial_permission(String action)  throws _Base_Result_Exception {
-        FinancialPermission.check_permission(this, action);
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.PRODUCT;
     }
 
-    public enum Permission {Product_create, Product_update, Product_read, Product_act_deactivate, Product_delete}
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.ACTIVATE);
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Product getByInvoice(UUID invoice_id) throws _Base_Result_Exception  {
+    public static Model_Product getByInvoice(UUID invoice_id) throws NotFoundException {
         return find.query().where().eq("invoices.id", invoice_id).findOne();
     }
 
-    public static List<Model_Product> getByOwner(UUID owner_id) throws _Base_Result_Exception  {
+    public static List<Model_Product> getByOwner(UUID owner_id) {
         return find.query().where().disjunction().eq("owner.employees.person.id", owner_id).findList();
     }
 
-    public static List<Model_Product> getApplicableByOwner(UUID owner_id) throws _Base_Result_Exception {
+    public static List<Model_Product> getApplicableByOwner(UUID owner_id) {
         return find.query().where().eq("active",true).eq("owner.employees.person.id", owner_id).select("id").select("name").findList();
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Product.class)
+    @InjectCache(Model_Product.class)
     public static CacheFinder<Model_Product> find = new CacheFinder<>(Model_Product.class);
 }

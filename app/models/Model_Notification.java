@@ -4,33 +4,30 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
+import utilities.cache.CacheFinder;
+import utilities.cache.InjectCache;
 import utilities.enums.*;
-import utilities.errors.Exceptions.Result_Error_NotFound;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
+import utilities.model.Personal;
 import utilities.notifications.NotificationHandler;
 import utilities.notifications.helps_objects.*;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.swagger.output.Swagger_Notification_Button;
 import utilities.swagger.output.Swagger_Notification_Element;
 import websocket.interfaces.WS_Portal;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @ApiModel( value = "Notification", description = "Model of Notification" )
 @Table(name="Notification")
-public class Model_Notification extends BaseModel {
+public class Model_Notification extends BaseModel implements Permissible, Personal {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -38,10 +35,10 @@ public class Model_Notification extends BaseModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-          @Enumerated(EnumType.STRING) public NotificationLevel notification_level;   // Typ zprávy
-          @Enumerated(EnumType.STRING) public NotificationImportance notification_importance; // Důležitost (podbarvení zprávy)
-          @Transient                   public NotificationType notification_type; // Typ zprávy pro long pool - chain message.
-          @Enumerated(EnumType.STRING) public NotificationState state; // Machinace s notifikací na straně Becki
+    public NotificationLevel notification_level;   // Typ zprávy
+    public NotificationImportance notification_importance; // Důležitost (podbarvení zprávy)
+    public NotificationState state; // Machinace s notifikací na straně Becki
+    @Transient public NotificationType notification_type; // Typ zprávy pro long pool - chain message.
 
     @Column(columnDefinition = "TEXT") private String content_string;  // Obsah v podobě Json.toString().
     @Column(columnDefinition = "TEXT") private String buttons_string;
@@ -59,29 +56,11 @@ public class Model_Notification extends BaseModel {
     @ApiModelProperty(required = true, example = WS_Portal.CHANNEL) @Transient @JsonProperty public static final String message_channel = WS_Portal.CHANNEL;
 
     @JsonProperty @ApiModelProperty(required = true) public String message_type() {
-        try {
-            return message_type;
-        } catch (_Base_Result_Exception e) {
-          //nothing
-            return null;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return message_type;
     }
 
     @JsonProperty @ApiModelProperty(required = true) public String message_channel() {
-        try{
-            return message_channel;
-    }catch (_Base_Result_Exception e){
-        //nothing
-        return null;
-
-    }catch (Exception e){
-        logger.internalServerError(e);
-        return null;
-    }
+        return message_channel;
     }
 
     @JsonProperty @ApiModelProperty(required = true)
@@ -265,7 +244,7 @@ public class Model_Notification extends BaseModel {
                 element.id = version.id;
                 element.text = version.name;
                 element.program_id = version.get_b_program_id();
-                element.project_id = version.get_b_program().getProjectId();
+                element.project_id = version.getBProgram().getProjectId();
                 break;
             }
             case "GridProgramVersion" : {
@@ -276,7 +255,7 @@ public class Model_Notification extends BaseModel {
                 element.id = version.id;
                 element.text = version.name;
                 element.program_id = version.get_grid_program_id();
-                element.project_id = version.get_grid_program().get_grid_project_id();
+                element.project_id = version.getGridProgram().get_grid_project_id();
                 break;
             }
 
@@ -334,33 +313,6 @@ public class Model_Notification extends BaseModel {
 
     @Override
     public void save() {
-        // Notifikace je automaticky uložena pomocí save_object()
-        logger.info("Notifikace je automaticky uložena pomocí save_object()");
-        try {
-            throw new Exception("Not supported! Notifications are saved automatically using save_object()");
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    @Override
-    public boolean delete() {
-        try {
-            this.state = NotificationState.DELETED;
-            this.send();
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-        return super.delete();
-    }
-
-    @JsonIgnore
-    public Model_Notification save_object() {
-
-        while (true) { // I need Unique Value
-            this.id = UUID.randomUUID(); // TODO rewrite
-            if (Model_Notification.find.byId(this.id) == null) break;
-        }
 
         // Uložím notifikaci a její obsah převedu do Stringu
         content_string = Json.toJson(array).toString();
@@ -379,8 +331,17 @@ public class Model_Notification extends BaseModel {
         } catch (Exception e) {
             logger.internalServerError(e);
         }
+    }
 
-        return this;
+    @Override
+    public boolean delete() {
+        try {
+            this.state = NotificationState.DELETED;
+            this.send();
+        } catch (Exception e) {
+            logger.internalServerError(e);
+        }
+        return super.delete();
     }
 
     @JsonIgnore
@@ -431,62 +392,33 @@ public class Model_Notification extends BaseModel {
         } catch (NullPointerException npe) {
             logger.internalServerError(new Exception("Method probably misused, use this method only when you resend notifications. If notification contains person."));
         }
+    }
 
+    @Override
+    public Model_Person getPerson() {
+        return isLoaded("person") ? person : Model_Person.find.query().where().eq("notifications.id", id).findOne();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        // nothing
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Notification_update.name())) return;
-        if(this.person.id.equals(_BaseController.personId())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Notification_read.name())) return;
-        if(this.person.id.equals(_BaseController.personId())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() {
-        if(_BaseController.person().has_permission(Permission.Notification_delete.name())) return;
-        if(this.person.id.equals(_BaseController.personId())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient public void check_confirm_permission() {
-        if(this.person.id.equals(_BaseController.personId())) return;
-        throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.NOTIFICATION;
     }
 
-    public enum Permission {Notification_crete, Notification_update, Notification_read, Notification_delete}
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.READ, Action.UPDATE, Action.DELETE);
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    //!!!!! Do not implement Cache!!!
-
-    // TODO think about the mechanism of finder [AT]
-    public static Model_Notification getById(UUID id) throws _Base_Result_Exception {
-        Model_Notification notification = find.byId(id);
-        if(notification == null)  throw new Result_Error_NotFound(Model_Notification.class);
-
-        // Check Permission
-        if(notification.its_person_operation()) {
-            notification.check_read_permission();
-        }
-
-        return notification;
-    }
-
-
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID,Model_Notification> find = new Finder<>(Model_Notification.class);
+    @InjectCache(Model_Notification.class)
+    public static CacheFinder<Model_Notification> find = new CacheFinder<>(Model_Notification.class);
 }

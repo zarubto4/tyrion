@@ -3,27 +3,29 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import play.libs.Json;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.cache.InjectCache;
+import utilities.enums.EntityType;
 import utilities.logger.Logger;
+import utilities.model.UnderProject;
 import utilities.model.VersionModel;
 import utilities.models_update_echo.EchoHandler;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
 @ApiModel( value = "GridProgramVersion", description = "Model of GridProgramVersion")
 @Table(name="GridProgramVersion")
-public class Model_GridProgramVersion extends VersionModel {
+public class Model_GridProgramVersion extends VersionModel implements Permissible, UnderProject {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -45,7 +47,7 @@ public class Model_GridProgramVersion extends VersionModel {
     @JsonProperty @Transient public String program_version() {
         try {
 
-            Model_Blob fileRecord = Model_Blob.find.query().where().eq("grid_program_version.id", id).eq("name", "grid_program.json").findOne();
+            Model_Blob fileRecord = Model_Blob.find.query().nullable().where().eq("grid_program_version.id", id).eq("name", "grid_program.json").findOne();
 
             if (fileRecord != null) {
 
@@ -54,12 +56,9 @@ public class Model_GridProgramVersion extends VersionModel {
 
             }
 
-            return  null;
-
-        } catch (_Base_Result_Exception e){
-            //nothing
             return null;
-        }catch (Exception e){
+
+        } catch (Exception e){
             logger.internalServerError(e);
             return null;
         }
@@ -67,8 +66,13 @@ public class Model_GridProgramVersion extends VersionModel {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Override
+    public Model_Project getProject() {
+        return this.getGridProgram().getProject();
+    }
+
     @JsonIgnore
-    public UUID get_grid_program_id() throws _Base_Result_Exception {
+    public UUID get_grid_program_id() {
 
 
         if (idCache().get(Model_GridProgram.class) == null) {
@@ -79,14 +83,8 @@ public class Model_GridProgramVersion extends VersionModel {
     }
 
     @JsonIgnore
-    public Model_GridProgram get_grid_program() throws _Base_Result_Exception {
-
-        try {
-            return Model_GridProgram.find.byId(get_grid_program_id());
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+    public Model_GridProgram getGridProgram() {
+        return isLoaded("grid_program") ? this.grid_program : Model_GridProgram.find.query().nullable().where().eq("versions.id", id).findOne();
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -97,15 +95,9 @@ public class Model_GridProgramVersion extends VersionModel {
 
         super.save();
 
-        Model_GridProgram program = get_grid_program();
+        Model_GridProgram program = getGridProgram();
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, program.get_grid_project().get_project_id(), program.id));
-            } catch (_Base_Result_Exception e) {
-               // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, program.get_grid_project().get_project_id(), program.id))).start();
 
         program.idCache().add(this.getClass(), id);
         program.sort_Model_Model_GridProgramVersion_ids();
@@ -116,14 +108,7 @@ public class Model_GridProgramVersion extends VersionModel {
         logger.debug("update::Update object Id: {}",  this.id);
         super.update();
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_GridProgram.class, get_grid_program().get_grid_project().get_project_id(), id));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
-
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_GridProgram.class, getGridProgram().get_grid_project().get_project_id(), id))).start();
     }
 
     @JsonIgnore @Override
@@ -131,98 +116,43 @@ public class Model_GridProgramVersion extends VersionModel {
         logger.debug("delete::Delete object Id: {}",  this.id);
         super.delete();
 
-        // Remove from Cache
-        try {
-            get_grid_program().idCache().remove(this.getClass(), id);
-        } catch (_Base_Result_Exception e) {
-            // Nothing
-        }
+        getGridProgram().idCache().remove(this.getClass(), id);
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_GridProgram.class, get_grid_program().get_grid_project().get_project_id(), get_grid_program_id()));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_GridProgram.class, getGridProgram().get_grid_project().get_project_id(), get_grid_program_id()))).start();
 
         return false;
     }
-
-/* Services --------------------------------------------------------------------------------------------------------*/
-
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public String get_path() {
-        if(get_grid_program() != null) {
-            return get_grid_program().get_path() + "/version/" + this.id;
+    @JsonIgnore @Transient
+    public String get_path() {
+        if (getGridProgram() != null) {
+            return getGridProgram().get_path() + "/version/" + this.id;
 
-        }else {
-            return get_grid_program().get_path() + "/version/" + this.id;
+        } else {
+            return getGridProgram().get_path() + "/version/" + this.id;
         }
     }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override public void check_create_permission() throws _Base_Result_Exception { grid_program.check_update_permission();} // You have to access grid_program directly, because get_grid_program() finds the grid_program by id of the version which is not yet created
-    @JsonIgnore @Override public void check_read_permission()   throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-                return;
-            }
-
-            get_grid_program().check_read_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Override public void check_update_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-
-            get_grid_program().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Override public void check_delete_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-                return;
-            }
-
-            get_grid_program().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.GRID_PROGRAM_VERSION;
     }
 
-    public enum Permission {} // Not Required here
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_GridProgramVersion.class)
+    @InjectCache(Model_GridProgramVersion.class)
     public static CacheFinder<Model_GridProgramVersion> find = new CacheFinder<>(Model_GridProgramVersion.class);
 }

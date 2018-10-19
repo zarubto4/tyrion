@@ -2,12 +2,10 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.cache.InjectCache;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.swagger.output.Swagger_Short_Reference;
@@ -41,10 +39,7 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
     @JsonProperty @ApiModelProperty(required = true)
     public Swagger_Short_Reference grid_program() {
         try {
-            return new Swagger_Short_Reference(get_grid_version_program().get_grid_program().id, get_grid_version_program().get_grid_program().name, get_grid_version_program().get_grid_program().description);
-        } catch (_Base_Result_Exception e) {
-            // nothing
-            return null;
+            return get_grid_version_program().getGridProgram().ref();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -54,22 +49,17 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
     @JsonProperty @ApiModelProperty(required = true)
     public Swagger_Short_Reference grid_program_version() {
         try {
-            return new Swagger_Short_Reference(get_grid_program_version_id(), get_grid_version_program().name, get_grid_version_program().description);
-
-        }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
+            return get_grid_version_program().ref();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
     }
 
-
 /* JSON IGNORE  ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public UUID get_grid_program_version_id() throws _Base_Result_Exception {
+    public UUID get_grid_program_version_id() {
 
         if (idCache().get(Model_GridProgramVersion.class) == null) {
             idCache().add(Model_GridProgramVersion.class, (UUID) Model_GridProgramVersion.find.query().where().eq("m_program_instance_parameters.id", id).select("id").findSingleAttribute());
@@ -80,17 +70,12 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
     }
 
     @JsonIgnore
-    public Model_GridProgramVersion get_grid_version_program() throws _Base_Result_Exception {
-        try {
-            return Model_GridProgramVersion.find.byId(get_grid_program_version_id());
-        }catch (Exception e) {
-            // logger.internalServerError(e);
-            return null;
-        }
+    public Model_GridProgramVersion get_grid_version_program() {
+        return isLoaded("grid_program_version") ? grid_program_version : Model_GridProgramVersion.find.query().where().eq("m_program_instance_parameters.id", id).findOne();
     }
 
     @JsonIgnore
-    public UUID get_b_program_grid_version_id() throws _Base_Result_Exception {
+    public UUID get_b_program_grid_version_id() {
 
         if (idCache().get(Model_BProgramVersionSnapGridProject.class) == null) {
             idCache().add(Model_BProgramVersionSnapGridProject.class, (UUID) Model_BProgramVersionSnapGridProject.find.query().where().eq("grid_programs.id", id).select("id").findSingleAttribute());
@@ -101,7 +86,7 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
     }
 
     @JsonIgnore
-    public Model_BProgramVersionSnapGridProject get_b_program_grid_version() throws _Base_Result_Exception {
+    public Model_BProgramVersionSnapGridProject get_b_program_grid_version() {
         try {
             return Model_BProgramVersionSnapGridProject.find.byId(get_b_program_grid_version_id());
         }catch (Exception e) {
@@ -116,36 +101,12 @@ public class Model_BProgramVersionSnapGridProjectProgram extends BaseModel {
 
 /* Helper Class --------------------------------------------------------------------------------------------------------*/
 
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Override @Transient public void check_create_permission() throws _Base_Result_Exception  {
-        if(_BaseController.person().has_permission(Permission.BProgramVersionSnapGridProjectProgram_create.name())) return;
-        grid_project_program_snapshot.check_update_permission();
-    }
-
-    @JsonIgnore @Override  @Transient public void check_read_permission() throws _Base_Result_Exception  {
-        if(_BaseController.person().has_permission(Permission.BProgramVersionSnapGridProjectProgram_read.name())) return;
-        get_b_program_grid_version().check_update_permission();
-
-    }
-
-    @JsonIgnore @Override  @Transient public void check_update_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.BProgramVersionSnapGridProjectProgram_update.name())) return;
-        get_b_program_grid_version().check_update_permission();
-    }
-
-    @JsonIgnore @Override  @Transient public void check_delete_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.BProgramVersionSnapGridProjectProgram_delete.name())) return;
-        get_b_program_grid_version().check_update_permission();
-    }
-
-    public enum Permission { BProgramVersionSnapGridProjectProgram_create, BProgramVersionSnapGridProjectProgram_update, BProgramVersionSnapGridProjectProgram_read, BProgramVersionSnapGridProjectProgram_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_BProgramVersionSnapGridProjectProgram.class)
+    @InjectCache(Model_BProgramVersionSnapGridProjectProgram.class)
     public static CacheFinder<Model_BProgramVersionSnapGridProjectProgram> find = new CacheFinder<>(Model_BProgramVersionSnapGridProjectProgram.class);
 }

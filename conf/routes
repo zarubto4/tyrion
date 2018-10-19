@@ -33,11 +33,11 @@ POST      /logout                                                       utilitie
 
 POST      /apikey                                                       utilities.authentication.Controller_Security.apikey()
 
-GET       /login/facebook/*url                                          utilities.authentication.Controller_Security.facebook_oauth_get(url)
-GET       /login/github/*url                                            utilities.authentication.Controller_Security.github_oauth_get(url)
-
-POST      /facebook                                                     utilities.authentication.Controller_Security.Facebook()
-POST      /github                                                       utilities.authentication.Controller_Security.GitHub()
+# Facebook login
+PUT       /facebook/login/url-user                                       controllers.Controller_FacebookLogin.login_url_person()
+GET       /facebook/login/redirect-user/                                 controllers.Controller_FacebookLogin.login_redirect_person()
+PUT       /facebook/login/url                                            controllers.Controller_FacebookLogin.login_url()
+GET       /facebook/login/redirect                                       controllers.Controller_FacebookLogin.login_redirect()
 
 GET       /login/person                                                 utilities.authentication.Controller_Security.person_get_by_token()
 
@@ -106,24 +106,21 @@ PUT       /person/picture/remove                                        controll
 
 POST      /secure/rest_api_token_validation                             utilities.authentication.Controller_Security.get_status_request_token()
 
-PUT       /secure/permission/person/:person_id/:permission_id           controllers.Controller_Permission.permission_person_add(person_id: java.util.UUID, permission_id: java.util.UUID)
-DELETE    /secure/permission/person/:person_id/:permission_id           controllers.Controller_Permission.permission_person_remove(person_id: java.util.UUID, permission_id: java.util.UUID)
-PUT       /secure/permission/:permission_id                             controllers.Controller_Permission.permission_edit(permission_id: java.util.UUID)
+GET       /permission/all                                               controllers.Controller_Permission.permission_get_all()
 
-GET       /secure/permission/all                                        controllers.Controller_Permission.permission_get_all()
+PUT       /role/permission/:role_id                                     controllers.Controller_Role.role_addPermission(role_id: java.util.UUID)
+DELETE    /role/permission/:role_id/:permission_id                      controllers.Controller_Role.role_removePermission(role_id: java.util.UUID, permission_id: java.util.UUID)
 
+PUT       /role/person/:role_id                                         controllers.Controller_Role.role_addPerson(role_id: java.util.UUID)
+DELETE    /role/person/:role_id/:person_id                              controllers.Controller_Role.role_removePerson(role_id: java.util.UUID, person_id: java.util.UUID)
 
-PUT       /secure/role/permission/:role_id                               controllers.Controller_Permission.permission_add_to_role(role_id: java.util.UUID)
-DELETE    /secure/role/permission/:permission_id/:role_id               controllers.Controller_Permission.permission_remove_from_role(permission_id: java.util.UUID,role_id: java.util.UUID)
+PUT       /role/list/:page_number                                       controllers.Controller_Role.role_getByFilter(page_number:Int)
 
-PUT       /secure/role/person/:role_id                                  controllers.Controller_Permission.role_add_person(role_id: java.util.UUID)
-DELETE    /secure/role/person/:role_id/:person_id                       controllers.Controller_Permission.role_remove_person(role_id: java.util.UUID, person_id: java.util.UUID)
-
-POST      /secure/role                                                  controllers.Controller_Permission.role_create()
-DELETE    /secure/role/:role_id                                         controllers.Controller_Permission.role_delete(role_id: java.util.UUID)
-PUT       /secure/role/:role_id                                         controllers.Controller_Permission.role_edit(role_id: java.util.UUID)
-GET       /secure/role/:role_id                                         controllers.Controller_Permission.role_get(role_id: java.util.UUID)
-GET       /secure/roles                                                 controllers.Controller_Permission.role_get_all()
+POST      /role                                                         controllers.Controller_Role.role_create()
+DELETE    /role/:role_id                                                controllers.Controller_Role.role_delete(role_id: java.util.UUID)
+PUT       /role/:role_id                                                controllers.Controller_Role.role_update(role_id: java.util.UUID)
+GET       /role/:role_id                                                controllers.Controller_Role.role_get(role_id: java.util.UUID)
+GET       /role                                                         controllers.Controller_Role.role_get_all()
 
 GET       /secure/person/system_acces/:person_id                        controllers.Controller_Permission.system_access_get_everything(person_id: java.util.UUID)
 
@@ -231,7 +228,6 @@ GET       /project                                                      controll
 DELETE    /project/:project_id                                          controllers.Controller_Project.project_delete(project_id: java.util.UUID)
 PUT       /project/invite/:project_id                                   controllers.Controller_Project.project_invite(project_id: java.util.UUID)
 PUT       /project/remove_participant/:project_id                       controllers.Controller_Project.project_removeParticipant(project_id: java.util.UUID)
-PUT       /project/change_participant_state/:project_id                 controllers.Controller_Project.project_changeParticipantStatus(project_id: java.util.UUID)
 PUT       /project/tags/add                                             controllers.Controller_Project.project_addTags
 PUT       /project/tags/remove                                          controllers.Controller_Project.project_removeTags
 PUT       /project/hardware/add                                         controllers.Controller_Project.project_addHardware
@@ -567,6 +563,7 @@ DELETE    /admin/gsm/:sim_id                                            controll
 # Map static resources from the /public folder to the /assets URL path
 GET       /swagger.json                                                 controllers.ApiHelpController.getResources
 GET       /assets/*file                                                 controllers.Assets.at(path="/public", file)
+GET       /swagger_ui                                                   controllers.Assets.at(path="/public", file="swagger_ui.html")
 GET       /assets/*file                                                 controllers.Assets.versioned(path="/public", file: Asset)
 GET       /.well-known/acme-challenge/:file                             utilities.certificate.CertificateCheck.check(file)
 

@@ -2,15 +2,11 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.microsoft.azure.storage.blob.*;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import org.ehcache.Cache;
 import utilities.Server;
-import utilities.cache.CacheField;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
-import utilities.errors.Exceptions.Result_Error_NotSupportedException;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.cache.InjectCache;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
@@ -40,7 +36,7 @@ public class Model_Blob extends BaseModel {
     @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_HardwareType hardware_type; // picture
     @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "picture")     public Model_Hardware hardware;          // private board_picture
     @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "file")        public Model_Log log;
-    @JsonIgnore @OneToOne(fetch = FetchType.LAZY)                           public Model_BootLoader boot_loader;
+    @JsonIgnore @OneToOne(fetch = FetchType.LAZY, mappedBy = "file")        public Model_BootLoader boot_loader;
     @JsonIgnore @OneToMany(mappedBy="binary_file",fetch = FetchType.LAZY)   public List<Model_HardwareUpdate> updates = new ArrayList<>();
     @JsonIgnore @OneToOne(mappedBy="blob")                                  public Model_Compilation c_compilations_binary_file;
 
@@ -256,6 +252,7 @@ public class Model_Blob extends BaseModel {
             logger.debug("delete - removing file from blob server, id: {}", this.id);
 
             cache_public_link.remove(this.id);
+            cache_string_file.remove(this.id);
 
             this.removeBlob();
         } catch (Exception e) {
@@ -282,157 +279,16 @@ public class Model_Blob extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        //true
-    }
-
-    // Create Permission is always JsonIgnore
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        //true
-    }
-
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-        if (_BaseController.person().has_permission(Model_BProgram.Permission.BProgram_delete.name())) return;
-        check_delete_permission();
-    }
-
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-
-        if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + this.id)) _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + this.id);
-        if (_BaseController.person().has_permission(Model_BProgram.Permission.BProgram_delete.name())) return;
-
-        UUID id = null;
-
-        id = Model_Person.find.query().where().eq("picture.id", this.id).select("id").findSingleAttribute();
-
-        if(id != null) {
-            Model_Person.find.byId(id).check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
-            return;
-        }
-
-        id = Model_InstanceSnapshot.find.query().where().eq("program.id", this.id).select("id").findSingleAttribute();
-
-        if(id != null) {
-            Model_InstanceSnapshot.find.byId(id).check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
-            return;
-        }
-
-        id = Model_HardwareType.find.query().where().eq("picture.id", this.id).select("id").findSingleAttribute();
-
-        if(id != null) {
-            Model_HardwareType.find.byId(id).check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
-            return;
-        }
-
-        id = Model_Hardware.find.query().where().eq("picture.id", this.id).select("id").findSingleAttribute();
-
-        if(id != null) {
-            Model_Hardware.find.byId(id).check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
-            return;
-        }
-
-        id = Model_Log.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
-
-        if(id != null) {
-            Model_Log.find.byId(id).check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
-            return;
-        }
-
-        id = Model_BootLoader.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
-
-        if(id != null) {
-            Model_BootLoader.find.byId(id).check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
-            return;
-        }
-
-        id = Model_HardwareUpdate.find.query().where().eq("binary_file.id", this.id).select("id").findSingleAttribute();
-
-        if(id != null) {
-            Model_HardwareUpdate.find.byId(id).check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
-            return;
-        }
-
-        id = Model_Compilation.find.query().where().eq("blob.id", this.id).select("id").findSingleAttribute();
-
-        if(id != null) {
-            Model_Compilation.find.byId(id).check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
-            return;
-        }
-
-        id = Model_CProgramVersion.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
-
-        if(id != null) {
-            Model_CProgramVersion.find.byId(id).check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
-            return;
-        }
-
-        id = Model_LibraryVersion.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
-
-        if(id != null) {
-            Model_LibraryVersion.find.byId(id).check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
-            return;
-        }
-
-        id = Model_BProgramVersion.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
-
-        if(id != null) {
-            Model_BProgramVersion.find.byId(id).check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
-            return;
-        }
-
-        id = Model_GridProgramVersion.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
-
-        if(id != null) {
-            Model_GridProgramVersion.find.byId(id).check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
-            return;
-        }
-
-        id = Model_WidgetVersion.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
-
-        if(id != null) {
-            Model_WidgetVersion.find.byId(id).check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
-            return;
-        }
-
-        id = Model_BlockVersion.find.query().where().eq("file.id", this.id).select("id").findSingleAttribute();
-
-        if(id != null) {
-            Model_BlockVersion.find.byId(id).check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, true);
-            return;
-        }
-
-        _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + this.id, false);
-        logger.error("Unsupported object in Model Blob when system tried to remove this object!");
-        throw new Result_Error_NotSupportedException();
-    }
-
-    public enum Permission { Blob_create, Blob_read, Blob_update, Blob_edit, Blob_delete }
-
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = String.class, duration = CacheField.DayCacheConstant, maxElements = 1000, automaticProlonging = false, name = "Model_Blob_Link")
+    @InjectCache(value = String.class, duration = InjectCache.DayCacheConstant, maxElements = 1000, automaticProlonging = false, name = "Model_Blob_Link")
     public static Cache<UUID, String> cache_public_link;
 
-    @CacheField(value = String.class, duration = CacheField.DayCacheConstant, maxElements = 500, name = "Model_Blob_File")
+    @InjectCache(value = String.class, duration = InjectCache.DayCacheConstant, maxElements = 500, name = "Model_Blob_File")
     public static Cache<UUID, String> cache_string_file;
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Blob.class)
+    @InjectCache(Model_Blob.class)
     public static CacheFinder<Model_Blob> find = new CacheFinder<>(Model_Blob.class);
 }

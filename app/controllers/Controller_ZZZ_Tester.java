@@ -18,9 +18,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
 import play.Environment;
-import play.libs.Json;
 import play.libs.ws.WSClient;
-import play.mvc.Controller;
 import play.mvc.Result;
 
 import utilities.enums.Currency;
@@ -45,6 +43,7 @@ import java.util.*;
 
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import utilities.logger.YouTrack;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.scheduler.jobs.Job_ThingsMobileSimListOnlySynchronizer;
 import utilities.swagger.output.Swagger_Hardware_Registration_Hash;
@@ -60,8 +59,8 @@ public class Controller_ZZZ_Tester extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @Inject
-    public Controller_ZZZ_Tester(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public Controller_ZZZ_Tester(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
     @Inject
@@ -73,10 +72,37 @@ public class Controller_ZZZ_Tester extends _BaseController {
      public Result test1() {
          try {
 
-             new Job_ThingsMobileSimListOnlySynchronizer().execute(null);
+             Model_Role role = Model_Role.getByName("SuperAdmin");
 
-             return ok();
+             System.out.println("Persons in role: " + role.persons.size() + " but person found: " + Model_Person.find.query().where().eq("roles.id", role.id).findCount());
 
+             role.persons.forEach(r -> System.out.println(r.email));
+
+             Model_Person person = new Model_Person();
+             person.email = UUID.randomUUID() + "@mail.com";
+             person.nick_name = "test" + UUID.randomUUID();
+             person.validated = true;
+             person.setPassword("password");
+
+             person.save();
+
+             System.out.println("Person saved");
+
+             role.persons.add(person);
+
+             System.out.println("Persons in role: " + role.persons.size() + " but still person found: " + Model_Person.find.query().where().eq("roles.id", role.id).findCount());
+
+             role.update();
+
+             System.out.println("Persons in role after update: " + role.persons.size() + " but person found: " + Model_Person.find.query().where().eq("roles.id", role.id).findCount());
+             role.persons.forEach(r -> System.out.println(r.email));
+
+             role.refresh();
+
+             System.out.println("Persons in role after refresh: " + role.persons.size() + " but person found: " + Model_Person.find.query().where().eq("roles.id", role.id).findCount());
+             role.persons.forEach(r -> System.out.println(r.email));
+
+             return ok("Done");
          } catch (Exception e) {
              logger.internalServerError(e);
              return badRequest();
@@ -87,33 +113,15 @@ public class Controller_ZZZ_Tester extends _BaseController {
     public Result test2() {
         try {
 
-           //  TM_Sim_Credit_list credit_list = Controller_Things_Mobile.sim_credit();
+            Model_Role role = Model_Role.getByName("SuperAdmin");
 
+            List<Model_Person> persons = Model_Person.find.query().where().eq("roles.id", role.id).findList();
 
-            TM_Sim_Status status = Controller_Things_Mobile.sim_status(882360002156971L);
+            persons.forEach(person -> {
+                System.out.print("Roles size:" + person.roles.size());
 
-            System.out.print("Credit:: \n"  + status.prettyPrint());
-
-            /*
-            List<String> places = Arrays.asList("002100373136510236363332","004100273136510236363332","002900363136510236363332","002C00443136510236363332","003500443036511935353233",
-                    "004300443136510236363332","002700373136510236363332","004900283136510236363332","003E00363136510236363332");
-
-
-            List<String> registration_hash = new ArrayList<>();
-
-            for(String full_id : places) {
-                System.out.println("Check Full_id:: " + full_id);
-                Model_HardwareRegistrationEntity hw = Model_HardwareRegistrationEntity.getbyFull_id(full_id);
-
-                if(hw != null) {
-                    registration_hash.add(hw.hash_for_adding);
-                }else {
-                    System.err.println("Full Id:: "+  full_id +" not exist in central authority");
-                }
-            }
-
-            System.out.println(registration_hash);
-            */
+                person.roles.forEach(r -> System.out.println(r.name));
+            });
 
            return ok(status);
 
@@ -441,6 +449,47 @@ public class Controller_ZZZ_Tester extends _BaseController {
             invoice.saveEvent(invoice.created, ProductEventType.INVOICE_CREATED, "{status: " + invoice.status + "}");
 
             return ok();
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return badRequest();
+        }
+    }
+
+
+    @ApiOperation(value = "Hidden test Method", hidden = true)
+    public Result test7() {
+        try {
+
+            //  TM_Sim_Credit_list credit_list = Controller_Things_Mobile.sim_credit();
+
+
+            TM_Sim_Status status = Controller_Things_Mobile.sim_status(882360002156971L);
+
+            System.out.print("Credit:: \n"  + status.prettyPrint());
+
+            /*
+            List<String> places = Arrays.asList("002100373136510236363332","004100273136510236363332","002900363136510236363332","002C00443136510236363332","003500443036511935353233",
+                    "004300443136510236363332","002700373136510236363332","004900283136510236363332","003E00363136510236363332");
+
+
+            List<String> registration_hash = new ArrayList<>();
+
+            for(String full_id : places) {
+                System.out.println("Check Full_id:: " + full_id);
+                Model_HardwareRegistrationEntity hw = Model_HardwareRegistrationEntity.getbyFull_id(full_id);
+
+                if(hw != null) {
+                    registration_hash.add(hw.hash_for_adding);
+                }else {
+                    System.err.println("Full Id:: "+  full_id +" not exist in central authority");
+                }
+            }
+
+            System.out.println(registration_hash);
+            */
+
+            return ok(status);
+
         } catch (Exception e) {
             logger.internalServerError(e);
             return badRequest();

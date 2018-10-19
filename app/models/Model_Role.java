@@ -1,23 +1,27 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import controllers._BaseController;
+import io.ebean.Expr;
 import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.cache.InjectCache;
+import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
+import utilities.model.Publishable;
+import utilities.model.UnderProject;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Entity
 @ApiModel(value = "Role", description = "Model of Role")
 @Table(name="Role")
-public class Model_Role extends NamedModel {
+public class Model_Role extends NamedModel implements Permissible, UnderProject, Publishable {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -25,14 +29,28 @@ public class Model_Role extends NamedModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @ManyToMany(mappedBy = "roles",fetch = FetchType.LAZY) public List<Model_Person> persons = new ArrayList<>();
-    @ManyToMany() @OrderBy(value ="name") public List<Model_Permission> permissions = new ArrayList<>();
+    public boolean default_role;
+
+    @ManyToOne public Model_Project project;
+
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.LAZY) public List<Model_Person> persons = new ArrayList<>();
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }) public List<Model_Permission> permissions = new ArrayList<>();
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+    @JsonIgnore @Override
+    public Model_Project getProject() {
+        return isLoaded("project") ? project : Model_Project.find.query().nullable().where().eq("roles.id", id).findOne();
+    }
+
+    @JsonIgnore @Override
+    public boolean isPublic() {
+        return getProject() == null;
+    }
+
+    /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
     public boolean delete() {
@@ -54,25 +72,15 @@ public class Model_Role extends NamedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Role_create.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Role_read.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Role_update.name())) return;
-        throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.ROLE;
     }
 
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Role_delete.name())) return;
-        throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }
-
-    public enum Permission { Role_create, Role_read, Role_update, Role_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
@@ -80,8 +88,51 @@ public class Model_Role extends NamedModel {
         return find.query().where().eq("name" , name).findOne();
     }
 
+    public static Model_Role createProjectAdminRole() {
+
+        List<Model_Permission> permissions = Model_Permission.find.query()
+                .where()
+                .in("entity_type", EntityType.PROJECT, EntityType.FIRMWARE, EntityType.FIRMWARE_VERSION,
+                        EntityType.LIBRARY, EntityType.LIBRARY_VERSION, EntityType.WIDGET, EntityType.WIDGET_VERSION,
+                        EntityType.GRID_PROJECT, EntityType.GRID_PROGRAM, EntityType.GRID_PROGRAM_VERSION,
+                        EntityType.BLOCK, EntityType.BLOCK_VERSION, EntityType.BLOCKO_PROGRAM, EntityType.BLOCKO_PROGRAM_VERSION,
+                        EntityType.INSTANCE, EntityType.INSTANCE_SNAPSHOT, EntityType.HARDWARE, EntityType.HARDWARE_GROUP,
+                        EntityType.HARDWARE_UPDATE, EntityType.ROLE
+                )
+                .findList();
+
+
+        Model_Role role = new Model_Role();
+        role.name = "Project Admin";
+        role.permissions.addAll(permissions);
+
+        return role;
+    }
+
+    public static Model_Role createProjectMemberRole() {
+
+        List<Model_Permission> permissions = Model_Permission.find.query()
+                .where()
+                .not(Expr.and(Expr.eq("entity_type", EntityType.PROJECT), Expr.in("action", Arrays.asList(Action.ACTIVATE, Action.INVITE))))
+                .in("entity_type", EntityType.PROJECT, EntityType.FIRMWARE, EntityType.FIRMWARE_VERSION,
+                        EntityType.LIBRARY, EntityType.LIBRARY_VERSION, EntityType.WIDGET, EntityType.WIDGET_VERSION,
+                        EntityType.GRID_PROJECT, EntityType.GRID_PROGRAM, EntityType.GRID_PROGRAM_VERSION,
+                        EntityType.BLOCK, EntityType.BLOCK_VERSION, EntityType.BLOCKO_PROGRAM, EntityType.BLOCKO_PROGRAM_VERSION,
+                        EntityType.INSTANCE, EntityType.INSTANCE_SNAPSHOT, EntityType.HARDWARE, EntityType.HARDWARE_GROUP,
+                        EntityType.HARDWARE_UPDATE
+                )
+                .findList();
+
+        Model_Role role = new Model_Role();
+        role.name = "Project Member";
+        role.permissions.addAll(permissions);
+        role.default_role = true;
+
+        return role;
+    }
+
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Role.class)
+    @InjectCache(Model_Role.class)
     public static CacheFinder<Model_Role> find = new CacheFinder<>(Model_Role.class);
 }

@@ -4,37 +4,43 @@ import com.google.inject.Injector;
 import com.microsoft.azure.documentdb.*;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoDatabase;
 import com.typesafe.config.Config;
 import controllers.Controller_WebSocket;
 import controllers._BaseFormFactory;
 import io.intercom.api.Intercom;
 import models.*;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
+import org.mongodb.morphia.annotations.Entity;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
-import utilities.cache.ServerCache;
 import utilities.document_mongo_db.DocumentDB;
 import utilities.document_mongo_db.MongoDB;
+import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
+import exceptions.NotFoundException;
 import utilities.grid_support.utils.IP_Founder;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.homer_auto_deploy.DigitalOceanThreadRegister;
-import utilities.homer_auto_deploy.DigitalOceanTyrionService;
 import utilities.logger.Logger;
-import utilities.logger.ServerLogger;
-import utilities.model.BaseModel;
+import utilities.model._Abstract_MongoModel;
 import utilities.models_update_echo.EchoHandler;
 import utilities.models_update_echo.RefreshTouch_echo_handler;
 import utilities.notifications.NotificationHandler;
-import utilities.scheduler.jobs.Job_CheckCompilationLibraries;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.threads.homer_server.Synchronize_Homer_Synchronize_Settings;
 import websocket.interfaces.WS_Homer;
-import websocket.interfaces.WS_Portal;
 
 import javax.persistence.PersistenceException;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -42,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class Server {
 
@@ -90,8 +97,6 @@ public class Server {
     public static String Facebook_url;
     public static String Facebook_apiKey;
 
-    public static Integer financial_spendDailyPeriod = 1;
-
     public static String Fakturoid_apiKey;
     public static String Fakturoid_url;
     public static String Fakturoid_user_agent;
@@ -110,9 +115,14 @@ public class Server {
 
     public static String link_api_swagger;
 
+
+    // Slack
+
     public static String slack_webhook_url_channel_servers;
     public static String slack_webhook_url_channel_homer;
     public static String slack_webhook_url_channel_hardware;
+
+    // Financial
 
     public static int financial_quantity_scale = 2;
     public static RoundingMode financial_quantity_rounding = RoundingMode.HALF_UP;
@@ -123,26 +133,30 @@ public class Server {
     public static int financial_tax_scale = 2;
     public static RoundingMode financial_tax_rounding = RoundingMode.UP;
 
+
+    // Mongo Databases
+    private static final Morphia morphia = new Morphia();
+    private static MongoClient mongoClient = null;
+
+    public static MongoDatabase main_database = null;
+    public static Datastore main_data_store = null;
+
+
     /**
      * Loads all configurations and start all server components.
-     * @param config file
      * @param injector default application injector
      * @throws Exception if error occurs when starting the server
      */
-    public static void start(Config config, Injector injector) throws Exception {
-        Server.configuration = config;
+    public static void start(Injector injector) throws Exception {
         Server.injector = injector;
         Server.baseFormFactory = Server.injector.getInstance(_BaseFormFactory.class);
-
-        Server.mode = configuration.getEnum(ServerMode.class,"server.mode");
-
-        ServerLogger.init(config);
 
         setConstants();
 
         cleanUpdateMess();
 
-        ServerCache.init();
+        // Init DocumentDB
+        init_mongo_database();
 
         try {
             setPermission();
@@ -164,7 +178,6 @@ public class Server {
      * Stops server components, that need to be properly shut down
      */
     public static void stop() {
-        ServerCache.close();
         Controller_WebSocket.close();
     }
 
@@ -200,8 +213,8 @@ public class Server {
         version = configuration.getString("api.version");
 
         if (Server.mode == ServerMode.DEVELOPER) {
-            String mac_address = getMacAddress().toLowerCase();
-            logger.warn("setServerValues - local macAddress: {}", mac_address);
+            // String mac_address = getMacAddress().toLowerCase();
+            // logger.warn("setServerValues - local macAddress: {}", mac_address);
 
             // Speciální podmínka, která nastaví podklady sice v Developerském modu - ale s URL adresami tak, aby byly v síti přístupné
 
@@ -304,38 +317,48 @@ public class Server {
     private static void setAdministrator() {
 
         // For Developing
-        Model_Role role = Model_Role.getByName("SuperAdmin");
-        List<Model_Permission> permissions = Model_Permission.find.all();
+        Model_Role role;
 
-        if(role == null) {
-            logger.warn("setAdministrator - RoleGroup SuperAdmin is missing - its required create it now. Total Permissions for registrations: {}", permissions.size());
+        try {
+            role = Model_Role.getByName("SuperAdmin");
+
+            logger.warn("setAdministrator - role SuperAdmin exists");
+
+        } catch (NotFoundException e) {
+
+            logger.warn("setAdministrator - SuperAdmin role was not found, creating it");
 
             role = new Model_Role();
-
-            if(role.permissions == null) role.permissions = new ArrayList<>();
-            role.permissions.addAll(permissions);
             role.name = "SuperAdmin";
-
-            logger.warn("setAdministrator - Save Role SuperAdmin now");
             role.save();
+        }
 
-        } else {
-            logger.warn("setAdministrator - RoleGroup SuperAdmin- already exist - Check all permissions");
-            for (Model_Permission permission : permissions) {
-                if (!role.permissions.contains(permission)) {
-                    role.permissions.add(permission);
-                }
-            }
+        logger.info("setAdministrator - updating permissions in the role");
+
+        List<UUID> permissionIds = role.permissions.stream().map(permission -> permission.id).collect(Collectors.toList());
+
+        logger.trace("setAdministrator - role contains {} permission(s)", permissionIds.size());
+
+        List<Model_Permission> permissions = Model_Permission.find.query().where().notIn("id", permissionIds).findList();
+
+        logger.trace("setAdministrator - role is missing {} permission(s)", permissions.size());
+
+        if (!permissions.isEmpty()) {
+            logger.debug("setAdministrator - adding {} permission(s)", permissions.size());
+            role.permissions.addAll(permissions);
             role.update();
         }
 
-        Model_Person person = Model_Person.getByEmail("admin@byzance.cz");
+        Model_Person person;
 
-        if (person == null) {
+        try {
+            person = Model_Person.getByEmail("admin@byzance.cz");
 
-            logger.warn("setAdministrator - Creating first admin account: admin@byzance.cz, password: 123456789");
+            logger.warn("setAdministrator - admin is already created");
 
-            Model_Role role_super_admin = Model_Role.getByName("SuperAdmin");
+        } catch (NotFoundException e) {
+
+            logger.warn("setAdministrator - creating first admin account: admin@byzance.cz, password: 123456789");
 
             person = new Model_Person();
             person.first_name = "Admin";
@@ -344,28 +367,13 @@ public class Server {
             person.nick_name = "Syndibád";
             person.email = "admin@byzance.cz";
             person.setPassword("123456789");
-
-            if(person.roles == null){
-                logger.warn("setAdministrator - person.roles is null");
-                person.roles = new ArrayList<>();
-            }
-
-            person.roles.add(role_super_admin);
-
             person.save();
+        }
 
-        } else {
-
-            logger.warn("setAdministrator - admin is already created");
-
-            // updatuji oprávnění
-            List<Model_Permission> personPermissions = Model_Permission.find.all();
-
-            for (Model_Permission personPermission :  personPermissions) {
-                if(!person.permissions.contains(personPermission)) {
-                    person.permissions.add(personPermission);
-                }
-            }
+        if (!role.persons.contains(person)) {
+            logger.info("setAdministrator - adding admin account to role");
+            role.persons.add(person);
+            role.update();
         }
     }
 
@@ -377,14 +385,14 @@ public class Server {
             logger.warn("setWidgetAndBlock - Creating Widget and Block with " + "0000000-0000-0000-0000-000000000001");
 
             if (Model_Widget.find.query().where().eq("id", UUID.fromString("00000000-0000-0000-0000-000000000001")).findCount() == 0) {
-                Model_Widget gridWidget = new Model_Widget();
-                gridWidget.id = UUID.fromString("00000000-0000-0000-0000-000000000001");
-                gridWidget.description = "Default Widget";
-                gridWidget.name = "Default Widget";
-                gridWidget.project = null;
-                gridWidget.author_id = null;
-                gridWidget.publish_type = ProgramType.DEFAULT_MAIN;
-                gridWidget.save();
+                Model_Widget widget = new Model_Widget();
+                widget.id = UUID.fromString("00000000-0000-0000-0000-000000000001");
+                widget.description = "Default Widget";
+                widget.name = "Default Widget";
+                widget.project = null;
+                widget.author_id = null;
+                widget.publish_type = ProgramType.DEFAULT_MAIN;
+                widget.save();
             } else {
                 logger.warn("Model_Widget Model_Widget already exist");
             }
@@ -412,8 +420,6 @@ public class Server {
      */
     private static void setPermission() {
 
-        List<String> permissions = new ArrayList<>();
-
         long start = System.currentTimeMillis();
 
         // Get classes in 'models' package
@@ -421,56 +427,49 @@ public class Server {
                 .setUrls(ClasspathHelper.forPackage("models"))
                 .setScanners(new SubTypesScanner()));
 
-        // Get classes that extends _BaseModel.class
-        Set<Class<? extends BaseModel>> classes = reflections.getSubTypesOf(BaseModel.class);
+        // Get classes that implements Permittable
+        Set<Class<? extends Permissible>> classes = reflections.getSubTypesOf(Permissible.class);
 
         logger.trace("setPermission - found {} classes", classes.size());
 
-        // Find inner enum called 'Permission'
+        List<Model_Permission> permissions = Model_Permission.find.all();
+
         classes.forEach(cls -> {
-            logger.trace("setPermission - scanning class: {}", cls.getSimpleName());
-            Class<?>[] innerClasses = cls.getDeclaredClasses();
-            for (Class<?> inner : innerClasses) {
-                try {
-                    if (inner.isEnum() && inner.getSimpleName().equals("Permission")) {
-                        // logger.trace("setPermission - found enum Permission in class: {}", cls.getSimpleName());
-                        Enum[] enums = (Enum[]) inner.getEnumConstants();
-                        for (Enum e : enums) {
-                            // logger.trace("setPermission - found permission: {}", e.name());
-                            permissions.add(e.name());
-                        }
+            try {
+                Permissible permissible = cls.newInstance();
+                EntityType entityType = permissible.getEntityType();
+                List<Action> actions = permissible.getSupportedActions();
+
+                actions.forEach(action -> {
+                    if (permissions.stream().noneMatch(p -> p.action == action && p.entity_type == entityType)) {
+                        Model_Permission permission = new Model_Permission();
+                        permission.entity_type = entityType;
+                        permission.action = action;
+                        permission.save();
                     }
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
+                });
+
+            } catch (Exception e) {
+                logger.internalServerError(e);
             }
         });
 
         logger.trace("setPermission - scanning for permissions took: {} ms", System.currentTimeMillis() - start);
 
-        List<Model_Permission> perms = Model_Permission.find.all();
+        // Set default project roles (temporary)
+        List<Model_Project> projects = Model_Project.find.query().where().isEmpty("roles").findList();
+        projects.forEach(project -> {
 
-        logger.trace("setPermission - get all permissions from database. Count: {}", perms.size());
+            List<Model_Person> persons = Model_Person.find.query().where().eq("projects.id", project.id).findList();
+            Model_Role adminRole = Model_Role.createProjectAdminRole();
+            adminRole.project = project;
+            adminRole.persons.addAll(persons);
+            adminRole.save();
 
-        for (Model_Permission permission : perms) {
-            if (!permissions.contains(permission.name)) {
-                logger.info("setPermission - removing permission: {} from DB", permission.name);
-                permission.delete();
-            }
-        }
-        logger.trace("setPermission - time to save all, witch are not in database. Count of read by system {}", permissions.size());
-        for (String permission_name : permissions) {
-            // logger.trace("setPermission - Permission {} try to get from database", permission_name);
-            if (Model_Permission.find.query().where().eq("name", permission_name).findOne() == null) {
-                // logger.trace("setPermission - saving permission: {} to DB", permission_name);
-                Model_Permission permission = new Model_Permission();
-                permission.name = permission_name;
-                permission.description = "description";
-                permission.save();
-            } else {
-                // logger.trace("setPermission - Permission {} is already in database", permission_name);
-            }
-        }
+            Model_Role memberRole = Model_Role.createProjectMemberRole();
+            memberRole.project = project;
+            memberRole.save();
+        });
     }
 
     /**
@@ -487,6 +486,94 @@ public class Server {
         Controller_Things_Mobile.baseFormFactory   = Server.injector.getInstance(_BaseFormFactory.class);
     }
 
+
+    /**
+     * Initialization Mongo Databases from config file, all collection are checked, if some missing, this method will
+     * create it.
+     */
+    @SuppressWarnings("unchecked")
+    public static void init_mongo_database() {
+
+        String mode = Server.mode.name().toLowerCase();
+
+        // Připojení na MongoClient v Azure
+        logger.trace("init_mongo_database:: URL {}", configuration.getString("MongoDB." + mode + ".url"));
+
+
+        MongoClientOptions.Builder options_builder = new MongoClientOptions.Builder();
+        options_builder.maxConnectionIdleTime(1000 * 60 * 60 *24);
+        options_builder.retryWrites(true);
+
+        MongoClientURI uri = new MongoClientURI(configuration.getString("MongoDB." + mode + ".url"), options_builder);
+        Server.mongoClient = new MongoClient(uri);
+
+        try {
+
+            mongoClient.getAddress();
+
+        } catch (Exception e) {
+            logger.error("init_mongo_database:: Mongo is down");
+            mongoClient.close();
+            return;
+        }
+
+        // Mongo ORM zástupný onbjekt pro lepší práci s databází
+        main_data_store = morphia.createDatastore(mongoClient, configuration.getString("MongoDB." + mode + ".main_database_name"));
+
+        // Připojení na konkrétní Databázi clienta
+        main_database = mongoClient.getDatabase(configuration.getString("MongoDB." + mode + ".main_database_name"));
+
+        if(main_data_store == null) {
+            logger.error("init_mongo_database:: Required Main Database not Exist!");
+        }
+
+        // Kontrola databáze
+        if(! mongoClient.getDatabaseNames().contains(configuration.getString("MongoDB." + mode + ".main_database_name"))){
+            logger.error("init_mongo_database:: Required Main Database not Exist!");
+        }
+
+
+        // Kontrola kolekcí nad Mongo Databází
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+                .setUrls(ClasspathHelper.forPackage("models"))
+                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner()));
+
+        Set<Class<?>> classes = reflections.getTypesAnnotatedWith(Entity.class);
+
+        classes.forEach(cls -> {
+            try {
+
+                Class<? extends _Abstract_MongoModel> model = (Class<? extends _Abstract_MongoModel>) cls; // Cast to model
+                Entity annotation = model.getAnnotation(Entity.class);
+
+                String value = annotation.value();
+
+                if (annotation == null) {
+                    logger.error("init_mongo_database:: In Class {} is not set anotation  @Entity! FIX THAT!", cls.getSimpleName());
+                    return;
+                }
+
+                if (!main_database.listCollectionNames().into(new ArrayList<String>()).contains(annotation.value())) {
+                    logger.warn("init_mongo_database:: {} Collection:: {}  - not exist. System will create that! ", model.getSimpleName(), annotation.value());
+                    main_database.createCollection(annotation.value());
+
+                }
+
+            } catch (Exception e) {
+                logger.error("init_mongo_database:: {} Collection Class:: {}  - not exist. Its Required create that! ", main_database.getName(), cls.getSimpleName());
+                logger.internalServerError(e);
+            }
+        });
+
+    }
+
+    public static Datastore getMainMongoDatabase() {
+        if(Server.main_data_store == null) {
+            init_mongo_database();
+        }
+
+        return main_data_store;
+    }
 
     /**
      * Set configuration

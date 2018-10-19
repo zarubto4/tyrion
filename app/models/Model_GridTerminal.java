@@ -1,13 +1,10 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
-import utilities.errors.Exceptions.Result_Error_NotSupportedException;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.cache.InjectCache;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import javax.persistence.*;
@@ -62,28 +59,12 @@ public class Model_GridTerminal extends BaseModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        if(person.id.equals(_BaseController.person().id)) return;
-        throw new Result_Error_NotSupportedException();
-    }
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        // True
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        logger.error("check_update_permission: Not Supported");
-        throw new Result_Error_NotSupportedException();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        logger.error("check_delete_permission: Not Supported");
-        throw new Result_Error_NotSupportedException();
-    }
+
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_GridTerminal.class)
+    @InjectCache(Model_GridTerminal.class)
     public static CacheFinder<Model_GridTerminal> find = new CacheFinder<>(Model_GridTerminal.class);
 }

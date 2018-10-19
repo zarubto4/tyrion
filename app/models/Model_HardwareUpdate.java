@@ -3,26 +3,28 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
+import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.swagger.output.*;
 import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -34,7 +36,7 @@ import java.util.UUID;
 @ApiModel(description = "Model of HardwareUpdate",
         value = "HardwareUpdate")
 @Table(name="HardwareUpdate")
-public class Model_HardwareUpdate extends BaseModel {
+public class Model_HardwareUpdate extends BaseModel implements Permissible, UnderProject {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -49,14 +51,14 @@ public class Model_HardwareUpdate extends BaseModel {
                                                     example = "1466163478925")  public Date date_of_finish;
 
               @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                    public Model_Hardware hardware; // Deska k aktualizaci
-              @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public FirmwareType firmware_type;          // Typ Firmwaru
+                                            @ApiModelProperty(required = true)  public FirmwareType firmware_type;          // Typ Firmwaru
 
                                                                                 // Aktualizace je vázána buď na verzi C++ kodu nebo na soubor, nahraný uživatelem
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                 public Model_CProgramVersion c_program_version_for_update; // C_program k aktualizaci
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_BootLoader bootloader;                      // Když nahrávám Firmware
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_Blob binary_file;                     // Soubor, když firmware nahrává uživatel sám mimo flow
 
-                                                   @Enumerated(EnumType.STRING) public HardwareUpdateState state;
+                                                                                public HardwareUpdateState state;
                                                                     @JsonIgnore public Integer count_of_tries;                         // Počet celkovbých pokusu doručit update (změny z wait to progres atd..
 
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Only if state is critical_error or Homer record some error")  public String error;
@@ -68,10 +70,7 @@ public class Model_HardwareUpdate extends BaseModel {
     public UpdateType type_of_update () {
         try {
             return getActualizationProcedure().type_of_update;
-        } catch (_Base_Result_Exception e) {
-            //nothing
-            return null;
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
@@ -81,9 +80,6 @@ public class Model_HardwareUpdate extends BaseModel {
     public UUID actualization_procedure_id(){
         try {
             return getActualizationProcedureId();
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -92,11 +88,8 @@ public class Model_HardwareUpdate extends BaseModel {
 
     @JsonProperty
     public Date date_of_planing() {
-        try{
+        try {
             return getActualizationProcedure().date_of_planing;
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -105,12 +98,9 @@ public class Model_HardwareUpdate extends BaseModel {
 
     @JsonProperty
     public Date created() {
-        try{
+        try {
             return getActualizationProcedure().created;
-        }catch(_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch(Exception e){
+        } catch(Exception e) {
             logger.internalServerError(e);
             return null;
         }
@@ -131,9 +121,6 @@ public class Model_HardwareUpdate extends BaseModel {
 
             return c_program_detail;
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -158,9 +145,6 @@ public class Model_HardwareUpdate extends BaseModel {
 
             return bootloader_update_detail;
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -170,13 +154,7 @@ public class Model_HardwareUpdate extends BaseModel {
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public Swagger_Short_Reference hardware() {
         try {
-
-            Model_Hardware hardware = getHardware();
-            return new Swagger_Short_Reference(hardware.id, hardware.name, hardware.description);
-
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
+            return getHardware().ref();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -188,9 +166,6 @@ public class Model_HardwareUpdate extends BaseModel {
     public Model_Blob binary_file_detail() {
         try{
             return binary_file;
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -199,6 +174,10 @@ public class Model_HardwareUpdate extends BaseModel {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Override
+    public Model_Project getProject() {
+        return getHardware().getProject();
+    }
 
     @JsonIgnore
     public UUID getHardwareId() {
@@ -214,12 +193,7 @@ public class Model_HardwareUpdate extends BaseModel {
 
     @JsonIgnore
     public Model_Hardware getHardware() {
-        try {
-            return Model_Hardware.find.byId(getHardwareId());
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return isLoaded("hardware") ? hardware : Model_Hardware.find.query().nullable().where().eq("updates.id", id).findOne();
     }
 
     @JsonIgnore
@@ -410,8 +384,6 @@ public class Model_HardwareUpdate extends BaseModel {
 
         return true;
     }
-
-
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -904,66 +876,20 @@ public class Model_HardwareUpdate extends BaseModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    // Not Required - Supported directly only by Tyrion
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        // true
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-                return;
-            }
-
-            if(_BaseController.person().has_permission(Permission.UpdateProcedure_read.name())) return;
-
-            getHardware().check_read_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-
-            if(_BaseController.person().has_permission(Permission.UpdateProcedure_edit.name())) return;
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-                return;
-            }
-
-            if(_BaseController.person().has_permission(Permission.UpdateProcedure_edit.name())) return;
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.HARDWARE_UPDATE;
     }
 
-    public enum Permission { UpdateProcedure_read, UpdateProcedure_edit }
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.READ, Action.UPDATE, Action.DELETE);
+    }
+
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_HardwareUpdate.class)
+    @InjectCache(Model_HardwareUpdate.class)
     public static CacheFinder<Model_HardwareUpdate> find = new CacheFinder<>(Model_HardwareUpdate.class);
 }

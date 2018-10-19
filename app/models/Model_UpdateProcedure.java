@@ -3,19 +3,21 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
+import exceptions.NotFoundException;
 import io.ebean.Expr;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.cache.Cached;
 import utilities.enums.*;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
+import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.swagger.output.Swagger_Bootloader_Update_program;
 import utilities.swagger.output.Swagger_C_Program_Update_program;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
@@ -26,7 +28,7 @@ import java.util.*;
 @Entity
 @ApiModel(value = "UpdateProcedure", description = "Model of UpdateProcedure")
 @Table(name="UpdateProcedure")
-public class Model_UpdateProcedure extends BaseModel {
+public class Model_UpdateProcedure extends BaseModel implements Permissible, UnderProject {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -43,7 +45,7 @@ public class Model_UpdateProcedure extends BaseModel {
     @ApiModelProperty(required = true, value = "UNIX time in ms", dataType = "number")  public Date date_of_planing;
     @ApiModelProperty(required = true, value = "UNIX time in ms", dataType = "number")  public Date date_of_finish;
 
-    @Enumerated(EnumType.STRING)  @ApiModelProperty(required = true)  public UpdateType type_of_update;
+    @ApiModelProperty(required = true)  public UpdateType type_of_update;
 
     @JsonIgnore public UUID project_id; // For Faster Find
 
@@ -63,11 +65,8 @@ public class Model_UpdateProcedure extends BaseModel {
             }
 
             return null;
-        }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e){
-            // logger.internalServerError(e);
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -83,11 +82,8 @@ public class Model_UpdateProcedure extends BaseModel {
 
             return null;
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e){
-            // logger.internalServerError(e);
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -102,10 +98,7 @@ public class Model_UpdateProcedure extends BaseModel {
             }
             return null;
 
-        }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
+        } catch (Exception e){
             logger.internalServerError(e);
             return null;
         }
@@ -113,17 +106,7 @@ public class Model_UpdateProcedure extends BaseModel {
 
     @JsonProperty @ApiModelProperty(required = true )
     public Enum_Update_group_procedure_state state () {
-        try{
-
-
         return state;
-        }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return null;
-        }
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
@@ -135,12 +118,9 @@ public class Model_UpdateProcedure extends BaseModel {
 
             return size;
 
-        }catch (_Base_Result_Exception e){
-                //nothing
-                return null;
-        }catch (Exception e){
-                logger.internalServerError(e);
-                return null;
+        } catch (Exception e){
+            logger.internalServerError(e);
+            return null;
         }
     }
 
@@ -163,28 +143,8 @@ public class Model_UpdateProcedure extends BaseModel {
 
     @JsonIgnore @Transient public List<UUID> getUpdatesId() {
 
-        // TODO všechny  System.out.println odstranit
-        System.out.println("Model_UpdateProcedure:: getUpdatesId");
-        System.out.println("Model_UpdateProcedure:: getUpdatesId:: actualization_procedure.id: " + id );
-
-        System.out.println("Model_UpdateProcedure:: getUpdatesId:: Co jsem našel bez sort?:" + Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).select("id").findSingleAttributeList());
-        System.out.println("Model_UpdateProcedure:: getUpdatesId:: Co jsem našel se  sort?:" + Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).order().asc("date_of_finish").select("id").findSingleAttributeList());
-        System.out.println("Model_UpdateProcedure:: getUpdatesId:: Co jsem našel se  sort2?:" + Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).orderBy("date_of_finish").select("id").findSingleAttributeList());
-
         if (idCache().gets(Model_HardwareUpdate.class) == null) {
-            System.out.println("Model_UpdateProcedure:: getUpdatesId cache je prázdná! Hledám");
-            System.out.println("Model_UpdateProcedure:: Co ukládám do Cache Paměti:: " + Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).select("id").findSingleAttributeList());
-
             idCache().add( Model_HardwareUpdate.class, Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", id).select("id").findSingleAttributeList());
-
-
-            System.out.println("Model_UpdateProcedure:: co jsem uložit? " +  idCache().gets(Model_HardwareUpdate.class));
-        }
-
-        System.out.println("Model_UpdateProcedure:: co vracím? : " + idCache().gets(Model_HardwareUpdate.class));
-
-        if(idCache().gets(Model_HardwareUpdate.class).isEmpty()) {
-            System.out.println("Model_UpdateProcedure:: getUpdatesId:: žádný jsem nenašel v cache paěti ");
         }
 
         return idCache().gets(Model_HardwareUpdate.class) != null ?  idCache().gets(Model_HardwareUpdate.class) : new ArrayList<>();
@@ -232,12 +192,10 @@ public class Model_UpdateProcedure extends BaseModel {
        return project_id;
     }
 
-    @JsonIgnore @Transient
-    public Model_Project get_project() throws _Base_Result_Exception  {
-        return  Model_Project.find.byId(get_project_id());
+    @JsonIgnore @Override
+    public Model_Project getProject() throws NotFoundException {
+        return Model_Project.find.byId(project_id);
     }
-
-
 
 /* EXECUTION METHODS ----------------------------------------------------------------------------------------------------*/
 
@@ -352,8 +310,6 @@ public class Model_UpdateProcedure extends BaseModel {
     @JsonIgnore
     public void cancel_procedure() {
 
-        check_update_permission();
-
         logger.trace("cancel_procedure :: operation");
 
         List<Model_HardwareUpdate> list = Model_HardwareUpdate.find.query().where()
@@ -371,7 +327,7 @@ public class Model_UpdateProcedure extends BaseModel {
 
         for (Model_HardwareUpdate plan_not_cached : list) {
             Model_HardwareUpdate plan = Model_HardwareUpdate.find.byId(plan_not_cached.id);
-            if (plan != null) {
+            if (plan != null) { // TODO handle not found instead
                 plan.state = HardwareUpdateState.CANCELED;
                 plan.update();
             }
@@ -383,10 +339,7 @@ public class Model_UpdateProcedure extends BaseModel {
         this.update();
     }
 
-
-
-
-    /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------------*/
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
     public void save() {
@@ -492,7 +445,7 @@ public class Model_UpdateProcedure extends BaseModel {
 
 
                 notification.setText(new Notification_Text().setText("Update under Instance "))
-                .setObject(Model_InstanceSnapshot.find.byId(getInstanceSnapshotId()).get_instance()); // TODO objekt notifikace
+                .setObject(Model_InstanceSnapshot.find.byId(getInstanceSnapshotId()).getInstance()); // TODO objekt notifikace
 
                 if (getUpdates().size() == 1) {
 
@@ -699,31 +652,18 @@ public class Model_UpdateProcedure extends BaseModel {
     }
 
 
-/* BLOB DATA  --------------------------------------------------------------------------------------------------------*/
-
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
+/* BLOB DATA -----------------------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override
-    public void check_create_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.UpdateProcedure_crate.name())) return;
-        get_project().check_update_permission();
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.UPDATE_PROCEDURE;
     }
 
-    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.UpdateProcedure_read.name())) return;
-        get_project().check_read_permission();
-    }
-
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.UpdateProcedure_update.name())) return;
-        get_project().check_update_permission();
-    }
-
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.UpdateProcedure_delete.name())) return;
-        get_project().check_update_permission();
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }
 
     public enum Permission { UpdateProcedure_crate, UpdateProcedure_read, UpdateProcedure_update, UpdateProcedure_delete }
@@ -742,6 +682,6 @@ public class Model_UpdateProcedure extends BaseModel {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_UpdateProcedure.class)
+    @InjectCache(Model_UpdateProcedure.class)
     public static CacheFinder<Model_UpdateProcedure> find = new CacheFinder<>(Model_UpdateProcedure.class);
 }

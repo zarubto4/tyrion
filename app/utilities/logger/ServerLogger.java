@@ -4,7 +4,7 @@ import com.typesafe.config.Config;
 import models.Model_ServerError;
 import play.mvc.Controller;
 import play.mvc.Http;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import exceptions.NotFoundException;
 // import utilities.slack.Slack;
 
 import java.util.List;
@@ -57,7 +57,7 @@ public class ServerLogger extends Controller {
             error = Model_ServerError.find.query().where().isNotNull("stack_trace").eq("stack_trace", Model_ServerError.formatStackTrace(exception.getStackTrace())).findOne();
             error.repetition++;
             error.update();
-        } catch (Result_Error_NotFound e) {
+        } catch (NotFoundException e) {
             error = new Model_ServerError(exception, origin, request); // Save to DB
             error.save();
         }

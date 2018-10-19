@@ -3,17 +3,11 @@ package controllers;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Inject;
 import com.typesafe.config.Config;
-import io.ebean.Ebean;
 import io.swagger.annotations.*;
 import models.*;
-import org.quartz.JobKey;
 import org.quartz.Trigger;
-import org.quartz.impl.matchers.GroupMatcher;
 import play.Environment;
-import play.data.Form;
-import play.data.FormFactory;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
@@ -25,6 +19,7 @@ import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Report_Admin_Dashboard;
@@ -33,8 +28,6 @@ import utilities.update_server.GitHub_Asset;
 import utilities.update_server.GitHub_Release;
 import utilities.update_server.ServerUpdate;
 
-
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -52,8 +45,8 @@ public class Controller_Admin extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public Controller_Admin(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public Controller_Admin(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
 
@@ -79,7 +72,7 @@ public class Controller_Admin extends _BaseController {
     public Result report_admin_dashboard() {
         try {
 
-            if(!person().is_admin()) {
+            if(!isAdmin()) {
                 return forbidden();
             }
 
@@ -123,13 +116,11 @@ public class Controller_Admin extends _BaseController {
     public Result serverError_getAll() {
         try {
 
-                if(!person().is_admin()) {
+            if(!isAdmin()) {
                 return forbidden();
             }
 
-            List<Model_ServerError> errors = Model_ServerError.find.all();
-
-            return ok(errors);
+            return ok(Model_ServerError.find.all());
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -153,11 +144,7 @@ public class Controller_Admin extends _BaseController {
 
     public Result serverError_get(@ApiParam(value = "bug_id String path", required = true) UUID bug_id) {
         try {
-
-            Model_ServerError error = Model_ServerError.find.byId(bug_id);
-
-            return ok(error);
-
+            return read(Model_ServerError.find.byId(bug_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -193,7 +180,6 @@ public class Controller_Admin extends _BaseController {
     public Result serverError_addDescription(@ApiParam(value = "bug_id String path", required = true) UUID bug_id) {
         try {
 
-
             // Get and Validate Object
             Swagger_Bug_Description help  = formFromRequestWithValidation(Swagger_Bug_Description.class);
 
@@ -201,9 +187,8 @@ public class Controller_Admin extends _BaseController {
             Model_ServerError error = Model_ServerError.find.byId(bug_id);
 
             error.description = help.description;
-            error.update();
 
-            return ok(error);
+            return update(error);
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -226,6 +211,10 @@ public class Controller_Admin extends _BaseController {
     })
     public Result serverError_report(@ApiParam(value = "bug_id String path", required = true) UUID bug_id) {
         try {
+
+            if(!isAdmin()) {
+                return forbidden();
+            }
 
             Model_ServerError error = Model_ServerError.find.byId(bug_id);
 
@@ -255,11 +244,7 @@ public class Controller_Admin extends _BaseController {
 
     public Result serverError_delete(@ApiParam(value = "bug_id String path", required = true) UUID bug_id) {
         try {
-
-            Model_ServerError error = Model_ServerError.find.byId(bug_id);
-            error.delete();
-
-            return ok();
+            return delete(Model_ServerError.find.byId(bug_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -281,20 +266,11 @@ public class Controller_Admin extends _BaseController {
     public Result serverError_deleteAll() {
         try {
 
-            if(!person().is_admin()) {
+            if(!isAdmin()) {
                 return forbidden();
             }
 
-            List<Model_ServerError> errors = Model_ServerError.find.all();
-
-            if (!errors.isEmpty()) {
-                errors.get(0).check_delete_permission();
-
-
-                for(Model_ServerError error : errors) {
-                    error.delete();
-                }
-            }
+            Model_ServerError.find.all().forEach(Model_ServerError::delete);
 
             return ok();
         } catch (Exception e) {
@@ -362,6 +338,10 @@ public class Controller_Admin extends _BaseController {
     public Result server_scheduleUpdate() {
         try {
 
+            if(!isAdmin()) {
+                return forbidden();
+            }
+
             // Must be built by 'activator dist' for this feature to work correctly
             if (environment.isDev()) {
                 return badRequest("This feature is available only in production mode.");
@@ -422,7 +402,7 @@ public class Controller_Admin extends _BaseController {
     public Result server_getUpdates() {
         try {
 
-            if(!person().is_admin()) {
+            if(!isAdmin()) {
                 return forbidden();
             }
 

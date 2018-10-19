@@ -3,22 +3,26 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.Approval;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.enums.EntityType;
 import utilities.logger.Logger;
+import utilities.model.UnderProject;
 import utilities.model.VersionModel;
 import utilities.models_update_echo.EchoHandler;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
 @ApiModel( value = "BlockVersion", description = "Model of BlockVersion")
 @Table(name="BlockVersion")
-public class Model_BlockVersion extends VersionModel {
+public class Model_BlockVersion extends VersionModel implements Permissible, UnderProject {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -50,12 +54,13 @@ public class Model_BlockVersion extends VersionModel {
     }
 
     @JsonIgnore
-    public Model_Block get_block() {
-        try {
-            return Model_Block.find.byId(get_block_id());
-        } catch (Exception e) {
-            return null;
-        }
+    public Model_Block getBlock() {
+        return isLoaded("block") ? block : Model_Block.find.query().nullable().where().eq("versions.id", id).findOne();
+    }
+
+    @JsonIgnore @Override
+    public Model_Project getProject() {
+        return this.getBlock().getProject();
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -66,18 +71,13 @@ public class Model_BlockVersion extends VersionModel {
         super.save();
 
         // Add to Cache
-        if(get_block() != null) {
-            System.out.println("Add To Blocko by get_block()");
-            get_block().getVersionsId();
-            get_block().idCache().add(this.getClass(), id);
+        if(getBlock() != null) {
+            getBlock().getVersionsId();
+            getBlock().idCache().add(this.getClass(), id);
         }
 
         new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, get_block().get_project_id(), get_block().id));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
+            EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, getBlock().get_project_id(), getBlock().id));
         }).start();
 
     }
@@ -88,11 +88,7 @@ public class Model_BlockVersion extends VersionModel {
         super.update();
 
         new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, get_block().get_project_id(), get_block().id));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
+            EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, getBlock().get_project_id(), getBlock().id));
         }).start();
 
     }
@@ -102,16 +98,12 @@ public class Model_BlockVersion extends VersionModel {
 
 
         new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, get_block().get_project_id(), get_block().id));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
+            EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, getBlock().get_project_id(), getBlock().id));
         }).start();
 
 
-        if (get_block() != null) {
-            get_block().idCache().remove(this.getClass(), id);
+        if (getBlock() != null) {
+            getBlock().idCache().remove(this.getClass(), id);
         }
 
         return super.delete();
@@ -123,16 +115,17 @@ public class Model_BlockVersion extends VersionModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSIONS ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore public void check_create_permission() throws _Base_Result_Exception { block.check_update_permission();} // You have to access block directly, because get_block() finds the block by id of the version which is not yet created
-    @JsonIgnore public void check_read_permission()   throws _Base_Result_Exception {
-        get_block().check_read_permission();
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.BLOCK_VERSION;
     }
-    @JsonIgnore public void check_update_permission() throws _Base_Result_Exception { get_block().check_update_permission();}
-    @JsonIgnore public void check_delete_permission() throws _Base_Result_Exception { get_block().check_update_permission();}
+
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.PUBLISH);
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
@@ -148,6 +141,6 @@ public class Model_BlockVersion extends VersionModel {
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_BlockVersion.class)
+    @InjectCache(Model_BlockVersion.class)
     public static CacheFinder<Model_BlockVersion> find = new CacheFinder<>(Model_BlockVersion.class);
 }

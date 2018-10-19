@@ -1,29 +1,30 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
-import utilities.cache.CacheField;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
-import utilities.cache.Cached;
+import utilities.cache.InjectCache;
+import utilities.enums.EntityType;
 import utilities.enums.PlatformAccess;
-import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
+import utilities.model.Personal;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 
 import javax.persistence.*;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
 
 @Entity
 @ApiModel(value = "AuthorizationToken", description = "Model of AuthorizationToken")
 @Table(name="AuthorizationToken")
-public class Model_AuthorizationToken extends BaseModel {
+public class Model_AuthorizationToken extends BaseModel implements Permissible, Personal {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -52,37 +53,18 @@ public class Model_AuthorizationToken extends BaseModel {
 
     @ApiModelProperty(required = true)  public boolean social_token_verified;       // Pro ověření, že token byl sociální sítí ověřen
 
-
-/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Cached private UUID cache_person_id;
-
-
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
-
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public Model_Person get_person() {
-
-        if (cache_person_id == null) {
-            return Model_Person.find.byId(get_person_id());
-
-        }
-
-        return Model_Person.find.byId(cache_person_id);
+    public Model_Person getPerson() {
+        return isLoaded("person") ? person : Model_Person.find.query().where().eq("authorization_tokens.id", id).select("id").findOne();
     }
 
     @JsonIgnore @Transient
     public UUID get_person_id() {
-
-        if (cache_person_id == null) {
-            Model_Person person = Model_Person.find.query().where().eq("authorization_tokens.id", id).select("id").findOne();
-            cache_person_id = person.id;
-        }
-
-        return cache_person_id;
+        return this.getPerson().id;
     }
 
     @JsonIgnore @Transient
@@ -161,25 +143,15 @@ public class Model_AuthorizationToken extends BaseModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 
-    @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.AuthorizationToken_create.name())) return;
-        if(get_person_id().equals(_BaseController.personId())) return;
-        throw new Result_Error_Unauthorized();
-    }
-    @Override public void check_read_permission()   throws _Base_Result_Exception {
-       if(_BaseController.person().has_permission(Permission.AuthorizationToken_read.name())) return;
-       if(get_person_id().equals( _BaseController.personId())) return;
-    }
-    @Override public void check_update_permission() throws _Base_Result_Exception {
-        throw new Result_Error_NotSupportedException();
-    }
-    @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.AuthorizationToken_delete.name())) return;
-        if(get_person_id().equals( _BaseController.personId())) return;
-        throw new Result_Error_Unauthorized();
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.AUTHORIZATION_TOKEN;
     }
 
-    public enum Permission { AuthorizationToken_create, AuthorizationToken_read, AuthorizationToken_delete }
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.DELETE);
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
@@ -187,8 +159,8 @@ public class Model_AuthorizationToken extends BaseModel {
      * For this case, we have Model_AuthorizationToken objects in storage, but ID is not a TOKEN name!
      * So, thets why we have two cache storage one for Model, one for connection from Token to Model (M:N)!
      */
-    @CacheField(value = UUID.class, duration = CacheField.TwoDayCacheConstant, maxElements = 100000, name = "Model_AuthorizationToken_Token<->UUID")
-    public static Cache<UUID, UUID> cache_token_name; // < TOKEN in UUID; UUID id of Model_AuthorizationToken>
+    @InjectCache(value = UUID.class, duration = InjectCache.DayCacheConstant, maxElements = 10000, name = "Model_AuthorizationToken_Token")
+    public static Cache<UUID, UUID> cache_token_name;
 
     public static Model_AuthorizationToken getByToken(UUID token) {
 
@@ -196,7 +168,6 @@ public class Model_AuthorizationToken extends BaseModel {
         if (tokenValue == null) {
 
             Model_AuthorizationToken model = find.query().where().eq("token", token).select("id").findOne();
-            if (model == null) throw new Result_Error_NotFound(Model_AuthorizationToken.class);
 
             cache_token_name.put(token, model.id);
         }
@@ -205,6 +176,6 @@ public class Model_AuthorizationToken extends BaseModel {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_AuthorizationToken.class)
+    @InjectCache(Model_AuthorizationToken.class)
     public static final CacheFinder<Model_AuthorizationToken> find = new CacheFinder<>(Model_AuthorizationToken.class);
 }

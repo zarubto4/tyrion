@@ -1,15 +1,11 @@
 package controllers;
 
-import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.ebean.Ebean;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
 import play.Environment;
-import play.data.Form;
-import play.data.FormFactory;
-import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -22,6 +18,7 @@ import utilities.enums.FirmwareType;
 import utilities.enums.UpdateType;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import utilities.swagger.output.filter_results.Swagger_ActualizationProcedureTask_List;
@@ -45,8 +42,8 @@ public class Controller_Update extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public Controller_Update(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public Controller_Update(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
 // ACTUALIZATION PROCEDURE #############################################################################################
@@ -66,13 +63,7 @@ public class Controller_Update extends _BaseController {
     })
     public Result get_Actualization_Procedure(@ApiParam(required = true) UUID actualization_procedure_id) {
         try {
-
-            // Kontrola objektu
-            Model_UpdateProcedure procedure = Model_UpdateProcedure.find.byId(actualization_procedure_id);
-
-            // Vrácení objektu
-            return ok(procedure);
-
+            return read(Model_UpdateProcedure.find.byId(actualization_procedure_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -126,6 +117,8 @@ public class Controller_Update extends _BaseController {
             // Vyvoření odchozího JSON
             Swagger_ActualizationProcedure_List result = new Swagger_ActualizationProcedure_List(query,page_number, help);
 
+            // TODO permissions
+
             // Vrácení objektu
             return ok(result);
 
@@ -153,6 +146,8 @@ public class Controller_Update extends _BaseController {
 
             // Kontrola objektu
             Model_UpdateProcedure procedure = Model_UpdateProcedure.find.byId(procedure_id);
+
+            this.checkUpdatePermission(procedure);
 
             procedure.cancel_procedure();
 

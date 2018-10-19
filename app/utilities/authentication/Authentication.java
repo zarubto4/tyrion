@@ -1,12 +1,12 @@
 package utilities.authentication;
 
 import controllers._BaseController;
+import exceptions.NotFoundException;
 import models.Model_AuthorizationToken;
 import models.Model_Person;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 
 import java.util.Optional;
@@ -44,10 +44,10 @@ public class Authentication extends Security.Authenticator {
                 logger.info("getUsername - authorization header is missing");
             }
 
+        } catch (NotFoundException e) {
+            // nothing
         } catch (Exception e){
-            if (!(e instanceof _Base_Result_Exception)) {
-                logger.internalServerError(e);
-            }
+            logger.internalServerError(e);
         }
 
         return null;

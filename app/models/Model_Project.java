@@ -3,38 +3,39 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers._BaseController;
-import io.ebean.Expr;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
-import utilities.cache.CacheField;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.cache.IdsList;
 import utilities.enums.*;
-import utilities.errors.Exceptions.Result_Error_NotFound;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import exceptions.NotFoundException;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
+import utilities.model.UnderCustomer;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.permission.Action;
+import utilities.permission.Permissions;
+import utilities.permission.Permissible;
+import utilities.swagger.output.Swagger_ProjectParticipant;
 import utilities.swagger.output.Swagger_ProjectStats;
 import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_online_status;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @ApiModel(value = "Project", description = "Model of Project")
 @Table(name="Project")
-public class Model_Project extends TaggedModel {
+@Permissions({ Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.INVITE, Action.ACTIVATE })
+public class Model_Project extends TaggedModel implements Permissible, UnderCustomer {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -44,19 +45,21 @@ public class Model_Project extends TaggedModel {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Product product;
 
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_BProgram>              b_programs      = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_CProgram>              c_programs      = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Library>               libraries       = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_GridProject>           grid_projects   = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Block>                 blocks          = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Widget>                widgets         = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Hardware>              hardware        = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareGroup>         hardware_groups = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Invitation>            invitations     = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_ProjectParticipant>    participants    = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Instance>              instances       = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HomerServer>           servers         = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy="project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_GSM>                   gsm             = new ArrayList<>();
+    @JsonIgnore @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)  public List<Model_Person> persons = new ArrayList<>();
+
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Role>                  roles           = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_BProgram>              b_programs      = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_CProgram>              c_programs      = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Library>               libraries       = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_GridProject>           grid_projects   = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Block>                 blocks          = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Widget>                widgets         = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Hardware>              hardware        = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareGroup>         hardware_groups = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Invitation>            invitations     = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_Instance>              instances       = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HomerServer>           servers         = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_GSM>                   gsm             = new ArrayList<>();
 
     @JsonIgnore @Transient public Swagger_ProjectStats project_stats;
 
@@ -65,23 +68,10 @@ public class Model_Project extends TaggedModel {
     @JsonProperty @ApiModelProperty(required = true)
     public Swagger_Short_Reference product(){
         try {
-
             Model_Product product = getProduct();
-            if (product != null) {
-                product.check_read_permission();
-                return new Swagger_Short_Reference(product.id, product.name, product.description);
-            } else {
-                return null;
-            }
-
-
-        } catch (Result_Error_PermissionDenied e) {
-            return null;
-
-        } catch (_Base_Result_Exception e) {
-            return null;
-
+            return new Swagger_Short_Reference(product.id, product.name, product.description);
         } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -90,11 +80,8 @@ public class Model_Project extends TaggedModel {
     public boolean active(){
         try {
             return getProduct().active;
-
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return false;
         } catch (Exception e) {
+            logger.internalServerError(e);
             return false;
         }
     }
@@ -104,44 +91,44 @@ public class Model_Project extends TaggedModel {
      * @return Model_ProjectParticipant[]
      */
     @JsonProperty @ApiModelProperty(required = true)
-    public List<Model_ProjectParticipant> participants() {
-        try{
-            List<Model_ProjectParticipant> project_participants = new ArrayList<>(this.participants);
-
-            for (Model_Invitation invitation : invitations) {
-
-                    Model_Person person = Model_Person.getByEmail(invitation.email);
-
-                    Model_ProjectParticipant project_participant = new Model_ProjectParticipant();
-
-                    if (person != null) {
-
-                        project_participant.person = person;
-                    } else {
-                        project_participant.user_email = invitation.email;
-                    }
-
-                    project_participant.state = ParticipantStatus.INVITED;
-
-                    if (!project_participants.contains(project_participant)) {
-                        project_participants.add(project_participant);
-                    }
-                }
-
-            return project_participants;
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return new ArrayList<>();
+    public List<Swagger_ProjectParticipant> participants() {
+        try {
+            return getPersons().stream().map(person -> {
+                Swagger_ProjectParticipant participant = new Swagger_ProjectParticipant();
+                participant.id = person.id;
+                participant.email = person.email;
+                participant.full_name = person.full_name();
+                return participant;
+            }).collect(Collectors.toList());
         } catch (Exception e){
             logger.internalServerError(e);
             return new ArrayList<>();
         }
     }
 
-
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* GET SQL PARAMETER - CACHE OBJECTS ------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public List<UUID> getPersonsIds() {
+
+        if (idCache().gets(Model_Person.class) == null) {
+            idCache().add(Model_Person.class, Model_Person.find.query().where().eq("projects.id", id).select("id").findSingleAttributeList());
+        }
+
+        return idCache().gets(Model_Person.class) != null ?  idCache().gets(Model_Person.class) : new ArrayList<>();
+    }
+
+    @JsonIgnore
+    public List<Model_Person> getPersons() {
+        try {
+            return getPersonsIds().stream().map(Model_Person.find::byId).collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return new ArrayList<>();
+        }
+    }
 
     @JsonIgnore
     public List<UUID> getHardwareIds() {
@@ -436,21 +423,21 @@ public class Model_Project extends TaggedModel {
 
     @JsonIgnore
     public Model_Product getProduct() {
-        try {
-            return Model_Product.find.byId(getProductId());
+        return isLoaded("product") ? product : Model_Product.find.query().where().eq("projects.id", id).findOne();
+    }
 
-        }catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+    @JsonIgnore @Override
+    public Model_Customer getCustomer() {
+        return getProduct().getCustomer();
     }
 
 /* JSON IGNORE METHOD && VALUES --------------------------------------------------------------------------------------*/
 
 
-    @JsonIgnore  @Transient  public boolean isParticipant(Model_Person person) {
+    @JsonIgnore
+    public boolean isParticipant(Model_Person person) {
 
-        return participants.stream().anyMatch(participant -> participant.person.id.equals(person.id));
+        return getPersons().stream().anyMatch(p -> p.id.equals(person.id));
     }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
@@ -471,7 +458,7 @@ public class Model_Project extends TaggedModel {
                     .setButton(new Notification_Button().setAction(NotificationAction.ACCEPT_PROJECT_INVITATION).setPayload(invitation.id.toString()).setColor(Becki_color.byzance_green).setText("Yes"))
                     .setButton(new Notification_Button().setAction(NotificationAction.REJECT_PROJECT_INVITATION).setPayload(invitation.id.toString()).setColor(Becki_color.byzance_red).setText("No"))
                     .send(person);
-        } catch (Result_Error_NotFound e){
+        } catch (NotFoundException e){
             logger.error("notification_project_invitation::Result_Error_NotFound::Person Not Found");
         } catch (Exception e){
             logger.internalServerError(e);
@@ -493,8 +480,6 @@ public class Model_Project extends TaggedModel {
                     .setObject(this)
                     .setText(new Notification_Text().setText("."))
                     .send(owner);
-        } catch (Result_Error_NotFound e){
-            logger.error("notification_project_invitation_rejected::Result_Error_NotFound::Person Not Found");
         } catch (Exception e){
             logger.internalServerError(e);
         }
@@ -513,29 +498,6 @@ public class Model_Project extends TaggedModel {
                 .setText(new Notification_Text().setText("."))
                 .send(owner);
     }
-
-    @JsonIgnore @Transient
-    public void notification_project_participant_change_status(Model_ProjectParticipant participant) {
-        try {
-
-            Model_Person person = _BaseController.person();
-            new Model_Notification()
-                    .setImportance(NotificationImportance.NORMAL)
-                    .setLevel(NotificationLevel.INFO)
-                    .setText(new Notification_Text().setText("User "))
-                    .setObject(person)
-                    .setText(new Notification_Text().setText(" changed your status in project "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText(" to " + participant.state.name() + ". You have different permissions now."))
-                    .send(participant.person);
-
-        } catch (Result_Error_NotFound e){
-            logger.error("notification_project_participant_change_status::Result_Error_NotFound::Person Not Found");
-        } catch (Exception e){
-            logger.internalServerError(e);
-        }
-    }
-
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -621,7 +583,7 @@ public class Model_Project extends TaggedModel {
                 this.project_stats = project_stats;
                 EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, this.id, this.id));
 
-            } catch (_Base_Result_Exception e) {
+            } catch (NotFoundException e) {
                 // Nothing
 
             }
@@ -641,16 +603,16 @@ public class Model_Project extends TaggedModel {
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override public void save() {
-
-        financial_permission();
+    @JsonIgnore @Override
+    public void save() {
 
         super.save();
 
         product.idCache().add(this.getClass(), id);
     }
 
-    @JsonIgnore @Override public boolean delete() {
+    @JsonIgnore @Override
+    public boolean delete() {
         logger.debug("delete - deleting from database, id: {} ", this.id);
 
         List<UUID> hardware_list = Model_Hardware.find.query().where()
@@ -686,138 +648,25 @@ public class Model_Project extends TaggedModel {
         return true;
     }
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception  {
-        if (_BaseController.person().has_permission(Permission.Project_read.name())) return;
-        if(!product.active) throw new Result_Error_PermissionDenied();
-        product.check_create_permission();
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.PROJECT;
     }
 
-    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-            _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-            return;
-        }
-        if (_BaseController.person().has_permission(Permission.Project_read.name())) return;
-
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-        if ( Model_Project.find.query().where().eq("participants.person.id", _BaseController.personId()).eq("id", id).findCount() > 0) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-            return;
-        }
-
-        // Přidávám do listu false a vracím false
-        _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-        throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.ACTIVATE, Action.INVITE);
     }
-
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception   {
-        try {
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-            if (_BaseController.person().has_permission(Permission.Project_delete.name())) return;
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-            if ( Model_Project.find.query().where().eq("participants.person.id", _BaseController.personId()).eq("id", id).findCount() > 0) {
-                _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-                return;
-            }
-
-            throw new Result_Error_PermissionDenied();
-
-        } catch (_Base_Result_Exception e) {
-            // Přidávám do listu false a vracím false
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-            _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-            return;
-        }
-        if (_BaseController.person().has_permission(Permission.Project_delete.name())) return;
-
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if (Model_ProjectParticipant.find.query().where().eq("project.id", id).eq("person.id", _BaseController.personId()).eq("state", ParticipantStatus.OWNER).findCount() > 0) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-            return;
-        }
-
-        // Přidávám do listu false a vracím false
-        _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-        throw new Result_Error_PermissionDenied();
-    }
-
-    @JsonIgnore @Transient public void check_share_permission ()throws _Base_Result_Exception {
-
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_unshare_" + id)) {
-            _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_unshare_" + id);
-            return;
-        }
-
-        if (_BaseController.person().has_permission(Permission.Project_share.name())) return;
-
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if (Model_ProjectParticipant.find.query().where().eq("project.id", id).eq("person.id", _BaseController.personId()).disjunction().add(Expr.eq("state", ParticipantStatus.OWNER)).add(Expr.eq("state", ParticipantStatus.ADMIN)).findCount()> 0) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_unshare_" + id, true);
-            return;
-        }
-
-        // Přidávám do listu false a vracím false
-        _BaseController.person().cache_permission(this.getClass().getSimpleName() + "unshare_" + id, false);
-        throw new Result_Error_PermissionDenied();
-    }
-
-    @JsonIgnore @Transient public void admin_permission () throws _Base_Result_Exception {
-
-        // Cache už Obsahuje Klíč a tak vracím hodnotu
-        if (_BaseController.person().has_permission("project_admin_permission_" + id)) if(!_BaseController.person().has_permission("project_admin_permission_"+ id)) throw new Result_Error_PermissionDenied();
-        if (_BaseController.person().has_permission(Permission.Project_admin.name())) return;
-
-        // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-        if (Model_ProjectParticipant.find.query().where().eq("project.id", id).where().eq("person.id", _BaseController.personId()).where().disjunction().add(Expr.eq("state", ParticipantStatus.OWNER)).add(Expr.eq("state", ParticipantStatus.ADMIN)).findCount()> 0) {
-            _BaseController.person().cache_permission("project_admin_permission_" + id, true);
-            return;
-        }
-
-        // Přidávám do listu false a vracím false
-        _BaseController.person().cache_permission("project_admin_permission_" + id, false);
-        throw new Result_Error_PermissionDenied();
-    }
-
-    @JsonIgnore @Transient public void financial_permission() throws _Base_Result_Exception {
-        // TODO Doplnit oprávnění na tvorbu Projektů
-        //throw new Result_Error_PermissionDenied("You cannot create project right now. Buy an extension for projects.");
-        // return this.product.financial_permission("project");
-    }
-
-    public enum Permission { Project_create, Project_update, Project_read, Project_unshare , Project_share, Project_delete, Project_admin }
 
 /* NOTIFICATION ---------------------------------------------------------------------------------------------------------------*/
 
     public static void becki_person_id_subscribe(UUID person_id) {
 
-        List<Model_Project> list_of_projects = Model_Project.find.query().where().eq("participants.person.id", person_id).disjunction()
-                .eq("state", ParticipantStatus.ADMIN)
-                .eq("state", ParticipantStatus.MEMBER)
-                .eq("state", ParticipantStatus.OWNER)
-                .endJunction()
-                .findList();
+        List<Model_Project> list_of_projects = Model_Project.find.query().where().eq("persons.id", person_id).findList();
 
-        for (Model_Project project : list_of_projects ) {
+        for (Model_Project project : list_of_projects) {
 
             IdsList idlist = token_cache.get(project.id);
 
@@ -831,12 +680,7 @@ public class Model_Project extends TaggedModel {
 
     public static void becki_person_id_unsubscribe(UUID person_id) {
 
-        List<Model_Project> list_of_projects = Model_Project.find.query().where().eq("participants.person.id", person_id).disjunction()
-                .eq("state", ParticipantStatus.ADMIN)
-                .eq("state", ParticipantStatus.MEMBER)
-                .eq("state", ParticipantStatus.OWNER)
-                .endJunction()
-                .findList();
+        List<Model_Project> list_of_projects = Model_Project.find.query().where().eq("persons.id", person_id).findList();
 
         for (Model_Project project : list_of_projects ) {
 
@@ -871,16 +715,16 @@ public class Model_Project extends TaggedModel {
 
                 Model_Project project = find.byId(project_id);
 
-                for (Model_ProjectParticipant participant : project.participants) {
+                /* TODO for (Model_ProjectParticipant participant : project.participants) {
 
                     if (participant.state == ParticipantStatus.INVITED) continue;
 
                     if (!idlist.list.contains(participant.person.id)) idlist.list.add(participant.person.id);
-                }
+                }*/
 
                 token_cache.put(project_id, idlist);
             }
-        } catch (Result_Error_NotFound exception){
+        } catch (NotFoundException exception){
             // Its Legal Operation
         } catch (Exception exception){
             logger.internalServerError(exception);
@@ -889,14 +733,13 @@ public class Model_Project extends TaggedModel {
         }
     }
 
-
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = IdsList.class, name = "Model_Project_Person_Ids")
+    @InjectCache(value = IdsList.class, name = "Model_Project_Person_Ids")
     public static Cache<UUID, IdsList> token_cache;
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Project.class)
+    @InjectCache(Model_Project.class)
     public static CacheFinder<Model_Project> find = new CacheFinder<>(Model_Project.class);
 }

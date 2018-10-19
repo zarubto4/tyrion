@@ -3,24 +3,27 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.cache.InjectCache;
+import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
+import utilities.model.UnderCustomer;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 
 import javax.persistence.*;
+import java.util.Arrays;
+import java.util.List;
 
 @Entity
 @ApiModel(description = "Model of Contact",
         value = "Contact")
 @Table(name="Contact")
-public class Model_Contact extends BaseModel {
+public class Model_Contact extends BaseModel implements Permissible, UnderCustomer {
 
     // Logger
     private static final Logger logger = new Logger(Model_Contact.class);
@@ -141,76 +144,33 @@ public class Model_Contact extends BaseModel {
         return true;
     }
 
+    @JsonIgnore @Override
+    public Model_Customer getCustomer() {
+        return customer != null ? customer : integrator_client.getCustomer();
+    }
+
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        // no limit
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.CONTACT;
     }
 
-    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Contact_read.name())) return;
-
-        if(customer != null) {
-            customer.check_read_permission();
-            return;
-        }
-
-        if(integrator_client != null) {
-            integrator_client.check_read_permission();
-            return;
-        }
-
-        // cannot exist on its own
-        throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }
-
-    @JsonIgnore @Transient @Override public void check_update_permission()  throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Contact_update.name())) return;
-
-        if(customer != null) {
-            customer.check_update_permission();
-            return;
-        }
-
-        if(integrator_client != null) {
-            integrator_client.check_update_permission();
-            return;
-        }
-
-        // cannot exist on its own
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission()  throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Contact_delete.name())) return;
-
-        if(customer != null) {
-            customer.check_delete_permission();
-            return;
-        }
-
-        if(integrator_client != null) {
-            integrator_client.check_delete_permission();
-            return;
-        }
-
-        // cannot exist on its own
-        throw new Result_Error_PermissionDenied();
-    }
-
-    public enum Permission {Contact_create, Contact_update, Contact_read, Contact_delete}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Contact.class)
+    @InjectCache(Model_Contact.class)
     public static CacheFinder<Model_Contact> find = new CacheFinder<>(Model_Contact.class);
 }

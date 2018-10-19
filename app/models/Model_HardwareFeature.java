@@ -1,11 +1,8 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import controllers._BaseController;
 import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 
@@ -57,25 +54,7 @@ public class Model_HardwareFeature extends NamedModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        // nothing
-    }
-
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if (_BaseController.person().has_permission(Model_HardwareType.Permission.HardwareType_update.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Model_HardwareType.Permission.HardwareType_update.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Model_HardwareType.Permission.HardwareType_update.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
     
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

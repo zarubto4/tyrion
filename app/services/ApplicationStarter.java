@@ -5,11 +5,19 @@ import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import javax.inject.*;
 
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.typesafe.config.Config;
+import play.api.db.evolutions.ApplicationEvolutions;
 import play.inject.ApplicationLifecycle;
+import play.libs.Json;
 import utilities.Server;
+import utilities.cache.CacheService;
+import utilities.enums.ServerMode;
+import utilities.logger.ServerLogger;
+import utilities.permission.PermissionFilter;
+import utilities.permission.PermissionHandlerInstantiator;
 import utilities.scheduler.SchedulerController;
 
 /**
@@ -33,19 +41,35 @@ public class ApplicationStarter {
     private final ApplicationLifecycle appLifecycle;
     private final Config configuration;
     private final Instant start;
-    private SchedulerController scheduler;
+    private final SchedulerController scheduler;
+    private final CacheService cache;
 
     private final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("application");
 
     @Inject
-    public ApplicationStarter(Clock clock, ApplicationLifecycle appLifecycle, Config configuration, Injector injector, SchedulerController scheduler) {
+    public ApplicationStarter(Clock clock, ApplicationLifecycle appLifecycle, Config configuration, Injector injector, SchedulerController scheduler, CacheService cache, ApplicationEvolutions applicationEvolutions) {
 
         this.clock = clock;
         this.appLifecycle = appLifecycle;
         this.configuration = configuration;
         this.scheduler = scheduler;
+        this.cache = cache;
         try {
-            Server.start(configuration, injector);
+
+            ServerLogger.init(configuration);
+
+            // TODO ugly!!! should be completely reworked to use DI
+            Server.configuration = configuration;
+            Server.mode = configuration.getEnum(ServerMode.class,"server.mode");
+
+            this.cache.initialize();
+
+            // For dependency injected serializer for permissions
+            Json.mapper()
+                    .setFilterProvider(new SimpleFilterProvider().addFilter("permission", injector.getInstance(PermissionFilter.class)))
+                    .setHandlerInstantiator(injector.getInstance(PermissionHandlerInstantiator.class));
+
+            Server.start(injector);
             this.scheduler.start();
         } catch (Exception e) {
             logger.error("Error starting the application", e);
@@ -61,6 +85,7 @@ public class ApplicationStarter {
         // be run when the application stops.
         appLifecycle.addStopHook(() -> {
             this.scheduler.stop();
+            this.cache.close();
             Server.stop();
             Instant stop = clock.instant();
             Long runningTime = stop.getEpochSecond() - start.getEpochSecond();

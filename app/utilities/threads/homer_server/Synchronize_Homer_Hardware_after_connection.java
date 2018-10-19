@@ -2,7 +2,6 @@ package utilities.threads.homer_server;
 
 import models.*;
 import play.libs.Json;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import websocket.interfaces.WS_Homer;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_connected;
@@ -30,7 +29,6 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
         this.homer = homer;
         this.homer_server = Model_HomerServer.find.byId(homer.id);
     }
-
 
     @Override
     public void run() {
@@ -71,13 +69,11 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
                     continue;
                 }
 
-
                 if (board.connected_server_id == null || !board.connected_server_id.equals(this.homer.id)) {
                     logger.debug("check_device_on_server:: Device: ID: {} has not set server parameters yet", board.id);
                     board.connected_server_id = this.homer.id;
                     board.update();
                 }
-
 
                 // Homer server neměl spojení s Tyrionem a tak dočasně přiřadil uuid jako full id - proto hned zaměním
                 if(pair.uuid.length() < 25) {

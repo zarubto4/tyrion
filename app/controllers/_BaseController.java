@@ -3,30 +3,38 @@ package controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
+import exceptions.*;
 import io.swagger.annotations.ApiModel;
 import models.Model_Person;
 import play.Environment;
 import play.libs.Json;
 import play.libs.ws.WSClient;
+import play.libs.ws.WSRequest;
+import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import responses.*;
-import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
 import utilities.logger.YouTrack;
 import utilities.model.BaseModel;
-import utilities.model.JsonSerializer;
+import utilities.model.JsonSerializable;
+import utilities.permission.Action;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.server_measurement.RequestLatency;
-import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URL;
+import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletionStage;
+
+import static play.mvc.Controller.request;
 
 /**
  * This class provides some common API for Tyrion REST Controller.
@@ -46,18 +54,83 @@ public abstract class _BaseController {
     protected final YouTrack youTrack;
     protected final Config config;
     protected final SchedulerController scheduler;
+    protected final PermissionService permissionService;
 
     @Inject
-    public _BaseController(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
+    public _BaseController(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
         this.environment = environment;
         this.ws = ws;
         this.baseFormFactory = formFactory;
         this.youTrack = youTrack;
         this.config = config;
         this.scheduler = scheduler;
+        this.permissionService = permissionService;
     }
 
+    public Result create(BaseModel model) throws ForbiddenException, NotSupportedException {
+        this.permissionService.checkCreate(person(), model);
+        model.save();
+        return created(model);
+    }
 
+    public Result read(BaseModel model) throws ForbiddenException, NotSupportedException {
+        this.permissionService.checkRead(person(), model);
+        return ok(model);
+    }
+
+    public Result update(BaseModel model) throws ForbiddenException, NotSupportedException {
+        try {
+            this.permissionService.checkUpdate(person(), model);
+        } catch (ForbiddenException e) {
+            model.refresh();
+            throw e;
+        }
+        model.update();
+        return ok(model);
+    }
+
+    public Result delete(BaseModel model) throws ForbiddenException, NotSupportedException {
+        this.permissionService.checkDelete(person(), model);
+        model.delete();
+        return ok();
+    }
+
+    public void checkCreatePermission(BaseModel model) throws ForbiddenException, NotSupportedException {
+        this.permissionService.checkCreate(person(), model);
+    }
+
+    public void checkReadPermission(BaseModel model) throws ForbiddenException, NotSupportedException {
+        this.permissionService.checkRead(person(), model);
+    }
+
+    public void checkUpdatePermission(BaseModel model) throws ForbiddenException, NotSupportedException {
+        this.permissionService.checkUpdate(person(), model);
+    }
+
+    public void checkDeletePermission(BaseModel model) throws ForbiddenException, NotSupportedException {
+        this.permissionService.checkDelete(person(), model);
+    }
+
+    public void checkActivatePermission(BaseModel model) throws ForbiddenException, NotSupportedException {
+        this.permissionService.check(person(), model, Action.ACTIVATE);
+    }
+
+    public void checkPublishPermission(BaseModel model) throws ForbiddenException, NotSupportedException {
+        this.permissionService.check(person(), model, Action.PUBLISH);
+    }
+
+    public void checkInvitePermission(BaseModel model) throws ForbiddenException, NotSupportedException {
+        this.permissionService.check(person(), model, Action.INVITE);
+    }
+
+    /**
+     * Converts this model to printable string
+     * @return formatted string
+     */
+    public String prettyPrint(JsonNode node) {
+
+        return this.getClass() + ":\n" + Json.prettyPrint(node) + ":\n" ;
+    }
 
 // PERSON OPERATIONS ###################################################################################################
 
@@ -66,10 +139,20 @@ public abstract class _BaseController {
      * @param clazz
      * @param <T>
      * @return
-     * @throws _Base_Result_Exception
+     * @throws InvalidBodyException
      */
-    public <T> T formFromRequestWithValidation(Class<T> clazz) throws _Base_Result_Exception {
+    public <T> T formFromRequestWithValidation(Class<T> clazz) throws InvalidBodyException {
         return baseFormFactory.formFromRequestWithValidation(clazz);
+    }
+
+    /**
+     * Shortcuts for automatic validation and parsing of incoming JSON to MODEL class
+     * @param clazz
+     * @param <T>
+     * @return
+     */
+    public <T> T formFromJsonWithValidation(Class<T> clazz, JsonNode node) {
+        return this.baseFormFactory.formFromJsonWithValidation(clazz, node);
     }
 
     /**
@@ -78,7 +161,7 @@ public abstract class _BaseController {
      *
      * @return current person {@link Model_Person}
      */
-    public static Model_Person person() throws Result_Error_Unauthorized {
+    public static Model_Person person() throws UnauthorizedException {
         try {
 
             Model_Person person = (Model_Person) Controller.ctx().args.get("person");
@@ -86,10 +169,10 @@ public abstract class _BaseController {
             if (person != null) {
                 return person;
             } else {
-                throw new Result_Error_Unauthorized();
+                throw new UnauthorizedException();
             }
         } catch (Exception e) {
-            throw new Result_Error_Unauthorized();
+            throw new UnauthorizedException();
         }
     }
 
@@ -99,16 +182,16 @@ public abstract class _BaseController {
      *
      * @return current person id {@link UUID}
      */
-    public static UUID personId() throws _Base_Result_Exception {
+    public static UUID personId() throws UnauthorizedException {
         try {
             UUID id = ((Model_Person) Controller.ctx().args.get("person")).id;
             if(id != null) {
                 return id;
             } else {
-                throw new Result_Error_Unauthorized();
+                throw new UnauthorizedException();
             }
         } catch (Exception e) {
-            throw new Result_Error_Unauthorized();
+            throw new UnauthorizedException();
         }
     }
 
@@ -125,7 +208,22 @@ public abstract class _BaseController {
         }
     }
 
+    /**
+     * Checks whether the currently logged user is admin.
+     * @return true if he is admin
+     */
+    public boolean isAdmin() {
+        return isAdmin(person());
+    }
 
+    /**
+     * Checks whether the given person is admin.
+     * @param person to check
+     * @return true if he is admin
+     */
+    public boolean isAdmin(Model_Person person) {
+        return this.permissionService.isAdmin(person);
+    }
 
 // REQUEST OPERATIONS ###################################################################################################
 
@@ -137,7 +235,7 @@ public abstract class _BaseController {
      */
     public JsonNode getBodyAsJson() {
         try {
-            return Controller.request().body().asJson();
+            return request().body().asJson();
         } catch (Exception e) {
             logger.error(" getBodyAsJson:: ERROR EXCEPTION");
             // logger.internalServerError(e);
@@ -179,13 +277,10 @@ public abstract class _BaseController {
      * @param object of BaseModel to send
      * @return 201 result
      */
-    public static Result created(BaseModel object) {
+    public static Result created(JsonSerializable object) {
         return Controller.created(object.json());
     }
 
-    public static Result created(_Swagger_Abstract_Default object) {
-        return Controller.created(object.json());
-    }
 // OK JSON! - 200 ######################################################################################################
 
     /**
@@ -197,7 +292,7 @@ public abstract class _BaseController {
         return Controller.ok(Json.toJson(new Result_Ok()));
     }
 
-    public static Result ok(List <? extends JsonSerializer> objects){
+    public static Result ok(List <? extends JsonSerializable> objects){
         check_latency();
         return Controller.ok(Json.toJson(objects)); // TODO tato metoda je nesystemová a list by neměl v tyrionovi být - Oprava TZ!
     }
@@ -217,22 +312,10 @@ public abstract class _BaseController {
      * @param object BaseModel serialized object
      * @return 200 result ok with json
      */
-    public static Result ok(BaseModel object) {
+    public static Result ok(JsonSerializable object) {
         check_latency();
         return Controller.ok(object.json());
     }
-
-    /**
-     * Creates a result with the code 200 and provided json as the body.
-     *
-     * @param object _Swagger_Abstract_Default serialized object
-     * @return 200 result ok with json
-     */
-    public static Result ok(_Swagger_Abstract_Default object) {
-        check_latency();
-        return Controller.ok(object.json());
-    }
-
 
     /**
      * Creates an ok result with given message.
@@ -476,27 +559,27 @@ public abstract class _BaseController {
     public static Result controllerServerError(Throwable error) {
         try {
 
-            if (error instanceof Result_Error_BadRequest) {
+            if (error instanceof BadRequestException) {
 
                 return badRequest(error.getMessage());
 
-            } else if (error instanceof Result_Error_InvalidBody) {
+            } else if (error instanceof InvalidBodyException) {
 
-                return badRequest(Json.toJson(new Result_InvalidBody(((Result_Error_InvalidBody) error).getForm_error())));
+                return badRequest(Json.toJson(new Result_InvalidBody(((InvalidBodyException) error).getErrors())));
 
-            } else if (error instanceof Result_Error_NotFound) {
+            } else if (error instanceof NotFoundException) {
 
-                return notFound(((Result_Error_NotFound) error).getEntity());
+                return notFound(((NotFoundException) error).getEntity());
 
-            } else if (error instanceof Result_Error_PermissionDenied) {
+            } else if (error instanceof ForbiddenException) {
 
                 return forbidden();
 
-            } else if (error instanceof Result_Error_Unauthorized) {
+            } else if (error instanceof UnauthorizedException) {
 
                 return unauthorized();
 
-            } else if (error instanceof Result_Error_NotSupportedException) {
+            } else if (error instanceof NotSupportedException) {
 
                 return badRequest(Json.toJson(new Result_UnsupportedException()));
             }
@@ -519,7 +602,7 @@ public abstract class _BaseController {
         StackTraceElement current_stack = Thread.currentThread().getStackTrace()[2]; // Find the caller origin
 
         try {
-            ServerLogger.error(error, current_stack.getClassName() + "::" + current_stack.getMethodName(), Controller.request());
+            ServerLogger.error(error, current_stack.getClassName() + "::" + current_stack.getMethodName(), request());
         } catch (Exception e) {
             ServerLogger.error(error, current_stack.getClassName() + "::" + current_stack.getMethodName(), null);
         }
@@ -540,5 +623,92 @@ public abstract class _BaseController {
 
 
     //**********************************************************************************************************************
+
+    //**********************************************************************************************************************
+
+
+    protected JsonNode POST(URL url, int timeOut, String auth, JsonNode node) {
+        try {
+
+            logger.debug("URL:POST " + url + "  Json: " + node.toString());
+
+            WSRequest request = ws.url(url.toString())
+                    .setContentType("application/json")
+                    .setRequestTimeout(Duration.ofSeconds(timeOut));
+
+            if(auth != null) {
+                request.setAuth(auth);
+            }
+
+            CompletionStage<WSResponse> responsePromise  = request.post(node);
+
+            WSResponse wsResponse = responsePromise.toCompletableFuture().get();
+            JsonNode response = wsResponse.asJson();
+
+            logger.debug("REST:: POST:{}  Code: {} Result: {}", url.toString(), wsResponse.getStatus(), prettyPrint(response));
+            return response;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    protected JsonNode PUT(URL url, int timeOut, String auth, JsonNode node) {
+        try {
+            logger.debug("URL:PUT " + url + "  Json: " + node.toString());
+
+            WSRequest request = ws.url(url.toString())
+                    .setContentType("application/json")
+                    .setRequestTimeout(Duration.ofSeconds(timeOut));
+
+            if(auth != null) {
+                request.setAuth(auth);
+            }
+
+            CompletionStage<WSResponse> responsePromise  = request.put(node);
+
+            WSResponse wsResponse = responsePromise.toCompletableFuture().get();
+            JsonNode response = wsResponse.asJson();
+
+            logger.debug("REST:: PUT:{}  Code: {} Result: {}", url.toString(), wsResponse.getStatus(), prettyPrint(response));
+            return response;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    protected JsonNode GET(URL url, int timeOut, String auth) {
+        try {
+
+            logger.debug("URL:GET: " + url);
+
+            WSRequest request = ws.url(url.toString())
+                    .setContentType("application/json")
+                    .setRequestTimeout(Duration.ofSeconds(timeOut));
+
+            if(auth != null) {
+                request.setAuth(auth);
+            }
+
+
+            CompletionStage<WSResponse> responsePromise  = request.get();
+
+
+            WSResponse wsResponse = responsePromise.toCompletableFuture().get();
+            JsonNode response = wsResponse.asJson();
+
+            logger.debug("REST:: GET:{}  Code: {} Result: {}", url.toString(), wsResponse.getStatus(), prettyPrint(response));
+
+
+            return response;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
 
 }

@@ -1,29 +1,31 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
+import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
+import utilities.model.Publishable;
 import utilities.model.TaggedModel;
+import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
+import utilities.permission.Action;
+import utilities.permission.JsonPermission;
+import utilities.permission.Permissible;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
 @ApiModel(value = "Library", description = "Model of Library")
 @Table(name="Library")
-public class Model_Library extends TaggedModel {
+public class Model_Library extends TaggedModel implements Permissible, UnderProject, Publishable {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -46,16 +48,7 @@ public class Model_Library extends TaggedModel {
     @JsonProperty
     public List<Model_LibraryVersion> versions() {
         try {
-            List<Model_LibraryVersion> versions = new ArrayList<>();
-            for (Model_LibraryVersion version : this.getVersions()) {
-                versions.add(version);
-            }
-
-            return versions;
-        } catch (_Base_Result_Exception e) {
-            //nothing
-            return null;
-
+            return this.getVersions();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -74,14 +67,9 @@ public class Model_Library extends TaggedModel {
         return idCache().get(Model_Project.class);
     }
 
-    @JsonIgnore
-    public Model_Project get_project() throws _Base_Result_Exception {
-
-        try {
-            return Model_Project.find.byId(getProjectId());
-        }catch (Exception e) {
-            return null;
-        }
+    @JsonIgnore @Override
+    public Model_Project getProject() {
+        return isLoaded("project") ? project : Model_Project.find.query().nullable().where().eq("libraries.id", id).findOne();
     }
 
     @JsonIgnore
@@ -137,6 +125,12 @@ public class Model_Library extends TaggedModel {
             return new ArrayList<>();
         }
     }
+
+    @JsonIgnore @Override
+    public boolean isPublic() {
+        return this.publish_type == ProgramType.PUBLIC || this.publish_type == ProgramType.DEFAULT_MAIN;
+    }
+
     /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
@@ -168,11 +162,7 @@ public class Model_Library extends TaggedModel {
 
         super.delete();
 
-        try{
-            get_project().idCache().remove(this.getClass(),id);
-        }catch (_Base_Result_Exception exception){
-            // Nothing
-        }
+        getProject().idCache().remove(this.getClass(),id);
 
         return false;
     }
@@ -186,104 +176,25 @@ public class Model_Library extends TaggedModel {
     @JsonIgnore private String azure_library_link;
     @JsonIgnore public String get_path() { return azure_library_link; }
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override @Transient public void check_create_permission() throws _Base_Result_Exception  {
-        if(_BaseController.person().has_permission(Permission.Library_create.name())) return;
-        project.check_update_permission();
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.LIBRARY;
     }
 
-    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception   {
-        try {
-
-            if (publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN) return;
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-                return;
-            }
-
-            if (_BaseController.person().has_permission(Permission.Library_read.name())) return;
-
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-            this.get_project().check_read_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        try {
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-
-            if (_BaseController.person().has_permission(Permission.Library_update.name())) return;
-
-            if(publish_type == ProgramType.PUBLIC) {
-                throw new Result_Error_PermissionDenied();
-            }
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-            this.get_project().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception  {
-        try {
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-                return;
-            }
-            if (_BaseController.person().has_permission(Permission.Library_delete.name())) return;
-
-            if(publish_type == ProgramType.PUBLIC) {
-                throw new Result_Error_PermissionDenied();
-            }
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-            this.get_project().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }
 
-    @JsonProperty @Transient @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
-        try {
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if(_BaseController.person().has_permission(Model_CProgram.Permission.C_Program_community_publishing_permission.name())) return true;
-            return null;
-        }catch (_Base_Result_Exception exception){
-            return null;
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    public enum Permission { Library_create, Library_read, Library_edit, Library_update, Library_delete }
+    @JsonPermission(Action.PUBLISH) @Transient
+    public boolean community_publishing_permission;
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Library.class)
+    @InjectCache(Model_Library.class)
     public static CacheFinder<Model_Library> find = new CacheFinder<>(Model_Library.class);
 }

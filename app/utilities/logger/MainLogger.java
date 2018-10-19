@@ -119,7 +119,7 @@ public class MainLogger {
                     log_pair.name = clazz;
 
                     // Set Color of Object if default_group_log_color is not set
-                    log_pair.color = default_group_log_color;
+                    // log_pair.color = default_group_log_color;
 
 
                     // Set Level of Object if default_group_log_level is not set
@@ -162,7 +162,7 @@ public class MainLogger {
         if (list_of_objects_for_logging.containsKey( t_class.getSimpleName() )) {
 
             LogLevel log_level = list_of_objects_for_logging.get(t_class.getSimpleName()).logLevel;
-            Color color = list_of_objects_for_logging.get(t_class.getSimpleName()).color;
+            // Color color = list_of_objects_for_logging.get(t_class.getSimpleName()).color;
 
             if (log_level == LogLevel.TRACE) {
 
@@ -234,6 +234,6 @@ public class MainLogger {
     public static class Log_Pair {
         public String name;
         public LogLevel logLevel;
-        public Color color;
+        // public Color color;
     }
 }

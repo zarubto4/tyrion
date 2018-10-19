@@ -8,7 +8,7 @@ import play.libs.Json;
 import utilities.enums.ParticipantStatus;
 import utilities.enums.ProductEventType;
 import utilities.enums.ExtensionType;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import exceptions.NotFoundException;
 import utilities.financial.extensions.configurations.Configuration;
 import utilities.financial.fakturoid.FakturoidService;
 import utilities.financial.fakturoid.helps_objects.Fakturoid_Subject;
@@ -168,7 +168,7 @@ public class ProductService {
             ExtensionType type = ExtensionType.valueOf(extensionData.extension_type);
             extension.type = type;
         } catch (Exception e) {
-            throw new Result_Error_NotFound(ExtensionType.class);
+            throw new NotFoundException(ExtensionType.class);
         }
 
         extension.name = extensionData.name;

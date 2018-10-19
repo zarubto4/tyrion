@@ -13,11 +13,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.Server;
-import utilities.enums.Enum_Tyrion_Server_mode;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
-import utilities.login_entities.Secured_API;
-import utilities.response.GlobalResult;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -27,7 +24,6 @@ import java.util.List;
 @Api(value = "Private Admin Api", hidden = true)
 @Security.Authenticated(Secured_API.class)
 public class Controller_Test extends Controller {
-
 
     @Inject
     Application application;

@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
+import exceptions.NotFoundException;
+import exceptions.UnauthorizedException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
@@ -13,14 +15,16 @@ import play.mvc.Http;
 import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.*;
-import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
+import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_InstanceSnapshot_JsonFile;
 import utilities.swagger.output.Swagger_InstanceSnapshot_JsonFile_Interface;
@@ -43,7 +47,7 @@ import java.util.List;
 @Entity
 @ApiModel(value = "InstanceSnapshot", description = "Model of InstanceSnapshot")
 @Table(name="InstanceSnapshot")
-public class Model_InstanceSnapshot extends TaggedModel {
+public class Model_InstanceSnapshot extends TaggedModel implements Permissible, UnderProject {
 
     /**
      * _BaseFormFactory
@@ -83,13 +87,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public Swagger_Short_Reference b_program_version() {
         try {
-
-            Model_BProgramVersion b_program_version = get_b_program_version();
-            return new Swagger_Short_Reference(b_program_version.id, b_program_version.name, b_program_version.description);
-
-        } catch (_Base_Result_Exception e) {
-            //nothing
-            return null;
+            return getBProgramVersion().ref();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -99,13 +97,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public Swagger_Short_Reference b_program() {
         try {
-
-            Model_BProgramVersion b_program_version = get_b_program_version();
-            return new Swagger_Short_Reference(b_program_version.get_b_program().id, b_program_version.get_b_program().name, b_program_version.get_b_program().description);
-
-        } catch (_Base_Result_Exception e) {
-            //nothing
-            return null;
+            return getBProgramVersion().getBProgram().ref();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -115,13 +107,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public List<Model_BProgramVersionSnapGridProject> m_projects() {
         try {
-
-            Model_BProgramVersion b_program_version = get_b_program_version();
-            return b_program_version.get_grid_project_snapshots();
-
-        } catch (_Base_Result_Exception e) {
-            //nothing
-            return null;
+            return getBProgramVersion().get_grid_project_snapshots();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -147,7 +133,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     Swagger_InstanceSnapShotConfiguration configuration_new = new Swagger_InstanceSnapShotConfiguration();
                     Swagger_InstanceSnapShotConfiguration configuration_old = snapshot.settings();
 
-                    for (Model_BProgramVersionSnapGridProject grid_project_snapshots : get_b_program_version().get_grid_project_snapshots()) {
+                    for (Model_BProgramVersionSnapGridProject grid_project_snapshots : getBProgramVersion().get_grid_project_snapshots()) {
 
                         Swagger_InstanceSnapShotConfigurationFile previous_used_project = null;
                         for (Swagger_InstanceSnapShotConfigurationFile file : configuration_old.grids_collections) {
@@ -216,7 +202,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
                     Swagger_InstanceSnapShotConfiguration configuration = new Swagger_InstanceSnapShotConfiguration();
 
-                    for (Model_BProgramVersionSnapGridProject grid_project_snapshots : get_b_program_version().get_grid_project_snapshots()) {
+                    for (Model_BProgramVersionSnapGridProject grid_project_snapshots : getBProgramVersion().get_grid_project_snapshots()) {
                         Swagger_InstanceSnapShotConfigurationFile project_config = new Swagger_InstanceSnapShotConfigurationFile();
                         project_config.grid_project_id = grid_project_snapshots.grid_project.id;
 
@@ -278,8 +264,6 @@ public class Model_InstanceSnapshot extends TaggedModel {
             if (program != null) {
                 return program.getPublicDownloadLink();
             }
-        } catch (_Base_Result_Exception e) {
-            //nothing
         } catch (Exception e) {
             logger.internalServerError(e);
         }
@@ -287,12 +271,9 @@ public class Model_InstanceSnapshot extends TaggedModel {
     }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(value = "only if snapshot is main")
-    public List<Model_UpdateProcedure>  updates() throws _Base_Result_Exception {
+    public List<Model_UpdateProcedure>  updates() {
         try {
             return getUpdateProcedure();
-        } catch (_Base_Result_Exception e) {
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -302,29 +283,17 @@ public class Model_InstanceSnapshot extends TaggedModel {
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public Model_BProgramVersion get_b_program_version() throws _Base_Result_Exception {
-        return Model_BProgramVersion.find.byId(get_b_program_version_id());
+    public Model_BProgramVersion getBProgramVersion() {
+        return isLoaded("b_program_version") ? b_program_version : Model_BProgramVersion.find.query().where().eq("instances.id", id).findOne();
     }
 
     @JsonIgnore @Transient
-    public UUID get_b_program_version_id() throws _Base_Result_Exception {
-
-        if (idCache().gets(Model_BProgramVersion.class) == null) {
-            Model_BProgramVersion version = Model_BProgramVersion.find.query().where().eq("instances.id", id).select("id").findOne();
-            if (version == null) throw new Result_Error_NotFound(Model_BProgramVersion.class);
-            idCache().add(Model_BProgramVersion.class, version.id);
-        }
-
-        return idCache().get(Model_BProgramVersion.class);
+    public Model_Instance getInstance() {
+        return isLoaded("instance") ? instance : Model_Instance.find.query().nullable().where().eq("snapshots.id", id).findOne();
     }
 
     @JsonIgnore @Transient
-    public Model_Instance get_instance() throws _Base_Result_Exception  {
-        return Model_Instance.find.byId(get_instance_id());
-    }
-
-    @JsonIgnore @Transient
-    public UUID get_instance_id() throws _Base_Result_Exception {
+    public UUID get_instance_id() {
 
         if (idCache().gets(Model_Instance.class) == null) {
             idCache().add(Model_Instance.class, (UUID) Model_Instance.find.query().where().eq("snapshots.id", id).select("id").findSingleAttribute());
@@ -334,7 +303,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
     }
 
     @JsonIgnore @Transient
-    public List<UUID> getHardwareIds() throws _Base_Result_Exception {
+    public List<UUID> getHardwareIds() {
         List<UUID> list = new ArrayList<>();
 
         for (Swagger_InstanceSnapshot_JsonFile_Interface interface_hw : this.getProgram().interfaces) {
@@ -348,7 +317,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
     }
 
     @JsonIgnore @Transient
-    public List<UUID> getHardwareGroupseIds() throws _Base_Result_Exception {
+    public List<UUID> getHardwareGroupseIds() {
         List<UUID> list = new ArrayList<>();
 
         for (Swagger_InstanceSnapshot_JsonFile_Interface interface_hw : this.getProgram().interfaces) {
@@ -362,8 +331,8 @@ public class Model_InstanceSnapshot extends TaggedModel {
     }
 
     @JsonIgnore @Transient
-    public Model_Product getProduct() throws _Base_Result_Exception {
-        return this.get_instance().getProject().getProduct();
+    public Model_Product getProduct() {
+        return this.getInstance().getProject().getProduct();
 
     }
 
@@ -402,13 +371,15 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 return baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapshot_JsonFile.class, Json.parse(program.downloadString()));
             }
             return null;
-        } catch (_Base_Result_Exception e) {
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
+    }
+
+    @JsonIgnore @Override
+    public Model_Project getProject() {
+        return this.getInstance().getProject();
     }
 
 /* Actions --------------------------------------------------------------------------------------------------------*/
@@ -419,7 +390,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
             try {
 
-                Model_Instance instance = get_instance();
+                Model_Instance instance = getInstance();
                 // Step 1
                 logger.debug("deploy - begin - step 1");
                 if (instance.current_snapshot_id != null && !instance.current_snapshot_id.equals(this.id)) {
@@ -428,13 +399,13 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     instance.update();
                 }
 
-                if (get_instance().getServer().online_state() != NetworkStatus.ONLINE) {
+                if (getInstance().getServer().online_state() != NetworkStatus.ONLINE) {
                     logger.debug("deploy - server is offline, it is not possible to continue");
 
                     instance.current_snapshot_id = this.id;
                     instance.update();
 
-                    if(person != null) {
+                    if (person != null) {
                         notification_instance_set_wait_for_server(person);
                     }
                     return;
@@ -488,7 +459,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, get_instance_id(), true, instance.getProjectId());
 
                 // Only if there are hardware for update
-                if(getProgram().interfaces.size() > 0) {
+                if (getProgram().interfaces.size() > 0) {
 
                     // Step 5
                     logger.trace("deploy - instance {}, step 5 - Override all previous update procedures in this snapshot ", get_instance_id());
@@ -544,7 +515,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
             // Přidat nový otisk hardwaru
             if (!hardwares.isEmpty()) {
-                return get_instance().set_device_to_instance(hardwares);
+                return getInstance().set_device_to_instance(hardwares);
             } else {
                 WS_Message_Instance_set_hardware result = new WS_Message_Instance_set_hardware();
                 result.status = "success";
@@ -563,7 +534,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
             // TODO Update terminals command to connected devices
             // List<UUID> terminalIds = new ArrayList<>();
-            // return get_instance().setTerminals(terminalIds);
+            // return getInstance().setTerminals(terminalIds);
 
             WS_Message_Instance_set_terminals result = new WS_Message_Instance_set_terminals();
             result.status = "success";
@@ -579,7 +550,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
     public WS_Message_Instance_set_program setProgram() {
         try {
 
-            JsonNode node = get_instance().write_with_confirmation(new WS_Message_Instance_set_program().make_request(this), 1000 * 6, 0, 2);
+            JsonNode node = getInstance().write_with_confirmation(new WS_Message_Instance_set_program().make_request(this), 1000 * 6, 0, 2);
 
             return baseFormFactory.formFromJsonWithValidation(WS_Message_Instance_set_program.class, node);
 
@@ -633,7 +604,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
             logger.trace("create_actualization_hardware_request");
             Model_UpdateProcedure procedure = new Model_UpdateProcedure();
             procedure.type_of_update = UpdateType.MANUALLY_BY_USER_BLOCKO_GROUP;
-            procedure.project_id = get_instance().getProjectId();
+            procedure.project_id = getInstance().getProjectId();
             procedure.instance = this;
 
             if (deployed != null) {
@@ -688,7 +659,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 }
 
                 //If Independent Hardware
-                if(interface_hw.type.equals("hardware")) {
+                if (interface_hw.type.equals("hardware")) {
 
                     logger.trace("create_actualization_hardware_request:: interface_hw type: hardware:  " + interface_hw.target_id);
 
@@ -715,10 +686,6 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
                 }
             }
-
-          //  logger.trace("create_actualization_hardware_request:: Procedure Update After Interface Cycle ");
-          //  logger.trace("create_actualization_hardware_request:: KOLIK MÁM UPDATES V LISTU?  " + procedure.updates.size());
-
 
             this.getUpdateProcedureIds();
 
@@ -749,7 +716,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     .setImportance(NotificationImportance.LOW)
                     .setLevel(NotificationLevel.INFO)
                     .setText( new Notification_Text().setText("Snapshot is Set as default. But "))
-                    .setObject(get_instance().getServer())
+                    .setObject(getInstance().getServer())
                     .setText( new Notification_Text().setText("is"))
                     .setText( new Notification_Text().setText("offline").setBoldText().setColor(Becki_color.byzance_red))
                     .setText( new Notification_Text().setText("."))
@@ -769,10 +736,10 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     .setImportance(NotificationImportance.LOW)
                     .setLevel(NotificationLevel.INFO)
                     .setText( new Notification_Text().setText("Server started creating new Blocko Instance of Blocko Version "))
-                    .setText( new Notification_Text().setText(this.get_b_program_version().get_b_program().name).setBoldText())
-                    .setObject(this.get_b_program_version())
+                    .setText( new Notification_Text().setText(this.getBProgramVersion().getBProgram().name).setBoldText())
+                    .setObject(this.getBProgramVersion())
                     .setText( new Notification_Text().setText(" from Blocko program "))
-                    .setObject(this.get_b_program_version().get_b_program())
+                    .setObject(this.getBProgramVersion().getBProgram())
                     .send(person);
 
         } catch (Exception e) {
@@ -787,9 +754,9 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     .setImportance(NotificationImportance.LOW)
                     .setLevel(NotificationLevel.SUCCESS)
                     .setText(new Notification_Text().setText("Server successfully created the instance of Blocko Version "))
-                    .setObject(this.get_b_program_version())
+                    .setObject(this.getBProgramVersion())
                     .setText(new Notification_Text().setText(" from Blocko program "))
-                    .setObject(this.get_b_program_version().get_b_program())
+                    .setObject(this.getBProgramVersion().getBProgram())
                     .send(person);
 
         } catch (Exception e) {
@@ -804,14 +771,14 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     .setImportance(NotificationImportance.LOW)
                     .setLevel(NotificationLevel.WARNING)
                     .setText( new Notification_Text().setText("Server did not upload instance to cloud on Blocko Version "))
-                    .setText( new Notification_Text().setText(this.get_b_program_version().name ).setBoldText())
+                    .setText( new Notification_Text().setText(this.getBProgramVersion().name ).setBoldText())
                     .setText( new Notification_Text().setText(" from Blocko program "))
-                    .setText( new Notification_Text().setText(this.get_b_program_version().get_b_program().name).setBoldText())
+                    .setText( new Notification_Text().setText(this.getBProgramVersion().getBProgram().name).setBoldText())
                     .setText( new Notification_Text().setText(" for reason: ").setBoldText() )
                     .setText( new Notification_Text().setText(reason + " ").setBoldText())
-                    .setObject(this.get_b_program_version())
+                    .setObject(this.getBProgramVersion())
                     .setText( new Notification_Text().setText(" from Blocko program "))
-                    .setObject(this.get_b_program_version().get_b_program())
+                    .setObject(this.getBProgramVersion().getBProgram())
                     .setText( new Notification_Text().setText(". Server will try to do that as soon as possible."))
                     .send(person);
 
@@ -827,8 +794,8 @@ public class Model_InstanceSnapshot extends TaggedModel {
                     .setImportance(NotificationImportance.LOW)
                     .setLevel(NotificationLevel.INFO)
                     .setText( new Notification_Text().setText("New actualization task was added to Task Queue on Version "))
-                    .setObject(this.get_b_program_version())
-                    .send_under_project(this.get_instance().getProjectId());
+                    .setObject(this.getBProgramVersion())
+                    .send_under_project(this.getInstance().getProjectId());
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -840,7 +807,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 /* Helper Class --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public Swagger_Mobile_Connection_Summary get_connection_summary(UUID grid_program_id,  Http.Context context) throws _Base_Result_Exception {
+    public Swagger_Mobile_Connection_Summary get_connection_summary(UUID grid_program_id,  Http.Context context) {
 
         // OBJEKT který se variabilně naplní a vrátí - ITS EMPTY!!!!
         Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
@@ -864,7 +831,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
         if (collection == null) {
             logger.error("SnapShotConfigurationFile is missing return null");
-            throw new Result_Error_NotFound(Swagger_InstanceSnapShotConfigurationFile.class);
+            throw new NotFoundException(Swagger_InstanceSnapShotConfigurationFile.class);
         }
 
         // Nastavení SSL
@@ -874,7 +841,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
             summary.grid_app_url = "wss://";
         }
 
-        summary.grid_app_url += Model_HomerServer.find.byId(get_instance().getServer_id()).get_Grid_APP_URL();
+        summary.grid_app_url += Model_HomerServer.find.byId(getInstance().getServer_id()).get_Grid_APP_URL();
         summary.grid_app_url += get_instance_id() + "/" ;
 
         switch (program.snapshot_settings) {
@@ -888,7 +855,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 summary.grid_project_id = collection.grid_project_id;
                 summary.grid_program_id = program.grid_program_id;
                 summary.grid_program_version_id = program.grid_program_version_id;
-                summary.instance_id = get_instance().id;
+                summary.instance_id = getInstance().id;
 
                 JsonNode jsonNode = Json.parse(summary.grid_program);
                 JsonNode m_code = Json.parse(jsonNode.get("m_code").asText().replace("\\\"", "\""));
@@ -901,16 +868,16 @@ public class Model_InstanceSnapshot extends TaggedModel {
             case PROJECT: {
 
                 // Check Token
-                String token = new Authentication().getUsername(context);
+                String token = new Authentication().getUsername(context); // TODO ugly
                 if (token == null) {
-                    throw new Result_Error_Unauthorized();
+                    throw new UnauthorizedException();
                 }
 
                 // Check Person By Token (who send request)
                 Model_Person person = _BaseController.person();
 
                 //Chekc Permission
-                check_read_permission();
+                // TODO check_read_permission();
 
                 Model_GridTerminal terminal = new Model_GridTerminal();
                 terminal.device_name = "Unknown";
@@ -927,7 +894,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
                 summary.grid_project_id = collection.grid_project_id;
                 summary.grid_program_id = program.grid_program_id;
                 summary.grid_program_version_id = program.grid_program_version_id;
-                summary.instance_id = get_instance().id;
+                summary.instance_id = getInstance().id;
 
                 JsonNode jsonNode = Json.parse(summary.grid_program);
                 JsonNode m_code = Json.parse(jsonNode.get("m_code").asText().replace("\\\"", "\""));
@@ -941,7 +908,7 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
                 summary.grid_app_url += instance.server_main.server_url + instance.server_main.grid_port + "/" + instance.b_program_name() + "/#token";
                 summary.grid_program = Model_MProgram.get_m_code(grid_program_version);
-                summary.instance_id = get_instance().id;
+                summary.instance_id = getInstance().id;
 
                 return summary;
             }
@@ -949,9 +916,8 @@ public class Model_InstanceSnapshot extends TaggedModel {
         }
 
         logger.error("Invalid settings on Instance Grid App permissions");
-        throw new Result_Error_Unauthorized();
+        throw new UnauthorizedException();
     }
-
 
     /**
      * Modelové schéma určené k parsování m_programu která přišla z Becki ----------------------------------------------
@@ -960,23 +926,13 @@ public class Model_InstanceSnapshot extends TaggedModel {
 
         try {
 
-
-            // System.out.println("version_separator:: m_program: " + Json.toJson(m_code));
-
             // List for returning
             List<Swagger_GridWidgetVersion_GridApp_source> list = new ArrayList<>();
 
             // Create object
             M_Program_Parser program_parser = baseFormFactory.formFromJsonWithValidation(M_Program_Parser.class, m_code);
 
-            // System.out.println("version_separator:: program_parser: " + Json.toJson(program_parser));
-
-            // System.out.println("\n");
-            // System.out.println("version_separator:: screens: " + Json.toJson( program_parser.screens));
-            // System.out.println("\n");
-            // System.out.println("version_separator:: main: " + Json.toJson( program_parser.screens.main));
-
-                    // Loking for objects
+            // Loking for objects
             for (Widget_Parser widget_parser : program_parser.screens.main.get(0).widgets) {
 
                 Swagger_GridWidgetVersion_GridApp_source detail = new Swagger_GridWidgetVersion_GridApp_source();
@@ -1039,19 +995,13 @@ public class Model_InstanceSnapshot extends TaggedModel {
         this.idCache().add(Model_Instance.class, this.get_instance_id());
 
         // Add to Cache
-        if(get_instance() != null) {
-            get_instance().getSnapShotsIds();
-            get_instance().idCache().add(this.getClass(), id);
-            get_instance().sort_Model_InstanceSnapshot_ids();
+        if(getInstance() != null) {
+            getInstance().getSnapShotsIds();
+            getInstance().idCache().add(this.getClass(), id);
+            getInstance().sort_Model_InstanceSnapshot_ids();
         }
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Instance.class, get_instance().getProjectId(), get_instance_id()));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Instance.class, getInstance().getProjectId(), get_instance_id()))).start();
 
     }
 
@@ -1061,91 +1011,38 @@ public class Model_InstanceSnapshot extends TaggedModel {
         logger.debug("delete - deleting from database, id: {} ", this.id);
 
 
-        if(get_instance().current_snapshot_id != null && get_instance().current_snapshot_id.equals(this.id)) {
-            get_instance().stop();
+        if(getInstance().current_snapshot_id != null && getInstance().current_snapshot_id.equals(this.id)) {
+            getInstance().stop();
         }
 
-        get_instance().idCache().remove(this.getClass(), this.id);
+        getInstance().idCache().remove(this.getClass(), this.id);
 
         return super.delete();
     }
 
-
-
-    /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
     public String get_path() {
-        return get_instance().get_path() + "/snapshots/" + this.id;
+        return getInstance().get_path() + "/snapshots/" + this.id;
     }
-
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Model_Instance.Permission.Instance_create.name())) return;
-        instance.check_update_permission();
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.INSTANCE_SNAPSHOT;
     }
 
-    @JsonIgnore @Transient @Override public void check_read_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-                return;
-            }
-
-            get_instance().check_read_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.DEPLOY);
     }
-
-    @JsonIgnore @Transient @Override public void check_update_permission()  {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-
-            get_instance().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-
-    @JsonIgnore @Transient @Override public void  check_delete_permission() throws _Base_Result_Exception  {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-                return;
-            }
-
-            get_instance().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-
-
-    public enum Permission {}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_InstanceSnapshot.class)
+    @InjectCache(Model_InstanceSnapshot.class)
     public static CacheFinder<Model_InstanceSnapshot> find = new CacheFinder<>(Model_InstanceSnapshot.class);
 }

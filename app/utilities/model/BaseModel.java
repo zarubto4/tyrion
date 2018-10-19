@@ -1,23 +1,27 @@
 package utilities.model;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers._BaseController;
+import exceptions.InvalidBodyException;
 import io.ebean.Model;
 import io.ebean.annotation.SoftDelete;
+import io.ebean.bean.EntityBean;
+import io.ebean.bean.EntityBeanIntercept;
 import io.swagger.annotations.ApiModelProperty;
 import models.Model_HomerServer;
 import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.Server;
-import utilities.cache.CacheField;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.cache.Cached;
-import utilities.errors.Exceptions.*;
 import utilities.logger.Logger;
 import utilities.models_update_echo.EchoHandler;
+import utilities.permission.Action;
+import utilities.permission.JsonPermission;
 import websocket.interfaces.WS_Homer;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
@@ -28,8 +32,9 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
 
+@JsonFilter("permission")
 @MappedSuperclass
-public abstract class BaseModel extends Model implements JsonSerializer {
+public abstract class BaseModel extends Model implements JsonSerializable {
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 
@@ -54,9 +59,6 @@ public abstract class BaseModel extends Model implements JsonSerializer {
 
 /* GENERAL OBJECT CACHE ------------------------------------------------------------------------------------------------*/
 
-   /**
-     *
-     */
    @JsonIgnore @Transient
     public IDCache idCache(){
 
@@ -73,19 +75,19 @@ public abstract class BaseModel extends Model implements JsonSerializer {
     // Private Class not acceptable from other Tyrion Components
     public class IDCache {
 
-        private HashMap<Class, List<UUID>> cash_map = new HashMap<>();
+        private HashMap<Class, List<UUID>> cacheMap = new HashMap<>();
         private JsonNode cached_json_object_for_rest = null;
 
         public void add(Class c, List<UUID> ids){
             try {
                 if (ids != null) {
-                    if (!cash_map.containsKey(c)) {
-                        cash_map.put(c, ids);
+                    if (!cacheMap.containsKey(c)) {
+                        cacheMap.put(c, ids);
                     } else {
-                        if (cash_map.get(c) != null) {
-                            cash_map.get(c).addAll(0, ids);
+                        if (cacheMap.get(c) != null) {
+                            cacheMap.get(c).addAll(0, ids);
                         } else {
-                            cash_map.put(c, ids);
+                            cacheMap.put(c, ids);
                         }
 
                     }
@@ -100,7 +102,7 @@ public abstract class BaseModel extends Model implements JsonSerializer {
 
                 if (id != null) {
 
-                    if (!cash_map.containsKey(c)) {
+                    if (!cacheMap.containsKey(c)) {
                        // System.out.println("IDCache:: not contains KEy");
 
                         // Create List ArraList <- its not possible to use  Collections.singletonList(id))
@@ -109,11 +111,11 @@ public abstract class BaseModel extends Model implements JsonSerializer {
                         List<UUID> list = new ArrayList<>();
                         list.add(id);
 
-                        cash_map.put(c, list);
+                        cacheMap.put(c, list);
                     } else {
 
-                        if(!cash_map.get(c).contains(id)) {
-                            cash_map.get(c).add(id);
+                        if(!cacheMap.get(c).contains(id)) {
+                            cacheMap.get(c).add(id);
                         }
 
                     }
@@ -127,8 +129,8 @@ public abstract class BaseModel extends Model implements JsonSerializer {
         public void remove(Class c, List<UUID> ids){
             try {
                 if(ids != null) {
-                    if (cash_map.containsKey(c)) {
-                        cash_map.get(c).removeAll(ids);
+                    if (cacheMap.containsKey(c)) {
+                        cacheMap.get(c).removeAll(ids);
                     }
                 }
             } catch (Exception e){
@@ -139,12 +141,12 @@ public abstract class BaseModel extends Model implements JsonSerializer {
         public void remove(Class c, UUID id){
             try {
                 if(id != null)
-                if(cash_map.containsKey(c)){
+                if(cacheMap.containsKey(c)){
                     System.out.println("BaseModel Remove - Class " + c.getSimpleName() + " id " + id);
-                    System.out.println("BaseModel Remove - Content " + cash_map.get(c) );
-                    System.out.println("BaseModel Remove - Content size " + cash_map.get(c).size() );
-                    cash_map.get(c).remove(id);
-                    System.out.println("BaseModel Remove - Content " + cash_map.get(c) );
+                    System.out.println("BaseModel Remove - Content " + cacheMap.get(c) );
+                    System.out.println("BaseModel Remove - Content size " + cacheMap.get(c).size() );
+                    cacheMap.get(c).remove(id);
+                    System.out.println("BaseModel Remove - Content " + cacheMap.get(c) );
                 }
             } catch (Exception e){
                 logger.internalServerError(e);
@@ -153,40 +155,27 @@ public abstract class BaseModel extends Model implements JsonSerializer {
 
         public void removeAll(Class c){
             try {
-
-                if (cash_map.containsKey(c)) {
-                    cash_map.remove(c);
-                }
-
-            } catch (Exception e){
+                cacheMap.remove(c);
+            } catch (Exception e) {
                 logger.internalServerError(e);
             }
         }
 
-
         public List<UUID> gets(Class c){
-
-                if (cash_map.containsKey(c)) {
-                    // List<UUID> clone = cash_map.get(c).stream().collect(toList()); throws ConcurrentModificationException !!!
-                    return new ArrayList<>(cash_map.get(c));
-
-                } else {
-                    return null;
-                }
-
+            return cacheMap.getOrDefault(c, null);
         }
 
         public UUID get(Class c){
             try {
-                if (cash_map.containsKey(c)) {
-                    List<UUID> list = cash_map.get(c);
+                if (cacheMap.containsKey(c)) {
+                    List<UUID> list = cacheMap.get(c);
                     if (!list.isEmpty()) {
                         return list.get(0);
                     }
                 }
 
                 return null;
-            }catch (Exception e) {
+            } catch (Exception e) {
                 return null;
             }
         }
@@ -207,7 +196,7 @@ public abstract class BaseModel extends Model implements JsonSerializer {
      * Converts this model to JSON
      * @return JSON representation of this model
      */
-    public JsonNode json() {
+    public ObjectNode json() {
 
         /*
 
@@ -221,14 +210,14 @@ public abstract class BaseModel extends Model implements JsonSerializer {
         return cache().get_cached_json();
         */
 
-        return Json.toJson(this);
+        return (ObjectNode) Json.toJson(this);
 
     }
 
     /**
      * Converts this model to JSON and than stringify
      * @return string from JSON representation
-     *
+     */
     public String string() {
         return json().toString();
     }
@@ -241,16 +230,31 @@ public abstract class BaseModel extends Model implements JsonSerializer {
         return this.getClass() + ":\n" + Json.prettyPrint(json());
     }
 
+    /*@Override
+    public boolean equals(Object obj) {
+
+        if (obj instanceof BaseModel) {
+            BaseModel model = (BaseModel) obj;
+
+            if (this.id == null) {
+                return this == model;
+            } else {
+                return this.id.equals(model.id) && ((this.created == null && model.created == null) || (this.created != null && this.created.equals(model.created)));
+            }
+        }
+
+        return false;
+    }*/
+
 
     /**
      * Shortcuts for automatic validation and parsing of incoming JSON to MODEL class
      * @param clazz
      * @param <T>
      * @return
-     * @throws _Base_Result_Exception
      */
     @JsonIgnore
-    public static <T> T formFromJsonWithValidation(Class<T> clazz, JsonNode jsonNode) throws _Base_Result_Exception {
+    public static <T> T formFromJsonWithValidation(Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException {
         return Server.baseFormFactory.formFromJsonWithValidation(clazz, jsonNode);
     }
 
@@ -262,7 +266,7 @@ public abstract class BaseModel extends Model implements JsonSerializer {
      * @param <T>
      * @return a copy of this form filled with the new data
      */
-    public static  <T> T formFromJsonWithValidation(Model_HomerServer server, Class<T> clazz, JsonNode jsonNode) throws _Base_Result_Exception, IOException {
+    public static  <T> T formFromJsonWithValidation(Model_HomerServer server, Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException, IOException {
         return Server.baseFormFactory.formFromJsonWithValidation(server, clazz, jsonNode);
     }
 
@@ -274,25 +278,19 @@ public abstract class BaseModel extends Model implements JsonSerializer {
      * @param <T>
      * @return a copy of this form filled with the new data
      */
-    public static  <T> T formFromJsonWithValidation(WS_Homer server, Class<T> clazz, JsonNode jsonNode) throws _Base_Result_Exception, IOException {
+    public static  <T> T formFromJsonWithValidation(WS_Homer server, Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException, IOException {
         return Server.baseFormFactory.formFromJsonWithValidation(server, clazz, jsonNode);
     }
 
+/* COMMON METHODS ------------------------------------------------------------------------------------------------------*/
 
-    /* COMMON METHODS ------------------------------------------------------------------------------------------------------*/
-
-    /**
-     * Default save method - Permission is checked inside
-     * System will evytime check permission for this operation. But sometime, its done by system without "logged person" token
-     */
     @Override
-    public void save() throws _Base_Result_Exception {
+    public void save() {
 
         logger.debug("save - saving new {}", this.getClass().getSimpleName());
 
         // Check Permission - only if user is logged!
-        if(its_person_operation()) {
-            check_create_permission();
+        if (its_person_operation()) {
             save_author();
         }
 
@@ -319,45 +317,18 @@ public abstract class BaseModel extends Model implements JsonSerializer {
         }
     }
 
-    /**
-     * Default update method - Permission is checked inside
-     */
-    @JsonIgnore @Override
-    public void update() throws _Base_Result_Exception {
-        try {
+    @Override
+    public void update() {
+        logger.debug("update - updating {}, id: {}", this.getClass().getSimpleName(), this.id);
 
-            logger.debug("update - updating {}, id: {}", this.getClass().getSimpleName(), this.id);
-
-            // Check Permission
-            if (its_person_operation()) {
-                check_update_permission();
-                logger.debug("Permission is ok");
-            }
-
-            this.updated = new Date();
-            super.update();
-            new Thread(this::cache).start();
-
-        } catch (Result_Error_PermissionDenied e) {
-            logger.warn("update::Unauthorized UPDATE operation, its required remove everything from Cache");
-            throw new Result_Error_PermissionDenied();
-        } catch (Exception e){
-            logger.internalServerError(e);
-            throw new Result_Error_PermissionDenied();
-        }
+        this.updated = new Date();
+        super.update();
+        new Thread(this::cache).start();
     }
 
-    /**
-     * Default delete method - Permission is checked inside
-     * Its not removed permanently!
-     */
     @Override
-    public boolean delete() throws _Base_Result_Exception {
+    public boolean delete() {
         logger.debug("delete - soft deleting {}, id: {}", this.getClass().getSimpleName(), this.id);
-
-        if(its_person_operation()) {
-            check_delete_permission();
-        }
 
         super.delete();
 
@@ -370,9 +341,6 @@ public abstract class BaseModel extends Model implements JsonSerializer {
     @Override
     public boolean deletePermanent() {
         logger.debug("deletePermanent - permanently deleting {}, id: {}", this.getClass().getSimpleName(), this.id);
-
-        if(its_person_operation()) check_delete_permission();
-
         return super.deletePermanent();
     }
 
@@ -394,28 +362,10 @@ public abstract class BaseModel extends Model implements JsonSerializer {
         long start = System.currentTimeMillis();
         Class<? extends BaseModel> cls = this.getClass();
 
-        logger.trace("cache - finding cache finder for {}", cls.getSimpleName());
+        logger.debug("cache - finding cache finder for {}", cls.getSimpleName());
 
         for (Field field : cls.getDeclaredFields()) {
-            if (field.isAnnotationPresent(CacheField.class)) {
-                try {
-                    CacheField annotation = field.getAnnotation(CacheField.class);
-                    if (annotation.value() == cls) {
-                        Cache<UUID, BaseModel> cache = (Cache<UUID, BaseModel>) field.get(null);
-                        if (cache.containsKey(this.id)) {
-                            cache.replace(this.id, this);
-                        } else {
-                            cache.put(this.id, this);
-                        }
-                        logger.trace("cache - finding cache took {} ms", System.currentTimeMillis() - start);
-                        break;
-                    }
-                } catch (Exception e) {
-                    logger.internalServerError(e);
-                }
-            }
-
-            if (field.isAnnotationPresent(CacheFinderField.class) && field.getType().equals(CacheFinder.class)) {
+            if (field.isAnnotationPresent(InjectCache.class) && field.getType().equals(CacheFinder.class)) {
                 try {
 
                     logger.debug("cache - found cache finder field");
@@ -444,21 +394,7 @@ public abstract class BaseModel extends Model implements JsonSerializer {
         logger.trace("evict - finding cache finder for {}", cls.getSimpleName());
 
         for (Field field : cls.getDeclaredFields()) {
-            if (field.isAnnotationPresent(CacheField.class)) {
-                try {
-                    CacheField annotation = field.getAnnotation(CacheField.class);
-                    if (annotation.value() == cls) {
-                        Cache<UUID, BaseModel> cache = (Cache<UUID, BaseModel>) field.get(null);
-                        cache.remove(this.id);
-                        logger.trace("evict - finding cache took {} ms", System.currentTimeMillis() - start);
-                        break;
-                    }
-                } catch (Exception e) {
-                    logger.internalServerError(e);
-                }
-            }
-
-            if (field.isAnnotationPresent(CacheFinderField.class) && field.getType().equals(CacheFinder.class)) {
+            if (field.isAnnotationPresent(InjectCache.class) && field.getType().equals(CacheFinder.class)) {
                 try {
 
                     logger.debug("evict - found cache finder field");
@@ -574,63 +510,32 @@ public abstract class BaseModel extends Model implements JsonSerializer {
         return fields;
     }
 
+    /**
+     * Helper method for checking if property is loaded
+     * without accidentally loading it.
+     * @param property to check
+     * @return true if it is loaded
+     */
+    protected boolean isLoaded(String property) {
+        if (this instanceof EntityBean) {
+            EntityBeanIntercept intercept = ((EntityBean) this)._ebean_intercept();
+            int index = intercept.findProperty(property);
+            if (index > -1) {
+                boolean loaded = intercept.isLoadedProperty(index);
+                logger.trace("isLoaded - property '{}' is {}", property, loaded ? "loaded" : "not loaded");
+                return loaded;
+            }
+        }
+
+        return true;
+    }
 
 /* Permission Contents ----------------------------------------------------------------------------------------------------*/
 
+    @JsonPermission @Transient @ApiModelProperty(readOnly = true, value = "True if user can update this object.")
+    public boolean update_permission;
 
-    @ApiModelProperty(readOnly = true, value = "can be hidden", required = true)
-    @JsonProperty
-    public boolean update_permission(){
-        try{
-
-            if(!its_person_operation()) {
-               return true;
-            }
-
-            check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-            return true;
-        }catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            return false;
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return false;
-        }
-    }
-
-    @ApiModelProperty(readOnly = true, value = "can be hidden", required = true)
-    @JsonProperty
-    public boolean delete_permission(){
-        try{
-
-            if(!its_person_operation()) {
-                return true;
-            }
-
-            check_delete_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-            return true;
-        }catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            return false;
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return false;
-        }
-    }
-
-/* ABSTRACT METHODS ----------------------------------------------------------------------------------------------------*/
-
-    /*
-     * Required for all Models in Database.
-     * You can used this one, or Override this
-     *
-     */
-    @JsonIgnore public abstract void check_create_permission() throws _Base_Result_Exception;
-    @JsonIgnore public abstract void check_read_permission()   throws _Base_Result_Exception;
-    @JsonIgnore public abstract void check_update_permission() throws _Base_Result_Exception;
-    @JsonIgnore public abstract void check_delete_permission() throws _Base_Result_Exception;
-
+    @JsonPermission(Action.DELETE) @Transient @ApiModelProperty(readOnly = true, value = "True if user can delete this object.")
+    public boolean delete_permission;
 }
 

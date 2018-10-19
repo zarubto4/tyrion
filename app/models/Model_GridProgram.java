@@ -2,21 +2,23 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.cache.InjectCache;
+import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
+import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.swagger.output.Swagger_M_Program_Version_Interface;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -24,7 +26,7 @@ import java.util.stream.Collectors;
 @Entity
 @ApiModel(value = "GridProgram", description = "Model of GridProgram")
 @Table(name = "GridProgram")
-public class Model_GridProgram extends TaggedModel {
+public class Model_GridProgram extends TaggedModel implements Permissible, UnderProject {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -43,9 +45,6 @@ public class Model_GridProgram extends TaggedModel {
         try {
             return get_versions().stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList());
 
-        } catch (_Base_Result_Exception e) {
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -54,7 +53,12 @@ public class Model_GridProgram extends TaggedModel {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public UUID get_grid_project_id() throws _Base_Result_Exception {
+    @JsonIgnore @Override
+    public Model_Project getProject() {
+        return this.get_grid_project().getProject();
+    }
+
+    @JsonIgnore @Transient public UUID get_grid_project_id() {
 
         if (idCache().get(Model_GridProject.class) == null) {
             idCache().add(Model_GridProject.class, (UUID) Model_GridProject.find.query().where().eq("grid_programs.id", id).select("id").findSingleAttribute());
@@ -63,8 +67,8 @@ public class Model_GridProgram extends TaggedModel {
         return idCache().get(Model_GridProject.class);
     }
 
-    @JsonIgnore @Transient public Model_GridProject get_grid_project() throws _Base_Result_Exception  {
-        return  Model_GridProject.find.byId(get_grid_project_id());
+    @JsonIgnore @Transient public Model_GridProject get_grid_project() {
+        return isLoaded("grid_project") ? this.grid_project : Model_GridProject.find.query().nullable().where().eq("grid_programs.id", id).findOne();
     }
 
     @JsonIgnore @Transient public List<UUID> get_versionsId() {
@@ -134,13 +138,7 @@ public class Model_GridProgram extends TaggedModel {
             grid_project.idCache().add(this.getClass(), id);
         }
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, grid_project.get_project_id(), grid_project.id));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, grid_project.get_project_id(), grid_project.id))).start();
     }
 
     @JsonIgnore @Override
@@ -150,13 +148,7 @@ public class Model_GridProgram extends TaggedModel {
 
         super.update();
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo( Model_GridProgram.class, get_grid_project().get_project_id(), id));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_GridProgram.class, get_grid_project().get_project_id(), id))).start();
     }
 
     @JsonIgnore @Override
@@ -165,19 +157,9 @@ public class Model_GridProgram extends TaggedModel {
 
         super.delete();
 
-        try {
-            get_grid_project().idCache().remove(this.getClass(), id);
-        }catch (_Base_Result_Exception e){
-            // Nothing
-        }
+        get_grid_project().idCache().remove(this.getClass(), id);
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo( Model_GridProject.class, get_grid_project().get_project_id(), get_grid_project_id()));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_GridProject.class, get_grid_project().get_project_id(), get_grid_project_id()))).start();
 
         return false;
     }
@@ -205,79 +187,20 @@ public class Model_GridProgram extends TaggedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore
-    public void  check_create_permission() throws _Base_Result_Exception {
-        if (_BaseController.person().has_permission(Permission.GridProgram_create.name())) return;
-        grid_project.check_update_permission();
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.GRID_PROGRAM;
     }
 
-    @JsonProperty
-    public void check_update_permission() throws _Base_Result_Exception  {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-
-            if (_BaseController.person().has_permission(Permission.GridProgram_delete.name())) return;
-
-            get_grid_project().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }
-
-    @JsonIgnore
-    public void check_read_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-                return;
-            }
-
-            if (_BaseController.person().has_permission(Permission.GridProgram_read.name())) return;
-
-            get_grid_project().check_read_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-
-    @JsonProperty
-    public void check_delete_permission() throws _Base_Result_Exception  {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-                return;
-            }
-
-            if (_BaseController.person().has_permission(Permission.GridProgram_delete.name())) return;
-
-            get_grid_project().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-
-    public enum Permission {GridProgram_create, GridProgram_update, GridProgram_read, GridProgram_edit, GridProgram_delete}
-
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_GridProgram.class)
+    @InjectCache(Model_GridProgram.class)
     public static CacheFinder<Model_GridProgram> find = new CacheFinder<>(Model_GridProgram.class);
 }

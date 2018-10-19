@@ -3,26 +3,26 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.ebean.Expr;
 import io.ebean.ExpressionList;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.db.ebean.Transactional;
 import play.libs.Json;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
+import utilities.enums.EntityType;
 import utilities.enums.ProductEventType;
 import utilities.enums.ExtensionType;
-import utilities.errors.Exceptions.Result_Error_BadRequest;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import exceptions.BadRequestException;
 import utilities.financial.extensions.configurations.*;
 import utilities.financial.extensions.consumptions.ResourceConsumption;
 import utilities.financial.extensions.extensions.Extension;
 import utilities.logger.Logger;
 import utilities.model.OrderedNamedModel;
+import utilities.model.UnderCustomer;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 
 import javax.persistence.*;
 
@@ -35,7 +35,7 @@ import java.util.*;
 @Entity
 @ApiModel(value = "ProductExtension", description = "Model of ProductExtension")
 @Table(name="ProductExtension")
-public class Model_ProductExtension extends OrderedNamedModel {
+public class Model_ProductExtension extends OrderedNamedModel implements Permissible, UnderCustomer {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -45,7 +45,7 @@ public class Model_ProductExtension extends OrderedNamedModel {
 
                                         @ApiModelProperty(required = true) public String color;
 
-           @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public ExtensionType type;
+                                        @ApiModelProperty(required = true) public ExtensionType type;
                             @Column(columnDefinition = "TEXT") @JsonIgnore public String configuration;
 
                          /**
@@ -89,7 +89,7 @@ public class Model_ProductExtension extends OrderedNamedModel {
     public void save() {
         boolean newExtension = id == null;
         if (newExtension && active) {
-            throw new Result_Error_BadRequest("Cannot save a new product with active == true. Use setActive to activate product.");
+            throw new BadRequestException("Cannot save a new product with active == true. Use setActive to activate product.");
         }
 
         super.save();
@@ -103,7 +103,7 @@ public class Model_ProductExtension extends OrderedNamedModel {
     @Transactional
     public void setActive(boolean activeNew) throws Exception {
         if(this.active == activeNew) {
-            throw new Result_Error_BadRequest("Extension is already " + (activeNew ? "activated" : "deactivated"));
+            throw new BadRequestException("Extension is already " + (activeNew ? "activated" : "deactivated"));
         }
 
         try {
@@ -148,7 +148,17 @@ public class Model_ProductExtension extends OrderedNamedModel {
         return true;
     }
 
-    /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public Model_Product getProduct() {
+        return isLoaded("product") ? product : Model_Product.find.query().where().eq("extensions.id", id).findOne();
+    }
+
+    @JsonIgnore @Override
+    public Model_Customer getCustomer() {
+        return getProduct().getCustomer();
+    }
 
     @JsonIgnore
     public Extension createExtension() throws Exception {
@@ -325,6 +335,7 @@ public class Model_ProductExtension extends OrderedNamedModel {
     @JsonIgnore
     public Model_ExtensionFinancialEvent getFinancialEventLast() {
         Model_ExtensionFinancialEvent lastFinancialEvent = Model_ExtensionFinancialEvent.find.query()
+                .nullable()
                 .where()
                 .eq("product_extension.id", id)
                 .order().desc("event_start")
@@ -431,63 +442,23 @@ public class Model_ProductExtension extends OrderedNamedModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.ProductExtension_create.name())) return;
-        if (product == null || product.owner == null) {
-            System.out.println("Model_ProductExtension:: check_create_permission:: product.customer is null - this.product name: " + this.name );
-            throw new Result_Error_PermissionDenied();
-        }
-        if(product.owner.isEmployee(_BaseController.person())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.ProductExtension_read.name())) return;
-        if (product == null) {
-           return;
-        }
-        if(product.owner.isEmployee(_BaseController.person())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.ProductExtension_update.name())) return;
-        if (product == null || product.owner == null) {
-            System.out.println("Model_ProductExtension:: check_update_permission:: product.customer is null - this.product name: " + this.name );
-            throw new Result_Error_PermissionDenied();
-        }
-        if(product.owner.isEmployee(_BaseController.person())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.ProductExtension_delete.name())) return;
-        if (product == null || product.owner == null) {
-            System.out.println("Model_ProductExtension:: check_delete_permission:: product.customer is null - this.product name: " + this.name );
-            throw new Result_Error_PermissionDenied();
-        }
-        throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.PRODUCT_EXTENSION;
     }
 
-    @JsonProperty @ApiModelProperty(required = true) public void check_act_deactivate_permission()  throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.ProductExtension_act_deactivate.name())) return;
-        if (product == null || product.owner == null) {
-            System.out.println("Model_ProductExtension:: check_act_deactivate_permission:: product.customer is null - this.product name: " + this.id );
-            throw new Result_Error_PermissionDenied();
-        }
-        if(product.owner.isEmployee(_BaseController.person())) return;
-        throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.ACTIVATE);
     }
 
-    public enum Permission { ProductExtension_create, ProductExtension_read, ProductExtension_update, ProductExtension_act_deactivate, ProductExtension_delete }
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    /* CACHE ---------------------------------------------------------------------------------------------------------------*/
+/* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    /* FINDER -------------------------------------------------------------------------------------------------------------*/
-
-    @CacheFinderField(Model_ProductExtension.class)
+    @InjectCache(Model_ProductExtension.class)
     public static CacheFinder<Model_ProductExtension> find = new CacheFinder<>(Model_ProductExtension.class);
 
     public static List<Model_ProductExtension> getByUser(UUID personId) {

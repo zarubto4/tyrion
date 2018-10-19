@@ -4,33 +4,35 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
+import utilities.enums.EntityType;
 import utilities.enums.PaymentMethod;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
+import utilities.model.UnderCustomer;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 
 import javax.persistence.*;
-import java.beans.Transient;
 import java.math.BigDecimal;
 import java.util.*;
 
 @Entity
 @ApiModel(value = "PaymentDetails", description = "Details about product payment")
 @Table(name="Payment_Details")
-public class Model_PaymentDetails extends BaseModel {
+public class Model_PaymentDetails extends BaseModel implements Permissible, UnderCustomer {
 
-    /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
     private static final Logger logger = new Logger(Model_IntegratorClient.class);
 
-    /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
+/* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
            @JsonIgnore @OneToOne(mappedBy = "payment_details") public Model_Product product;
 
                                                    @JsonIgnore public String payment_methods; // PaymentMethod values separated by |
 
-                                  @Enumerated(EnumType.STRING) public PaymentMethod payment_method;
+                                                               public PaymentMethod payment_method;
 
                                                    @JsonIgnore public boolean on_demand;            // Jestli je povoleno a zaregistrováno, že Tyrion muže žádat o provedení platby
 
@@ -39,7 +41,7 @@ public class Model_PaymentDetails extends BaseModel {
                                                     */
                                                    @JsonIgnore public BigDecimal monthly_limit;
 
-    /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
     @JsonProperty
     public List<PaymentMethod> payment_methods() {
         try{
@@ -52,7 +54,7 @@ public class Model_PaymentDetails extends BaseModel {
         return Collections.emptyList();
     }
 
-    /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
     /**
      * @return true if payment details are complete and valid
      */
@@ -72,37 +74,44 @@ public class Model_PaymentDetails extends BaseModel {
         return monthly_limit == null ? BigDecimal.ZERO : monthly_limit;
     }
 
-    /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
-
-    /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
-
-    /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
-
-    /* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
-
-    /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
-
-    /* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
-    /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        product.check_read_permission();
-    }
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        // no create permissions
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        product.check_update_permission();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        product.check_delete_permission();
+    @JsonIgnore
+    public Model_Product getProduct() {
+        return isLoaded("product") ? product : Model_Product.find.query().where().eq("payment_details.id", id).findOne();
     }
 
-    /* CACHE ---------------------------------------------------------------------------------------------------------------*/
+    @JsonIgnore @Override
+    public Model_Customer getCustomer() {
+        return getProduct().getCustomer();
+    }
+
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+
+/* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
+
+/* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
+
+/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
+
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.PAYMENT_DETAILS;
+    }
+
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
+    }
+
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_PaymentDetails.class)
+    @InjectCache(Model_PaymentDetails.class)
     public static CacheFinder<Model_PaymentDetails> find = new CacheFinder<>(Model_PaymentDetails.class);
 }

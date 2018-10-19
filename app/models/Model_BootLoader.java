@@ -3,20 +3,20 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import utilities.Server;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
+import utilities.enums.EntityType;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
 import utilities.enums.NotificationType;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 
 import javax.persistence.*;
 import java.util.*;
@@ -24,7 +24,7 @@ import java.util.*;
 @Entity
 @ApiModel( value = "BootLoader", description = "Model of BootLoader")
 @Table(name="BootLoader")
-public class /**/Model_BootLoader extends NamedModel {
+public class Model_BootLoader extends NamedModel implements Permissible {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -37,56 +37,27 @@ public class /**/Model_BootLoader extends NamedModel {
 
     @JsonIgnore @OneToMany(mappedBy="bootloader",cascade=CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HardwareUpdate> updates = new ArrayList<>();
 
-    @JsonIgnore  @ManyToOne(fetch = FetchType.LAZY)     public Model_HardwareType hardware_type;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)      public Model_HardwareType hardware_type;
     @JsonIgnore @OneToOne(fetch = FetchType.LAZY)       public Model_HardwareType main_hardware_type;
 
-    @JsonIgnore  @OneToMany(mappedBy="actual_boot_loader", fetch = FetchType.LAZY)                 public List<Model_Hardware> hardware = new ArrayList<>();
-                 @OneToOne(mappedBy = "boot_loader", cascade = CascadeType.ALL)                    public Model_Blob file;
-
+    @JsonIgnore  @OneToMany(mappedBy="actual_boot_loader", fetch = FetchType.LAZY)  public List<Model_Hardware> hardware = new ArrayList<>();
+    @JsonIgnore  @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)       public Model_Blob file;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty public boolean main_bootloader() {
         try {
-
             return getMainHardwareType() != null;
-
-        } catch (_Base_Result_Exception e){
-            logger.internalServerError(e);
-            return false;
         } catch(Exception e){
             logger.internalServerError(e);
             return false;
         }
     }
 
-    @JsonProperty public String  file_path() {
+    @JsonProperty
+    public String  file_path() {
         try {
-
-            if (idCache().get(Model_Blob.class) != null) {
-                String link = Model_Blob.find.byId(idCache().get(Model_Blob.class)).getPublicDownloadLink();
-                if (link != null) {
-                    return link;
-                }
-            }
-
-            if (file == null) {
-                logger.error("File nto exist inside bootloader!");
-                return null;
-            }
-
-            String total_link = file.getPublicDownloadLink();
-            idCache().add(Model_Blob.class, file.id);
-
-
-            logger.trace("path - total link: {}", total_link);
-
-            // Přesměruji na link
-            return total_link;
-
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
+            return getBlob().getPublicDownloadLink();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -94,6 +65,11 @@ public class /**/Model_BootLoader extends NamedModel {
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public Model_Blob getBlob() {
+        return isLoaded("file") ? file : Model_Blob.find.query().where().eq("boot_loader.id", id).findOne();
+    }
 
     @JsonIgnore
     public UUID getHardwareTypeId() {
@@ -106,21 +82,13 @@ public class /**/Model_BootLoader extends NamedModel {
 
     @JsonIgnore
     public Model_HardwareType getHardwareType() {
-        try {
-            return Model_HardwareType.find.byId(getHardwareTypeId());
-        }catch (Exception e) {
-            return null;
-        }
+        return isLoaded("hardware_type") ? hardware_type : Model_HardwareType.find.query().where().eq("boot_loaders.id", id).findOne();
     }
 
     @JsonIgnore
     public UUID getMainHardwareTypeId() {
 
-        // System.out.println("getMainHardwareTypeId for bootloader " + this.name);
-
         if (idCache().get(Model_HardwareType.Model_HardwareType_Main.class) == null) { // Záměrně random! Protože potřebuji uložit stejný typ objektu do paměti dvakrát a rozpoznání je jen podle typu třídy
-
-            // System.out.println("getMainHardwareTypeId cache is null " + this.name);
 
             UUID main = (UUID) Model_HardwareType.find.query().where().eq("main_boot_loader.id", id).select("id").findSingleAttribute();
             if (main != null) {
@@ -129,7 +97,6 @@ public class /**/Model_BootLoader extends NamedModel {
             } else {
                 logger.warn("getMainHardwareTypeId for bootloader {} is null - but its probably ok", this.name);
             }
-
         }
 
         return idCache().get(Model_HardwareType.Model_HardwareType_Main.class);
@@ -137,20 +104,7 @@ public class /**/Model_BootLoader extends NamedModel {
 
     @JsonIgnore
     public Model_HardwareType getMainHardwareType() {
-        try {
-
-            UUID id = getMainHardwareTypeId();
-            logger.warn("getMainHardwareType for bootloader {} getMainHardwareTypeId: id {} ", this.name, id);
-            if(id != null) {
-                return Model_HardwareType.find.byId(id);
-            } else  {
-                return null;
-            }
-
-        }catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return isLoaded("main_hardware_type") ? main_hardware_type : Model_HardwareType.find.query().nullable().where().eq("main_boot_loader.id", id).findOne();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -260,12 +214,6 @@ public class /**/Model_BootLoader extends NamedModel {
     }
 
     @JsonIgnore @Override
-    public void update() {
-
-        super.update();
-    }
-
-    @JsonIgnore @Override
     public boolean delete() {
 
         logger.debug("delete :: Delete object Id: {} ", this.id);
@@ -308,28 +256,20 @@ public class /**/Model_BootLoader extends NamedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override @Transient public void check_create_permission() throws _Base_Result_Exception {
-        if(!_BaseController.person().has_permission(Permission.BootLoader_create.name())) throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.BOOTLOADER;
     }
 
-    @JsonIgnore @Override  @Transient public void check_read_permission() throws _Base_Result_Exception  {
-        // Nothing now??
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }
-
-    @JsonIgnore @Override  @Transient public void check_update_permission() throws _Base_Result_Exception {
-        if(!_BaseController.person().has_permission(Permission.BootLoader_edit.name())) throw new Result_Error_PermissionDenied();
-    }
-
-    @JsonIgnore @Override  @Transient public void check_delete_permission() throws _Base_Result_Exception {
-        if(!_BaseController.person().has_permission(Permission.BootLoader_delete.name())) throw new Result_Error_PermissionDenied();
-    }
-
-    public enum Permission { BootLoader_create,  BootLoader_update, BootLoader_read, BootLoader_edit, BootLoader_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_BootLoader.class)
+    @InjectCache(Model_BootLoader.class)
     public static CacheFinder<Model_BootLoader> find = new CacheFinder<>(Model_BootLoader.class);
 }

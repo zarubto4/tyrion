@@ -7,9 +7,13 @@ import java.util.UUID;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+/**
+ * Indicates that annotated field should be injected with cache. Annotated field has to implement {@link ModelCache}
+ * or should be of type {@link org.ehcache.Cache}.
+ */
 @Target(FIELD)
 @Retention(RUNTIME)
-public @interface CacheFinderField {
+public @interface InjectCache {
 
     /**
      * Shortcuts for TimeToIdle

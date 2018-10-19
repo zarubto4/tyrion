@@ -4,29 +4,33 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import controllers._BaseController;
+import exceptions.NotFoundException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.cache.Cached;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
+import utilities.model.Publishable;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
+import utilities.permission.WithPermission;
 import utilities.swagger.input.Swagger_CompilationLibrary;
 import utilities.swagger.output.Swagger_Short_Reference;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
 @ApiModel(value = "HardwareType", description = "Model of HardwareType")
 @Table(name="HardwareType")
-public class Model_HardwareType extends NamedModel {
+public class Model_HardwareType extends NamedModel implements Permissible, Publishable {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -68,13 +72,10 @@ public class Model_HardwareType extends NamedModel {
     @JsonProperty @ApiModelProperty(value = "Only if user have permission for this object")
     public Swagger_Short_Reference producer() {
         try {
-            Model_Producer type = this.get_producer();
-            return new Swagger_Short_Reference(type.id, type.name, type.description);
-        } catch (_Base_Result_Exception e) {
-            // nothing
-            return null;
+            Model_Producer producer = this.getProducer();
+            return new Swagger_Short_Reference(producer.id, producer.name, producer.description);
         } catch (Exception e) {
-            this.logger.internalServerError(e);
+            logger.internalServerError(e);
             return null;
         }
     }
@@ -82,15 +83,11 @@ public class Model_HardwareType extends NamedModel {
     @JsonProperty
     public Swagger_Short_Reference processor() {
         try {
-            Model_Processor type = this.get_processor();
-            return new Swagger_Short_Reference(type.id, type.name, type.description);
-
-        } catch (_Base_Result_Exception e) {
-            // nothing
+            Model_Processor processor = this.getProcessor();
+            return new Swagger_Short_Reference(processor.id, processor.name, processor.description);
+        } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
-        } catch (NullPointerException e) {
-           this.logger.internalServerError(e);
-           return null;
         }
     }
 
@@ -98,113 +95,72 @@ public class Model_HardwareType extends NamedModel {
     public String picture_link() {
         try {
 
-            if ( cache_picture_link == null) {
-                Model_Blob file = Model_Blob.find.query().where().eq("hardware_type.id", id).select("id").findOne();
-                if (file != null) cache_picture_link = file.get_file_path_for_direct_download();
+            if (cache_picture_link == null) {
+                Model_Blob file = Model_Blob.find.query().where().eq("hardware_type.id", id).findOne();
+                cache_picture_link = file.get_file_path_for_direct_download();
             }
 
             return cache_picture_link;
 
-        } catch (_Base_Result_Exception e) {
+        } catch (NotFoundException e) {
             // nothing
-            return null;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+        }
+
+        return null;
+    }
+
+    @JsonProperty
+    public List<Swagger_CompilationLibrary> supported_libraries() {
+        return cache_library_list;
+    }
+
+    @JsonProperty
+    public Model_BootLoader main_boot_loader() {
+        try {
+            return get_main_boot_loader();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
     }
 
-    @JsonProperty
-    public List<Swagger_CompilationLibrary> supported_libraries() {
-       try {
-
-
-        return cache_library_list;
-    }  catch (_Base_Result_Exception e) {
-        // nothing
-        return null;
-    } catch (Exception e) {
-        logger.internalServerError(e);
-        return null;
-        }
-    }
-
-    @JsonProperty
-    public Model_BootLoader main_boot_loader() {
-            try {
-                return get_main_boot_loader();
-
-            } catch(_Base_Result_Exception e){
-                //nothing
-                return null;
-            } catch (Exception e) {
-                logger.internalServerError(e);
-                return null;
-            }
-    }
-
-
-    @JsonProperty @ApiModelProperty(value = "accessible only for persons with permissions", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty @WithPermission @ApiModelProperty("accessible only for persons with permissions")
     public List<Model_BootLoader> boot_loaders() {
         try {
-
             return get_bootloaders();
-
-        } catch(_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
         }
     }
 
-
-    @JsonProperty @ApiModelProperty @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty @WithPermission @ApiModelProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public Model_CProgram main_c_program() {
         try {
             return get_main_c_program();
-
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
+            logger.internalServerError(e);
             return null;
         }
-
     }
 
-    @JsonProperty @ApiModelProperty(value = "accessible only for persons with permissions", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty @WithPermission @ApiModelProperty(value = "accessible only for persons with permissions") @JsonInclude(JsonInclude.Include.NON_NULL)
     public Model_CProgram main_test_c_program() {
-            try {
-                return get_main_test_c_program();
-
-            } catch(_Base_Result_Exception e){
-               //nothing
-               return null;
-            } catch (Exception e) {
-                logger.internalServerError(e);
-                return null;
-            }
+        try {
+            return get_main_test_c_program();
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     // Záměrně - kvuli dokumentaci a přehledu v Becki - nemá žádný podstatný vliv než jen umožnit vypsat přehled
-    @JsonProperty @ApiModelProperty(value = "accessible only for persons with permissions", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
-    public List<Model_HardwareBatch> batchs () {
+    @JsonProperty @WithPermission @ApiModelProperty(value = "accessible only for persons with permissions") @JsonInclude(JsonInclude.Include.NON_NULL)
+    public List<Model_HardwareBatch> batches () {
         try {
-
-            if (test_c_program_edit_permission()) {
-                return Model_HardwareBatch.getByTypeOfBoardId(this.compiler_target_name);
-            }
-
-            return null;
-
-        }catch (NullPointerException e) {
-            //nothing
-            return null;
-        } catch(_Base_Result_Exception e){
-            //nothing
-            return null;
+            return Model_HardwareBatch.getByTypeOfBoardId(this.compiler_target_name);
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -216,14 +172,11 @@ public class Model_HardwareType extends NamedModel {
 
     @JsonIgnore // Pouze Pro synchronizaci s GitHubem - musí obsahovat i smazané
     public List<Model_BootLoader> boot_loaders_get_for_github_include_removed() {
-        return Model_BootLoader.find.query().where().eq("hardware_type.id",id).findList();
+        return Model_BootLoader.find.query().where().eq("hardware_type.id",id).setIncludeSoftDeletes().findList();
     }
 
     @JsonIgnore // Pouze Pro synchronizaci s GitHubem - musí obsahovat i smazané
     public List<UUID> get_bootloaders_id() {
-
-
-        // System.out.println("Kontrola Bootloaderů v Hardware Type: ");
 
         if (idCache().gets(Model_BootLoader.class) == null) {
             // System.out.println("Bootloadery nemám, a tak je hledám");
@@ -235,24 +188,27 @@ public class Model_HardwareType extends NamedModel {
                     .findSingleAttributeList());
         }
 
-        // System.out.println("Seznam Nalezených Bootloaderů: " + cache().gets(Model_BootLoader.class));
-
         return idCache().gets(Model_BootLoader.class) != null ?  idCache().gets(Model_BootLoader.class) : new ArrayList<>();
-
     }
 
     @JsonIgnore
     public List<Model_BootLoader> get_bootloaders() {
         try {
 
-            List<Model_BootLoader> list = new ArrayList<>();
+            return Model_BootLoader.find.query().where()
+                    .eq("hardware_type.id", id)
+                    .ne("deleted", true)
+                    .order().desc("name")
+                    .findList();
+
+            /*List<Model_BootLoader> list = new ArrayList<>();
 
             for (UUID id : get_bootloaders_id()) {
                 // System.out.println("get_bootloaders id: " + id);
                 list.add(Model_BootLoader.find.byId(id));
             }
 
-            return list;
+            return list;*/
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
@@ -260,67 +216,22 @@ public class Model_HardwareType extends NamedModel {
     }
 
     @JsonIgnore
-    public UUID get_producer_id() throws _Base_Result_Exception {
-
-        if (idCache().get(Model_Producer.class) == null) {
-            idCache().add(Model_Producer.class, (UUID) Model_Producer.find.query().where().eq("hardware_types.id", id).select("id").findSingleAttribute());
-        }
-
-        return idCache().get(Model_Producer.class);
+    public Model_Producer getProducer() {
+        return isLoaded("producer") ? producer : Model_Producer.find.query().where().eq("hardware_types.id", id).findOne();
     }
 
     @JsonIgnore
-    public Model_Producer get_producer() {
-
-        try {
-            return Model_Producer.find.byId(get_producer_id());
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    @JsonIgnore
-    public UUID get_processor_id() throws _Base_Result_Exception {
-
-        if (idCache().get(Model_Processor.class) == null) {
-            idCache().add(Model_Processor.class, (UUID) Model_Processor.find.query().where().eq("hardware_types.id", id).select("id").findSingleAttribute());
-        }
-
-        return idCache().get(Model_Processor.class);
-    }
-
-    @JsonIgnore
-    public Model_Processor get_processor() {
-
-        try {
-            return Model_Processor.find.byId(get_processor_id());
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    @JsonIgnore
-    public UUID get_main_test_c_program_id() throws _Base_Result_Exception {
-
-        if (idCache().get(Model_CProgram_Test_FakeClass.class) == null) {
-            idCache().add(Model_CProgram_Test_FakeClass.class, (UUID) Model_CProgram.find.query().where().eq("hardware_type_test.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute());
-        }
-
-        return idCache().get(Model_CProgram_Test_FakeClass.class);
+    public Model_Processor getProcessor() {
+        return isLoaded("processor") ? processor : Model_Processor.find.query().where().eq("hardware_types.id", id).findOne();
     }
 
     @JsonIgnore
     public Model_CProgram get_main_test_c_program() {
-        try {
-            return Model_CProgram.find.byId(get_main_test_c_program_id());
-        } catch (Exception e) {
-            return null;
-        }
+        return isLoaded("test_program") ? test_program : Model_CProgram.find.query().nullable().where().eq("hardware_type_test.id", id).findOne();
     }
 
-
     @JsonIgnore
-    public UUID get_main_boot_loader_id() throws _Base_Result_Exception {
+    public UUID get_main_boot_loader_id() {
         if (idCache().get(Model_HardwareType.Model_HardwareType_Main.class) == null) {
             idCache().add(Model_HardwareType.Model_HardwareType_Main.class, (UUID) Model_BootLoader.find.query().where().eq("main_hardware_type.id", id).select("id").findSingleAttribute());
         }
@@ -328,34 +239,18 @@ public class Model_HardwareType extends NamedModel {
     }
 
     @JsonIgnore
-    public Model_BootLoader get_main_boot_loader() throws _Base_Result_Exception {
-        try {
-            return Model_BootLoader.find.byId(get_main_boot_loader_id());
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    @JsonIgnore
-    public UUID get_main_c_program_id() throws _Base_Result_Exception {
-
-        if (idCache().get(Model_CProgram.class) == null) {
-            idCache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("hardware_type_default.id", id).select("id").findSingleAttribute());
-        }
-
-        return idCache().get(Model_CProgram.class);
+    public Model_BootLoader get_main_boot_loader() {
+        return isLoaded("main_boot_loader") ? main_boot_loader : Model_BootLoader.find.query().nullable().where().eq("main_hardware_type.id", id).findOne();
     }
 
     @JsonIgnore
     public Model_CProgram get_main_c_program() {
+        return isLoaded("main_c_program") ? main_c_program : Model_CProgram.find.query().nullable().where().eq("hardware_type_default.id", id).findOne();
+    }
 
-        try {
-            return Model_CProgram.find.byId(get_main_c_program_id());
-        } catch (Exception e) {
-            return null;
-        }
-
-
+    @JsonIgnore @Override
+    public boolean isPublic() {
+        return true;
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -363,6 +258,7 @@ public class Model_HardwareType extends NamedModel {
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
     public class Model_HardwareType_Main {}
+
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
@@ -377,84 +273,22 @@ public class Model_HardwareType extends NamedModel {
         }
     }
 
-/* HELPER CLASS  ----------------------------------------------------------------------------------------------------------*/
-
-    // Používáme protože nemáme rezervní klíč pro cachoání backup c program verze v lokální chache
-    public abstract class Model_CProgram_Test_FakeClass {}
-
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.HardwareType_create.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {}
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.HardwareType_update.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.HardwareType_delete.name())) return;
-        throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.HARDWARE_TYPE;
     }
 
-    @JsonIgnore @Transient public void check_register_new_device_permission() throws _Base_Result_Exception  {
-        if(_BaseController.person().has_permission(Permission.HardwareType_register_new_device.name())) return;
-        throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }
-
-    @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Boolean bootloader_edit_permission() throws _Base_Result_Exception {
-        try {
-            if (_BaseController.person().has_permission(Permission.HardwareType_bootloader.name())) return true;
-            return null;
-        } catch (_Base_Result_Exception e){
-            return null;
-        }
-    }
-
-    @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Boolean default_c_program_edit_permission() throws _Base_Result_Exception {
-        try {
-            if (_BaseController.person().has_permission(Permission.HardwareType_c_program_edit_permission.name())) return true;
-            return null;
-        } catch (_Base_Result_Exception e){
-            return null;
-        }
-    }
-
-    @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Boolean test_c_program_edit_permission() {
-        try {
-            if (_BaseController.person().has_permission(Permission.HardwareType_test_c_program_edit_permission.name())) return true;
-            return null;
-        } catch (_Base_Result_Exception e){
-            return null;
-        }
-    }
-
-    @JsonProperty @ApiModelProperty("Visible only for Administrator with Special Permission")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Boolean batch_register_permission() {
-        try {
-            if (_BaseController.person().has_permission(Permission.HardwareType_test_c_program_edit_permission.name())) return true;
-            return null;
-        } catch (_Base_Result_Exception e){
-            return null;
-        }
-    }
-
-    public enum Permission { HardwareType_create, HardwareType_edit, HardwareType_update, HardwareType_delete, HardwareType_register_new_device, HardwareType_bootloader,  HardwareType_c_program_edit_permission, HardwareType_test_c_program_edit_permission }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_HardwareType.class)
+    @InjectCache(Model_HardwareType.class)
     public static CacheFinder<Model_HardwareType> find = new CacheFinder<>(Model_HardwareType.class);
 }

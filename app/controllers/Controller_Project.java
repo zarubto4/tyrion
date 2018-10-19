@@ -16,10 +16,12 @@ import utilities.emails.Email;
 import utilities.enums.NetworkStatus;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
+import utilities.enums.ParticipantStatus;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.*;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_uuid_converter_cleaner;
@@ -28,8 +30,10 @@ import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 @Security.Authenticated(Authentication.class)
@@ -42,8 +46,8 @@ public class Controller_Project extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public Controller_Project(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public Controller_Project(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
 // GENERAL PROJECT #######-##############################################################################################
@@ -78,30 +82,50 @@ public class Controller_Project extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Project_New help  = formFromRequestWithValidation(Swagger_Project_New.class);
+            Swagger_Project_New help = formFromRequestWithValidation(Swagger_Project_New.class);
 
             // Kontrola objektu
             Model_Product product = Model_Product.find.byId(help.product_id);
 
+            List<Model_Employee> employees = product.owner.getEmployees();
+
             // Vytvoření objektu
-            Model_Project project  = new Model_Project();
+            Model_Project project = new Model_Project();
             project.name        = help.name;
             project.description = help.description;
             project.product     = product;
 
+            project.persons.addAll(product.owner.getEmployees().stream().map(Model_Employee::getPerson).collect(Collectors.toList()));
+
+            this.checkCreatePermission(project);
+
             // Uložení objektu
             project.save();
 
-            for (Model_Employee employee : product.owner.getEmployees()) {
+            Model_Role adminRole = Model_Role.createProjectAdminRole();
+            adminRole.project = project;
 
-                Model_ProjectParticipant participant = new Model_ProjectParticipant();
-                participant.person = employee.get_person();
-                participant.project = project;
-                participant.state = employee.state;
+            Model_Role memberRole = Model_Role.createProjectMemberRole();
+            memberRole.project = project;
 
-                participant.save();
-                participant.person.idCache().add(Model_Project.class, project.id);
+            for (Model_Employee employee : employees) {
+
+                Model_Person person = employee.getPerson();
+
+                if (employee.state == ParticipantStatus.OWNER || employee.state == ParticipantStatus.ADMIN) {
+                    adminRole.persons.add(person);
+                } else {
+                    memberRole.persons.add(person);
+                }
+                if (person.idCache().gets(Model_Project.class) == null) {
+                    person.idCache().add(Model_Project.class, new ArrayList<>());
+                }
+
+                person.idCache().gets(Model_Project.class).add(project.id);
             }
+
+            adminRole.save();
+            memberRole.save();
 
             project.refresh();
 
@@ -133,7 +157,6 @@ public class Controller_Project extends _BaseController {
             return ok(person().get_user_access_projects());
 
         } catch (Exception e) {
-            e.printStackTrace();
             return controllerServerError(e);
         }
     }
@@ -154,17 +177,10 @@ public class Controller_Project extends _BaseController {
     })
     public Result project_get(UUID project_id) {
         try {
-
-            // Kontrola objektu
-            Model_Project project = Model_Project.find.byId(project_id);
-
-            // Vraácení objektu
-            return ok(project);
-
+            return read(Model_Project.find.byId(project_id));
          } catch (Exception e) {
             return controllerServerError(e);
         }
-
     }
 
     @ApiOperation(value = "delete Project",
@@ -190,15 +206,7 @@ public class Controller_Project extends _BaseController {
     })
     public Result project_delete(UUID project_id) {
         try {
-            // Kontrola objektu
-            Model_Project project = Model_Project.find.byId(project_id);
-
-            // Smazání objektu
-            project.delete();
-
-            // Vrácení potvrzení
-            return ok();
-
+            return delete(Model_Project.find.byId(project_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -243,11 +251,7 @@ public class Controller_Project extends _BaseController {
             project.name = help.name;
             project.description = help.description;
 
-            // Uložení do DB
-            project.update();
-
-            // Vrácení změny
-            return ok(project);
+            return update(project);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -291,7 +295,7 @@ public class Controller_Project extends _BaseController {
             Model_Project project = Model_Project.find.byId(project_id);
 
             // Kontrola oprávnění
-            project.check_share_permission();
+            this.checkInvitePermission(project);
 
             // Získání seznamu uživatelů, kteří jsou registrovaní(listIn) a kteří ne(listOut)
             List<Model_Person> listIn = new ArrayList<>();
@@ -384,60 +388,6 @@ public class Controller_Project extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "change Project participant status",
-            tags = {"Project"},
-            notes = "Changes participant status ",
-            produces = "application/json",
-            protocols = "https"
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.input.Swagger_Project_Participant_status",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_ProjectParticipant.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result project_changeParticipantStatus(UUID project_id) {
-        try {
-
-            // Get and Validate Object
-            Swagger_Project_Participant_status help = formFromRequestWithValidation(Swagger_Project_Participant_status.class);
-
-            // Kontrola objektu
-            Model_Project project = Model_Project.find.byId(project_id);
-
-            // Kontrola oprávnění
-            project.admin_permission();
-
-            // Kontrola objektu
-            Model_ProjectParticipant participant = Model_ProjectParticipant.find.query().where().eq("person.id", help.person_id).eq("project.id", project_id).findOne();
-            if (participant == null) return notFound("Participant not found");
-
-            // Uložení změn
-            participant.state = help.state;
-            participant.update();
-
-            // Odeslání notifikace uživateli
-            project.notification_project_participant_change_status(participant);
-
-            return ok(participant);
-        } catch (Exception e) {
-            return controllerServerError(e);
-        }
-    }
-
     @ApiOperation(value = "unshare Project",
             tags = {"Project"},
             notes = "unshare Project with all users in list: List<person_id>",
@@ -474,7 +424,7 @@ public class Controller_Project extends _BaseController {
             Model_Project project = Model_Project.find.byId(project_id);
 
             // Kontrola oprávnění
-            project.check_share_permission();
+            this.checkInvitePermission(project);
 
             List<Model_Person> list = new ArrayList<>();
 
@@ -495,14 +445,14 @@ public class Controller_Project extends _BaseController {
                     invitations.add(invitation);
             }
 
-            for (Model_Person person : list) {
-                Model_ProjectParticipant participant = Model_ProjectParticipant.find.query().where().eq("person.id", person.id).eq("project.id", project.id).findOne();
-                if (participant != null) {
+            project.persons.removeAll(list);
+            project.update();
 
-                    // Úprava objektu
-                    participant.delete();
-                }
-            }
+            List<Model_Role> roles = Model_Role.find.query().where().eq("project.id", project.id).in("persons.id", list.stream().map(p -> p.id).collect(Collectors.toList())).findList();
+            roles.forEach(r -> {
+                r.persons.removeAll(list);
+                r.update();
+            });
 
             for (Model_Invitation invitation : invitations) {
                 invitation.delete_notification();
@@ -652,9 +602,7 @@ public class Controller_Project extends _BaseController {
             // Second Make a copy to local database for actual Hardware and if hardware is not active in any other project, automatically activated that
 
             Model_Project project = Model_Project.find.byId(help.project_id);
-            project.check_update_permission();
-
-            System.out.println("project_addHardware - check_update_permission done");
+            this.checkUpdatePermission(project);
 
             Model_HardwareRegistrationEntity registration_authority = Model_HardwareRegistrationEntity.getbyFull_hash(help.registration_hash);
 
@@ -683,7 +631,8 @@ public class Controller_Project extends _BaseController {
                 for(UUID group_id : help.group_ids) {
 
                     Model_HardwareGroup group = Model_HardwareGroup.find.byId(group_id);
-                    group.check_update_permission();
+
+                    this.checkUpdatePermission(group);
 
                     group.getHardware().add(hardware);
 
@@ -717,7 +666,7 @@ public class Controller_Project extends _BaseController {
             logger.warn("project_addHardware. Step 1 - is_online_get_from_cache");
 
             // Person - where we send notification
-            Model_Person person = this.person();
+            Model_Person person = person();
 
             // Try to find hardware by full_id
             logger.warn("project_addHardware. Step 2 - Try to find in cache of not dominant hardware");
@@ -784,13 +733,7 @@ public class Controller_Project extends _BaseController {
     @BodyParser.Of(BodyParser.Json.class)
     public Result project_removeHardware(UUID id) {
         try {
-
-            Model_Hardware hardware = Model_Hardware.find.byId(id);
-
-            hardware.delete();
-
-            return ok();
-
+            return delete(Model_Hardware.find.byId(id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -817,7 +760,11 @@ public class Controller_Project extends _BaseController {
 
             Model_Hardware hardware = Model_Hardware.find.byId(id);
 
-            hardware.check_deactivate_permission();
+            this.checkActivatePermission(hardware);
+
+            if (!hardware.dominant_entity) {
+                return badRequest("Already deactivated");
+            }
 
             hardware.dominant_entity = false;
             hardware.update();
@@ -860,12 +807,15 @@ public class Controller_Project extends _BaseController {
 
             Model_Hardware hardware = Model_Hardware.find.byId(id);
 
-            hardware.check_activate_permission();
+            this.checkActivatePermission(hardware);
+
+            if (hardware.dominant_entity) {
+                return badRequest("Already activated");
+            }
+
             hardware.dominant_entity = true;
             hardware.update();
 
-
-            //
             hardware.is_online_get_from_cache();
 
             logger.warn("project_activeHardware. Step 1 - is_online_get_from_cache");
@@ -877,7 +827,7 @@ public class Controller_Project extends _BaseController {
                 logger.warn("project_activeHardware. Step 2 - Yes we have not dominant hardware record");
 
                 WS_Model_Hardware_Temporary_NotDominant_record record = Model_Hardware.cache_not_dominant_hardware.get(hardware.full_id);
-                Model_HomerServer server = Model_HomerServer.find.byId(record.homer_server_id);
+                Model_HomerServer server = Model_HomerServer.find.byId(record.homer_server_id); // TODO properly handle not found exception
 
                 // Remove if exist in not dominant record on public server
                 Model_Hardware.cache_not_dominant_hardware.remove(hardware.full_id);

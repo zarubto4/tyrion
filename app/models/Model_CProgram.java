@@ -1,24 +1,26 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
+import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
+import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
+import utilities.permission.Action;
+import utilities.permission.JsonPermission;
+import utilities.permission.Permissible;
 import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -26,7 +28,7 @@ import java.util.stream.Collectors;
 @Entity
 @ApiModel(value="C_Program", description="Object represented C_Program in database")
 @Table(name="CProgram")
-public class Model_CProgram extends TaggedModel {
+public class Model_CProgram extends TaggedModel implements Permissible, UnderProject {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -54,11 +56,7 @@ public class Model_CProgram extends TaggedModel {
     @JsonProperty @ApiModelProperty(required = true)
     public Swagger_Short_Reference hardware_type(){
         try {
-            Model_HardwareType type = getHardwareType();
-            return new Swagger_Short_Reference(type.id, type.name, type.description);
-        } catch (_Base_Result_Exception e) {
-            // nothing
-            return null;
+            return getHardwareType().ref();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -70,9 +68,6 @@ public class Model_CProgram extends TaggedModel {
 
             return getVersions();
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();
@@ -84,14 +79,10 @@ public class Model_CProgram extends TaggedModel {
         try {
 
             if (getProjectId() != null) return null;
-            check_update_permission();
 
             return default_main_version;
 
-        }catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
+        } catch (Exception e){
             logger.internalServerError(e);
             return null;
         }
@@ -100,9 +91,9 @@ public class Model_CProgram extends TaggedModel {
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public UUID getProjectId() throws _Base_Result_Exception  {
+    @JsonIgnore @Transient public UUID getProjectId() {
 
-        if(publish_type == ProgramType.PRIVATE) {
+        if (publish_type == ProgramType.PRIVATE) {
 
             if (idCache().get(Model_Project.class) == null) {
                 idCache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("c_programs.id", id).select("id").findSingleAttribute());
@@ -115,13 +106,9 @@ public class Model_CProgram extends TaggedModel {
         }
     }
 
-    @JsonIgnore @Transient public Model_Project getProject() throws _Base_Result_Exception {
-        try {
-            return Model_Project.find.byId(getProjectId());
-        }catch (Exception e) {
-            // Řízená chyba
-            return null;
-        }
+    @JsonIgnore @Override
+    public Model_Project getProject() {
+        return isLoaded("project") ? this.project : Model_Project.find.query().nullable().where().eq("c_programs.id", this.id).findOne();
     }
 
     @JsonIgnore @Transient public List<UUID> getVersionsId() {
@@ -133,7 +120,6 @@ public class Model_CProgram extends TaggedModel {
         return idCache().gets(Model_CProgramVersion.class) != null ?  idCache().gets(Model_CProgramVersion.class) : new ArrayList<>();
     }
 
-
     @JsonIgnore
     public void sort_Model_Model_CProgramVersion_ids() {
 
@@ -141,9 +127,7 @@ public class Model_CProgram extends TaggedModel {
         this.idCache().removeAll(Model_CProgramVersion.class);
         versions.stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())
                 .forEach(o -> this.idCache().add(Model_CProgramVersion.class, o.id));
-
     }
-
 
     @JsonIgnore @Transient public List<Model_CProgramVersion> getVersions() {
         try {
@@ -173,12 +157,7 @@ public class Model_CProgram extends TaggedModel {
     }
 
     @JsonIgnore @Transient public Model_HardwareType getHardwareType()     {
-        try {
-            return Model_HardwareType.find.byId(getHardwareTypeId());
-        }catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return isLoaded("hardware_type") ? hardware_type : Model_HardwareType.find.query().where().eq("c_programs.id", id).findOne();
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -201,13 +180,7 @@ public class Model_CProgram extends TaggedModel {
 
         // Call notification about model update
         if(publish_type == ProgramType.PRIVATE) {
-            new Thread(() -> {
-                try {
-                    EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, getProjectId(), this.id));
-                } catch (_Base_Result_Exception e) {
-                    // Nothing
-                }
-            }).start();
+            new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, getProjectId(), this.id))).start();
         }
 
         super.update();
@@ -219,7 +192,7 @@ public class Model_CProgram extends TaggedModel {
         super.delete();
 
         // Remove from Project Cache
-        if(publish_type == ProgramType.PRIVATE) {
+        if (publish_type == ProgramType.PRIVATE) {
 
             try {
                 getProject().idCache().remove(this.getClass(), id);
@@ -264,105 +237,24 @@ public class Model_CProgram extends TaggedModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.CProgram_create.name())) return;
-
-        if(this.project == null) {
-            throw new Result_Error_PermissionDenied();
-        }
-        this.project.check_update_permission();
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        try {
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-
-            if (_BaseController.person().has_permission(Permission.CProgram_update.name())) return;
-
-            if(publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN || publish_type == ProgramType.DEFAULT_TEST) {
-                throw new Result_Error_PermissionDenied();
-            }
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) - Zde je prostor pro to měnit strukturu oprávnění
-            this.getProject().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        try {
-
-            if (publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN || publish_type == ProgramType.DEFAULT_TEST) return;
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-                return;
-            }
-
-            if (_BaseController.person().has_permission(Permission.CProgram_read.name())) return;
-
-
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-            this.getProject().check_read_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        try {
-
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-            }
-            if (_BaseController.person().has_permission(Permission.CProgram_delete.name())) return;
-
-            if(publish_type == ProgramType.PUBLIC || publish_type == ProgramType.DEFAULT_MAIN || publish_type == ProgramType.DEFAULT_TEST) {
-                throw new Result_Error_PermissionDenied();
-            }
-            // Hledám Zda má uživatel oprávnění a přidávám do Listu (vracím true) -- Zde je prostor pro to měnit strukturu oprávnění
-            this.getProject().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.FIRMWARE;
     }
 
-    @JsonProperty @Transient @ApiModelProperty(required = false, value = "Visible only for Administrator with Permission") @JsonInclude(JsonInclude.Include.NON_NULL) public Boolean community_publishing_permission()  {
-        try {
-            // Cache už Obsahuje Klíč a tak vracím hodnotu
-            if (_BaseController.person().has_permission(Permission.C_Program_community_publishing_permission.name())) {
-                return true;
-            }
-            return null;
-        }catch (_Base_Result_Exception e){
-            return null;
-        } catch (Exception e){
-            logger.internalServerError(e);
-            return null;
-        }
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.PUBLISH);
     }
 
-    public enum Permission { CProgram_create, CProgram_read, CProgram_update, CProgram_delete, C_Program_community_publishing_permission }
+    @JsonPermission(Action.PUBLISH) @Transient
+    public boolean community_publishing_permission;
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_CProgram.class)
+    @InjectCache(Model_CProgram.class)
     public static CacheFinder<Model_CProgram> find = new CacheFinder<>(Model_CProgram.class);
 }
 

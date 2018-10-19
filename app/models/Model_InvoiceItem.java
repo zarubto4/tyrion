@@ -6,16 +6,11 @@ import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
-import utilities.cache.Cached;
-import utilities.enums.Currency;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.UUID;
 
 @Entity
@@ -28,7 +23,7 @@ private static final Logger logger = new Logger(Model_InvoiceItem.class);
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
 
-    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                       public Model_Invoice invoice;    // TODO Cache jako v ostatních cache objektech [MARTIN TODO] - jestli to někde někdo blbě nevolá
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                       public Model_Invoice invoice;
 
                                                                          public String name; // Jméno položky
                                                                          public BigDecimal   quantity; // Počet položek
@@ -36,8 +31,6 @@ private static final Logger logger = new Logger(Model_InvoiceItem.class);
                                                                          public BigDecimal unit_price;  // Cena za položku
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Cached private UUID cache_invoice_id;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -52,30 +45,9 @@ private static final Logger logger = new Logger(Model_InvoiceItem.class);
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore     // TODO Cache jako v ostatních cache objektech [MARTIN TODO]
-    public UUID get_invoice_id() throws _Base_Result_Exception {
-
-        if (cache_invoice_id == null) {
-
-            Model_Invoice invoice = Model_Invoice.find.query().where().eq("invoice_items.id", id).select("id").findOne();
-            if (invoice != null) {
-                cache_invoice_id = invoice.id;
-            } else {
-                cache_invoice_id = null;
-            }
-        }
-
-        return cache_invoice_id;
-    }
-
-    @JsonIgnore    // TODO Cache jako v ostatních cache objektech [MARTIN TODO]
-    public Model_Invoice get_invoice() throws _Base_Result_Exception {
-
-        if (get_invoice_id() != null) {
-            return Model_Invoice.find.byId(cache_invoice_id);
-        }
-
-        return null;
+    @JsonIgnore
+    public Model_Invoice getInvoice() {
+        return isLoaded("invoice") ? invoice : Model_Invoice.find.query().where().eq("invoice_items.id", id).findOne();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -84,14 +56,7 @@ private static final Logger logger = new Logger(Model_InvoiceItem.class);
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception { invoice.check_update_permission();}
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception { get_invoice().check_read_permission();}
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception { get_invoice().check_update_permission();}
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception { get_invoice().check_update_permission();}
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

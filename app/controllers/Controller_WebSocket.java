@@ -1,6 +1,5 @@
 package controllers;
 
-import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.stream.Materializer;
 import com.typesafe.config.Config;
@@ -22,6 +21,7 @@ import responses.Result_Unauthorized;
 import utilities.authentication.Authentication;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.output.Swagger_Websocket_Token;
 import websocket.interfaces.WS_Portal;
@@ -52,8 +52,8 @@ public class Controller_WebSocket extends _BaseController {
 
 
     @Inject
-    public Controller_WebSocket(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, ActorSystem actorSystem, Materializer materializer) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public Controller_WebSocket(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, ActorSystem actorSystem, Materializer materializer, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
         this.actorSystem = actorSystem;
         this.materializer = materializer;
     }

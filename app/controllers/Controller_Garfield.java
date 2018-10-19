@@ -1,11 +1,10 @@
 package controllers;
 
-import com.google.inject.Inject;
 import com.typesafe.config.Config;
+import exceptions.ForbiddenException;
 import io.swagger.annotations.*;
 import models.*;
 import play.Environment;
-import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -18,6 +17,7 @@ import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.lablel_printer_service.printNodeModels.Printer;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_Garfield_Edit;
 import utilities.swagger.input.Swagger_Garfield_New;
@@ -36,8 +36,8 @@ public class Controller_Garfield extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public Controller_Garfield(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public Controller_Garfield(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
 // REST - API GARFIELD  #################################################################################################
@@ -85,10 +85,7 @@ public class Controller_Garfield extends _BaseController {
             garfield.print_label_id_2 =  help.print_label_id_2;  // 24 mm
             garfield.print_sticker_id =  help.print_sticker_id; // 65 mm
 
-            garfield.update();
-
-            // Vrácení objektu
-            return ok(garfield);
+            return update(garfield);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -139,9 +136,7 @@ public class Controller_Garfield extends _BaseController {
             garfield.hardware_type_id = help.hardware_type_id;
             garfield.producer_id = help.producer_id;
 
-            garfield.save();
-
-            return ok(garfield);
+            return create(garfield);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -163,16 +158,7 @@ public class Controller_Garfield extends _BaseController {
     })
     public Result remove_Garfield(UUID garfield_id) {
         try {
-
-            // Kontrola objektu
-            Model_Garfield garfield = Model_Garfield.find.byId(garfield_id);
-
-            // Odsranit objekt
-            garfield.delete();
-
-            // Vrácení objektu
-            return ok();
-
+            return delete(Model_Garfield.find.byId(garfield_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -193,13 +179,7 @@ public class Controller_Garfield extends _BaseController {
     })
     public Result get_Garfield(UUID garfield_id) {
         try {
-
-            // Kontrola objektu
-            Model_Garfield garfield = Model_Garfield.find.byId(garfield_id);
-
-            // Vrácení objektu
-            return ok(garfield);
-
+            return read(Model_Garfield.find.byId(garfield_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -222,6 +202,9 @@ public class Controller_Garfield extends _BaseController {
     public Result print_label(UUID board_id) {
         try {
 
+            if (!isAdmin()) {
+                throw new ForbiddenException();
+            }
 
             // Kotrola objektu
             Model_Hardware hardware = Model_Hardware.find.byId(board_id);
@@ -246,14 +229,14 @@ public class Controller_Garfield extends _BaseController {
             // Label 62 mm
             try {
                 // Test for creating - Controlling all prerequisites and requirements
-                new Label_62_mm_package(entity, batch, hardware.getHardwareTypeCache(), garfield);
+                new Label_62_mm_package(entity, batch, hardware.getHardwareType(), garfield);
             } catch (IllegalArgumentException e) {
                 logger.error("print_label:: Label_62_mm_package printer info Error, " + e.getMessage());
                 return badRequest("Something is wrong: " + e.getMessage());
             }
 
             // Label 62 mm
-            Label_62_mm_package label_62_mmPackage = new Label_62_mm_package(entity, batch, hardware.getHardwareTypeCache(), garfield);
+            Label_62_mm_package label_62_mmPackage = new Label_62_mm_package(entity, batch, hardware.getHardwareType(), garfield);
             api.printFile(garfield.print_sticker_id, 1, "Garfield Print Label", label_62_mmPackage.get_label(), null);
 
             // Label qith QR kode on Ethernet connector
@@ -285,13 +268,11 @@ public class Controller_Garfield extends _BaseController {
     public Result get_Garfield_list() {
         try {
 
-            if (!person().has_permission(Model_Garfield.Permission.Garfield_read.name()))  return forbidden();
+            if (!isAdmin()) {
+                throw new ForbiddenException();
+            }
 
-            // Kontrola objektu
-            List<Model_Garfield> garfield_s = Model_Garfield.find.query().where().orderBy("UPPER(name) ASC").findList();
-
-            // Vrácení objektu
-            return ok(garfield_s);
+            return ok(Model_Garfield.find.query().where().orderBy("UPPER(name) ASC").findList());
 
         } catch (Exception e) {
             return controllerServerError(e);

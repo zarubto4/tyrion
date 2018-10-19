@@ -3,19 +3,19 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.*;
 import utilities.enums.Currency;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
+import utilities.model.UnderCustomer;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -24,7 +24,7 @@ import java.util.*;
 @Entity
 @ApiModel( value = "Invoice", description = "Model of Invoice")
 @Table(name="Invoice")
-public class Model_Invoice extends BaseModel {
+public class Model_Invoice extends BaseModel implements Permissible, UnderCustomer {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -66,11 +66,11 @@ public class Model_Invoice extends BaseModel {
     @JsonIgnore @OneToMany(mappedBy="invoice",
             cascade = CascadeType.ALL, fetch = FetchType.LAZY)   public List<Model_InvoiceItem> invoice_items = new ArrayList<>();
 
- @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public Currency currency;
- @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public PaymentMethod method;
+    public Currency currency;
+    public PaymentMethod method;
 
-                    @JsonIgnore   @Enumerated(EnumType.STRING)   public InvoiceStatus status;
-                    @JsonIgnore   @Enumerated(EnumType.STRING)   public PaymentWarning warning;
+    @JsonIgnore public InvoiceStatus status;
+    @JsonIgnore public PaymentWarning warning;
 
 /* JSON PROPERTY VALUES -----------------------------------------------------------------------------------------------*/
 
@@ -92,9 +92,9 @@ public class Model_Invoice extends BaseModel {
         // Only user with update permission should be able to see invoices which are not
         // synchronized with Facturoid nad without prices set from it - show the estimate.
         try {
-            check_update_permission();
+            // TODO check_update_permission();
             return getTotalPriceWithoutVatEstimate();
-        } catch (_Base_Result_Exception e){
+        } catch (Exception e){
             return null;
         }
     }
@@ -117,9 +117,9 @@ public class Model_Invoice extends BaseModel {
         // Only user with update permission should be able to see invoices which are not
         // synchronized with Facturoid nad without prices set from it - show the estimate.
         try {
-            check_update_permission();
+            // TODO check_update_permission();
             return getTotalPriceWithVatEstimate();
-        } catch (_Base_Result_Exception e){
+        } catch (Exception e){
             return null;
         }
     }
@@ -128,9 +128,6 @@ public class Model_Invoice extends BaseModel {
     public String invoice_pdf_link()  {
         try{
             return fakturoid_pdf_url != null ?  Server.httpAddress + "/invoice/pdf/invoice/" + id : null;
-            } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -141,9 +138,6 @@ public class Model_Invoice extends BaseModel {
     public String proforma_pdf_link() {
         try {
             return proforma_pdf_url != null ?  Server.httpAddress + "/invoice/pdf/proforma/" + id : null;
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -154,9 +148,6 @@ public class Model_Invoice extends BaseModel {
     public boolean require_payment()  {
         try{
             return status == InvoiceStatus.PENDING || status == InvoiceStatus.OVERDUE;
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return false;
         } catch (Exception e) {
             logger.internalServerError(e);
             return false;
@@ -169,9 +160,6 @@ public class Model_Invoice extends BaseModel {
         if (status == InvoiceStatus.PENDING || status == InvoiceStatus.OVERDUE) return this.gw_url;
 
         return null;
-       } catch (_Base_Result_Exception e){
-           //nothing
-           return null;
        } catch (Exception e) {
            logger.internalServerError(e);
            return null;
@@ -191,11 +179,7 @@ public class Model_Invoice extends BaseModel {
                 default             : return  "Undefined state";
             }
 
-        }catch (_Base_Result_Exception e){
-            logger.internalServerError(e);
-            return null;
-
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
@@ -208,11 +192,7 @@ public class Model_Invoice extends BaseModel {
 
             return Model_InvoiceItem.find.query().where().eq("invoice.id", this.id).findList();
 
-         }catch (_Base_Result_Exception e){
-            logger.internalServerError(e);
-            return null;
-
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
@@ -259,8 +239,12 @@ public class Model_Invoice extends BaseModel {
 
     @JsonIgnore
     public Model_Product getProduct() {
-        if (product == null) product = Model_Product.getByInvoice(this.id);
-        return product;
+        return isLoaded("product") ? product : Model_Product.getByInvoice(this.id);
+    }
+
+    @JsonIgnore @Override
+    public Model_Customer getCustomer() {
+        return getProduct().getCustomer();
     }
 
     /**
@@ -436,39 +420,22 @@ public class Model_Invoice extends BaseModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Invoice_create.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Invoice_read.name())) return;
-        if(!isIssued()) {
-            if(_BaseController.person().has_permission(Permission.Invoice_update.name())) return;
-            throw new Result_Error_PermissionDenied();
-        }
-
-        getProduct().owner.check_read_permission();
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Invoice_update.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Permission.Invoice_delete.name())) return;
-        throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.INVOICE;
     }
 
-
-    public enum Permission {Invoice_create, Invoice_update, Invoice_read, Invoice_delete}
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Invoice.class)
+    @InjectCache(Model_Invoice.class)
     public static CacheFinder<Model_Invoice> find = new CacheFinder<>(Model_Invoice.class);
 }

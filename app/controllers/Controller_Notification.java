@@ -1,14 +1,10 @@
 package controllers;
 
-import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.Model_Notification;
 import play.Environment;
-import play.data.Form;
-import play.data.FormFactory;
-import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -19,8 +15,8 @@ import utilities.enums.NotificationState;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.notifications.NotificationActionHandler;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
-import utilities.swagger.input.Swagger_Library_New;
 import utilities.swagger.input.Swagger_Notification_Confirm;
 import utilities.swagger.input.Swagger_Notification_Read;
 import utilities.swagger.output.filter_results.Swagger_Notification_List;
@@ -38,8 +34,8 @@ public class Controller_Notification extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public Controller_Notification(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public Controller_Notification(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
 // PUBLIC CONTROLLER METHODS ###########################################################################################
@@ -90,12 +86,7 @@ public class Controller_Notification extends _BaseController {
   @Security.Authenticated(Authentication.class)
   public Result notification_delete(UUID notification_id) {
     try {
-
-      Model_Notification notification = Model_Notification.find.byId(notification_id);
-
-      notification.delete();
-      return ok();
-
+      return delete(Model_Notification.find.byId(notification_id));
     } catch (Exception e) {
       return controllerServerError(e);
     }
@@ -133,6 +124,8 @@ public class Controller_Notification extends _BaseController {
         Swagger_Notification_Read help = formFromRequestWithValidation(Swagger_Notification_Read.class);
 
         List<Model_Notification> notifications = Model_Notification.find.query().where().idIn(help.notification_id).findList();
+
+        // TODO permissions
 
         for (Model_Notification notification : notifications) {
 
@@ -216,7 +209,7 @@ public class Controller_Notification extends _BaseController {
           // Kontrola objektu
           Model_Notification notification = Model_Notification.find.byId(notification_id);
 
-          notification.check_confirm_permission();
+          this.checkUpdatePermission(notification);
 
           if (notification.confirmed) return badRequest("Notification is already confirmed");
 

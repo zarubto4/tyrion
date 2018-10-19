@@ -3,43 +3,46 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
+import utilities.enums.EntityType;
 import utilities.enums.ExtensionType;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.financial.extensions.configurations.Configuration;
 import utilities.financial.extensions.consumptions.ResourceConsumption;
 import utilities.financial.extensions.extensions.Extension;
 import utilities.logger.Logger;
 import utilities.model.OrderedNamedModel;
+import utilities.model.Publishable;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
+import utilities.permission.WithPermission;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Entity
 @ApiModel(value = "TariffExtension", description = "Model of TariffExtension")
 @Table(name="TariffExtension")
-public class Model_TariffExtension extends OrderedNamedModel {
+public class Model_TariffExtension extends OrderedNamedModel implements Permissible, Publishable {
     /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
     private static final Logger logger = new Logger(Model_ProductExtension.class);
 
     /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                       @ApiModelProperty(required = true) public String color;
+    @ApiModelProperty(required = true) public String color;
+    @ApiModelProperty(required = true) public ExtensionType type;
 
-          @Enumerated(EnumType.STRING) @ApiModelProperty(required = true) public ExtensionType type;
-                           @Column(columnDefinition = "TEXT") @JsonIgnore public String configuration;
-                           @Column(columnDefinition = "TEXT") @JsonIgnore public String consumption;
-                         @JsonProperty @ApiModelProperty(required = true) public boolean active;
+      @Column(columnDefinition = "TEXT") @JsonIgnore public String configuration;
+      @Column(columnDefinition = "TEXT") @JsonIgnore public String consumption;
+    @JsonProperty @ApiModelProperty(required = true) public boolean active;
 
        @JoinTable(name = "tariff_extensions_included")
        @JsonIgnore @ManyToMany(mappedBy="extensions_included", fetch = FetchType.LAZY)  public List<Model_Tariff> tariffs_included = new ArrayList<>();
@@ -47,12 +50,12 @@ public class Model_TariffExtension extends OrderedNamedModel {
        @JoinTable(name = "tariff_extensions_recommended")
        @JsonIgnore @ManyToMany(mappedBy="extensions_recommended", fetch = FetchType.LAZY)  public List<Model_Tariff> tariffs_recommended = new ArrayList<>();
 
-    /* CONSTUCTOR *****-----------------------------------------------------------------------------------------------------*/
+/* CONSTUCTOR *****-----------------------------------------------------------------------------------------------------*/
     public Model_TariffExtension() {
         super(find);
     }
 
-    /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     /**
      * ONLY FOR FRONTEND! For calculations usegetPrice()
@@ -63,11 +66,9 @@ public class Model_TariffExtension extends OrderedNamedModel {
         return getPrice().setScale(Server.financial_price_scale, Server.financial_price_rounding).doubleValue();
     }
 
-    @JsonProperty  @ApiModelProperty(required = false, value = "Visible only for Administrator with Special Permission")  @JsonInclude(JsonInclude.Include.NON_NULL)
+    @WithPermission @JsonProperty @ApiModelProperty(required = false, value = "Visible only for Administrator with Special Permission")  @JsonInclude(JsonInclude.Include.NON_NULL)
     public String config() {
         try {
-
-            check_update_permission();
             if (configuration == null) {
                 throw new NullPointerException();
             }
@@ -81,11 +82,10 @@ public class Model_TariffExtension extends OrderedNamedModel {
         }
     }
 
-    @JsonProperty  @ApiModelProperty(required = false, value = "Visible only for Administrator with Special Permission")  @JsonInclude(JsonInclude.Include.NON_NULL)
+    @WithPermission @JsonProperty @ApiModelProperty(required = false, value = "Visible only for Administrator with Special Permission")  @JsonInclude(JsonInclude.Include.NON_NULL)
     public String consumption() {
         try {
 
-            check_update_permission();
             if (consumption == null) {
                 throw new NullPointerException();
             }
@@ -99,7 +99,12 @@ public class Model_TariffExtension extends OrderedNamedModel {
         }
     }
 
-    /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Override
+    public boolean isPublic() {
+        return true;
+    }
 
     @JsonIgnore
     public Extension createExtension() throws Exception {
@@ -125,35 +130,20 @@ public class Model_TariffExtension extends OrderedNamedModel {
         }
     }
 
-    /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Model_TariffExtension.Permission.TariffExtension_create.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Model_TariffExtension.Permission.TariffExtension_read.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Model_TariffExtension.Permission.TariffExtension_update.name())) return;
-        throw new Result_Error_PermissionDenied();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Model_TariffExtension.Permission.TariffExtension_delete.name())) return;
-        throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.TARIFF_EXTENSION;
     }
 
-    @JsonProperty @ApiModelProperty(required = true) public void check_act_deactivate_permission()  throws _Base_Result_Exception {
-        if(_BaseController.person().has_permission(Model_TariffExtension.Permission.TariffExtension_act_deactivate.name())) return;
-        throw new Result_Error_PermissionDenied();
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
     }
-
-    public enum Permission { TariffExtension_create, TariffExtension_read, TariffExtension_update, TariffExtension_act_deactivate, TariffExtension_delete }
 
     /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_TariffExtension.class)
+    @InjectCache(Model_TariffExtension.class)
     public static CacheFinder<Model_TariffExtension> find = new CacheFinder<>(Model_TariffExtension.class);
 }

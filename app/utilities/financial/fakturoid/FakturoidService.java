@@ -25,6 +25,7 @@ import utilities.financial.fakturoid.helps_objects.Fakturoid_InvoiceItem;
 import utilities.financial.fakturoid.helps_objects.Fakturoid_Subject;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_Fakturoid_Callback;
 
@@ -45,8 +46,8 @@ public class FakturoidService extends _BaseController {
     private static final Logger logger = new Logger(FakturoidService.class);
 
     @javax.inject.Inject
-    public FakturoidService(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public FakturoidService(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
 // PUBLIC CONTROLLERS METHODS ##########################################################################################

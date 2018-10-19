@@ -1,19 +1,15 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
-import utilities.errors.Exceptions.Result_Error_NotSupportedException;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.cache.InjectCache;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 
 import javax.persistence.Entity;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import java.beans.Transient;
 
 @Entity
 @ApiModel(description = "Model of Log",
@@ -55,37 +51,12 @@ public class Model_Log extends NamedModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        if (_BaseController.person().has_permission(Permission.Log_delete.name())) return;
-        logger.error("check_read_permission: Not Supported");
-        throw new Result_Error_NotSupportedException();
-    }
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        if (_BaseController.person().has_permission(Permission.Log_delete.name())) return;
-        logger.error("check_create_permission: Not Supported");
-        throw new Result_Error_NotSupportedException();
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        if (_BaseController.person().has_permission(Permission.Log_delete.name())) return;
-        logger.error("check_update_permission: Not Supported");
-        throw new Result_Error_NotSupportedException();
-    }
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        if (_BaseController.person().has_permission(Permission.Log_delete.name())) return;
-        logger.error("check_delete_permission: Not Supported");
-        throw new Result_Error_NotSupportedException();
-    }
-
-    public enum Permission {Log_create, Log_read, Log_update, Log_edit, Log_delete}
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Log.class)
+    @InjectCache(Model_Log.class)
     public static CacheFinder<Model_Log> find = new CacheFinder<>(Model_Log.class);
 }

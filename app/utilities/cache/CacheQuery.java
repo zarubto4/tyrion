@@ -1,11 +1,11 @@
 package utilities.cache;
 
-import io.ebean.EbeanServer;
 import io.ebean.ExpressionFactory;
+import io.ebeaninternal.api.SpiEbeanServer;
 import io.ebeaninternal.server.deploy.BeanDescriptor;
 import io.ebeaninternal.server.querydefn.DefaultOrmQuery;
 import org.ehcache.Cache;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import exceptions.NotFoundException;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
@@ -18,58 +18,76 @@ public class CacheQuery<T extends BaseModel> extends DefaultOrmQuery<T> {
 
     private CacheFinder<T> cacheFinder;
 
-    public CacheQuery(CacheFinder<T> cacheFinder, BeanDescriptor<T> desc, EbeanServer server, ExpressionFactory expressionFactory) {
+    private boolean nullable;
+
+    public CacheQuery(CacheFinder<T> cacheFinder, BeanDescriptor<T> desc, SpiEbeanServer server, ExpressionFactory expressionFactory) {
         super(desc, server, expressionFactory);
 
         this.cacheFinder = cacheFinder;
+        this.nullable = false;
     }
 
     @NotNull
     @Override
     public T findOne() {
+        try {
 
-        Integer hash = this.hashCode();
-        String entityName = this.cacheFinder.getEntityType().getSimpleName();
+            Integer hash = this.hashCode();
+            String entityName = this.cacheFinder.getEntityType().getSimpleName();
 
-        logger.trace("findOne - ({}) calculated hash: {}", entityName, hash);
+            logger.trace("findOne - ({}) calculated hash: {}", entityName, hash);
 
-        Cache<Integer, UUID> queryCache = this.cacheFinder.getQueryCache();
-        Cache<UUID, T> cache = this.cacheFinder.getCache();
+            Cache<Integer, UUID> queryCache = this.cacheFinder.getQueryCache();
+            Cache<UUID, T> cache = this.cacheFinder.getCache();
 
-        if (queryCache.containsKey(hash)) {
+            if (queryCache.containsKey(hash)) {
 
-            logger.debug("findOne - ({}) found cached query", entityName);
+                logger.debug("findOne - ({}) found cached query", entityName);
 
-            UUID key = queryCache.get(hash);
-            if (cache.containsKey(key)) {
-                logger.debug("findOne - ({}) get cached record", entityName);
-                return this.cacheFinder.retrieve(key);
+                UUID key = queryCache.get(hash);
+                if (cache.containsKey(key)) {
+                    logger.debug("findOne - ({}) get cached record", entityName);
+                    return cache.get(key);
+                } else {
+                    return this.cacheFinder.byId(key);
+                }
+            }
+
+            logger.debug("findOne - ({}) get from db", entityName);
+            T entity = super.findOne();
+            if (entity == null) {
+                logger.trace("findOne - ({}) not found", entityName);
+                throw new NotFoundException(this.cacheFinder.getEntityType());
+            }
+
+            queryCache.put(hash, entity.id);
+
+            if (cache.containsKey(entity.id)) {
+                logger.debug("findOne - ({}) query not cached, but record itself was cached", entityName);
+                return cache.get(entity.id);
+            }
+
+            cache.put(entity.id, entity);
+
+            return entity;
+
+        } catch (NotFoundException e) {
+            if (this.nullable) {
+                return null;
             } else {
-                return this.cacheFinder.byId(key);
+                throw e;
             }
         }
+    }
 
-        logger.debug("findOne - ({}) get from db", entityName);
-        T entity = super.findOne();
-        if (entity == null) {
-            logger.trace("findOne - ({}) not found", entityName);
-            throw new Result_Error_NotFound(this.cacheFinder.getEntityType());
-        }
-
-        queryCache.put(hash, entity.id);
-
-        if (cache.containsKey(entity.id)) {
-            logger.debug("findOne - ({}) query not cached, but record itself was cached", entityName);
-            return cache.get(entity.id);
-        }
-
-        cache.put(entity.id, entity);
-
-        if (entity.its_person_operation()) {
-            entity.check_read_permission();
-        }
-
-        return entity;
+    /**
+     * If the query is nullable, it will return null
+     * instead of throwing NotFoundException if none was found.
+     * @return query
+     */
+    public CacheQuery<T> nullable() {
+        this.nullable = true;
+        return this;
     }
 
     @Override

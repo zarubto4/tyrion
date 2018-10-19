@@ -6,22 +6,24 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.documentdb.DocumentClientException;
-import controllers._BaseController;
 import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.document_mongo_db.document_objects.DM_CompilationServer_Connect;
 import utilities.document_mongo_db.document_objects.DM_CompilationServer_Disconnect;
 import utilities.enums.CompilationStatus;
+import utilities.enums.EntityType;
 import utilities.enums.NetworkStatus;
 import utilities.errors.ErrorCode;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.model.BaseModel;
+import utilities.model.Publishable;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
+import utilities.permission.WithPermission;
 import utilities.threads.compilator_server.Compilation_After_BlackOut;
 import utilities.logger.Logger;
 import websocket.WS_Message;
@@ -35,7 +37,7 @@ import java.util.*;
 @Table(name="CompilationServer")
 @ApiModel(description = "Model of CompilationServer",
           value = "Compilation_Server")
-public class Model_CompilationServer extends BaseModel {
+public class Model_CompilationServer extends BaseModel implements Permissible, Publishable {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -55,50 +57,32 @@ public class Model_CompilationServer extends BaseModel {
     @ApiModelProperty(required = true, readOnly = true) @JsonProperty
 
     public NetworkStatus online_state() {
-        try{
-        return Controller_WebSocket.compilers.containsKey(this.id) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
-
-        } catch (_Base_Result_Exception e) {
-            // nothing
-            return null;
+        try {
+            return Controller_WebSocket.compilers.containsKey(this.id) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
     }
 
-    @ApiModelProperty(required = false, readOnly = true)
+    @WithPermission @ApiModelProperty(required = false, readOnly = true)
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public String connection_identificator() {
-        try {
-            check_update_permission();
-            return connection_identifier;
-        } catch (_Base_Result_Exception e) {
-            // nothing
-            return null;
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return connection_identifier;
     }
 
-    @ApiModelProperty(required = false, readOnly = true)
+    @WithPermission @ApiModelProperty(required = false, readOnly = true)
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public String hash_certificate() {
-        try {
-            check_update_permission();
-            return hash_certificate;
-
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return hash_certificate;
     }
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+    @JsonIgnore @Override
+    public boolean isPublic() {
+        return true;
+    }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
@@ -148,14 +132,14 @@ public class Model_CompilationServer extends BaseModel {
             request.put("error_message", ErrorCode.COMPILATION_SERVER_IS_OFFLINE.error_message());
             request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
             request.put("websocket_identificator", this.id.toString());
-            return request;
 
+            return request;
         }
     }
 
     @JsonIgnore
     public static boolean is_online() {
-        return  !Controller_WebSocket.compilers.isEmpty();
+        return !Controller_WebSocket.compilers.isEmpty();
     }
 
     @JsonIgnore
@@ -253,22 +237,22 @@ public class Model_CompilationServer extends BaseModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override  @Transient public void check_create_permission() throws _Base_Result_Exception { if(!_BaseController.person().has_permission(Permission.CompilationServer_create.name())) throw new Result_Error_PermissionDenied();}
-    @JsonIgnore @Override  @Transient public void check_read_permission()   throws _Base_Result_Exception {}
-    @JsonIgnore @Override  @Transient public void check_update_permission() throws _Base_Result_Exception { if(!_BaseController.person().has_permission(Permission.CompilationServer_update.name())) throw new Result_Error_PermissionDenied();}
-    @JsonIgnore @Override  @Transient public void check_delete_permission() throws _Base_Result_Exception { if(!_BaseController.person().has_permission(Permission.CompilationServer_delete.name())) throw new Result_Error_PermissionDenied();}
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.COMPILER;
+    }
 
-    public enum Permission { CompilationServer_create, CompilationServer_update, CompilationServer_edit, CompilationServer_delete }
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_CompilationServer.class)
+    @InjectCache(Model_CompilationServer.class)
     public static CacheFinder<Model_CompilationServer> find = new CacheFinder<>(Model_CompilationServer.class);
 }
-

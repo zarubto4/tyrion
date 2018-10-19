@@ -1,6 +1,5 @@
 package controllers;
 
-import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.ebean.Ebean;
 import io.ebean.ExpressionList;
@@ -12,17 +11,21 @@ import models.Model_BProgram;
 import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
+import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_Article_CreateUpdate;
 import utilities.swagger.input.Swagger_Article_Filter;
 import utilities.swagger.output.filter_results.Swagger_Article_List;
 import java.util.UUID;
+
+import static play.mvc.Controller.request;
 
 @Security.Authenticated(Authentication.class)
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -35,8 +38,8 @@ public class Controller_Article extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public Controller_Article(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public Controller_Article(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
 // CONTROLLER CONTENT ##################################################################################################
@@ -77,12 +80,16 @@ public class Controller_Article extends _BaseController {
 
             // Kontrola objektu
 
+            String remote = request().remoteAddress();
+
 
             // Tvorba article
             Model_Article article = new Model_Article();
             article.description           = help.description;
             article.name                  = help.name;
             article.mark_down_text        = help.mark_down_text;
+
+            this.checkCreatePermission(article);
 
             // Uložení objektu
             article.save();
@@ -139,11 +146,7 @@ public class Controller_Article extends _BaseController {
             article.name                = help.name;
             article.mark_down_text      = help.mark_down_text;
 
-            // Uložení objektu
-            article.update();
-
-            // Vrácení objektu
-            return ok(article);
+            return update(article);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -166,16 +169,7 @@ public class Controller_Article extends _BaseController {
     })
     public Result article_delete(UUID article_id) {
         try {
-
-            // Kontrola objektu
-            Model_Article article = Model_Article.find.byId(article_id);
-
-            // Smazání objektu
-            article.delete();
-
-            // Vrácení potvrzení
-            return ok();
-
+            return delete(Model_Article.find.byId(article_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }

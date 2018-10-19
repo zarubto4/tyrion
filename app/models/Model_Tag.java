@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.ebean.Finder;
 import io.ebean.Model;
 import io.swagger.annotations.ApiModel;
-import utilities.errors.Exceptions._Base_Result_Exception;
 import utilities.logger.Logger;
 
 import javax.persistence.*;
@@ -53,17 +52,11 @@ public class Model_Tag extends Model {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_Tag getById(UUID id) throws _Base_Result_Exception {
-        return find.byId(id);
-    }
-
-    public static Model_Tag getByValue(String value) throws _Base_Result_Exception {
+    public static Model_Tag getByValue(String value) {
         return find.query().where().eq("value", value).findOne();
     }
 

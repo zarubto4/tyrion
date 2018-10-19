@@ -18,14 +18,16 @@ import play.mvc.Result;
 import responses.*;
 import utilities.Server;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.CompilationStatus;
-import utilities.errors.Exceptions.Result_Error_NotFound;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import utilities.enums.EntityType;
+import exceptions.NotFoundException;
 import utilities.logger.Logger;
+import utilities.model.UnderProject;
 import utilities.model.VersionModel;
 import utilities.models_update_echo.EchoHandler;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_C_Program_Version;
 import utilities.swagger.output.Swagger_Short_Reference;
@@ -35,16 +37,13 @@ import websocket.messages.tyrion_with_becki.WSM_Echo;
 import javax.persistence.*;
 import java.net.ConnectException;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletionStage;
 
 @Entity
 @ApiModel( value = "CProgramVersion", description = "Model of CProgramVersion")
 @Table(name="CProgramVersion")
-public class Model_CProgramVersion extends VersionModel {
+public class Model_CProgramVersion extends VersionModel implements Permissible, UnderProject {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -65,42 +64,17 @@ public class Model_CProgramVersion extends VersionModel {
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public CompilationStatus status(){
-        try {
-            return compilation != null ? compilation.status : CompilationStatus.UNDEFINED;
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return null;
-        }
+        return compilation != null ? compilation.status : CompilationStatus.UNDEFINED;
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
     public String compilation_version(){
-       try{
-          return  compilation != null ? compilation.firmware_version_lib : CompilationStatus.UNDEFINED.name();
-       } catch (_Base_Result_Exception e){
-           //nothing
-           return null;
-       }catch (Exception e){
-           logger.internalServerError(e);
-           return null;
-       }
+        return  compilation != null ? compilation.firmware_version_lib : CompilationStatus.UNDEFINED.name();
     }
 
-    @JsonProperty @ApiModelProperty(required = true, readOnly = true, value = "Value can be empty, Server cannot guarantee that. External documentation: " + Model_Compilation.virtual_input_output_docu)
+    @JsonProperty @ApiModelProperty(required = true, readOnly = true, value = "Value can be empty, Server cannot guarantee that.")
     public String virtual_input_output(){
-        try{
-        if(compilation != null) return compilation.virtual_input_output;
-        else return null;
-    } catch (_Base_Result_Exception e){
-        //nothing
-        return null;
-    }catch (Exception e){
-        logger.internalServerError(e);
-        return null;
-    }
+        return compilation != null ? compilation.virtual_input_output : null;
     }
 
     @JsonProperty @ApiModelProperty(required = false, readOnly = true, value = "Link for download file in Binary (Not in Base64). Its ready to manual Upload. Only if \"status\" == \"SUCCESS\"")
@@ -112,9 +86,6 @@ public class Model_CProgramVersion extends VersionModel {
                 return null;
             }
 
-        } catch (_Base_Result_Exception e) {
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -123,19 +94,7 @@ public class Model_CProgramVersion extends VersionModel {
 
     @JsonProperty @ApiModelProperty(value = "Visible only for Administrator with Special Permission", required = false) @JsonInclude(JsonInclude.Include.NON_NULL)
     public Boolean main_mark(){
-        try{
-        if(default_program != null){
-            return true;
-        }
-        return null;
-
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
-        }catch (Exception e){
-            logger.internalServerError(e);
-            return null;
-        }
+        return default_program != null ? true : null;
     }
 
     @JsonProperty @ApiModelProperty(value = "Program", required = false)
@@ -163,7 +122,7 @@ public class Model_CProgramVersion extends VersionModel {
                         pair.library_version = new Swagger_Short_Reference(library_version.id, library_version.name, library_version.description);
 
                         c_program_versions.imported_libraries.add(pair);
-                    } catch (Result_Error_NotFound e) {
+                    } catch (NotFoundException e) {
                         // Nothing
                     }
                 }
@@ -183,7 +142,7 @@ public class Model_CProgramVersion extends VersionModel {
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public UUID get_c_program_id() throws _Base_Result_Exception {
+    public UUID get_c_program_id() {
 
         if (idCache().get(Model_CProgram.class) == null) {
             idCache().add(Model_CProgram.class, (UUID) Model_CProgram.find.query().where().eq("deleted", false).eq("versions.id", id).select("id").findSingleAttribute());
@@ -193,9 +152,13 @@ public class Model_CProgramVersion extends VersionModel {
     }
 
     @JsonIgnore
-    public Model_CProgram get_c_program() throws _Base_Result_Exception {
-        UUID id = get_c_program_id();
-        return id != null ? Model_CProgram.find.byId(id) : null;
+    public Model_CProgram get_c_program() {
+        return isLoaded("c_program") ? c_program : Model_CProgram.find.query().where().eq("versions.id", id).findOne();
+    }
+
+    @JsonIgnore @Override
+    public Model_Project getProject() {
+        return this.get_c_program().getProject();
     }
 
 
@@ -218,13 +181,7 @@ public class Model_CProgramVersion extends VersionModel {
             program.sort_Model_Model_CProgramVersion_ids();
         }
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, program.getProjectId(), program.id));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, program.getProjectId(), program.id))).start();
     }
 
     @JsonIgnore @Override
@@ -233,13 +190,7 @@ public class Model_CProgramVersion extends VersionModel {
         logger.debug("update::Update object Id: {}",  this.id);
         super.update();
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, get_c_program().getProjectId(), get_c_program_id()));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, get_c_program().getProjectId(), get_c_program_id()))).start();
 
     }
 
@@ -250,20 +201,9 @@ public class Model_CProgramVersion extends VersionModel {
 
         super.delete();
 
-        // Add to Cache
-        try {
-            get_c_program().idCache().remove(this.getClass(), id);
-        } catch (_Base_Result_Exception e) {
-            // Nothing
-        }
+        get_c_program().idCache().remove(this.getClass(), id);
 
-        new Thread(() -> {
-            try {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, get_c_program().getProjectId(), get_c_program_id()));
-            } catch (_Base_Result_Exception e) {
-                // Nothing
-            }
-        }).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, get_c_program().getProjectId(), get_c_program_id()))).start();
 
         return false;
     }
@@ -287,19 +227,7 @@ public class Model_CProgramVersion extends VersionModel {
             this.update();
         }
 
-        Thread compile_that = new Thread() {
-
-            @Override
-            public void run() {
-                try {
-                    version.compile_program_procedure();
-                } catch (Exception e) {
-                    logger.internalServerError(e);
-                }
-            }
-        };
-
-        compile_that.start();
+        new Thread(version::compile_program_procedure).start();
     }
 
     @JsonIgnore
@@ -370,7 +298,7 @@ public class Model_CProgramVersion extends VersionModel {
 
                     Model_LibraryVersion lib_version = Model_LibraryVersion.find.byId(lib_id);
 
-                    if (lib_version.get_library() == null) {
+                    if (lib_version.getLibrary() == null) {
                         logger.error("compile_C_Program_code:: library is null ");
                         return _BaseController.badRequest("Error getting libraries - some file is not a library");
                     }
@@ -395,7 +323,7 @@ public class Model_CProgramVersion extends VersionModel {
                         library_files.addAll(lib_file.files);
 
                     }
-                } catch (_Base_Result_Exception exception) {
+                } catch (NotFoundException exception) {
                     logger.error("compile_C_Program_code:: lib_version is null ");
                     return _BaseController.notFound("Error getting libraries - library version not found");
                 }
@@ -548,19 +476,11 @@ public class Model_CProgramVersion extends VersionModel {
 
             return _BaseController.externalServerError();
 
-        }catch (_Base_Result_Exception error){
-
-            // Result_Error_NotFound
-            if(error.getClass().getSimpleName().equals(Result_Error_NotFound.class.getSimpleName())){
-                Result_Error_NotFound not_found = (Result_Error_NotFound) error.getCause();
-                return _BaseController.notFound(not_found.getEntity());
-            }
-            logger.internalServerError(error);
-           return _BaseController.internalServerError(error);
-
-        }catch (Exception error){
-            logger.internalServerError(error);
-            return _BaseController.internalServerError(error);
+        } catch (NotFoundException e) {
+            return _BaseController.notFound(e.getEntity());
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return _BaseController.internalServerError(e);
         }
     }
 
@@ -574,61 +494,20 @@ public class Model_CProgramVersion extends VersionModel {
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override public void check_create_permission() throws _Base_Result_Exception { c_program.check_update_permission();}
-    @JsonIgnore @Override public void check_read_permission()   throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-                return;
-            }
-
-            get_c_program().check_read_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Override public void check_update_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-
-            get_c_program().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Override public void check_delete_permission() throws _Base_Result_Exception {
-        try {
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-                return;
-            }
-
-            get_c_program().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.FIRMWARE_VERSION;
     }
 
-    public enum Permission {} // Not Required here
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.PUBLISH);
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
 /* FINDER -------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_CProgramVersion.class)
+    @InjectCache(Model_CProgramVersion.class)
     public static CacheFinder<Model_CProgramVersion> find = new CacheFinder<>(Model_CProgramVersion.class);
 }

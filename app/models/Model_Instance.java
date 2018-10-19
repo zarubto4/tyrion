@@ -5,23 +5,22 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.Server;
-import utilities.cache.CacheField;
 import utilities.cache.CacheFinder;
-import utilities.cache.CacheFinderField;
+import utilities.cache.InjectCache;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
-import utilities.errors.Exceptions.Result_Error_NotFound;
-import utilities.errors.Exceptions.Result_Error_PermissionDenied;
-import utilities.errors.Exceptions._Base_Result_Exception;
+import exceptions.NotFoundException;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
+import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfiguration;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationFile;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationProgram;
@@ -42,7 +41,7 @@ import java.util.stream.Collectors;
 @Entity
 @ApiModel(description = "Model of Instance", value = "Instance")
 @Table(name="Instance")
-public class Model_Instance extends TaggedModel {
+public class Model_Instance extends TaggedModel implements Permissible, UnderProject {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -68,14 +67,11 @@ public class Model_Instance extends TaggedModel {
 
             List<Swagger_Short_Reference> references = new ArrayList<>();
             for(Model_InstanceSnapshot snapshot :  getSnapShots()) {
-                references.add(new Swagger_Short_Reference(snapshot.id, snapshot.name, snapshot.description));
+                references.add(snapshot.ref());
             }
 
             return references;
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -85,13 +81,7 @@ public class Model_Instance extends TaggedModel {
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public Swagger_Short_Reference b_program(){
         try {
-
-            Model_BProgram program = get_BProgram();
-            return new Swagger_Short_Reference(program.id, program.name, program.description);
-
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
+            return get_BProgram().ref();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -101,10 +91,7 @@ public class Model_Instance extends TaggedModel {
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public Model_HomerServer server(){
         try {
-            return getHomerServer();
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
+            return getServer();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -112,17 +99,15 @@ public class Model_Instance extends TaggedModel {
     }
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Model_InstanceSnapshot current_snapshot() throws _Base_Result_Exception  {
+    public Model_InstanceSnapshot current_snapshot() {
         try {
             if (this.current_snapshot_id != null) {
                 Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(this.current_snapshot_id);
-                if (snapshot != null) {
-                    return snapshot;
-                }
+                return snapshot;
             }
             return null;
 
-        } catch (_Base_Result_Exception e){
+        } catch (NotFoundException e){
             //nothing
             return null;
         } catch (Exception e) {
@@ -182,9 +167,6 @@ public class Model_Instance extends TaggedModel {
                 return NetworkStatus.UNKNOWN_LOST_CONNECTION_WITH_SERVER;
             }
 
-        } catch (_Base_Result_Exception e){
-            //nothing
-            return null;
         } catch (Exception e) {
             // Záměrný Exception - Občas se nedosynchronizuje Cach - ale system stejnak po zvalidování dorovná stav
            return NetworkStatus.UNKNOWN_LOST_CONNECTION_WITH_SERVER;
@@ -203,9 +185,6 @@ public class Model_Instance extends TaggedModel {
                     return "wss://" + Model_HomerServer.find.byId(getServer_id()).server_url + ":" + Model_HomerServer.find.byId(getServer_id()).web_view_port + "/" + id + "/#token";
                 }
             }
-            return null;
-        } catch (_Base_Result_Exception e){
-            //nothing
             return null;
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -227,38 +206,18 @@ public class Model_Instance extends TaggedModel {
         return idCache().get(Model_Project.class);
     }
 
-    @JsonIgnore
+    @JsonIgnore @Override
     public Model_Project getProject() {
-        try {
-            return Model_Project.find.byId(getProjectId());
-        }catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return isLoaded("project") ? project :  Model_Project.find.query().nullable().where().eq("instances.id", id).findOne();
     }
 
     @JsonIgnore
-    public UUID get_b_program_id() throws _Base_Result_Exception {
-
-       if (idCache().get(Model_BProgram.class) == null) {
-           idCache().add(Model_BProgram.class, Model_BProgram.find.query().where().eq("instances.id", id).select("id").findSingleAttributeList());
-       }
-
-       return idCache().get(Model_BProgram.class);
+    public Model_BProgram get_BProgram() {
+        return isLoaded("b_program") ? b_program : Model_BProgram.find.query().where().eq("instances.id", id).findOne();
     }
 
     @JsonIgnore
-    public Model_BProgram get_BProgram() throws _Base_Result_Exception {
-        try {
-            return Model_BProgram.find.byId(get_b_program_id());
-        }catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    @JsonIgnore
-    public List<UUID> getHardwareIds() throws _Base_Result_Exception  {
+    public List<UUID> getHardwareIds() {
 
         return current_snapshot().getHardwareIds();
     }
@@ -276,14 +235,12 @@ public class Model_Instance extends TaggedModel {
 
     @JsonIgnore
     public Model_HomerServer getServer() {
-
-        return Model_HomerServer.find.byId(getServer_id());
-
+        return isLoaded("server_main") ? server_main : Model_HomerServer.find.query().where().eq("instances.id", id).findOne();
     }
 
 
     @JsonIgnore
-    public List<UUID> getSnapShotsIds() throws _Base_Result_Exception  {
+    public List<UUID> getSnapShotsIds() {
 
         if (idCache().gets(Model_InstanceSnapshot.class) == null) {
             idCache().add(Model_InstanceSnapshot.class,  Model_InstanceSnapshot.find.query().where().ne("deleted", true).eq("instance.id", id).order().desc("created").select("id").findSingleAttributeList());
@@ -293,7 +250,7 @@ public class Model_Instance extends TaggedModel {
     }
 
     @JsonIgnore
-    public List<Model_InstanceSnapshot> getSnapShots() throws _Base_Result_Exception {
+    public List<Model_InstanceSnapshot> getSnapShots() {
         try {
 
             List<Model_InstanceSnapshot> list = new ArrayList<>();
@@ -308,7 +265,7 @@ public class Model_Instance extends TaggedModel {
 
             return list;
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
@@ -323,18 +280,6 @@ public class Model_Instance extends TaggedModel {
                 .forEach(o -> this.idCache().add(Model_InstanceSnapshot.class, o.id));
 
     }
-
-
-    @JsonIgnore
-    public Model_HomerServer getHomerServer() {
-        try {
-            return Model_HomerServer.find.byId(getServer_id());
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
 
 /* JSON Override  Method -----------------------------------------------------------------------------------------*/
 
@@ -650,7 +595,7 @@ public class Model_Instance extends TaggedModel {
 
                 if(settings == null){
                     logger.error("SnapShotConfiguration is missing return null");
-                    throw new Result_Error_NotFound(Swagger_InstanceSnapShotConfiguration.class);
+                    throw new NotFoundException(Swagger_InstanceSnapShotConfiguration.class);
                 }
 
                 for(Swagger_InstanceSnapShotConfigurationFile grids_collection : settings.grids_collections){
@@ -666,7 +611,7 @@ public class Model_Instance extends TaggedModel {
 
                 if(collection == null){
                     logger.error("SnapShotConfigurationFile is missing return null");
-                    throw new Result_Error_NotFound(Swagger_InstanceSnapShotConfigurationFile.class);
+                    throw new NotFoundException(Swagger_InstanceSnapShotConfigurationFile.class);
                 }
 
                 logger.debug("Enum_MProgram_SnapShot_settings: {}", program.snapshot_settings);
@@ -722,7 +667,7 @@ public class Model_Instance extends TaggedModel {
                     logger.debug("cloud_verification_token:: Grid_Terminal object has  own Person - its probably private or it can be public - Trying to find Instance with user ID and public value");
                     if (Model_Instance.find.query().where()
                             .eq("id", help.instance_id)
-                            .eq("project.participants.person.id", terminal.person.id)
+                            .eq("project.persons.id", terminal.person.id)
                             // .or(Expr.eq("project.participants.person.id", terminal.person.id), Expr.eq("actual_instance.version.public_version", true)) TODO find grid access settings
                             .findCount() > 0) {
                         logger.trace("cloud_verification_token_GRID:: Permission found");
@@ -758,16 +703,15 @@ public class Model_Instance extends TaggedModel {
 
             logger.debug("Cloud_Homer_server:: cloud_verification_token:: WebView FloatingPersonToken Token found and user have permission");
 
-
             // Kontola operávnění ke konkrétní instanci??
             Model_HomerServer server = Model_HomerServer.find.byId(homer.id);
 
             // Veřejný server
-            if(server.server_type == HomerType.PUBLIC || server.server_type == HomerType.MAIN || server.server_type == HomerType.BACKUP) {
+            if (server.server_type == HomerType.PUBLIC || server.server_type == HomerType.MAIN || server.server_type == HomerType.BACKUP) {
 
                 logger.debug("cloud_verification_token:: Server is public - try to find participants.person.id");
 
-                if (Model_Instance.find.query().where().eq("id", help.instance_id).eq("b_program.project.participants.person.id", floatingPersonToken.get_person_id()).findCount() > 0) {
+                if (Model_Instance.find.query().where().eq("id", help.instance_id).eq("b_program.project.persons.id", floatingPersonToken.get_person_id()).findCount() > 0) {
                     logger.warn("cloud_verification_token:: Yes - participants id found!");
                     homer.send(help.get_result(true));
                 } else {
@@ -780,19 +724,16 @@ public class Model_Instance extends TaggedModel {
 
                 logger.warn("cloud_verification_token:: Its a private Server!");
 
-                if(Model_Project.find.query().where().eq("servers.id", server.id).eq("participants.person.id", floatingPersonToken.get_person_id()).select("id").findOne() != null) {
+                if (Model_Project.find.query().nullable().where().eq("servers.id", server.id).eq("persons.id", floatingPersonToken.get_person_id()).select("id").findOne() != null) {
                     logger.trace("validate_incoming_user_connection_to_hardware_logger:: Private Server Find fot this Person");
                     homer.send(help.get_result(true));
 
-                }else {
+                } else {
                     logger.warn("validate_incoming_user_connection_to_hardware_logger:: Private Server NOT Find fot this Person");
                     homer.send(help.get_result(false));
 
                 }
-
             }
-
-
         } catch (Exception e) {
             logger.internalServerError(e);
         }
@@ -805,93 +746,25 @@ public class Model_Instance extends TaggedModel {
         return getProject().getPath() + "/instances/" + this.id;
     }
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override public void check_create_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_create_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_create_" + id);
-                return;
-            }
-            if (_BaseController.person().has_permission(Permission.Instance_create.name())) return;
-
-            this.project.check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_create_" + id, true);
-
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_create_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Transient @Override public void check_read_permission()   throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_read_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_read_" + id);
-                return;
-            }
-            if (_BaseController.person().has_permission(Permission.Instance_read.name())) return;
-
-            this.getProject().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, true);
-
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_read_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
-    }
-    @JsonIgnore @Transient @Override public void check_update_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_update_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_update_" + id);
-                return;
-            }
-            if (_BaseController.person().has_permission(Permission.Instance_update.name())) return;
-
-            this.getProject().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, true);
-
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_update_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.INSTANCE;
     }
 
-    @JsonIgnore @Transient @Override public void check_delete_permission() throws _Base_Result_Exception {
-        try {
-
-            if (_BaseController.person().has_permission(this.getClass().getSimpleName() + "_delete_" + id)) {
-                _BaseController.person().valid_permission(this.getClass().getSimpleName() + "_delete_" + id);
-                return;
-            }
-            if (_BaseController.person().has_permission(Permission.Instance_delete.name())) return;
-
-            this.getProject().check_update_permission();
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, true);
-
-
-        } catch (_Base_Result_Exception e) {
-            _BaseController.person().cache_permission(this.getClass().getSimpleName() + "_delete_" + id, false);
-            throw new Result_Error_PermissionDenied();
-        }
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.DEPLOY);
     }
-
-    public enum Permission { Instance_create, Instance_read, Instance_update, Instance_delete }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    @CacheField(value = Boolean.class, name = "Model_Instance_Status")
+    @InjectCache(value = Boolean.class, name = "Model_Instance_Status")
     public static Cache<UUID, Boolean> cache_status;
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    @CacheFinderField(Model_Instance.class)
+    @InjectCache(Model_Instance.class)
     public static CacheFinder<Model_Instance> find = new CacheFinder<>(Model_Instance.class);
 }

@@ -12,8 +12,10 @@ import utilities.enums.BusinessModel;
 import utilities.enums.ExtensionType;
 import utilities.enums.HomerType;
 import utilities.enums.ProgramType;
+import exceptions.NotFoundException;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 
 import java.math.BigDecimal;
@@ -33,8 +35,8 @@ public class Utilities_Demo_data_Controller extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public Utilities_Demo_data_Controller(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public Utilities_Demo_data_Controller(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
 // CONTROLLER CONTENT ##################################################################################################
@@ -61,14 +63,14 @@ public class Utilities_Demo_data_Controller extends _BaseController {
      */
     public Result all_for_becki() {
 
-        Result result = this.producers();
-        result = this.hardwareType();
-        result = this.external_servers();
-        result = this.basic_tariffs();
-        result = this.person_test_user();
-        result = this.garfield();
+        this.producers();
+        this.hardwareType();
+        this.external_servers();
+        this.basic_tariffs();
+        this.person_test_user();
+        this.garfield();
 
-        return result;
+        return ok();
     }
 
     public Result garfield() {
@@ -76,32 +78,31 @@ public class Utilities_Demo_data_Controller extends _BaseController {
 
             terminal_logger.trace("garfield:: garfield()");
 
-            if (Model_Garfield.find.query().where().eq("name", "Garfield").findOne() != null)
-                return badRequest("Its Already done!");
+            try {
+                Model_Garfield.find.query().where().eq("name", "Garfield").findOne();
+            } catch (NotFoundException e) {
+                Model_Garfield garfield = new Model_Garfield();
 
-            Model_Garfield garfield = new Model_Garfield();
+                garfield.name = "Garfield";
+                garfield.description = "Test Garfield";
+                garfield.hardware_tester_id = "G1_1";
+                garfield.print_label_id_1 =  279211;  // 12 mm
+                garfield.print_label_id_2 =  279211;  // 24 mm
+                garfield.print_sticker_id =  279211;  // 65 mm
 
-            garfield.name = "Garfield";
-            garfield.description = "Test Garfield";
-            garfield.hardware_tester_id = "G1_1";
-            garfield.print_label_id_1 =  279211;  // 12 mm
-            garfield.print_label_id_2 =  279211;  // 24 mm
-            garfield.print_sticker_id =  279211;  // 65 mm
+                Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("name", "IODA G3").findOne();
+                Model_Producer producer = Model_Producer.find.query().where().eq("name", "Byzance ltd").findOne();
 
+                garfield.hardware_type_id = hardwareType.id;
+                garfield.producer_id = producer.id;
 
-            Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("name", "IODA G3").findOne();
-            Model_Producer producer = Model_Producer.find.query().where().eq("name", "Byzance ltd").findOne();
-
-
-            garfield.hardware_type_id = hardwareType.id;
-            garfield.producer_id = producer.id;
-
-            garfield.save();
+                garfield.save();
+            }
 
             return ok();
 
         } catch (Exception e) {
-            return internalServerError(e);
+            return controllerServerError(e);
         }
     }
 
@@ -110,15 +111,14 @@ public class Utilities_Demo_data_Controller extends _BaseController {
     public Result producers() {
         try {
 
-            // Ochranná zarážka proti znovu vytvoření
-            if (Model_Producer.find.query().where().eq("name", "Byzance ltd").findOne() != null)
-                return badRequest("Its Already done!");
-
-            // Nastavím Producer
-            Model_Producer producer = new Model_Producer();
-            producer.name = "Byzance ltd";
-            producer.description = "Developed with love from Byzance";
-            producer.save();
+            try {
+                Model_Producer.find.query().where().eq("name", "Byzance ltd").findOne();
+            } catch (NotFoundException e) {
+                Model_Producer producer = new Model_Producer();
+                producer.name = "Byzance ltd";
+                producer.description = "Developed with love from Byzance";
+                producer.save();
+            }
 
             return ok();
         } catch (Exception e) {
@@ -129,6 +129,12 @@ public class Utilities_Demo_data_Controller extends _BaseController {
     public Result hardwareType() {
         try {
 
+            try {
+                Model_Processor.find.query().where().eq("name", "ARM STM32 FR17").findOne();
+                return ok();
+            } catch (NotFoundException e) {
+                // Nothing
+            }
 
             Model_HardwareFeature features_i2c = new Model_HardwareFeature();
             features_i2c.name = "i2c";
@@ -152,9 +158,6 @@ public class Utilities_Demo_data_Controller extends _BaseController {
 
             // Ochranná zarážka proti znovu vytvoření
             Model_Producer producer = Model_Producer.find.query().where().eq("name", "Byzance ltd").findOne();
-            if (producer == null) return badRequest("Create Producer first");
-            if (Model_Processor.find.query().where().eq("name", "ARM STM32 FR17").findOne() != null)
-                return badRequest("Its Already done!");
 
             // Nastavím Processor - YODA
             Model_Processor processor_1 = new Model_Processor();
@@ -214,12 +217,11 @@ public class Utilities_Demo_data_Controller extends _BaseController {
     public Result external_servers() {
         try {
 
-            // Ochranná zarážka proti znovu vytvoření
-            if (Model_HomerServer.find.query().where().eq("name", "Alfa").findOne() != null)
-                return badRequest("Its Already done!");
-
-            if (Model_HomerServer.find.query().where().eq("server_type", HomerType.MAIN).findCount() > 0) {
-                return badRequest("Its Already done!");
+            try {
+                Model_HomerServer.find.query().where().eq("name", "Alfa").findOne();
+                return ok();
+            } catch (NotFoundException e) {
+                // Nothing
             }
 
             // Nasstavím Homer servery
@@ -286,9 +288,11 @@ public class Utilities_Demo_data_Controller extends _BaseController {
     public Result basic_tariffs() {
         try {
 
-            // Ochranná zarážka proti znovu vytvoření
-            if (Model_Tariff.find.query().where().eq("name", "Alfa account").findOne() != null) {
-                return badRequest("Its Already done!");
+            try {
+                Model_Tariff.find.query().where().eq("name", "Alfa account").findOne();
+                return ok();
+            } catch (NotFoundException e) {
+                // Nothing
             }
 
             Model_TariffExtension extensions_1 = new Model_TariffExtension();
@@ -343,8 +347,12 @@ public class Utilities_Demo_data_Controller extends _BaseController {
     public Result person_test_user() {
         try {
 
-            if (Model_Person.find.query().where().eq("nick_name", "Pepíno").findOne() != null)
-                return badRequest("Its Already done!");
+            try {
+                Model_Person.find.query().where().eq("nick_name", "Pepíno").findOne();
+                return ok();
+            } catch (NotFoundException e) {
+                // Nothing
+            }
 
             System.err.println("Vytvářím uživatele s emailem:  test_user@byzance.cz");
             System.err.println("Heslem: 123456789");

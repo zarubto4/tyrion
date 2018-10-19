@@ -2,7 +2,6 @@ package controllers;
 
 import akka.stream.javadsl.Source;
 import akka.util.ByteString;
-import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -13,18 +12,15 @@ import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.ResponseHeader;
 import play.mvc.Result;
-import play.mvc.Security;
-import utilities.authentication.Authentication;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_GitHubReleases;
 import utilities.swagger.input.Swagger_GitHubReleases_Asset;
 
 import java.time.Duration;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -39,8 +35,8 @@ public class Controller_UploadFiles extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public Controller_UploadFiles(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public Controller_UploadFiles(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
 // UPLOUD FILES ########################################################################################################

@@ -21,6 +21,7 @@ import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Link;
 import utilities.notifications.helps_objects.Notification_Text;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_C_Program_Version_Update;
 import utilities.swagger.input.Swagger_Notification_Test;
@@ -43,8 +44,8 @@ public class NotificationTester extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public NotificationTester(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler) {
-        super(environment, ws, formFactory, youTrack, config, scheduler);
+    public NotificationTester(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 
 /*  VALUES -------------------------------------------------------------------------------------------------------------*/
@@ -54,7 +55,7 @@ public class NotificationTester extends _BaseController {
     public Result test_chain_notifications(String mail) {
         try {
 
-            if(!person().is_admin()) {
+            if(!isAdmin()) {
                 return forbidden();
             }
 
@@ -165,7 +166,7 @@ public class NotificationTester extends _BaseController {
     public Result test_notifications() {
         try {
 
-            if(!person().is_admin()) {
+            if(!isAdmin()) {
                 return forbidden();
             }
 
@@ -223,7 +224,7 @@ public class NotificationTester extends _BaseController {
                         .setText(new Notification_Text().setText(" test red color text, ").setColor(Becki_color.byzance_red))
                         .setLink(new Notification_Link().setUrl("Text linku na google ", "http://google.com"));
 
-                Model_Project project = Model_Project.find.query().where().eq("participants.person.id", person.id).eq("name", "První velkolepý projekt").findOne();
+                Model_Project project = Model_Project.find.query().nullable().where().eq("persons.id", person.id).eq("name", "První velkolepý projekt").findOne();
                 if (project != null) {
                     notification.setObject(project);
 

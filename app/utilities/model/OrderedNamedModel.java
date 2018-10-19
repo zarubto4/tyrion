@@ -18,7 +18,7 @@ public abstract class OrderedNamedModel extends NamedModel {
         this.finder = finder;
     }
 
-    /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+/* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
     public void save() {
@@ -43,13 +43,12 @@ public abstract class OrderedNamedModel extends NamedModel {
         return super.delete();
     }
 
-    /* ORDER ---------------------------------------------------------------------------------------------------------------*/
+/* ORDER ---------------------------------------------------------------------------------------------------------------*/
 
 
     @JsonIgnore
     @Transient
     public void up() {
-        check_update_permission();
 
         OrderedNamedModel up = finder.query().where().eq("order_position", (order_position-1) ).findOne();
         if (up == null) return;
@@ -63,8 +62,6 @@ public abstract class OrderedNamedModel extends NamedModel {
 
     @JsonIgnore @Transient
     public void down() {
-
-        check_update_permission();
 
         OrderedNamedModel down = finder.query().where().eq("order_position", (order_position+1) ).findOne();
         if (down == null) return;
