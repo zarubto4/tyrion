@@ -29,6 +29,8 @@ public class Controller_Things_Mobile {
     private static String email = Server.configuration.getString("mobile_things.username");
     private static final String things_mobile_url = "https://www.thingsmobile.com";
 
+    public static final Double price_per_MB = 3.4;
+
  /* HELPER PRIVATE CLASS   ----------------------------------------------------------------------------------------------*/
 
 

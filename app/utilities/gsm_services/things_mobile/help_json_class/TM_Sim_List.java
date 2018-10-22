@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import java.time.LocalDate;
@@ -88,7 +89,7 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
 
     @JsonProperty
     public Double month_cost() {
-     return  monthlyTraffic / 1024 / 1024 * 3.1;
+     return  monthlyTraffic / 1024 / 1024 * Controller_Things_Mobile.price_per_MB;
     }
 
 

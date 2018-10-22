@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
+import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_Status_cdr;
 
 import javax.persistence.CollectionTable;
@@ -79,6 +80,11 @@ public class DataSim_DataGram {
         
         return list;
         
+    }
+
+    @JsonProperty
+    public Double month_cost() {
+        return  data_consumption / 1024 / 1024 * Controller_Things_Mobile.price_per_MB;
     }
 
     @ApiModel(description = "Value for parsing per country, only if its required by Filter",
