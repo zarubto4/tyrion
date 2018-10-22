@@ -11,22 +11,22 @@ import utilities.logger.Logger;
 import utilities.scheduler.Scheduled;
 
 import java.util.UUID;
-//0/15 0 0 ? * * *
-@Scheduled("0 */2 * ? * *")
-public class Job_ThingsMobileSimListOnlySynchronizer implements Job {
+
+// @Scheduled("0 */2 * ? * *")
+public class Job_ThingsMobile_SimListOnly_Synchronize implements Job {
 
     /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger logger = new Logger(Job_ThingsMobileSimListOnlySynchronizer.class);
+    private static final Logger logger = new Logger(Job_ThingsMobile_SimListOnly_Synchronize.class);
 
 //**********************************************************************************************************************
 
-    public Job_ThingsMobileSimListOnlySynchronizer() {
+    public Job_ThingsMobile_SimListOnly_Synchronize() {
     }
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
-        logger.info("execute:: Executing Job_ThingsMobileSimListOnlySynchronizer");
+        logger.info("execute:: Executing Job_ThingsMobile_SimListOnly_Synchronize");
 
         if (!thread.isAlive()) thread.start();
     }
@@ -38,21 +38,19 @@ public class Job_ThingsMobileSimListOnlySynchronizer implements Job {
         public void run() {
             try {
 
-                logger.trace("run:: Executing Job_ThingsMobileSimListOnlySynchronizer");
-
-                Controller_Things_Mobile things_mobile = new Controller_Things_Mobile();
+                logger.trace("run:: Executing Job_ThingsMobile_SimListOnly_Synchronize");
 
                 logger.trace("run:: Get SimList");
-                TM_Sim_List_list list = things_mobile.sim_list();
+                TM_Sim_List_list list =  Controller_Things_Mobile.sim_list();
 
 
-                logger.trace("run:: list:: " + list.prettyPrint());
+                //logger.trace("run:: list:: " + list.prettyPrint());
 
                 //procházím list a hledám pokud v něm sim s msi_number existuje
                 //pokud ne vytvářím si novou a ukládám jí do databáze
                 for (TM_Sim_List sim : list.sims) {
 
-                    logger.trace("fpr:: msisdn:{} ", sim.msisdn + " \n overview:: " + sim.prettyPrint());
+                    logger.trace("fpr:: msisdn:{} \n overview:: {} ", sim.msisdn, sim.prettyPrint());
 
                     if (Model_GSM.find.query().where().eq("msi_number", sim.msisdn).findCount() == 0) {
 
@@ -62,12 +60,19 @@ public class Job_ThingsMobileSimListOnlySynchronizer implements Job {
                         gsm.registration_hash = UUID.randomUUID();
                         gsm.save();
 
+                        if(sim.status.equals("not active")) {
+                            Controller_Things_Mobile.sim_active(sim.msisdn, null);
+                        }
+
                     }else {
-                        logger.warn("fpr:: msisdn:{} ", sim.msisdn + " found already in database");
+                        logger.trace("fpr:: msisdn:{} ", sim.msisdn + " found already in database");
                     }
+
+                    logger.trace("fpr:: msisdn:{} done. Total {} ", sim.msisdn, sim.cdrs.size());
                 }
 
             } catch (Exception e) {
+                e.printStackTrace();
                 logger.internalServerError(e);
             }
         }

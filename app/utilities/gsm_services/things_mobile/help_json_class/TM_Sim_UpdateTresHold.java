@@ -5,7 +5,7 @@ import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
-public class TM_Sim_Unblock extends _Swagger_Abstract_Default {
+public class TM_Sim_UpdateTresHold extends _Swagger_Abstract_Default {
 
     public boolean done;
 
@@ -14,4 +14,6 @@ public class TM_Sim_Unblock extends _Swagger_Abstract_Default {
 
     @JsonInclude(value = NON_NULL)
     public String errorMessage;
+
+
 }

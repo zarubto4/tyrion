@@ -217,6 +217,14 @@ public abstract class _BaseController {
     }
 
     /**
+     * Checks whether the currently logged user is admin.
+     * @return true if he is admin
+     */
+    public void mustBeAdmin() throws ForbiddenException{
+        if(!isAdmin(person())) throw new ForbiddenException();
+    }
+
+    /**
      * Checks whether the given person is admin.
      * @param person to check
      * @return true if he is admin

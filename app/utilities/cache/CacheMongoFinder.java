@@ -7,6 +7,7 @@ import org.bson.types.ObjectId;
 import org.ehcache.Cache;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Key;
+import org.mongodb.morphia.aggregation.AggregationPipeline;
 import org.mongodb.morphia.query.Query;
 import utilities.Server;
 import utilities.logger.Logger;
@@ -127,6 +128,10 @@ public class CacheMongoFinder<T extends _Abstract_MongoModel> implements ModelCa
         return this.datastore.createQuery(entityType);
     }
 
+    public AggregationPipeline createAggregation() {
+        return this.datastore.createAggregation(entityType);
+    }
+
     /**
      * Find all instances by type
      * @return
@@ -134,6 +139,15 @@ public class CacheMongoFinder<T extends _Abstract_MongoModel> implements ModelCa
     public List<T> all(){
         return this.datastore.find(entityType).asList();
     }
+
+    /**
+     * @return the mapped collection for the collection
+     */
+    public DBCollection getCollection() {
+        return this.datastore.getCollection(entityType);
+    }
+
+
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 

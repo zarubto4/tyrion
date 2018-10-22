@@ -8,7 +8,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.typesafe.config.Config;
-import io.intercom.api.User;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.*;
@@ -29,9 +28,7 @@ import utilities.enums.ProductEventType;
 import utilities.financial.extensions.ExtensionInvoiceItem;
 import utilities.financial.fakturoid.FakturoidService;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
-import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_Credit_list;
 import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_Status;
-import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.logger.Logger;
 
 import java.io.FileOutputStream;
@@ -45,8 +42,10 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
-import utilities.scheduler.jobs.Job_ThingsMobileSimListOnlySynchronizer;
-import utilities.swagger.output.Swagger_Hardware_Registration_Hash;
+import utilities.scheduler.jobs.Job_ThingsMobile_SimData_Synchronize;
+import utilities.scheduler.jobs.Job_ThingsMobile_SimListOnly_Synchronize;
+
+import static java.lang.Thread.sleep;
 
 
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -123,7 +122,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
                 person.roles.forEach(r -> System.out.println(r.name));
             });
 
-           return ok(status);
+           return ok(role);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -135,6 +134,8 @@ public class Controller_ZZZ_Tester extends _BaseController {
     public Result test3() {
         try {
 
+            TM_Sim_Status status = Controller_Things_Mobile.sim_status(882360002156971L);
+            System.out.print("Sim Status:: \n"  + status.prettyPrint());
 
             /*
             List<Model_Person> persons = Model_Person.find.all();
@@ -455,40 +456,25 @@ public class Controller_ZZZ_Tester extends _BaseController {
         }
     }
 
-
     @ApiOperation(value = "Hidden test Method", hidden = true)
     public Result test7() {
         try {
 
-            //  TM_Sim_Credit_list credit_list = Controller_Things_Mobile.sim_credit();
+            // ZÍSKAT aktivní SIM
+            //TM_Sim_Status status = Controller_Things_Mobile.sim_status(882360002156971L);
+            // System.out.print("Credit:: \n"  + status.prettyPrint());
 
 
-            TM_Sim_Status status = Controller_Things_Mobile.sim_status(882360002156971L);
+            // System.out.print("Vyvolám synchronizaci Sim karet ");
+            // Odstartovat synchronizaci
+            // new Job_ThingsMobile_SimListOnly_Synchronize().execute(null);
 
-            System.out.print("Credit:: \n"  + status.prettyPrint());
+           // sleep(5000);
 
-            /*
-            List<String> places = Arrays.asList("002100373136510236363332","004100273136510236363332","002900363136510236363332","002C00443136510236363332","003500443036511935353233",
-                    "004300443136510236363332","002700373136510236363332","004900283136510236363332","003E00363136510236363332");
+           // System.out.print("Stahování statistik");
+            new Job_ThingsMobile_SimData_Synchronize().execute(null);
 
-
-            List<String> registration_hash = new ArrayList<>();
-
-            for(String full_id : places) {
-                System.out.println("Check Full_id:: " + full_id);
-                Model_HardwareRegistrationEntity hw = Model_HardwareRegistrationEntity.getbyFull_id(full_id);
-
-                if(hw != null) {
-                    registration_hash.add(hw.hash_for_adding);
-                }else {
-                    System.err.println("Full Id:: "+  full_id +" not exist in central authority");
-                }
-            }
-
-            System.out.println(registration_hash);
-            */
-
-            return ok(status);
+            return ok();
 
         } catch (Exception e) {
             logger.internalServerError(e);

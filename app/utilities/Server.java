@@ -136,7 +136,7 @@ public class Server {
 
     // Mongo Databases
     private static final Morphia morphia = new Morphia();
-    private static MongoClient mongoClient = null;
+    public static MongoClient mongoClient = null;
 
     public static MongoDatabase main_database = null;
     public static Datastore main_data_store = null;
@@ -162,7 +162,7 @@ public class Server {
             setPermission();
             setAdministrator();
             setWidgetAndBlock();
-        } catch (PersistenceException e) {
+        } catch (Exception e) {
             logger.error("start - DB is inconsistent, probably evolution will occur", e);
         }
 
@@ -170,7 +170,6 @@ public class Server {
         MongoDB.init();
 
         setBaseForm();
-        setConfigurationInjectorForNonStaticClass();
         startThreads();
     }
 
@@ -218,8 +217,8 @@ public class Server {
 
             // Speciální podmínka, která nastaví podklady sice v Developerském modu - ale s URL adresami tak, aby byly v síti přístupné
 
-            logger.warn("setConstants - special settings for DEV office servers.");
-            logger.warn("setConstants - local URL: {}", IP_Founder.getLocalHostLANAddress().getHostAddress());
+            logger.info("setConstants - special settings for DEV office servers.");
+            logger.info("setConstants - local URL: {}", IP_Founder.getLocalHostLANAddress().getHostAddress());
 
             httpAddress = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
             wsAddress   = "ws://"   + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
@@ -322,7 +321,7 @@ public class Server {
         try {
             role = Model_Role.getByName("SuperAdmin");
 
-            logger.warn("setAdministrator - role SuperAdmin exists");
+            logger.trace("setAdministrator - role SuperAdmin exists");
 
         } catch (NotFoundException e) {
 
@@ -354,7 +353,7 @@ public class Server {
         try {
             person = Model_Person.getByEmail("admin@byzance.cz");
 
-            logger.warn("setAdministrator - admin is already created");
+            logger.trace("setAdministrator - admin is already created");
 
         } catch (NotFoundException e) {
 
@@ -382,9 +381,11 @@ public class Server {
      */
     private static void setWidgetAndBlock() {
         try {
-            logger.warn("setWidgetAndBlock - Creating Widget and Block with " + "0000000-0000-0000-0000-000000000001");
 
             if (Model_Widget.find.query().where().eq("id", UUID.fromString("00000000-0000-0000-0000-000000000001")).findCount() == 0) {
+
+                logger.warn("setWidgetAndBlock - Creating Widget with " + "0000000-0000-0000-0000-000000000001");
+
                 Model_Widget widget = new Model_Widget();
                 widget.id = UUID.fromString("00000000-0000-0000-0000-000000000001");
                 widget.description = "Default Widget";
@@ -394,10 +395,13 @@ public class Server {
                 widget.publish_type = ProgramType.DEFAULT_MAIN;
                 widget.save();
             } else {
-                logger.warn("Model_Widget Model_Widget already exist");
+                logger.trace("setWidgetAndBlock - Model_Widget already exist");
             }
 
             if (Model_Block.find.query().where().eq("id", UUID.fromString("00000000-0000-0000-0000-000000000001")).findCount() == 0) {
+
+                logger.warn("setWidgetAndBlock - Creating Block with " + "0000000-0000-0000-0000-000000000001");
+
                 Model_Block block = new Model_Block();
                 block.id = UUID.fromString("00000000-0000-0000-0000-000000000001");
                 block.description = "Default Block";
@@ -407,7 +411,7 @@ public class Server {
                 block.publish_type = ProgramType.DEFAULT_MAIN;
                 block.save();
             } else {
-                logger.warn("setWidgetAndBlock Model_Widget already exist");
+                logger.trace("setWidgetAndBlock - Model_Block already exist");
             }
         }catch (Exception e) {
             e.printStackTrace();
@@ -463,6 +467,7 @@ public class Server {
             List<Model_Person> persons = Model_Person.find.query().where().eq("projects.id", project.id).findList();
             Model_Role adminRole = Model_Role.createProjectAdminRole();
             adminRole.project = project;
+            if(adminRole.persons == null) adminRole.persons = new ArrayList<>();
             adminRole.persons.addAll(persons);
             adminRole.save();
 
@@ -477,13 +482,12 @@ public class Server {
      */
     private static void setBaseForm() {
 
-        WS_Homer.baseFormFactory                        = Server.injector.getInstance(_BaseFormFactory.class);
-        Synchronize_Homer_Synchronize_Settings.baseFormFactory = Server.injector.getInstance(_BaseFormFactory.class);
-        DigitalOceanThreadRegister.baseFormFactory      = Server.injector.getInstance(_BaseFormFactory.class);
-        Model_HardwareBatch.baseFormFactory             = Server.injector.getInstance(_BaseFormFactory.class);
-        Model_HardwareRegistrationEntity.baseFormFactory= Server.injector.getInstance(_BaseFormFactory.class);
-        Model_InstanceSnapshot.baseFormFactory          = Server.injector.getInstance(_BaseFormFactory.class);
-        Controller_Things_Mobile.baseFormFactory   = Server.injector.getInstance(_BaseFormFactory.class);
+        WS_Homer.baseFormFactory                                = Server.injector.getInstance(_BaseFormFactory.class);
+        Synchronize_Homer_Synchronize_Settings.baseFormFactory  = Server.injector.getInstance(_BaseFormFactory.class);
+        DigitalOceanThreadRegister.baseFormFactory              = Server.injector.getInstance(_BaseFormFactory.class);
+        Model_HardwareBatch.baseFormFactory                     = Server.injector.getInstance(_BaseFormFactory.class);
+        Model_HardwareRegistrationEntity.baseFormFactory        = Server.injector.getInstance(_BaseFormFactory.class);
+        Model_InstanceSnapshot.baseFormFactory                  = Server.injector.getInstance(_BaseFormFactory.class);
     }
 
 
@@ -497,7 +501,7 @@ public class Server {
         String mode = Server.mode.name().toLowerCase();
 
         // Připojení na MongoClient v Azure
-        logger.trace("init_mongo_database:: URL {}", configuration.getString("MongoDB." + mode + ".url"));
+        logger.info("init_mongo_database:: URL {}", configuration.getString("MongoDB." + mode + ".url"));
 
 
         MongoClientOptions.Builder options_builder = new MongoClientOptions.Builder();
@@ -574,16 +578,6 @@ public class Server {
 
         return main_data_store;
     }
-
-    /**
-     * Set configuration
-     */
-    private static void setConfigurationInjectorForNonStaticClass() {
-        Controller_Things_Mobile.configuration = configuration;
-    }
-
-
-
 
     /**
      * Finds the MAC address of the current host.

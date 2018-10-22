@@ -12,6 +12,7 @@ GET       /test3                                                        controll
 GET       /test4                                                        controllers.Controller_ZZZ_Tester.test4()
 GET       /test5/:product_id                                            controllers.Controller_ZZZ_Tester.test5(product_id: java.util.UUID)
 GET       /test6/:product_id                                            controllers.Controller_ZZZ_Tester.test6(product_id: java.util.UUID)
+GET       /test7                                                        controllers.Controller_ZZZ_Tester.test7()
 
                                                                         #Allowed only in Developer Mode!
 GET       /demodata                                                     utilities.demo_data.Utilities_Demo_data_Controller.all_for_becki()
@@ -547,7 +548,7 @@ POST      /gsm                                                          controll
 GET       /gsm/:sim_id                                                  controllers.Controller_GSM.get_sim(sim_id: java.util.UUID)
 PUT       /gsm/filter/:page_number                                      controllers.Controller_GSM.get_sim_by_filter(page_number: Int)
 GET       /admin/gsm/print-label/:sim_id                                controllers.Controller_GSM.print_sim(sim_id: java.util.UUID)
-PUT       /gsm/credit/:sim_id                                           controllers.Controller_GSM.credit_usage(sim_id: java.util.UUID)
+PUT       /gsm/data_consuption                                          controllers.Controller_GSM.data_consumption()
 PUT       /gsm/active/:sim_id                                           controllers.Controller_GSM.active_sim(sim_id: java.util.UUID)
 PUT       /gsm/deactive/:sim_id                                         controllers.Controller_GSM.de_active_sim(sim_id: java.util.UUID)
 PUT       /gsm/update/:sim_id                                           controllers.Controller_GSM.edit_sim(sim_id: java.util.UUID)

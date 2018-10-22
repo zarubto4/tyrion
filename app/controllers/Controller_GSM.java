@@ -2,6 +2,7 @@ package controllers;
 
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
+import exceptions.NotFoundException;
 import io.ebean.Ebean;
 import io.ebean.Query;
 import io.swagger.annotations.*;
@@ -14,7 +15,8 @@ import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.enums.BoardRegistrationStatus;
-import utilities.errors.Exceptions.Result_Error_NotFound;
+import utilities.gsm_services.things_mobile.Controller_Things_Mobile_Analytics;
+import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_GSM_label_Details;
@@ -22,11 +24,14 @@ import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
+import utilities.swagger.input.Swagger_DataConsumption_Filter;
 import utilities.swagger.input.Swagger_GSM_Edit;
 import utilities.swagger.input.Swagger_GSM_Filter;
 import utilities.swagger.input.Swagger_GSM_Register;
 import utilities.swagger.output.Swagger_Entity_Registration_Status;
 import utilities.swagger.output.filter_results.Swagger_GSM_List;
+
+import java.util.List;
 import java.util.UUID;
 
 @Security.Authenticated(Authentication.class)
@@ -45,7 +50,6 @@ public class Controller_GSM extends _BaseController {
     }
 
 ///###################################################################################################################*/
-
 
     @ApiOperation(value = "register Sim",
             tags = {"GSM"},
@@ -94,6 +98,8 @@ public class Controller_GSM extends _BaseController {
             }
 
             gsm.project = project;
+
+            Controller_Things_Mobile.update_sim_tag(gsm.msi_number, "project_id:" + project.id.toString());
 
             return update(gsm);
 
@@ -212,6 +218,9 @@ public class Controller_GSM extends _BaseController {
     })
     public Result delete_sim(UUID sim_id){
         try{
+
+            this.mustBeAdmin();
+
             return delete(Model_GSM.find.byId(sim_id));
         } catch (Exception e) {
             return controllerServerError(e);
@@ -237,7 +246,7 @@ public class Controller_GSM extends _BaseController {
             // Najdu sim
             Model_GSM gsm = Model_GSM.find.byId(sim_id);
 
-            this.checkReadPermission(gsm);
+            this.mustBeAdmin();
 
             // Vytvořím PRINT SERVISE
             Printer_Api api = new Printer_Api();
@@ -350,16 +359,8 @@ public class Controller_GSM extends _BaseController {
             gsm.name = help.name;
             gsm.description = help.description;
 
-            gsm.daily_traffic_threshold                 = help.daily_traffic_threshold;
-            gsm.daily_traffic_threshold_exceeded_limit  = help.daily_traffic_threshold_exceeded_limit;
             gsm.daily_traffic_threshold_notify_type     = help.daily_traffic_threshold_notify_type;
-
-            gsm.monthly_traffic_threshold                = help.monthly_traffic_threshold;
-            gsm.monthly_traffic_threshold_exceeded_limit = help.monthly_traffic_threshold_exceeded_limit;
             gsm.monthly_traffic_threshold_notify_type    = help.monthly_traffic_threshold_notify_type;
-
-            gsm.total_traffic_threshold                 = help.total_traffic_threshold;
-            gsm.total_traffic_threshold_exceeded_limit  = help.total_traffic_threshold_exceeded_limit;
             gsm.total_traffic_threshold_notify_type     = help.total_traffic_threshold_notify_type;
 
             gsm.update();
@@ -367,11 +368,7 @@ public class Controller_GSM extends _BaseController {
             gsm.setTags(help.tags);
 
             // Set Trashold to Things Mobile
-            gsm.set_trashholds(
-                    gsm.daily_traffic_threshold , gsm.daily_traffic_threshold_exceeded_limit,
-                    gsm.monthly_traffic_threshold , gsm.monthly_traffic_threshold_exceeded_limit,
-                    gsm.total_traffic_threshold , gsm.total_traffic_threshold_exceeded_limit
-            );
+            gsm.set_thresholds(help);
 
             return ok(gsm);
 
@@ -379,7 +376,6 @@ public class Controller_GSM extends _BaseController {
             return controllerServerError(e);
         }
     }
-
 
     @ApiOperation(value = "check Sim registration status",
             tags = {"GSM"},
@@ -414,6 +410,7 @@ public class Controller_GSM extends _BaseController {
             Model_GSM gsm;
 
             try {
+
                 gsm = Model_GSM.find.query().where().eq("registration_hash", registration_hash).findOne();
 
                 if (gsm == null) {
@@ -421,7 +418,7 @@ public class Controller_GSM extends _BaseController {
                     return ok(status);
                 }
 
-            } catch (Result_Error_NotFound e) {
+            } catch (NotFoundException e) {
                 status.status = BoardRegistrationStatus.NOT_EXIST;
                 return ok(status);
             }
@@ -450,13 +447,23 @@ public class Controller_GSM extends _BaseController {
         }
     }
 
-
-    @ApiOperation(value = "get Sim credit usage",
+    @ApiOperation(value = "get Sim data usage",
             tags = {"GSM"},
             notes = "",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https"
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_DataConsumption_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = DataSim_overview.class),
@@ -466,19 +473,58 @@ public class Controller_GSM extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result credit_usage(UUID sim_id) {
+    public Result data_consumption() {
         try {
 
-            Model_GSM gsm = Model_GSM.find.byId(sim_id);
+            Swagger_DataConsumption_Filter filter = formFromRequestWithValidation(Swagger_DataConsumption_Filter.class);
 
-            Model_GSM gsm = Model_GSM.find.byId(sim_id);
+            // Kontrola oprávnění
+            if(filter.project_id == null) {
+                mustBeAdmin();
+            } else {
+                Model_Project.find.byId(filter.project_id);
+            }
+
+            // Seznam LONG ID pro heldání v MongoDB
+            List<Long> msi_number;
+
+            // Query
+            Query<Model_GSM> query = Ebean.find(Model_GSM.class);
 
 
-            DataSim_overview overview = gsm.get_dataSim_overview();
+            // Common Filter Parameters
+         //   query.where().eq("blocked", filter.blocked);
+         //   query.where().eq("removed", false);
+
+
+            if(filter.project_id != null) {
+                System.out.println("Project id je zadán");
+                query.where().eq("project.id", filter.project_id);
+            }
+
+            // BY SIM IDS
+            if(filter.sim_id_list != null && !filter.sim_id_list.isEmpty()) {
+                System.out.println("sim_id_list id je zadán");
+                query.where().isIn("id", filter.sim_id_list);
+
+            } else if(filter.sim_msi_list != null && !filter.sim_msi_list.isEmpty()) {
+                System.out.println("sim_msi_list id je zadán");
+                query.where().isIn("msi_number", filter.sim_msi_list);
+
+            }
+
+            // Call Query
+            msi_number =  query.select("msi_number").findSingleAttributeList();
+
+            if(filter.date_to().isBefore(filter.date_from())) {
+                return badRequest("Invalid time, TO is before FROM");
+            }
+
+            DataSim_overview overview = Controller_Things_Mobile_Analytics.group_stats(msi_number, filter, filter.date_from(), filter.date_to(), filter.time_period);
 
             System.out.println("DataSim_overview:: " + overview.prettyPrint());
 
-            return ok(gsm.get_dataSim_overview());
+            return ok(overview);
 
         } catch (Exception e) {
             return controllerServerError(e);
