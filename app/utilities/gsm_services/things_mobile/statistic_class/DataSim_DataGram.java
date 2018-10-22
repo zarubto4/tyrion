@@ -49,7 +49,7 @@ public class DataSim_DataGram {
     @JsonProperty
     @ApiModelProperty(required = true, value = "Represent time in millis")
     public Long long_to() {
-        return date_from.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        return date_to.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
     @JsonProperty
     @ApiModelProperty(required = true, value = "Readable value for users")

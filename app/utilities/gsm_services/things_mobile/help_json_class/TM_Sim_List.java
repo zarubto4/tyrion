@@ -45,14 +45,14 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
     public String tag;
 
 
-    @JsonProperty(value = "daily_traffic")                   @ApiModelProperty(name = "daily_traffic")              public Integer dailyTraffic;
-    @JsonProperty(value = "daily_traffic_threshold")         @ApiModelProperty(name = "daily_traffic_threshold")    public Integer dailyTrafficThreshold;
+    @JsonProperty(value = "daily_traffic")                   @ApiModelProperty(name = "daily_traffic")              public Long dailyTraffic;
+    @JsonProperty(value = "daily_traffic_threshold")         @ApiModelProperty(name = "daily_traffic_threshold")    public Long dailyTrafficThreshold;
 
-    @JsonProperty(value = "monthly_traffic")              @ApiModelProperty(name = "monthly_traffic")               public Integer monthlyTraffic;
-    @JsonProperty(value = "monthly_traffic_threshold")    @ApiModelProperty(name = "monthly_traffic_threshold")     public Integer monthlyTrafficThreshold;
+    @JsonProperty(value = "monthly_traffic")              @ApiModelProperty(name = "monthly_traffic")               public Long monthlyTraffic;
+    @JsonProperty(value = "monthly_traffic_threshold")    @ApiModelProperty(name = "monthly_traffic_threshold")     public Long monthlyTrafficThreshold;
 
-    @JsonProperty(value = "total_traffic")              @ApiModelProperty(name = "total_traffic")                   public Integer totalTraffic;
-    @JsonProperty(value = "total_traffic_threshold")    @ApiModelProperty(name = "total_traffic_threshold")         public Integer totalTrafficThreshold;
+    @JsonProperty(value = "total_traffic")              @ApiModelProperty(name = "total_traffic")                   public Long totalTraffic;
+    @JsonProperty(value = "total_traffic_threshold")    @ApiModelProperty(name = "total_traffic_threshold")         public Long totalTrafficThreshold;
 
 
     @JsonIgnore public Integer blockSimDaily;

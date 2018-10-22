@@ -11,10 +11,7 @@ import utilities.enums.EntityType;
 import utilities.enums.TimePeriod;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile_Analytics;
-import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_Block;
-import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_List;
-import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_Status;
-import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_Unblock;
+import utilities.gsm_services.things_mobile.help_json_class.*;
 import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
@@ -148,7 +145,9 @@ public class Model_GSM extends TaggedModel implements Permissible, UnderProject 
 
     // For users - owners of SIM modules
     public void set_thresholds(Swagger_GSM_Edit treshold) {
-        Controller_Things_Mobile.sim_set_tresHolds(msi_number, treshold);
+        TM_Sim_UpdateTresHold response = Controller_Things_Mobile.sim_set_tresHolds(msi_number, treshold);
+        System.out.println("set_thresholds:: " + response.prettyPrint());
+        tm_status_cache.remove(msi_number);
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/

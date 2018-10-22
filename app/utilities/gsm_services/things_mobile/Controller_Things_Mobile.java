@@ -171,19 +171,19 @@ public class Controller_Things_Mobile {
                         node.blockSimDaily               = Integer.valueOf(eElement.getElementsByTagName("blockSimDaily").item(0).getTextContent());
                         node.blockSimMonthly             = Integer.valueOf(eElement.getElementsByTagName("blockSimMonthly").item(0).getTextContent());
                         node.blockSimTotal               = Integer.valueOf(eElement.getElementsByTagName("blockSimTotal").item(0).getTextContent());
-                        node.dailyTraffic                = Integer.valueOf(eElement.getElementsByTagName("dailyTraffic").item(0).getTextContent());
-                        node.dailyTrafficThreshold       = Integer.valueOf(eElement.getElementsByTagName("totalTrafficThreshold").item(0).getTextContent());
+                        node.dailyTraffic                = Long.valueOf(eElement.getElementsByTagName("dailyTraffic").item(0).getTextContent());
+                        node.dailyTrafficThreshold       = Long.valueOf(eElement.getElementsByTagName("totalTrafficThreshold").item(0).getTextContent());
                         node.expirationDate              = eElement.getElementsByTagName("expirationDate").item(0).getTextContent();
                         node.lastConnectionDate          = eElement.getElementsByTagName("lastConnectionDate").item(0).getTextContent();
-                        node.monthlyTraffic              = Integer.valueOf(eElement.getElementsByTagName("monthlyTraffic").item(0).getTextContent());
-                        node.monthlyTrafficThreshold     = Integer.valueOf(eElement.getElementsByTagName("monthlyTrafficThreshold").item(0).getTextContent());
+                        node.monthlyTraffic              = Long.valueOf(eElement.getElementsByTagName("monthlyTraffic").item(0).getTextContent());
+                        node.monthlyTrafficThreshold     = Long.valueOf(eElement.getElementsByTagName("monthlyTrafficThreshold").item(0).getTextContent());
                         node.msisdn                      = Long.valueOf(eElement.getElementsByTagName("msisdn").item(0).getTextContent());
                         node.name                        = eElement.getElementsByTagName("name").item(0).getTextContent();
                         node.status                      = eElement.getElementsByTagName("status").item(0).getTextContent();
                         node.plan                        = eElement.getElementsByTagName("plan").item(0).getTextContent();
                         node.tag                         = eElement.getElementsByTagName("tag").item(0).getTextContent();
-                        node.totalTraffic                = Integer.valueOf(eElement.getElementsByTagName("totalTraffic").item(0).getTextContent());
-                        node.totalTrafficThreshold       = Integer.valueOf(eElement.getElementsByTagName("totalTrafficThreshold").item(0).getTextContent());
+                        node.totalTraffic                = Long.valueOf(eElement.getElementsByTagName("totalTraffic").item(0).getTextContent());
+                        node.totalTrafficThreshold       = Long.valueOf(eElement.getElementsByTagName("totalTrafficThreshold").item(0).getTextContent());
 
 
                         System.out.println("Budu louskat cdrs");
@@ -269,19 +269,19 @@ public class Controller_Things_Mobile {
                         node.blockSimDaily =                Integer.valueOf(eElement.getElementsByTagName("blockSimDaily").item(0).getTextContent());
                         node.blockSimMonthly =              Integer.valueOf(eElement.getElementsByTagName("blockSimMonthly").item(0).getTextContent());
                         node.blockSimTotal =                Integer.valueOf(eElement.getElementsByTagName("blockSimTotal").item(0).getTextContent());
-                        node.dailyTraffic =                 Integer.valueOf(eElement.getElementsByTagName("dailyTraffic").item(0).getTextContent());
-                        node.dailyTrafficThreshold =        Integer.valueOf(eElement.getElementsByTagName("totalTrafficThreshold").item(0).getTextContent());
+                        node.dailyTraffic =                 Long.valueOf(eElement.getElementsByTagName("dailyTraffic").item(0).getTextContent());
+                        node.dailyTrafficThreshold =        Long.valueOf(eElement.getElementsByTagName("totalTrafficThreshold").item(0).getTextContent());
                         node.expirationDate =               eElement.getElementsByTagName("expirationDate").item(0).getTextContent();
                         node.lastConnectionDate =           eElement.getElementsByTagName("lastConnectionDate").item(0).getTextContent();
-                        node.monthlyTraffic =               Integer.valueOf(eElement.getElementsByTagName("monthlyTraffic").item(0).getTextContent());
-                        node.monthlyTrafficThreshold =      Integer.valueOf(eElement.getElementsByTagName("monthlyTrafficThreshold").item(0).getTextContent());
+                        node.monthlyTraffic =               Long.valueOf(eElement.getElementsByTagName("monthlyTraffic").item(0).getTextContent());
+                        node.monthlyTrafficThreshold =      Long.valueOf(eElement.getElementsByTagName("monthlyTrafficThreshold").item(0).getTextContent());
                         node.msisdn =                       Long.valueOf(eElement.getElementsByTagName("msisdn").item(0).getTextContent());
                         node.name =                         eElement.getElementsByTagName("name").item(0).getTextContent();
                         node.plan =                         eElement.getElementsByTagName("plan").item(0).getTextContent();
                         node.tag =                          eElement.getElementsByTagName("tag").item(0).getTextContent();
                         node.status =                       eElement.getElementsByTagName("status").item(0).getTextContent();
-                        node.totalTraffic =                 Integer.valueOf(eElement.getElementsByTagName("totalTraffic").item(0).getTextContent());
-                        node.totalTrafficThreshold =        Integer.valueOf(eElement.getElementsByTagName("totalTrafficThreshold").item(0).getTextContent());
+                        node.totalTraffic =                 Long.valueOf(eElement.getElementsByTagName("totalTraffic").item(0).getTextContent());
+                        node.totalTrafficThreshold =        Long.valueOf(eElement.getElementsByTagName("totalTrafficThreshold").item(0).getTextContent());
                         node.done =                         true;
 
                         NodeList cdrs_list =  ((Element) nNode).getElementsByTagName("cdr");
@@ -345,17 +345,17 @@ public class Controller_Things_Mobile {
             TMKeyStoreSender sender = new TMKeyStoreSender();
             sender.addKey("msisdn", msi_number.toString());
 
-            sender.addKey("dailyLimit", treshold.daily_traffic_threshold.toString());
+            sender.addKey("dailyLimit", Long.toString(treshold.daily_traffic_threshold / 1024 / 1024));
             sender.addKey("blockSimDaily", treshold.block_sim_daily ? "1" : "0");
 
-            sender.addKey("monthlyLimit", treshold.monthly_traffic_threshold.toString());
+            sender.addKey("monthlyLimit",  Long.toString( treshold.monthly_traffic_threshold / 1024 / 1024));
             sender.addKey("blockSimMonthly", treshold.block_sim_monthly ? "1" : "0");
 
-            sender.addKey("totalLimit", treshold.total_traffic_threshold.toString());
+            sender.addKey("totalLimit",  Long.toString( treshold.total_traffic_threshold / 1024 / 1024));
             sender.addKey("blockSimTotal", treshold.block_sim_total ? "1" : "0");
 
 
-            Document response = post("/services/business-api/updateSimName", sender);
+            Document response = post("/services/business-api/setupSimTrafficThreeshold", sender);
 
             TM_Sim_UpdateTresHold node = new TM_Sim_UpdateTresHold();
 

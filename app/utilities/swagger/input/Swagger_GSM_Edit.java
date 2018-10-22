@@ -34,4 +34,8 @@ public class Swagger_GSM_Edit {
     @Constraints.Required public Long    total_traffic_threshold = 0L;                     // Přípustná hodnota v KB
     @Constraints.Required public boolean block_sim_total;      // Umožnit překročit limit
     @Constraints.Required public boolean total_traffic_threshold_notify_type;         // Zákazník bude informován o překročení
+
+    @Constraints.Required public boolean daily_statistic;
+    @Constraints.Required public boolean weekly_statistic;
+    @Constraints.Required public boolean monthly_statistic;
 }

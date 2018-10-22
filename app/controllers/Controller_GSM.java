@@ -359,9 +359,13 @@ public class Controller_GSM extends _BaseController {
             gsm.name = help.name;
             gsm.description = help.description;
 
-            gsm.daily_traffic_threshold_notify_type     = help.daily_traffic_threshold_notify_type;
+            gsm.daily_traffic_threshold_notify_type      = help.daily_traffic_threshold_notify_type;
             gsm.monthly_traffic_threshold_notify_type    = help.monthly_traffic_threshold_notify_type;
-            gsm.total_traffic_threshold_notify_type     = help.total_traffic_threshold_notify_type;
+            gsm.total_traffic_threshold_notify_type      = help.total_traffic_threshold_notify_type;
+
+            gsm.daily_statistic = help.daily_statistic;
+            gsm.weekly_statistic = help.weekly_statistic;
+            gsm.monthly_statistic = help.monthly_statistic;
 
             gsm.update();
 
@@ -369,6 +373,8 @@ public class Controller_GSM extends _BaseController {
 
             // Set Trashold to Things Mobile
             gsm.set_thresholds(help);
+
+            gsm.update();
 
             return ok(gsm);
 
