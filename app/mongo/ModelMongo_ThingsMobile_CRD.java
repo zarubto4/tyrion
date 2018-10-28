@@ -1,10 +1,8 @@
 package mongo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.bson.types.ObjectId;
-import org.ehcache.Cache;
 import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Field;
 import org.mongodb.morphia.annotations.Index;
@@ -15,11 +13,8 @@ import utilities.logger.Logger;
 import utilities.model._Abstract_MongoModel;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
-import java.util.UUID;
 
 @Entity("THINGSMOBILE_CRD")
 @Indexes({
@@ -31,7 +26,7 @@ import java.util.UUID;
                 }
         )
 })
-public class ModelMongo_CRD extends _Abstract_MongoModel {
+public class ModelMongo_ThingsMobile_CRD extends _Abstract_MongoModel {
 
 
     /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -107,7 +102,7 @@ public class ModelMongo_CRD extends _Abstract_MongoModel {
         return find;
     }
 
-    @InjectCache(value = ModelMongo_CRD.class, keyType = ObjectId.class)
-    public static CacheMongoFinder<ModelMongo_CRD> find = new CacheMongoFinder<>(ModelMongo_CRD.class);
+    @InjectCache(value = ModelMongo_ThingsMobile_CRD.class, keyType = ObjectId.class)
+    public static CacheMongoFinder<ModelMongo_ThingsMobile_CRD> find = new CacheMongoFinder<>(ModelMongo_ThingsMobile_CRD.class);
 
 }

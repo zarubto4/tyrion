@@ -3,6 +3,7 @@ package controllers;
 import com.typesafe.config.Config;
 import io.swagger.annotations.*;
 import models.*;
+import mongo.ModelMongo_Hardware_RegistrationEntity;
 import play.Environment;
 import play.libs.Json;
 import play.libs.ws.WSClient;
@@ -604,7 +605,7 @@ public class Controller_Project extends _BaseController {
             Model_Project project = Model_Project.find.byId(help.project_id);
             this.checkUpdatePermission(project);
 
-            Model_HardwareRegistrationEntity registration_authority = Model_HardwareRegistrationEntity.getbyFull_hash(help.registration_hash);
+            ModelMongo_Hardware_RegistrationEntity registration_authority = ModelMongo_Hardware_RegistrationEntity.getbyFull_hash(help.registration_hash);
 
             // Hash not exist
             if(registration_authority == null){
@@ -617,7 +618,7 @@ public class Controller_Project extends _BaseController {
             }
 
             // Copy is done - Hardware is saved in database, but without any connections for projec, groups etc..
-            Model_Hardware hardware = Model_HardwareRegistrationEntity.make_copy_of_hardware_to_local_database(help.registration_hash);
+            Model_Hardware hardware = ModelMongo_Hardware_RegistrationEntity.make_copy_of_hardware_to_local_database(help.registration_hash);
             hardware.project = project;
 
             // Set name if help contains it
@@ -847,6 +848,8 @@ public class Controller_Project extends _BaseController {
                     logger.warn("project_activeHardware:: Step 2 - Response: Change on Homer Server: ", Json.toJson(change).toString());
 
                 }
+
+                hardware.make_log_activated();
             }
 
             return ok(hardware);

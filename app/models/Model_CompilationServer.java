@@ -9,12 +9,11 @@ import com.microsoft.azure.documentdb.DocumentClientException;
 import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import mongo.ModelMongo_CompilationServer_OnlineStatus;
 import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheFinder;
 import utilities.cache.InjectCache;
-import utilities.document_mongo_db.document_objects.DM_CompilationServer_Connect;
-import utilities.document_mongo_db.document_objects.DM_CompilationServer_Disconnect;
 import utilities.enums.CompilationStatus;
 import utilities.enums.EntityType;
 import utilities.enums.NetworkStatus;
@@ -216,8 +215,8 @@ public class Model_CompilationServer extends BaseModel implements Permissible, P
     public void make_log_connect() {
         new Thread(() -> {
             try {
-                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_CompilationServer_Connect.make_request( this.id.toString()), null, true);
-            } catch (DocumentClientException e) {
+                ModelMongo_CompilationServer_OnlineStatus.create_record(this, true);
+            } catch (Exception e) {
                 logger.internalServerError(e);
             }
         }).start();
@@ -226,8 +225,8 @@ public class Model_CompilationServer extends BaseModel implements Permissible, P
     public void make_log_disconnect() {
         new Thread(() -> {
             try {
-                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_CompilationServer_Disconnect.make_request( this.id.toString()), null, true);
-            } catch (DocumentClientException e) {
+                ModelMongo_CompilationServer_OnlineStatus.create_record(this, false);
+            } catch (Exception e) {
                 logger.internalServerError(e);
             }
         }).start();

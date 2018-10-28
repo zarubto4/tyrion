@@ -1,6 +1,6 @@
 package utilities.gsm_services.things_mobile;
 
-import mongo.ModelMongo_CRD;
+import mongo.ModelMongo_ThingsMobile_CRD;
 import org.mongodb.morphia.query.Query;
 import utilities.Server;
 import utilities.enums.TimePeriod;
@@ -10,8 +10,6 @@ import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.logger.Logger;
 
 import java.time.*;
-import java.time.temporal.ChronoField;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -35,7 +33,7 @@ public class Controller_Things_Mobile_Analytics {
 
         logger.trace(" MSI to find: {} ", msi_number);
 
-        Query<ModelMongo_CRD> cdrs_query = ModelMongo_CRD.find.query()
+        Query<ModelMongo_ThingsMobile_CRD> cdrs_query = ModelMongo_ThingsMobile_CRD.find.query()
                 .field("msisdn").in(msi_number)
                 .field("cdrDateStart").greaterThanOrEq( from.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
                 .field("cdrDateStop").lessThanOrEq(to.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
@@ -67,7 +65,7 @@ public class Controller_Things_Mobile_Analytics {
     }
 
 
-    private static DataSim_overview divide(List<ModelMongo_CRD> crds, Swagger_DataConsumption_Filter filter) {
+    private static DataSim_overview divide(List<ModelMongo_ThingsMobile_CRD> crds, Swagger_DataConsumption_Filter filter) {
 
         DataSim_overview overview = new DataSim_overview();
 
@@ -181,10 +179,10 @@ public class Controller_Things_Mobile_Analytics {
                 " return {count:total} }";
 
 
-        MapReduceCommand cmd = new MapReduceCommand(ModelMongo_CRD.find.getCollection(), map, reduce,
+        MapReduceCommand cmd = new MapReduceCommand(ModelMongo_ThingsMobile_CRD.find.getCollection(), map, reduce,
                 null, MapReduceCommand.OutputType.INLINE, null);
 
-        MapReduceOutput out = ModelMongo_CRD.find.getCollection().mapReduce(cmd);
+        MapReduceOutput out = ModelMongo_ThingsMobile_CRD.find.getCollection().mapReduce(cmd);
 
         for (DBObject o : out.results()) {
             System.out.println(o.toString());

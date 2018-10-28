@@ -9,10 +9,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 
-public class Label_62_GSM_label_Details {
+public class Label_62_GSM_thingsmobile_shield_label_Details {
 
     // Logger
-    private static final Logger logger = new Logger(Label_62_GSM_label_Details.class);
+    private static final Logger logger = new Logger(Label_62_GSM_thingsmobile_shield_label_Details.class);
 
     // For image placing to cell
     private PdfContentByte contentByte;
@@ -22,7 +22,7 @@ public class Label_62_GSM_label_Details {
 
     Model_GSM gsm = null;
 
-    public Label_62_GSM_label_Details(Model_GSM gsm) {
+    public Label_62_GSM_thingsmobile_shield_label_Details(Model_GSM gsm) {
         try {
             this.gsm = gsm;
 

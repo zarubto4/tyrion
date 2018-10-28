@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.swagger.annotations.*;
 import mongo._ModelMongo_Example;
-import mongo._ModelMongo_Picture;
 import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.Controller;
@@ -213,42 +212,5 @@ public class _Controller_MongoExample extends _BaseController {
     }
 
 
-    @ApiOperation(value = "upload Logo",
-            tags = {"_Controller_Example"},
-            notes = "Upload Company Logo",
-            produces = "application/json",
-            consumes = "text/html"
-    )
-    @ApiImplicitParams(
-            @ApiImplicitParam(
-                    name = "body",
-                    dataType = "utilities.swagger.input.Swagger_BASE64_FILE",
-                    required = true,
-                    paramType = "body",
-                    value = "Contains Json with values"
-            )
-    )
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
-    })
-    public Result company_uploadPicture(String id) {
-        try {
-
-            Http.RawBuffer file_buffer = Controller.request().body().asRaw();
-
-            _ModelMongo_Picture picture  = new _ModelMongo_Picture();
-            picture.file = file_buffer.asFile();
-            picture.save();
-
-            return ok();
-
-        } catch (Exception e) {
-            return controllerServerError(e);
-        }
-    }
 
 }

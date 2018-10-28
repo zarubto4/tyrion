@@ -230,23 +230,6 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         return this.getClass() + ":\n" + Json.prettyPrint(json());
     }
 
-    /*@Override
-    public boolean equals(Object obj) {
-
-        if (obj instanceof BaseModel) {
-            BaseModel model = (BaseModel) obj;
-
-            if (this.id == null) {
-                return this == model;
-            } else {
-                return this.id.equals(model.id) && ((this.created == null && model.created == null) || (this.created != null && this.created.equals(model.created)));
-            }
-        }
-
-        return false;
-    }*/
-
-
     /**
      * Shortcuts for automatic validation and parsing of incoming JSON to MODEL class
      * @param clazz
@@ -473,7 +456,6 @@ public abstract class BaseModel extends Model implements JsonSerializable {
     }
 
 
-
     /**
      * Here we can log who do this operation. User or System.
      * Just a idea..
@@ -537,5 +519,6 @@ public abstract class BaseModel extends Model implements JsonSerializable {
 
     @JsonPermission(Action.DELETE) @Transient @ApiModelProperty(readOnly = true, value = "True if user can delete this object.")
     public boolean delete_permission;
+
 }
 

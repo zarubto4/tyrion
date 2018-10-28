@@ -8,11 +8,18 @@ import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_List;
 import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_List_list;
 import utilities.logger.Logger;
+import utilities.scheduler.Restrict;
 import utilities.scheduler.Scheduled;
 
 import java.util.UUID;
 
-// @Scheduled("0 */2 * ? * *")
+import static utilities.enums.ServerMode.DEVELOPER;
+import static utilities.enums.ServerMode.PRODUCTION;
+import static utilities.enums.ServerMode.STAGE;
+
+// Každý den ve 2:30 ráno
+@Scheduled("0 30 2 ? * * *")
+@Restrict(value = { DEVELOPER, STAGE, PRODUCTION })
 public class Job_ThingsMobile_SimListOnly_Synchronize implements Job {
 
     /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

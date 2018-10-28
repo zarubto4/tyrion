@@ -1,8 +1,6 @@
 package utilities.scheduler.jobs;
 
-import mongo.ModelMongo_CRD;
-import org.mongodb.morphia.query.FindOptions;
-import org.mongodb.morphia.query.Sort;
+import mongo.ModelMongo_ThingsMobile_CRD;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -11,9 +9,16 @@ import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_List;
 import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_List_list;
 import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_Status_cdr;
 import utilities.logger.Logger;
+import utilities.scheduler.Restrict;
 import utilities.scheduler.Scheduled;
 
-// @Scheduled("30 0/10 * * * ?")
+import static utilities.enums.ServerMode.DEVELOPER;
+import static utilities.enums.ServerMode.PRODUCTION;
+import static utilities.enums.ServerMode.STAGE;
+
+// Každou hodinu v 58 minutu
+@Scheduled("0 58 * ? * * *")
+@Restrict(value = { DEVELOPER, STAGE, PRODUCTION })
 public class Job_ThingsMobile_SimData_Synchronize implements Job {
 
     /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -58,7 +63,7 @@ public class Job_ThingsMobile_SimData_Synchronize implements Job {
                         }
 
 
-                        ModelMongo_CRD find_record = ModelMongo_CRD.find.query()
+                        ModelMongo_ThingsMobile_CRD find_record = ModelMongo_ThingsMobile_CRD.find.query()
                                 .field("msisdn").equal(sim.msisdn)
                                 .field("cdrDateStart").equal(cdr.getAsLong_CdrDateStart())
                                 .field("cdrDateStop").equal(cdr.getAsLong_CdrDateStart())
@@ -68,7 +73,7 @@ public class Job_ThingsMobile_SimData_Synchronize implements Job {
 
                             logger.trace("sim_l:: msisdn:{} new record for start {} and end {} ", sim.msisdn, cdr.cdrDateStart, cdr.cdrDateStop);
 
-                            ModelMongo_CRD crd_mongo = new ModelMongo_CRD();
+                            ModelMongo_ThingsMobile_CRD crd_mongo = new ModelMongo_ThingsMobile_CRD();
                             crd_mongo.msisdn = sim.msisdn;
                             crd_mongo.cdrImsi = cdr.cdrImsi;
                             crd_mongo.cdrDateStart = cdr.getAsLong_CdrDateStart();

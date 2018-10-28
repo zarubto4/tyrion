@@ -31,6 +31,7 @@ public enum EntityType {
     @EnumValue("HARDWARE_GROUP")            HARDWARE_GROUP,
     @EnumValue("HARDWARE_UPDATE")           HARDWARE_UPDATE,
     @EnumValue("HARDWARE_BATCH")            HARDWARE_BATCH,
+    @EnumValue("HARDWARE_ENTITY")           HARDWARE_ENTITY,
     @EnumValue("HARDWARE_TYPE")             HARDWARE_TYPE,
     @EnumValue("INVITATION")                INVITATION,
     @EnumValue("INVOICE")                   INVOICE,

@@ -1,53 +1,47 @@
-package models;
+package mongo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.mongodb.BasicDBObject;
-import com.mongodb.client.MongoCursor;
-import controllers._BaseFormFactory;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.bson.Document;
+import models.Model_HardwareType;
+import org.bson.types.ObjectId;
+import org.mongodb.morphia.annotations.*;
+import org.mongodb.morphia.query.Query;
 import play.data.validation.Constraints;
 import play.libs.Json;
-import exceptions.BadRequestException;
-import exceptions.NotFoundException;
+import utilities.cache.CacheMongoFinder;
+import utilities.cache.InjectCache;
+import utilities.enums.EntityType;
 import utilities.logger.Logger;
-import utilities.model.MongoModel;
+import utilities.model.Publishable;
+import utilities.model._Abstract_MongoModel;
+import utilities.permission.Action;
+import utilities.permission.Permissible;
 
-import java.io.IOException;
 import java.nio.charset.IllegalCharsetNameException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
-import static com.mongodb.client.model.Filters.eq;
 
-@ApiModel(description = "Model of Production Batch  ", value = "HardwareBatch")
-public class Model_HardwareBatch extends MongoModel {
+@Entity("Hardware_BatchCollection")
+@Indexes({
+        @Index(
+                fields = {
+                        @Field("production_batch"),
+                        @Field("compiler_target_name")
+                }
+        )
+})
+public class ModelMongo_Hardware_BatchCollection extends _Abstract_MongoModel implements Permissible, Publishable {
 
-    /**
-     * _BaseFormFactory
-     */
-    public static _BaseFormFactory baseFormFactory; // Its Required to set this in Server.class Component
-
-    public static final String COLLECTION_NAME = "batch-registration-authority";
-
-    public String get_collection_name(){
-        return COLLECTION_NAME;
-    }
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger logger = new Logger(Model_HardwareBatch.class);
+    private static final Logger logger = new Logger(ModelMongo_Hardware_BatchCollection.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(required = true) @Constraints.Required public String batch_id;
     @ApiModelProperty(required = true) @Constraints.Required public String revision;                     // Kod HW revize
     @ApiModelProperty(required = true) @Constraints.Required public String production_batch;             // Kod HW revizedate_of_assembly
-    @ApiModelProperty(required = true) @Constraints.Required public String date_of_assembly;             // Den kdy došlo k sestavení
+    @ApiModelProperty(required = true) @Constraints.Required public Long date_of_assembly;             // Den kdy došlo k sestavení
     @ApiModelProperty(required = true) @Constraints.Required public String pcb_manufacture_name;         // Jméno výrobce desky
     @ApiModelProperty(required = true) @Constraints.Required public String pcb_manufacture_id;           // Kod výrobce desky
     @ApiModelProperty(required = true) @Constraints.Required public String assembly_manufacture_name;    // Jméno firmy co osazovala DPS
@@ -64,7 +58,6 @@ public class Model_HardwareBatch extends MongoModel {
     @ApiModelProperty(required = true) @Constraints.Required public String ean_number;
     @ApiModelProperty(required = true)                       public String description;
     @ApiModelProperty(required = true) @Constraints.Required public String compiler_target_name;
-    @ApiModelProperty(required = true) @Constraints.Required public boolean deleted;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -76,7 +69,7 @@ public class Model_HardwareBatch extends MongoModel {
     }
 
     @JsonIgnore
-    public String get_nextMacAddress_just_for_check() throws IllegalCharsetNameException{
+    public String get_nextMacAddress_just_for_check() throws IllegalCharsetNameException {
 
         logger.trace("get_nextMacAddress_just_for_check:: revision: {} , latest used mac address now: {}", revision, latest_used_mac_address);
 
@@ -155,25 +148,22 @@ public class Model_HardwareBatch extends MongoModel {
         return m.toString().toUpperCase();
     }
 
+    @JsonIgnore @Override
+    public boolean isPublic() {
+        return true;
+    }
+
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
     public void save() {
         try {
 
-            // Set ID
-            this.batch_id = UUID.randomUUID().toString();
 
             // Set latest latest_used_mac_address if its empty
             if (latest_used_mac_address == null) latest_used_mac_address = mac_address_start;
 
             // Try To make a Json and check validation properties of object  baseFormFactory.formFromJsonWithValidation
-            String string_json = Json.toJson(this).toString();
-            ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
-            baseFormFactory.formFromJsonWithValidation(Model_HardwareBatch.class, json);
-
-            // Create Document - Save Document
-            Document document = Document.parse(Json.toJson(this).toString());
-            collection(COLLECTION_NAME).insertOne(document);
+            super.save();
 
         } catch (Exception e){
             logger.internalServerError(e);
@@ -181,84 +171,36 @@ public class Model_HardwareBatch extends MongoModel {
         }
     }
 
-    public void update() {
-        try {
-
-            // Try To make a Json and check validation properties of object  baseFormFactory.formFromJsonWithValidation
-            String string_json = Json.toJson(this).toString();
-            ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
-            baseFormFactory.formFromJsonWithValidation(Model_HardwareBatch.class, json);
-
-            Document document = Document.parse(Json.toJson(this).toString());
-            collection(COLLECTION_NAME).updateOne( eq("batch_id", batch_id), new Document("$set", document));
-
-
-        } catch (Exception e){
-            logger.internalServerError(e);
-            throw new BadRequestException("Save To Mongo DB faild");
-        }
-    }
-
-
-    public void delete() {
-        collection(COLLECTION_NAME).deleteOne(eq("batch_id", batch_id));
-    }
-
-/* HELP Methods --------------------------------------------------------------------------------------------------------*/
+/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
+
+/* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore @Override
+    public EntityType getEntityType() {
+        return EntityType.HARDWARE_BATCH;
+    }
+
+    @JsonIgnore @Override
+    public List<Action> getSupportedActions() {
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE);
+    }
+
+/* SPECIAL QUERY -------------------------------------------------------------------------------------------------------*/
+
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_HardwareBatch getById(UUID id) throws IOException {
-        return getById(id.toString());
-    }
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Model_HardwareBatch getById(String id) throws NotFoundException, IOException {
-
-        BasicDBObject query = new BasicDBObject();
-        query.put("batch_id", id);
-        query.put("deleted", false);
-
-        Document document = collection(COLLECTION_NAME).find(query).first();
-
-        if(document == null) {
-            throw new NotFoundException(Model_HardwareBatch.class);
-        }
-
-        String string_json = document.toJson();
-        ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
-
-        Model_HardwareBatch batch = baseFormFactory.formFromJsonWithValidation(Model_HardwareBatch.class, json);
-
-        return batch;
-
-    }
-
-    public static List<Model_HardwareBatch> getByTypeOfBoardId(String compiler_target_name) {
+    public static List<ModelMongo_Hardware_BatchCollection> getByTypeOfBoardId(String compiler_target_name) {
         try {
 
-            BasicDBObject query = new BasicDBObject();
-            query.put("compiler_target_name", compiler_target_name);
-            query.put("deleted", false);
-
-            MongoCursor<Document> cursor = collection(COLLECTION_NAME).find(query).iterator();
-
-
-            List<Model_HardwareBatch> batches = new ArrayList<>();
-            while (cursor.hasNext()) {
-
-                String string_json = cursor.next().toJson();
-                ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
-                Model_HardwareBatch batch = baseFormFactory.formFromJsonWithValidation(Model_HardwareBatch.class, json);
-                batches.add(batch);
-            }
-
-            return batches;
+            return find.query().field("compiler_target_name").equal(compiler_target_name).field("deleted").equal(false).asList();
 
         } catch (Exception e){
             logger.internalServerError(e);
@@ -266,5 +208,10 @@ public class Model_HardwareBatch extends MongoModel {
         }
     }
 
+    @Override @JsonIgnore
+    public CacheMongoFinder<?> getFinder() { return find; }
+
+    @JsonIgnore @InjectCache(value = ModelMongo_Hardware_BatchCollection.class, keyType = ObjectId.class)
+    public static CacheMongoFinder<ModelMongo_Hardware_BatchCollection> find = new CacheMongoFinder<>(ModelMongo_Hardware_BatchCollection.class);
 
 }

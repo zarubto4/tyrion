@@ -7,6 +7,7 @@ import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import exceptions.NotFoundException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import mongo.ModelMongo_Hardware_BatchCollection;
 import utilities.Server;
 import utilities.cache.CacheFinder;
 import utilities.cache.InjectCache;
@@ -158,9 +159,9 @@ public class Model_HardwareType extends NamedModel implements Permissible, Publi
 
     // Záměrně - kvuli dokumentaci a přehledu v Becki - nemá žádný podstatný vliv než jen umožnit vypsat přehled
     @JsonProperty @WithPermission @ApiModelProperty(value = "accessible only for persons with permissions") @JsonInclude(JsonInclude.Include.NON_NULL)
-    public List<Model_HardwareBatch> batches () {
+    public List<ModelMongo_Hardware_BatchCollection> batches () {
         try {
-            return Model_HardwareBatch.getByTypeOfBoardId(this.compiler_target_name);
+            return ModelMongo_Hardware_BatchCollection.getByTypeOfBoardId(this.compiler_target_name);
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;

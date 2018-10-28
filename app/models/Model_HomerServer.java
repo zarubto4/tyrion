@@ -5,16 +5,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.microsoft.azure.documentdb.DocumentClientException;
 import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import mongo.ModelMongo_HomerServer_OnlineStatus;
 import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheFinder;
 import utilities.cache.InjectCache;
-import utilities.document_mongo_db.document_objects.DM_HomerServer_Connect;
-import utilities.document_mongo_db.document_objects.DM_HomerServer_Disconnect;
 import utilities.enums.*;
 import utilities.errors.ErrorCode;
 import utilities.homer_auto_deploy.DigitalOceanThreadRegister;
@@ -686,8 +684,8 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
     public void make_log_connect() {
         new Thread(() -> {
             try {
-                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_HomerServer_Connect.make_request(this.id.toString()), null, true);
-            } catch (DocumentClientException e) {
+                ModelMongo_HomerServer_OnlineStatus.create_record(this, true);
+            } catch (Exception e) {
                 logger.internalServerError(e);
             }
         }).start();
@@ -696,8 +694,8 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
     public void make_log_disconnect() {
         new Thread(() -> {
             try {
-                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_HomerServer_Disconnect.make_request(this.id.toString()), null, true);
-            } catch (DocumentClientException e) {
+                ModelMongo_HomerServer_OnlineStatus.create_record(this, true);
+            } catch (Exception e) {
                 logger.internalServerError(e);
             }
         }).start();

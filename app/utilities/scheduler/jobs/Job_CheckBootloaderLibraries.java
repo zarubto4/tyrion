@@ -36,7 +36,7 @@ import java.util.zip.ZipInputStream;
 /**
  * This job synchronizes bootloader libraries from GitHub releases.
  */
-@Scheduled("30 0/1 * * * ?")
+// @Scheduled("30 0/1 * * * ?")
 public class Job_CheckBootloaderLibraries implements Job {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

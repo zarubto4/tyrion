@@ -3,7 +3,7 @@ package utilities.lablel_printer_service.labels;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
-import models.Model_HardwareRegistrationEntity;
+import mongo.ModelMongo_Hardware_RegistrationEntity;
 import utilities.logger.Logger;
 
 import java.io.ByteArrayOutputStream;
@@ -19,9 +19,9 @@ public class Label_12_mm_QR_code {
     private Rectangle Label_12_mm = new RectangleReadOnly(Utilities.millimetersToPoints(12), Utilities.millimetersToPoints(12));
 
 
-    Model_HardwareRegistrationEntity hardware = null;
+    ModelMongo_Hardware_RegistrationEntity hardware = null;
 
-    public Label_12_mm_QR_code(Model_HardwareRegistrationEntity hardware) {
+    public Label_12_mm_QR_code(ModelMongo_Hardware_RegistrationEntity hardware) {
         try {
             this.hardware = hardware;
 

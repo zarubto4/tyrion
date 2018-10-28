@@ -19,7 +19,7 @@ import utilities.gsm_services.things_mobile.Controller_Things_Mobile_Analytics;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.lablel_printer_service.Printer_Api;
-import utilities.lablel_printer_service.labels.Label_62_GSM_label_Details;
+import utilities.lablel_printer_service.labels.Label_62_GSM_thingsmobile_shield_label_Details;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
@@ -252,7 +252,7 @@ public class Controller_GSM extends _BaseController {
             Printer_Api api = new Printer_Api();
 
             // Label qith QR kode on Ethernet connector
-            Label_62_GSM_label_Details label_12_mm_details = new Label_62_GSM_label_Details(gsm);
+            Label_62_GSM_thingsmobile_shield_label_Details label_12_mm_details = new Label_62_GSM_thingsmobile_shield_label_Details(gsm);
 
             Model_Garfield garfield = Model_Garfield.find.query().setMaxRows(1).findOne();
 

@@ -4,13 +4,15 @@ package utilities.lablel_printer_service.labels;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.pdf.PdfWriter;
-import models.Model_HardwareRegistrationEntity;
+import mongo.ModelMongo_Hardware_RegistrationEntity;
 import utilities.logger.Logger;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-
+/**
+ * QR KOD NA THERNET KONEKTOR
+ */
 public class Label_62_split_mm_Details {
 
     // Logger
@@ -21,9 +23,9 @@ public class Label_62_split_mm_Details {
     private Rectangle Label_12_mm = new RectangleReadOnly(Utilities.millimetersToPoints(62), Utilities.millimetersToPoints(15));
 
 
-    Model_HardwareRegistrationEntity hardware = null;
+    ModelMongo_Hardware_RegistrationEntity hardware = null;
 
-    public Label_62_split_mm_Details(Model_HardwareRegistrationEntity hardware) {
+    public Label_62_split_mm_Details(ModelMongo_Hardware_RegistrationEntity hardware) {
         try {
 
             this.hardware = hardware;

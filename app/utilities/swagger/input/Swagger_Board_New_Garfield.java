@@ -21,7 +21,7 @@ public class Swagger_Board_New_Garfield implements Constraints.Validatable<List<
 
         @Constraints.Required
         @ApiModelProperty(value = "Required valid batch_id", required = true)
-        public UUID batch_id;
+        public String batch_id;
 
         @Constraints.Required
         @ApiModelProperty(required = true)

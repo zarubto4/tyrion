@@ -8,6 +8,8 @@ import com.itextpdf.text.Element;
 import com.itextpdf.text.Image;
 import controllers._BaseController;
 import models.*;
+import mongo.ModelMongo_Hardware_BatchCollection;
+import mongo.ModelMongo_Hardware_RegistrationEntity;
 import utilities.logger.Logger;
 
 import java.text.ParseException;
@@ -15,6 +17,9 @@ import java.text.SimpleDateFormat;
 import java.io.*;
 import java.util.Date;
 
+/**
+ * Na KRABIČKu IODY
+ */
 public class Label_62_mm_package {
 
     // Logger
@@ -24,12 +29,12 @@ public class Label_62_mm_package {
     private PdfContentByte contentByte;
     private Rectangle Label_65_mm_Antistatic_Package = new RectangleReadOnly(Utilities.millimetersToPoints(62), Utilities.millimetersToPoints(75));
 
-    Model_HardwareRegistrationEntity board = null;
-    Model_HardwareBatch print_info = null;
+    ModelMongo_Hardware_RegistrationEntity board = null;
+    ModelMongo_Hardware_BatchCollection print_info = null;
     Model_HardwareType print_type = null;
     Model_Garfield garfield = null;
 
-    public Label_62_mm_package(Model_HardwareRegistrationEntity board, Model_HardwareBatch batch, Model_HardwareType print_type, Model_Garfield garfield) throws IllegalArgumentException{
+    public Label_62_mm_package(ModelMongo_Hardware_RegistrationEntity board, ModelMongo_Hardware_BatchCollection batch, Model_HardwareType print_type, Model_Garfield garfield) throws IllegalArgumentException{
 
         this.board = board;
         this.print_info = batch;
@@ -161,7 +166,7 @@ public class Label_62_mm_package {
                       p_batch.add(new Chunk(print_info.production_batch, regular));
 
             Paragraph p_made = new Paragraph("Made: ", bold);
-                      p_made.add(new Chunk( print_info.date_of_assembly, regular));
+                      p_made.add(new Chunk( print_info.date_of_assembly.toString(), regular));
 
         cell_Right.addElement(p_code);
         cell_Right.addElement(p_product);
@@ -174,7 +179,7 @@ public class Label_62_mm_package {
 
             SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
 
-            Long long_created = Long.parseLong(board.created);
+            Long long_created = board.created;
 
             Date date_c = new Date(long_created);
             String date = DATE_FORMAT.format(date_c);
