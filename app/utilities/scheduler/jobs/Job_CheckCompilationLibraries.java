@@ -1,7 +1,6 @@
 package utilities.scheduler.jobs;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import controllers._BaseFormFactory;
@@ -10,41 +9,28 @@ import models.*;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import play.data.Form;
-import play.i18n.Lang;
 import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
-import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
 import utilities.Server;
 import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
 import utilities.logger.Logger;
-import utilities.scheduler.Scheduled;
 import utilities.slack.Slack;
 import utilities.swagger.input.*;
 
 import java.io.*;
-import java.net.ConnectException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 /**
  * This job synchronizes compilation libraries from GitHub releases.
  */
 // @Scheduled("0 0/5 * 1/1 * ? *")
-public class Job_CheckCompilationLibraries extends GitHubZipHelper implements Job {
+public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements Job {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 

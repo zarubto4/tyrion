@@ -21,7 +21,6 @@ import play.libs.Json;
 import utilities.cache.CacheMongoFinder;
 import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
-import utilities.hardware_registration_auhtority.Enum_Hardware_Registration_DB_Key;
 import utilities.logger.Logger;
 import utilities.model.Publishable;
 import utilities.model._Abstract_MongoModel;
@@ -174,13 +173,6 @@ public class ModelMongo_Hardware_RegistrationEntity extends _Abstract_MongoModel
     /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
     /* FINDER --------------------------------------------------------------------------------------------------------------*/
-
-    public static boolean check_if_value_is_registered(String value, Enum_Hardware_Registration_DB_Key type) {
-
-        ModelMongo_Hardware_RegistrationEntity entity = find.query().field(type.name()).equal(value).get();
-        return entity != null;
-
-    }
 
     public static ModelMongo_Hardware_RegistrationEntity getbyFull_id(String full_id) {
         try {

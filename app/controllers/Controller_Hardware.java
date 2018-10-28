@@ -17,7 +17,6 @@ import responses.*;
 import utilities.authentication.Authentication;
 import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import exceptions.NotFoundException;
-import utilities.hardware_registration_auhtority.Enum_Hardware_Registration_DB_Key;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.enums.*;
@@ -1367,7 +1366,7 @@ public class Controller_Hardware extends _BaseController {
                 throw new ForbiddenException();
             }
 
-            if(!ModelMongo_Hardware_RegistrationEntity.check_if_value_is_registered(full_id, Enum_Hardware_Registration_DB_Key.full_id)) {
+            if(ModelMongo_Hardware_RegistrationEntity.getbyFull_id(full_id) == null) {
                 return notFound(Model_Hardware.class);
             }
 
@@ -1432,7 +1431,7 @@ public class Controller_Hardware extends _BaseController {
             Model_Garfield garfield = Model_Garfield.find.byId(help.garfield_station_id);
 
             // Odzkouším -zda už není registrovaný v centárlní autoritě!
-            if (ModelMongo_Hardware_RegistrationEntity.check_if_value_is_registered(help.full_id, Enum_Hardware_Registration_DB_Key.full_id)) {
+            if (ModelMongo_Hardware_RegistrationEntity.getbyFull_id(help.full_id) != null) {
                 logger.trace("hardware_create_garfield:: Hardware is already registred in Central authority");
             } else {
 
@@ -1455,7 +1454,7 @@ public class Controller_Hardware extends _BaseController {
                 logger.warn("hardware_create_garfield:: - hardware is not found in centrall database, full_id: {}", help.full_id);
                 logger.warn("hardware_create_garfield:: - Creation of new device for central database");
 
-                if (ModelMongo_Hardware_RegistrationEntity.check_if_value_is_registered(batch.get_nextMacAddress_just_for_check(), Enum_Hardware_Registration_DB_Key.mac_address)) {
+                if (ModelMongo_Hardware_RegistrationEntity.getbyFull_macAddress(batch.get_nextMacAddress_just_for_check()) != null) {
                     logger.error("Next Mac Address fot this device is already registered. Check It. Mac Address:: {}", help.full_id);
                     return badRequest("Next Mac Address fot this device is already registered. Check It Mac Address:: " +  help.full_id);
                 }

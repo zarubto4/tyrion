@@ -22,18 +22,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public abstract class GitHubZipHelper {
+public abstract class _GitHubZipHelper {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger logger = new Logger(GitHubZipHelper.class);
+    private static final Logger logger = new Logger(_GitHubZipHelper.class);
 
     protected WSClient ws;
     protected Config config;
     protected _BaseFormFactory formFactory;
 
 
-    public GitHubZipHelper(WSClient ws, Config config, _BaseFormFactory formFactory) {
+    public _GitHubZipHelper(WSClient ws, Config config, _BaseFormFactory formFactory) {
         this.ws = ws;
         this.config = config;
         this.formFactory = formFactory;

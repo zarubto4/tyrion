@@ -1,43 +1,31 @@
 package utilities.scheduler.jobs;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import controllers._BaseFormFactory;
 import models.Model_Blob;
 import models.Model_BootLoader;
 import models.Model_HardwareType;
-import org.apache.commons.io.FileUtils;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import play.libs.F;
-import play.libs.Json;
 import play.libs.ws.WSClient;
-import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
 import utilities.logger.Logger;
-import utilities.scheduler.Scheduled;
 import utilities.slack.Slack;
 import utilities.swagger.input.Swagger_GitHubReleases;
 import utilities.swagger.input.Swagger_GitHubReleases_Asset;
-import utilities.swagger.input.Swagger_GitHubReleases_List;
 
-import java.io.*;
 import java.net.ConnectException;
-import java.net.URLDecoder;
-import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 /**
  * This job synchronizes bootloader libraries from GitHub releases.
  */
 // @Scheduled("30 0/1 * * * ?")
-public class Job_CheckBootloaderLibraries extends GitHubZipHelper implements Job {
+public class Job_CheckBootloaderLibraries extends _GitHubZipHelper implements Job {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
