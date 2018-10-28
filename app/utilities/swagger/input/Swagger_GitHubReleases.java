@@ -2,6 +2,7 @@ package utilities.swagger.input;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -9,7 +10,7 @@ import java.util.List;
 
 @ApiModel(description = "Json Model - Private for GitHub Release",
           value = "GitHubReleases")
-public class Swagger_GitHubReleases {
+public class Swagger_GitHubReleases extends _Swagger_Abstract_Default {
 
     public String url;
     public String html_url;

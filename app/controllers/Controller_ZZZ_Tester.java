@@ -49,6 +49,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
+import utilities.scheduler.jobs.Job_CheckBootloaderLibraries;
+import utilities.scheduler.jobs.Job_CheckCompilationLibraries;
 import utilities.scheduler.jobs.Job_ThingsMobile_SimData_Synchronize;
 import utilities.scheduler.jobs.Job_ThingsMobile_SimListOnly_Synchronize;
 
@@ -494,6 +496,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
         try {
 
 
+             new Job_CheckCompilationLibraries(this.ws, this.config, this.baseFormFactory).execute(null);
 
             /*
             BasicDBObject query = new BasicDBObject();

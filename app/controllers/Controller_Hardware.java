@@ -651,7 +651,6 @@ public class Controller_Hardware extends _BaseController {
     public Result hardwareType_getAll() {
         try {
 
-            // TODO dá se cachovat - Pozor stejný seznam se nachází i Job_CheckCompilationLibraries
             // Získání seznamu
             // To co jsem tady napsal jen filtruje tahá ručně desky z cache pojendom - možná by šlo někde mít statické pole ID třeba
             // přímo v objektu Model_HardwareType DB ignor a to používat a aktualizovat a statické pole nechat na samotné jave, aby si ji uchavaala v pam,ěti

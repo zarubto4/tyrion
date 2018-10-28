@@ -11,7 +11,6 @@ import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import play.data.Form;
-import play.data.FormFactory;
 import play.i18n.Lang;
 import play.libs.F;
 import play.libs.Json;
@@ -30,6 +29,7 @@ import java.io.*;
 import java.net.ConnectException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -44,7 +44,7 @@ import java.util.zip.ZipOutputStream;
  * This job synchronizes compilation libraries from GitHub releases.
  */
 // @Scheduled("0 0/5 * 1/1 * ? *")
-public class Job_CheckCompilationLibraries implements Job {
+public class Job_CheckCompilationLibraries extends GitHubZipHelper implements Job {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -52,15 +52,9 @@ public class Job_CheckCompilationLibraries implements Job {
 
 //**********************************************************************************************************************
 
-    private WSClient ws;
-    private Config config;
-    private _BaseFormFactory formFactory;
-
     @Inject
     public Job_CheckCompilationLibraries(WSClient ws, Config config, _BaseFormFactory formFactory) {
-        this.ws = ws;
-        this.config = config;
-        this.formFactory = formFactory;
+        super(ws, config, formFactory);
     }
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -78,41 +72,8 @@ public class Job_CheckCompilationLibraries implements Job {
 
                 logger.trace("check_version_thread: concurrent thread started on {}", new Date());
 
-                /**
-                 * Stáhnu si seznam všech releasů z GitHubu. Podle dohody je zde mix releasů.
-                 *
-                 *
-                 * Distribuce knihoven:
-                 *
-                 * Distribuce Bootloader Verze - kde je povolená jediná vyjímka na konvenci verzování a to na začátku.
-                 * Nejdříve je použit Target name a poté "mark" že jde o bootloader a verzi.
-                 * Například: YODA_G3E_bootloader_v1.0.2, opět stejnou logikou -beta a alfa.
-                 * Vše ostatní je automatizované. Tyrion si stáhne, překopíruje do vlasntího archivu na BLOB server,
-                 * doplní si údaje a dále distribuje.
-                 */
-                WSResponse ws_response_get_all_releases = ws.url("https://api.github.com/repos/ByzanceIoT/hw-libs/releases")
-                        .addHeader("Authorization", "token " + config.getString("GitHub.apiKey"))
-                        .addHeader("Accept", "application/json")
-                        .get()
-                        .toCompletableFuture()
-                        .get();
-
-                if (ws_response_get_all_releases.getStatus() != 200) {
-                    logger.error("Permission Error in Job_CheckCompilationLibraries. Please Check it");
-                    logger.error("Error Message from Github: {}", ws_response_get_all_releases.getBody());
-                    return;
-                }
-
-                // Získám seznam všech objektů z Githubu
-                ObjectNode request_list = Json.newObject();
-                request_list.set("list", ws_response_get_all_releases.asJson());
-
-                // Get and Validate Object
-                Swagger_GitHubReleases_List help = formFactory.formFromJsonWithValidation(Swagger_GitHubReleases_List.class, request_list);
-
-
                 // Seznam Release z GitHubu v upravené podobě
-                List<Swagger_GitHubReleases> releases = help.list;
+                List<Swagger_GitHubReleases> releases = request_list();
 
                 List<UUID> hardwareTypes_id = Model_HardwareType.find.query().select("id").findSingleAttributeList();
                 // Do každého typu desky - který má Tyrion v DB doplní podporované knihovny
@@ -217,7 +178,13 @@ public class Job_CheckCompilationLibraries implements Job {
                         new_library.published_at = release.published_at;
                         library_list_for_add.add(new_library);
 
-                        setAndCompileNewPublicPrograms(release);
+                        logger.trace("check_version_thread:: setAndCompileNewPublicPrograms: release {}", release.prettyPrint());
+                        try {
+                            setAndCompileNewPublicPrograms(release);
+                        } catch (Exception e){
+                            e.printStackTrace();
+
+                        }
                     }
 
                     hardwareType.cache_library_list.addAll(library_list_for_add);
@@ -260,10 +227,19 @@ public class Job_CheckCompilationLibraries implements Job {
 
             System.out.println("setAndCompileNewPublicPrograms release: asset url: " + release.assets.get(0).url);
 
+
+            File directory = new File(System.getProperty("user.dir") + "/files/" );
+
+            if (!directory.exists() || directory.isDirectory()) {
+                if(directory.mkdir()){
+                    logger.error("setAndCompileNewPublicPrograms:: directory created");
+                }
+            }
+
             String file_path = System.getProperty("user.dir") + "/files/" +  release.tag_name;
             String file_name = file_path  + ".zip";
 
-            WSResponse ws_download_file = new Job_CheckBootloaderLibraries(this.ws, this.config, this.formFactory).download_file(release.assets.get(0).url);
+            WSResponse ws_download_file = download_file(release.assets.get(0).url);
 
 
             if(ws_download_file == null) {
@@ -287,8 +263,8 @@ public class Job_CheckCompilationLibraries implements Job {
             // Remove before if exist
             if(!new File(file_path).exists()) {
                 System.out.println("setAndCompileNewPublicPrograms file_path: " + file_path + " there is a file - it will be removed before");
-                new Job_CheckBootloaderLibraries(this.ws, this.config, this.formFactory).remove_file(file_path);
-                new Job_CheckBootloaderLibraries(this.ws, this.config, this.formFactory).remove_file(file_name);
+                this.remove_file(file_path);
+                this.remove_file(file_name);
             }
 
 
@@ -302,7 +278,7 @@ public class Job_CheckCompilationLibraries implements Job {
 
             System.out.println("setAndCompileNewPublicPrograms release: " + release.name + " try to unzip");
 
-            new Job_CheckBootloaderLibraries(this.ws, this.config, this.formFactory).unzip(file_name, file_path);
+            this.unzip(file_name, file_path);
 
 
 
@@ -310,150 +286,161 @@ public class Job_CheckCompilationLibraries implements Job {
 
             if(!new File(file_path + "/examples").exists()) {
                 // Slack.post_invalid_release(release);
-                System.err.println("setAndCompileNewPublicPrograms je to napíču examply chybí");
+                System.err.println("setAndCompileNewPublicPrograms example missing");
 
                 System.err.println("setAndCompileNewPublicPrograms Mažu:" + file_path);
-                new Job_CheckBootloaderLibraries(this.ws, this.config, this.formFactory).remove_file(file_path + "/");
+                this.remove_file(file_path + "/");
 
                 System.err.println("setAndCompileNewPublicPrograms Mažu:" + file_name);
-                new Job_CheckBootloaderLibraries(this.ws, this.config, this.formFactory).remove_file(file_name);
+                this.remove_file(file_name);
 
             }
 
             System.out.println("setAndCompileNewPublicPrograms soubor obsahuje složku examples");
+            System.out.println("setAndCompileNewPublicPrograms path to: " + file_path + "/examples");
+            System.out.println("setAndCompileNewPublicPrograms kde to najdu: : " + file_path + "/examples");
 
             File[] directories = new File(file_path + "/examples").listFiles(File::isDirectory);
 
 
             String error_for_slack = "";
 
-            for(File directory_with_example : directories) {
+            if(directories == null) {
 
-                File readme = null;
-                File maincpp = null;
-                Swagger_GitHub_ExampleFile json = null;
+                System.out.println("setAndCompileNewPublicPrograms: directories is null!");
+                error_for_slack += "\n Example: *" + release.tag_name + "* not contains folder example";
 
-                for (final File fileEntry : directory_with_example.listFiles()) {
+            } else {
 
-                    if(fileEntry.getName().equals("main.cpp")) {
-                        maincpp = fileEntry;
+                for (File directory_with_example : directories) {
+
+                    File readme = null;
+                    File maincpp = null;
+                    Swagger_GitHub_ExampleFile json = null;
+
+                    for (final File fileEntry : directory_with_example.listFiles()) {
+
+                        if (fileEntry.getName().equals("main.cpp")) {
+                            maincpp = fileEntry;
+                        }
+
+                        if (fileEntry.getName().equals("readme.json")) {
+                            readme = fileEntry;
+                        }
+
                     }
 
-                    if(fileEntry.getName().equals("readme.json")) {
-                        readme = fileEntry;
+                    if (maincpp == null || readme == null) {
+                        error_for_slack += "\n Example: *" + directory_with_example.getName() + "* not contains main.cpp or readme.json file! Fix it!";
+                    } else {
+                        System.out.println("Example: " + directory_with_example.getName() + "is ok!");
                     }
 
-                }
+                    Scanner scanner = new Scanner(readme, "UTF-8");
+                    String text = scanner.useDelimiter("\\A").next();
+                    JsonNode jsonNode = Json.parse(text);
 
-                if(maincpp == null || readme == null) {
-                    error_for_slack += "\n Example: *" + directory_with_example.getName() + "* not contains main.cpp or readme.json file! Fix it!";
-                } else {
-                    System.out.println("Example: " + directory_with_example.getName() + "is ok!");
-                }
+                    Scanner scanner_cprogram = new Scanner(maincpp, "UTF-8");
+                    String text_cprogram = scanner_cprogram.useDelimiter("\\A").next();
 
-                Scanner scanner = new Scanner( readme, "UTF-8" );
-                String text = scanner.useDelimiter("\\A").next();
-                JsonNode jsonNode = Json.parse(text);
-
-                Scanner scanner_cprogram = new Scanner( maincpp, "UTF-8" );
-                String text_cprogram = scanner_cprogram.useDelimiter("\\A").next();
-
-                json = formFactory.formFromJsonWithValidation(Swagger_GitHub_ExampleFile.class, jsonNode);
+                    json = formFactory.formFromJsonWithValidation(Swagger_GitHub_ExampleFile.class, jsonNode);
 
 
-                if(json.name == null || json.name.equals("") ) {
-                    error_for_slack += "\n Example: *" + directory_with_example.getName() + "* - the name is not properly set!";
-                   continue;
-                }
-
-                if(json.description == null || json.description.equals("") || json.description.equals("This should be some long description of the example")) {
-                    error_for_slack += "\n Example: *" + directory_with_example.getName() + "* - the description is not properly set!";
-                   //TODO continue;
-                }
-
-                if(json.targets.isEmpty()) {
-                    error_for_slack += "\n Example: *" + directory_with_example.getName() + "* - targets is empty or not contain allowed values";
-                    continue;
-                }
-
-
-                Model_CProgram c_program = Model_CProgram.find.query().where()
-                        .eq("name", json.name)
-                        .eq("publish_type", ProgramType.PUBLIC)
-                        .disjunction()
-                            .add(Expr.eq("tags.value", "Byzance"))
-                            .add(Expr.eq("tags.value", "Example"))
-                        .eq("hardware_type.compiler_target_name", json.targets.get(0))
-                        .ne("deleted", true)
-                        .findOne();
-
-                if (c_program == null) {
-                    System.out.println("Example: "  + directory_with_example.getName() + " c_program s těmito parametry neexistuje - je nutné ho vytvořit");
-
-                    c_program = new Model_CProgram();
-                    c_program.name = json.name;
-                    c_program.description = json.description;
-                    c_program.publish_type = ProgramType.PUBLIC;
-
-                    Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("compiler_target_name", json.targets.get(0)).eq("deleted", false).findOne();
-
-                    if(hardwareType == null) {
-                        System.err.println("HW Libs Example: ERROR "  + directory_with_example.getName() + " not found Model_HardwareType!");
-                        error_for_slack += "\n Example: *" + directory_with_example.getName() + "* - target " + json.targets + " is not valid.";
+                    if (json.name == null || json.name.equals("")) {
+                        error_for_slack += "\n Example: *" + directory_with_example.getName() + "* - the name is not properly set!";
                         continue;
                     }
 
-                    c_program.hardware_type = hardwareType;
-                    c_program.save();
+                    if (json.description == null || json.description.equals("") || json.description.equals("This should be some long description of the example")) {
+                        error_for_slack += "\n Example: *" + directory_with_example.getName() + "* - the description is not properly set!";
+                        //TODO continue;
+                    }
 
-                    List<String> tags = new ArrayList<>();
-                    tags.add("Byzance");
-                    tags.add("Example");
+                    if (json.targets.isEmpty()) {
+                        error_for_slack += "\n Example: *" + directory_with_example.getName() + "* - targets is empty or not contain allowed values";
+                        continue;
+                    }
 
-                    c_program.setTags(tags);
+
+                    Model_CProgram c_program = Model_CProgram.find.query().where()
+                            .eq("name", json.name)
+                            .eq("publish_type", ProgramType.PUBLIC)
+                            .disjunction()
+                            .add(Expr.eq("tags.value", "Byzance"))
+                            .add(Expr.eq("tags.value", "Example"))
+                            .eq("hardware_type.compiler_target_name", json.targets.get(0))
+                            .ne("deleted", true)
+                            .findOne();
+
+                    if (c_program == null) {
+                        System.out.println("Example: " + directory_with_example.getName() + " c_program s těmito parametry neexistuje - je nutné ho vytvořit");
+
+                        c_program = new Model_CProgram();
+                        c_program.name = json.name;
+                        c_program.description = json.description;
+                        c_program.publish_type = ProgramType.PUBLIC;
+
+                        Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("compiler_target_name", json.targets.get(0)).eq("deleted", false).findOne();
+
+                        if (hardwareType == null) {
+                            System.err.println("HW Libs Example: ERROR " + directory_with_example.getName() + " not found Model_HardwareType!");
+                            error_for_slack += "\n Example: *" + directory_with_example.getName() + "* - target " + json.targets + " is not valid.";
+                            continue;
+                        }
+
+                        c_program.hardware_type = hardwareType;
+                        c_program.save();
+
+                        List<String> tags = new ArrayList<>();
+                        tags.add("Byzance");
+                        tags.add("Example");
+
+                        c_program.setTags(tags);
+                    }
+
+
+                    // Create First version
+                    System.out.println("Example: " + directory_with_example.getName() + " its time to create version");
+
+                    Model_CProgramVersion version = Model_CProgramVersion.find.query().where().eq("c_program.id", c_program.id).eq("name", release.tag_name).findOne();
+
+                    if (version != null) {
+                        System.out.println("Example: " + directory_with_example.getName() + " version " + release.tag_name + " is already created");
+                        continue;
+                    }
+
+                    // Create Version
+                    version = new Model_CProgramVersion();
+                    version.name = release.tag_name;
+                    version.c_program = c_program;
+                    version.publish_type = ProgramType.PUBLIC;
+                    version.save();
+
+                    Swagger_C_Program_Version_New version_program = new Swagger_C_Program_Version_New();
+                    version_program.main = text_cprogram;
+                    version_program.library_compilation_version = release.tag_name;
+
+                    // Content se nahraje na Azur
+                    version.file = Model_Blob.upload(Json.toJson(version_program).toString(), "code.json", c_program.get_path());
+                    version.update();
+
+                    // Start with asynchronous ccompilation
+                    version.compile_program_thread(release.tag_name);
                 }
-
-
-                // Create First version
-                System.out.println("Example: "  + directory_with_example.getName() + " its time to create version");
-
-                Model_CProgramVersion version = Model_CProgramVersion.find.query().where().eq("c_program.id", c_program.id).eq("name", release.tag_name).findOne();
-
-                if(version != null) {
-                    System.out.println("Example: "  + directory_with_example.getName() + " version " + release.tag_name + " is already created");
-                    continue;
-                }
-
-                // Create Version
-                version = new Model_CProgramVersion();
-                version.name = release.tag_name;
-                version.c_program = c_program;
-                version.publish_type = ProgramType.PUBLIC;
-                version.save();
-
-                Swagger_C_Program_Version_New version_program = new Swagger_C_Program_Version_New();
-                version_program.main = text_cprogram;
-                version_program.library_compilation_version = release.tag_name;
-
-                // Content se nahraje na Azur
-                version.file = Model_Blob.upload(Json.toJson(version_program).toString(), "code.json", c_program.get_path());
-                version.update();
-
-                // Start with asynchronous ccompilation
-                version.compile_program_thread(release.tag_name);
             }
 
 
             if(error_for_slack.length() > 0) {
                 error_for_slack = "Toto je automatická zpráva kterou vygeneroval všemocný Tyrion Server. \n Podle GitHubu *" + release.author.login + "* vytvořil firmware release *" + release.tag_name + "* s následujícíma chybama:." + error_for_slack;
+
                 Slack.post_error(error_for_slack, Server.slack_webhook_url_channel_hardware);
                 return;
             }
 
 
             // Cleare after set
-            new Job_CheckBootloaderLibraries(this.ws, this.config, this.formFactory).remove_file(file_path);
-            new Job_CheckBootloaderLibraries(this.ws, this.config, this.formFactory).remove_file(file_name);
+            this.remove_file(file_path);
+            this.remove_file(file_name);
 
         } catch (Exception e) {
             logger.internalServerError(e);
