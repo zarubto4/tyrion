@@ -466,7 +466,6 @@ public class Server {
         WS_Homer.baseFormFactory                                = Server.injector.getInstance(_BaseFormFactory.class);
         Synchronize_Homer_Synchronize_Settings.baseFormFactory  = Server.injector.getInstance(_BaseFormFactory.class);
         DigitalOceanThreadRegister.baseFormFactory              = Server.injector.getInstance(_BaseFormFactory.class);
-        Model_HardwareRegistrationEntity.baseFormFactory        = Server.injector.getInstance(_BaseFormFactory.class);
         Model_InstanceSnapshot.baseFormFactory                  = Server.injector.getInstance(_BaseFormFactory.class);
     }
 
