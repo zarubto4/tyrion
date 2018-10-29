@@ -182,7 +182,7 @@ public class Model_CompilationServer extends BaseModel implements Permissible, P
 
     @JsonIgnore
     public void compiler_server_is_disconnect() {
-        logger.debug("compiler_server_is_disconnect:: Connection lost with compilation cloud_blocko_server!: " + id + " name " + personal_server_name);
+        logger.warn("compiler_server_is_disconnect:: Connection lost with compilation cloud_blocko_server!: " + id + " name " + personal_server_name);
         make_log_disconnect();
     }
 

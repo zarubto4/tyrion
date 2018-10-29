@@ -13,6 +13,7 @@ import play.libs.F;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.logger.Logger;
+import utilities.scheduler.Scheduled;
 import utilities.slack.Slack;
 import utilities.swagger.input.Swagger_GitHubReleases;
 import utilities.swagger.input.Swagger_GitHubReleases_Asset;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 /**
  * This job synchronizes bootloader libraries from GitHub releases.
  */
-// @Scheduled("30 0/1 * * * ?")
+@Scheduled("30 0/1 * * * ?")
 public class Job_CheckBootloaderLibraries extends _GitHubZipHelper implements Job {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

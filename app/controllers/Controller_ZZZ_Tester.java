@@ -496,7 +496,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
         try {
 
 
-             new Job_CheckCompilationLibraries(this.ws, this.config, this.baseFormFactory).execute(null);
+             new Job_ThingsMobile_SimData_Synchronize().execute(null);
 
             /*
             BasicDBObject query = new BasicDBObject();
@@ -579,6 +579,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
                 if(help.production_batch_id.equals("cc6b3643-652a-40c5-88ee-04cff043afa5")  ) {
                     registration_of_hardware.production_batch_id = new ObjectId("5bd5dd5423548a6f3082b428");
                 }
+                
                 else if(help.production_batch_id.equals("26d189c5-b61f-4565-a8f7-5a043a73963e")  ) {
                     registration_of_hardware.production_batch_id = new ObjectId("5bd5dd5423548a6f3082b427");
                 }

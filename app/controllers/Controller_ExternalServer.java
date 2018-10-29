@@ -751,9 +751,10 @@ public class Controller_ExternalServer extends _BaseController {
             Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(snapshot_id);
 
             // Separace na Container a Blob
-            int slash = snapshot.program.path.indexOf("/");
-            String container_name = snapshot.program.path.substring(0,slash);
-            String real_file_path = snapshot.program.path.substring(slash+1);
+            int slash = snapshot.getBlob().path.indexOf("/");
+
+            String container_name = snapshot.getBlob().path.substring(0,slash);
+            String real_file_path = snapshot.getBlob().path.substring(slash+1);
 
             CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
 
@@ -847,9 +848,9 @@ public class Controller_ExternalServer extends _BaseController {
             }
 
             // Separace na Container a Blob
-            int slash = compilation.blob.path.indexOf("/");
-            String container_name = compilation.blob.path.substring(0,slash);
-            String real_file_path = compilation.blob.path.substring(slash+1);
+            int slash = compilation.getBlob().path.indexOf("/");
+            String container_name = compilation.getBlob().path.substring(0,slash);
+            String real_file_path = compilation.getBlob().path.substring(slash+1);
 
             CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
 

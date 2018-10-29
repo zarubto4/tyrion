@@ -643,7 +643,7 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
     @Transient
     public void is_disconnect() {
         try {
-            logger.error("is_disconnect:: Tyrion lost connection with Homer server: " + id);
+            logger.warn("is_disconnect:: Tyrion lost connection with Homer server: " + id);
             make_log_disconnect();
 
             // Send echo to all connected users (its public servers)

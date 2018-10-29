@@ -565,8 +565,6 @@ DELETE    /admin/gsm/:sim_id                                            controll
 # Map static resources from the /public folder to the /assets URL path
 GET       /swagger.json                                                 controllers.ApiHelpController.getResources
 GET       /assets/*file                                                 controllers.Assets.at(path="/public", file)
-GET       /swagger_ui                                                   controllers.Assets.at(path="/public", file="swagger_ui.html")
-GET       /assets/*file                                                 controllers.Assets.versioned(path="/public", file: Asset)
 GET       /.well-known/acme-challenge/:file                             utilities.certificate.CertificateCheck.check(file)
 
 ### PUBLIC - ADMIN ############ PUBLIC  - ADMIN ############### PUBLIC  - ADMIN ################ PUBLIC  - ADMIN ################################################################

@@ -57,7 +57,7 @@ public class Model_Compilation extends BaseModel {
 
     public UUID blob_id() {
         if (idCache().get(Model_Blob.class) == null) {
-            idCache().add(Model_Blob.class, (UUID) Model_Blob.find.query().where().eq("version.id", id).select("id").findSingleAttribute());
+            idCache().add(Model_Blob.class, (UUID) Model_Blob.find.query().where().eq("c_compilations_binary_file.id", id).select("id").findSingleAttribute());
         }
 
         return idCache().get(Model_Blob.class);
@@ -65,7 +65,7 @@ public class Model_Compilation extends BaseModel {
 
     @JsonIgnore
     public Model_Blob getBlob() {
-        return isLoaded("blob") ? blob : Model_Blob.find.query().where().eq("version.id", id).findOne();
+        return isLoaded("blob") ? blob : Model_Blob.find.query().where().eq("c_compilations_binary_file.id", id).findOne();
     }
 
     @JsonProperty
