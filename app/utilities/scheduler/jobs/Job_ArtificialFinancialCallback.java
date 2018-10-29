@@ -9,11 +9,14 @@ import utilities.logger.Logger;
 import utilities.scheduler.Restrict;
 import utilities.scheduler.Scheduled;
 
+import static utilities.enums.ServerMode.PRODUCTION;
+import static utilities.enums.ServerMode.STAGE;
+
 /**
  * This class is used to send artificial notification in developer mode.
  * External services like GoPay or Fakturoid cannot send REST notification to localhost.
  */
-@Restrict
+@Restrict(value = { STAGE, PRODUCTION })
 @Scheduled("10 0/1 * * * ?")
 public class Job_ArtificialFinancialCallback implements Job {
 

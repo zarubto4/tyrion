@@ -6,6 +6,8 @@ import io.ebean.Ebean;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
+import mongo.ModelMongo_Hardware_BatchCollection;
+import mongo.ModelMongo_Hardware_RegistrationEntity;
 import org.mindrot.jbcrypt.BCrypt;
 import play.Environment;
 import play.libs.Json;
@@ -15,7 +17,6 @@ import responses.*;
 import utilities.authentication.Authentication;
 import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import exceptions.NotFoundException;
-import utilities.hardware_registration_auhtority.Enum_Hardware_Registration_DB_Key;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.enums.*;
@@ -649,7 +650,6 @@ public class Controller_Hardware extends _BaseController {
     public Result hardwareType_getAll() {
         try {
 
-            // TODO dá se cachovat - Pozor stejný seznam se nachází i Job_CheckCompilationLibraries
             // Získání seznamu
             // To co jsem tady napsal jen filtruje tahá ručně desky z cache pojendom - možná by šlo někde mít statické pole ID třeba
             // přímo v objektu Model_HardwareType DB ignor a to používat a aktualizovat a statické pole nechat na samotné jave, aby si ji uchavaala v pam,ěti
@@ -788,7 +788,7 @@ public class Controller_Hardware extends _BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 201, message = "Successfully created",      response = Model_HardwareBatch.class),
+            @ApiResponse(code = 201, message = "Successfully created",      response = ModelMongo_Hardware_BatchCollection.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -808,7 +808,7 @@ public class Controller_Hardware extends _BaseController {
             this.checkUpdatePermission(hardwareType);
            
             // Tvorba objektu
-            Model_HardwareBatch batch = new Model_HardwareBatch();
+            ModelMongo_Hardware_BatchCollection batch = new ModelMongo_Hardware_BatchCollection();
             batch.compiler_target_name = hardwareType.compiler_target_name;
 
             batch.revision = help.revision;
@@ -858,11 +858,11 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result hardwareBatch_delete(UUID batch_id) {
+    public Result hardwareBatch_delete(String id) {
         try {
 
             // Kontrola objektu
-            Model_HardwareBatch batch = Model_HardwareBatch.getById(batch_id);
+            ModelMongo_Hardware_BatchCollection batch = ModelMongo_Hardware_BatchCollection.find.byId(id);
 
             this.checkUpdatePermission(batch.getHardwareType());
       
@@ -895,7 +895,7 @@ public class Controller_Hardware extends _BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_HardwareBatch.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = ModelMongo_Hardware_BatchCollection.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
@@ -903,14 +903,14 @@ public class Controller_Hardware extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result hardwareBatch_edit(UUID batch_id) {
+    public Result hardwareBatch_edit(String id) {
         try {
 
             // Get and Validate Object
             Swagger_HardwareBatch_New help = formFromRequestWithValidation(Swagger_HardwareBatch_New.class);
 
             // Kontrola objektu
-            Model_HardwareBatch batch = Model_HardwareBatch.getById(batch_id);
+            ModelMongo_Hardware_BatchCollection batch = ModelMongo_Hardware_BatchCollection.find.byId (id);
 
             this.checkUpdatePermission(batch.getHardwareType());
 
@@ -1366,11 +1366,11 @@ public class Controller_Hardware extends _BaseController {
                 throw new ForbiddenException();
             }
 
-            if(!Model_HardwareRegistrationEntity.check_if_value_is_registered(full_id, Enum_Hardware_Registration_DB_Key.full_id)) {
+            if(ModelMongo_Hardware_RegistrationEntity.getbyFull_id(full_id) == null) {
                 return notFound(Model_Hardware.class);
             }
 
-            Model_HardwareRegistrationEntity hw = Model_HardwareRegistrationEntity.getbyFull_id(full_id);
+            ModelMongo_Hardware_RegistrationEntity hw = ModelMongo_Hardware_RegistrationEntity.getbyFull_id(full_id);
 
             Swagger_Hardware_Registration_Hash hash = new Swagger_Hardware_Registration_Hash();
             hash.hash = hw.hash_for_adding;
@@ -1425,13 +1425,13 @@ public class Controller_Hardware extends _BaseController {
             Model_HardwareType hardwareType = Model_HardwareType.find.byId(help.hardware_type_id);
 
             // Kontrola Objektu
-            Model_HardwareBatch batch = Model_HardwareBatch.getById(help.batch_id);
+            ModelMongo_Hardware_BatchCollection batch = ModelMongo_Hardware_BatchCollection.find.byId(help.batch_id);
             
             // Kontrola Objektu
             Model_Garfield garfield = Model_Garfield.find.byId(help.garfield_station_id);
 
             // Odzkouším -zda už není registrovaný v centárlní autoritě!
-            if (Model_HardwareRegistrationEntity.check_if_value_is_registered(help.full_id, Enum_Hardware_Registration_DB_Key.full_id)) {
+            if (ModelMongo_Hardware_RegistrationEntity.getbyFull_id(help.full_id) != null) {
                 logger.trace("hardware_create_garfield:: Hardware is already registred in Central authority");
             } else {
 
@@ -1441,12 +1441,12 @@ public class Controller_Hardware extends _BaseController {
             String mqtt_password_not_hashed = UUID.randomUUID().toString();
             String mqtt_username_not_hashed = UUID.randomUUID().toString();
 
-            if(Model_HardwareRegistrationEntity.getbyFull_macAddress(batch.get_nextMacAddress_just_for_check()) != null) {
+            if(ModelMongo_Hardware_RegistrationEntity.getbyFull_macAddress(batch.get_nextMacAddress_just_for_check()) != null) {
                 logger.error("hardware_create_garfield:: Mac Address {} is already used!", batch.get_nextMacAddress_just_for_check());
                 return badRequest("hardware_create_garfield:: Mac Address {} is already used!");
              }
 
-            Model_HardwareRegistrationEntity registration_of_hardware = Model_HardwareRegistrationEntity.getbyFull_id(help.full_id);
+            ModelMongo_Hardware_RegistrationEntity registration_of_hardware = ModelMongo_Hardware_RegistrationEntity.getbyFull_id(help.full_id);
 
             // Pokud je null - zaregistruji hardware jako nový do centrální autority
             if (registration_of_hardware == null) {
@@ -1454,16 +1454,16 @@ public class Controller_Hardware extends _BaseController {
                 logger.warn("hardware_create_garfield:: - hardware is not found in centrall database, full_id: {}", help.full_id);
                 logger.warn("hardware_create_garfield:: - Creation of new device for central database");
 
-                if (Model_HardwareRegistrationEntity.check_if_value_is_registered(batch.get_nextMacAddress_just_for_check(), Enum_Hardware_Registration_DB_Key.mac_address)) {
+                if (ModelMongo_Hardware_RegistrationEntity.getbyFull_macAddress(batch.get_nextMacAddress_just_for_check()) != null) {
                     logger.error("Next Mac Address fot this device is already registered. Check It. Mac Address:: {}", help.full_id);
                     return badRequest("Next Mac Address fot this device is already registered. Check It Mac Address:: " +  help.full_id);
                 }
 
-                registration_of_hardware = new Model_HardwareRegistrationEntity();
+                registration_of_hardware = new ModelMongo_Hardware_RegistrationEntity();
                 registration_of_hardware.full_id = help.full_id;
                 registration_of_hardware.mac_address = batch.get_new_MacAddress();
                 registration_of_hardware.hardware_type_compiler_target_name =  hardwareType.compiler_target_name;
-                registration_of_hardware.production_batch_id = batch.batch_id;
+                registration_of_hardware.production_batch_id = batch.id;
                 registration_of_hardware.mqtt_username = BCrypt.hashpw(mqtt_username_not_hashed, BCrypt.gensalt());
                 registration_of_hardware.mqtt_password = BCrypt.hashpw(mqtt_password_not_hashed, BCrypt.gensalt());
                 registration_of_hardware.save();
@@ -2436,7 +2436,7 @@ public class Controller_Hardware extends _BaseController {
             Model_Project.find.byId(project_id);
 
             // Kotrola objektu
-            Model_HardwareRegistrationEntity hardware = Model_HardwareRegistrationEntity.getbyFull_hash(registration_hash);
+            ModelMongo_Hardware_RegistrationEntity hardware = ModelMongo_Hardware_RegistrationEntity.getbyFull_hash(registration_hash);
 
             if (hardware == null) {
                 status.status = BoardRegistrationStatus.NOT_EXIST;

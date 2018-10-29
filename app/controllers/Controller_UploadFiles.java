@@ -63,7 +63,6 @@ public class Controller_UploadFiles extends _BaseController {
                     .get();
 
             if (ws_response_get_all_releases.getStatus() != 200) {
-                logger.error("Permission Error in Job_CheckCompilationLibraries. Please Check it");
                 logger.error("Error Message from Github: {}", ws_response_get_all_releases.getBody());
                 return badRequest("Invalid latest Release - ERROR on Github - Contact Technical Support");
             }

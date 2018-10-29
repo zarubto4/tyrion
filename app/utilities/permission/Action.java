@@ -17,5 +17,5 @@ public enum Action {
     @EnumValue("ACTIVATE")          ACTIVATE,
     @EnumValue("INVITE")            INVITE,
     @EnumValue("PUBLISH")           PUBLISH,
-    @EnumValue("DEPLOY")            DEPLOY,
+    @EnumValue("DEPLOY")            DEPLOY
 }

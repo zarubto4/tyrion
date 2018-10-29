@@ -104,6 +104,8 @@ public class Model_Role extends NamedModel implements Permissible, UnderProject,
 
         Model_Role role = new Model_Role();
         role.name = "Project Admin";
+
+        if(role.permissions == null) role.permissions = new ArrayList<>();
         role.permissions.addAll(permissions);
 
         return role;
@@ -125,6 +127,7 @@ public class Model_Role extends NamedModel implements Permissible, UnderProject,
 
         Model_Role role = new Model_Role();
         role.name = "Project Member";
+        if(role.permissions == null) role.permissions = new ArrayList<>();
         role.permissions.addAll(permissions);
         role.default_role = true;
 

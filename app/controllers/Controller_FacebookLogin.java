@@ -243,6 +243,7 @@ public class Controller_FacebookLogin extends _BaseController {
                     Parameter.with("state", identification.toString())
             );
 
+            login.auth_token = identification;
 
             System.out.println("login_url:: redirectIdentificator" + identification.toString());
 

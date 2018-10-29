@@ -12,6 +12,7 @@ import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import utilities.Server;
+import utilities.enums.ServerMode;
 import utilities.logger.Logger;
 import utilities.scheduler.jobs.*;
 import utilities.update_server.ServerUpdate;
@@ -56,15 +57,25 @@ public class SchedulerController {
 
             Set<Class<?>> classes = reflections.getTypesAnnotatedWith(Scheduled.class);
 
+            ServerMode mode = Server.mode;
+
             classes.forEach(cls -> {
 
                 Class<? extends Job> job = (Class<? extends Job>) cls; // Cast to job
 
-                Scheduled annotation = job.getAnnotation(Scheduled.class);
-                Restrict restrict = job.getAnnotation(Restrict.class);
-                if (restrict != null && Server.mode == restrict.value()) return; // If this job is restricted in this mode skip the scheduling
 
+
+                // Check Restriction
+                Restrict restrict = job.getAnnotation(Restrict.class);
+                if (restrict != null) {
+                    List<ServerMode> arrays = new ArrayList<>(Arrays.asList(restrict.value()));
+                    if(!arrays.contains(mode)) return; // If this job is restricted in this mode skip the scheduling
+                }
+
+                // Check Scheduled Anotation
+                Scheduled annotation = job.getAnnotation(Scheduled.class);
                 String value = annotation.value();
+
 
                 logger.debug("start - scheduling job: '{}' with schedule: '{}'", job.getSimpleName(), value);
 

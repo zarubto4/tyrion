@@ -1,5 +1,7 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
@@ -8,15 +10,18 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.typesafe.config.Config;
-import io.intercom.api.User;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.*;
+import mongo.ModelMongo_Hardware_BatchCollection;
+import mongo.ModelMongo_Hardware_RegistrationEntity;
 import org.apache.poi.ss.usermodel.*;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
+import org.mindrot.jbcrypt.BCrypt;
 import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.Result;
@@ -28,10 +33,13 @@ import utilities.enums.PaymentMethod;
 import utilities.enums.ProductEventType;
 import utilities.financial.extensions.ExtensionInvoiceItem;
 import utilities.financial.fakturoid.FakturoidService;
+import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
+import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_Status;
 import utilities.logger.Logger;
 
 import java.io.FileOutputStream;
 import java.math.BigDecimal;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -41,6 +49,13 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
+import utilities.scheduler.jobs.Job_CheckBootloaderLibraries;
+import utilities.scheduler.jobs.Job_CheckCompilationLibraries;
+import utilities.scheduler.jobs.Job_ThingsMobile_SimData_Synchronize;
+import utilities.scheduler.jobs.Job_ThingsMobile_SimListOnly_Synchronize;
+
+import static java.lang.Thread.sleep;
+
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_ZZZ_Tester extends _BaseController {
@@ -60,46 +75,47 @@ public class Controller_ZZZ_Tester extends _BaseController {
     private FakturoidService fakturoid;
 
 // CONTROLLER CONTENT ##################################################################################################
+
     @ApiOperation(value = "Hidden test Method", hidden = true)
-     public Result test1() {
-         try {
+    public Result test1() {
+        try {
 
-             Model_Role role = Model_Role.getByName("SuperAdmin");
+            Model_Role role = Model_Role.getByName("SuperAdmin");
 
-             System.out.println("Persons in role: " + role.persons.size() + " but person found: " + Model_Person.find.query().where().eq("roles.id", role.id).findCount());
+            System.out.println("Persons in role: " + role.persons.size() + " but person found: " + Model_Person.find.query().where().eq("roles.id", role.id).findCount());
 
-             role.persons.forEach(r -> System.out.println(r.email));
+            role.persons.forEach(r -> System.out.println(r.email));
 
-             Model_Person person = new Model_Person();
-             person.email = UUID.randomUUID() + "@mail.com";
-             person.nick_name = "test" + UUID.randomUUID();
-             person.validated = true;
-             person.setPassword("password");
+            Model_Person person = new Model_Person();
+            person.email = UUID.randomUUID() + "@mail.com";
+            person.nick_name = "test" + UUID.randomUUID();
+            person.validated = true;
+            person.setPassword("password");
 
-             person.save();
+            person.save();
 
-             System.out.println("Person saved");
+            System.out.println("Person saved");
 
-             role.persons.add(person);
+            role.persons.add(person);
 
-             System.out.println("Persons in role: " + role.persons.size() + " but still person found: " + Model_Person.find.query().where().eq("roles.id", role.id).findCount());
+            System.out.println("Persons in role: " + role.persons.size() + " but still person found: " + Model_Person.find.query().where().eq("roles.id", role.id).findCount());
 
-             role.update();
+            role.update();
 
-             System.out.println("Persons in role after update: " + role.persons.size() + " but person found: " + Model_Person.find.query().where().eq("roles.id", role.id).findCount());
-             role.persons.forEach(r -> System.out.println(r.email));
+            System.out.println("Persons in role after update: " + role.persons.size() + " but person found: " + Model_Person.find.query().where().eq("roles.id", role.id).findCount());
+            role.persons.forEach(r -> System.out.println(r.email));
 
-             role.refresh();
+            role.refresh();
 
-             System.out.println("Persons in role after refresh: " + role.persons.size() + " but person found: " + Model_Person.find.query().where().eq("roles.id", role.id).findCount());
-             role.persons.forEach(r -> System.out.println(r.email));
+            System.out.println("Persons in role after refresh: " + role.persons.size() + " but person found: " + Model_Person.find.query().where().eq("roles.id", role.id).findCount());
+            role.persons.forEach(r -> System.out.println(r.email));
 
-             return ok("Done");
-         } catch (Exception e) {
-             logger.internalServerError(e);
-             return badRequest();
-         }
-     }
+            return ok("Done");
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return badRequest();
+        }
+    }
 
     @ApiOperation(value = "Hidden test Method", hidden = true)
     public Result test2() {
@@ -115,7 +131,8 @@ public class Controller_ZZZ_Tester extends _BaseController {
                 person.roles.forEach(r -> System.out.println(r.name));
             });
 
-           return ok();
+            return ok(role);
+
         } catch (Exception e) {
             logger.internalServerError(e);
             return badRequest();
@@ -126,7 +143,10 @@ public class Controller_ZZZ_Tester extends _BaseController {
     public Result test3() {
         try {
 
+            TM_Sim_Status status = Controller_Things_Mobile.sim_status(882360002156971L);
+            System.out.print("Sim Status:: \n" + status.prettyPrint());
 
+            /*
             List<Model_Person> persons = Model_Person.find.all();
 
             for(Model_Person person : persons) {
@@ -139,9 +159,8 @@ public class Controller_ZZZ_Tester extends _BaseController {
                         // .addCustomAttribute(io.intercom.api.CustomAttribute.newBooleanAttribute("browncoat", true))
                         .setUserId(person.id.toString());
                 User.create(user);
-
             }
-
+            */
 
 
             return ok();
@@ -196,7 +215,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
             };
 
 
-            String filename = "NewExcelFile.xls" ;
+            String filename = "NewExcelFile.xls";
 
             // Create a Workbook
             Workbook workbook = new XSSFWorkbook(); // new HSSFWorkbook() for generating `.xls` file
@@ -224,9 +243,9 @@ public class Controller_ZZZ_Tester extends _BaseController {
 
             HashMap<String, String[]> map = new HashMap<>();
 
-            for(int i = 0; i < columns_id.length; i++) {
+            for (int i = 0; i < columns_id.length; i++) {
 
-                if(i == 0) sheet.createRow(0);
+                if (i == 0) sheet.createRow(0);
 
                 sheet.getRow(0).createCell(i);
 
@@ -234,11 +253,11 @@ public class Controller_ZZZ_Tester extends _BaseController {
                 sheet.getRow(0).getCell(i).setCellValue(columns_id[i]);
             }
 
-            for(int i = 0; i < columns.length; i++) {
+            for (int i = 0; i < columns.length; i++) {
 
                 BasicDBObject query = new BasicDBObject();
                 query.put("device_id", columns[i]);
-                query.put("date", new BasicDBObject("$gt", date_from.getMillis() ).append("$lt",  date_to.getMillis() ));
+                query.put("date", new BasicDBObject("$gt", date_from.getMillis()).append("$lt", date_to.getMillis()));
                 MongoCursor<Document> cursor = collection.find(query).iterator();
 
                 while (cursor.hasNext()) {
@@ -259,8 +278,8 @@ public class Controller_ZZZ_Tester extends _BaseController {
 
                         SimpleDateFormat dt1 = new SimpleDateFormat("kk:mm:ss");
 
-                        if( !map.containsKey( dt1.format(new Date(Long.decode(s))))) {
-                            map.put( dt1.format(new Date(Long.decode(s))) , new String[10]);
+                        if (!map.containsKey(dt1.format(new Date(Long.decode(s))))) {
+                            map.put(dt1.format(new Date(Long.decode(s))), new String[10]);
                         }
 
                         map.get(dt1.format(new Date(Long.decode(s))))[i] = d.get("temperature").toString().replace(".", ",");
@@ -276,14 +295,14 @@ public class Controller_ZZZ_Tester extends _BaseController {
 
             SortedSet<String> keys = new TreeSet<>(map.keySet());
 
-            for(String key : keys) {
+            for (String key : keys) {
 
                 sheet.createRow(i);
 
                 sheet.getRow(i).createCell(0).setCellValue(key);
 
-                for(int j = 0; j < map.get(key).length ; j++) {
-                    sheet.getRow(i).createCell(j+1).setCellValue(map.get(key)[j]);
+                for (int j = 0; j < map.get(key).length; j++) {
+                    sheet.getRow(i).createCell(j + 1).setCellValue(map.get(key)[j]);
                 }
 
                 i++;
@@ -310,15 +329,15 @@ public class Controller_ZZZ_Tester extends _BaseController {
     public Result test5(UUID product_id) {
         try {
             Model_Product product = Model_Product.find.byId(product_id);
-            if(product == null) {
+            if (product == null) {
                 badRequest("Wrong product id!");
             }
 
-            if(product.owner.contact == null) {
+            if (product.owner.contact == null) {
                 badRequest("We need contact id!");
             }
 
-            if(product.getExtensionIds().size() == 0) {
+            if (product.getExtensionIds().size() == 0) {
                 badRequest("We need an extension!");
             }
 
@@ -342,13 +361,13 @@ public class Controller_ZZZ_Tester extends _BaseController {
                     .and()
                     .eq("reference", productExtension.id)
                     .findList();
-            for(Model_ProductEvent event: eventsExtension) {
-                if(event.event_type == ProductEventType.EXTENSION_CREATED) {
+            for (Model_ProductEvent event : eventsExtension) {
+                if (event.event_type == ProductEventType.EXTENSION_CREATED) {
                     event.created = projectCreated;
                     event.update();
                 }
 
-                if(event.event_type == ProductEventType.EXTENSION_ACTIVATED) {
+                if (event.event_type == ProductEventType.EXTENSION_ACTIVATED) {
                     event.created = Date.from(projectCreated.toInstant().plusMillis(100));
                     event.update();
                 }
@@ -359,8 +378,8 @@ public class Controller_ZZZ_Tester extends _BaseController {
                     .and()
                     .eq("reference", null)
                     .findList();
-            for(Model_ProductEvent event: eventsProduct) {
-                if(event.event_type == ProductEventType.PRODUCT_CREATED) {
+            for (Model_ProductEvent event : eventsProduct) {
+                if (event.event_type == ProductEventType.PRODUCT_CREATED) {
                     event.created = Date.from(projectCreated.toInstant().minusMillis(100));
                     event.update();
                 }
@@ -369,12 +388,12 @@ public class Controller_ZZZ_Tester extends _BaseController {
             Instant productCreatedFirstMidnight = LocalDateTime.ofInstant(projectCreated.toInstant(), ZoneId.of("UTC")).toLocalDate().plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC);
             Instant from = projectCreated.toInstant();
             Instant to = productCreatedFirstMidnight;
-            for(int i = 0; i < 20; i++) {
+            for (int i = 0; i < 20; i++) {
                 Model_ExtensionFinancialEvent financialEvent = new Model_ExtensionFinancialEvent();
                 financialEvent.product_extension = productExtension;
                 financialEvent.event_start = Date.from(from);
                 financialEvent.event_end = Date.from(to);
-                financialEvent.consumption = "{\"minutes\": "+ (((to.toEpochMilli() - from.toEpochMilli()) / 60000)) +"}";
+                financialEvent.consumption = "{\"minutes\": " + (((to.toEpochMilli() - from.toEpochMilli()) / 60000)) + "}";
                 financialEvent.save();
 
                 from = to;
@@ -397,11 +416,11 @@ public class Controller_ZZZ_Tester extends _BaseController {
     public Result test6(UUID product_id) {
         try {
             Model_Product product = Model_Product.find.byId(product_id);
-            if(product == null) {
+            if (product == null) {
                 badRequest("Wrong product id!");
             }
 
-            if(product.owner.contact == null) {
+            if (product.owner.contact == null) {
                 badRequest("We need contact id!");
             }
 
@@ -433,7 +452,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
                 invoice.invoice_items().add(invoiceItem);
             }
 
-            invoice.status = InvoiceStatus.UNCONFIRMED ;
+            invoice.status = InvoiceStatus.UNCONFIRMED;
             invoice.update();
 
             invoice.saveEvent(invoice.created, ProductEventType.INVOICE_CREATED, "{status: " + invoice.status + "}");
@@ -444,4 +463,154 @@ public class Controller_ZZZ_Tester extends _BaseController {
             return badRequest();
         }
     }
+
+    @ApiOperation(value = "Hidden test Method", hidden = true)
+    public Result test7() {
+        try {
+
+            // ZÍSKAT aktivní SIM
+            //TM_Sim_Status status = Controller_Things_Mobile.sim_status(882360002156971L);
+            // System.out.print("Credit:: \n"  + status.prettyPrint());
+
+
+            // System.out.print("Vyvolám synchronizaci Sim karet ");
+            // Odstartovat synchronizaci
+            // new Job_ThingsMobile_SimListOnly_Synchronize().execute(null);
+
+            // sleep(5000);
+
+            // System.out.print("Stahování statistik");
+            new Job_ThingsMobile_SimData_Synchronize().execute(null);
+
+            return ok();
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return badRequest();
+        }
+    }
+
+
+    @ApiOperation(value = "Hidden test Method", hidden = true)
+    public Result test8() {
+        try {
+
+
+             new Job_CheckCompilationLibraries(this.ws, this.config, this.baseFormFactory).execute(null);
+
+            /*
+            BasicDBObject query = new BasicDBObject();
+            query.put("deleted", false);
+
+            MongoCursor<Document> cursor =  MongoDB.get_collection("batch-registration-authority").find(query).iterator();
+
+            List<Model_HardwareBatch> batches = new ArrayList<>();
+            while (cursor.hasNext()) {
+
+                String string_json = cursor.next().toJson();
+                ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
+                Model_HardwareBatch batch = baseFormFactory.formFromJsonWithValidation(Model_HardwareBatch.class, json);
+                batches.add(batch);
+            }
+
+
+            System.out.println("Kolik máme batches: " + batches.size());
+
+
+            for(Model_HardwareBatch help : batches) {
+
+                ModelMongo_Hardware_BatchCollection batch = new ModelMongo_Hardware_BatchCollection();
+                batch.revision = help.revision;
+                batch.production_batch = help.production_batch;
+
+
+                DateFormat format = new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH);
+                Date date = format.parse(help.date_of_assembly);
+
+                batch.date_of_assembly = date.getTime();
+                batch.pcb_manufacture_name = help.pcb_manufacture_name;
+                batch.pcb_manufacture_id = help.pcb_manufacture_id;
+                batch.assembly_manufacture_name = help.assembly_manufacture_name;
+                batch.assembly_manufacture_id = help.assembly_manufacture_id;
+                batch.customer_product_name = help.customer_product_name;
+                batch.customer_company_name = help.customer_company_name;
+                batch.customer_company_made_description = help.customer_company_made_description;
+                batch.mac_address_start = help.mac_address_start;
+                batch.mac_address_end = help.mac_address_end;
+                batch.latest_used_mac_address = help.latest_used_mac_address;
+                batch.ean_number = help.ean_number;
+                batch.description = help.description;
+                batch.compiler_target_name = help.compiler_target_name;
+
+                // Uložení objektu do DB
+                batch.save();
+
+            }
+
+
+            // 3. cc6b3643-652a-40c5-88ee-04cff043afa5    "First production collection"     5bd5dd5423548a6f3082b428
+            // 2. 26d189c5-b61f-4565-a8f7-5a043a73963e    "21- Test Collection"             5bd5dd5423548a6f3082b427
+            // 1. abd218dc-14ca-4d2e-a731-66f71ed41245    "01 production"                   5bd5dd5423548a6f3082b426
+
+
+
+            BasicDBObject query_entity = new BasicDBObject();
+            MongoCursor<Document> cursor_entity =  MongoDB.get_collection("hardware-registration-authority").find(query_entity).iterator();
+
+            List<Model_HardwareRegistrationEntity> entities = new ArrayList<>();
+            while (cursor_entity.hasNext()) {
+
+                String string_json = cursor_entity.next().toJson();
+                ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
+                Model_HardwareRegistrationEntity batch = baseFormFactory.formFromJsonWithValidation(Model_HardwareRegistrationEntity.class, json);
+                entities.add(batch);
+            }
+
+
+            System.out.println("Kolik máme entities: " + entities.size());
+
+
+
+
+            for(Model_HardwareRegistrationEntity help : entities) {
+
+                ModelMongo_Hardware_RegistrationEntity registration_of_hardware = new ModelMongo_Hardware_RegistrationEntity();
+
+                if(help.production_batch_id.equals("cc6b3643-652a-40c5-88ee-04cff043afa5")  ) {
+                    registration_of_hardware.production_batch_id = new ObjectId("5bd5dd5423548a6f3082b428");
+                }
+                else if(help.production_batch_id.equals("26d189c5-b61f-4565-a8f7-5a043a73963e")  ) {
+                    registration_of_hardware.production_batch_id = new ObjectId("5bd5dd5423548a6f3082b427");
+                }
+                else if(help.production_batch_id.equals("abd218dc-14ca-4d2e-a731-66f71ed41245")  ) {
+                    registration_of_hardware.production_batch_id = new ObjectId("5bd5dd5423548a6f3082b426");
+                }
+
+
+                if(ModelMongo_Hardware_RegistrationEntity.getbyFull_id(help.full_id) != null) continue;
+
+                registration_of_hardware.mac_address = help.mac_address;
+
+                registration_of_hardware.hash_for_adding = help.hash_for_adding;
+                registration_of_hardware.personal_name = help.personal_name;
+
+                registration_of_hardware.hardware_type_compiler_target_name =  help.hardware_type_compiler_target_name;
+                registration_of_hardware.created = Long.parseLong(help.created);
+                registration_of_hardware.mqtt_username = help.mqtt_username;
+                registration_of_hardware.mqtt_password = help.mqtt_password;
+                registration_of_hardware.save();
+
+            }
+
+            */
+
+
+            return ok();
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return badRequest();
+        }
+    }
+
 }

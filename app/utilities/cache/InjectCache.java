@@ -24,6 +24,7 @@ public @interface InjectCache {
     public static final long HalfDayCacheConstant = 60 * 60 * 12;
     public static final long HourCacheConstant = 60 * 60;
     public static final long ThirtyMinutesCacheConstant = 60 * 30;
+    public static final long TenMinutesCacheConstant = 60 * 10;
 
 
     /**

@@ -13,6 +13,7 @@ import controllers.Controller_WebSocket;
 import controllers._BaseFormFactory;
 import io.intercom.api.Intercom;
 import models.*;
+import org.bson.types.ObjectId;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import org.mongodb.morphia.annotations.Entity;
@@ -21,14 +22,11 @@ import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
-import utilities.document_mongo_db.DocumentDB;
-import utilities.document_mongo_db.MongoDB;
 import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
 import exceptions.NotFoundException;
 import utilities.grid_support.utils.IP_Founder;
-import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.homer_auto_deploy.DigitalOceanThreadRegister;
 import utilities.logger.Logger;
 import utilities.model._Abstract_MongoModel;
@@ -40,7 +38,6 @@ import utilities.permission.Permissible;
 import utilities.threads.homer_server.Synchronize_Homer_Synchronize_Settings;
 import websocket.interfaces.WS_Homer;
 
-import javax.persistence.PersistenceException;
 import java.math.RoundingMode;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -70,10 +67,6 @@ public class Server {
     public static String azure_blob_Link;
 
     // Azure - NoSQL Database
-    public static DocumentClient documentClient;
-    public static Database no_sql_database;
-    public static String documentDB_Path;
-
     public static DocumentCollection online_status_collection = null;
 
     public static String becki_mainUrl;
@@ -136,7 +129,7 @@ public class Server {
 
     // Mongo Databases
     private static final Morphia morphia = new Morphia();
-    private static MongoClient mongoClient = null;
+    public static MongoClient mongoClient = null;
 
     public static MongoDatabase main_database = null;
     public static Datastore main_data_store = null;
@@ -162,15 +155,14 @@ public class Server {
             setPermission();
             setAdministrator();
             setWidgetAndBlock();
-        } catch (PersistenceException e) {
+        } catch (Exception e) {
             logger.error("start - DB is inconsistent, probably evolution will occur", e);
         }
 
-        DocumentDB.init();
-        MongoDB.init();
+        // TODO po prvním spuštění je možné odstranit
+        mongoTransferScript();
 
         setBaseForm();
-        setConfigurationInjectorForNonStaticClass();
         startThreads();
     }
 
@@ -218,8 +210,8 @@ public class Server {
 
             // Speciální podmínka, která nastaví podklady sice v Developerském modu - ale s URL adresami tak, aby byly v síti přístupné
 
-            logger.warn("setConstants - special settings for DEV office servers.");
-            logger.warn("setConstants - local URL: {}", IP_Founder.getLocalHostLANAddress().getHostAddress());
+            logger.info("setConstants - special settings for DEV office servers.");
+            logger.info("setConstants - local URL: {}", IP_Founder.getLocalHostLANAddress().getHostAddress());
 
             httpAddress = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
             wsAddress   = "ws://"   + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
@@ -297,11 +289,6 @@ public class Server {
         storageAccount  = CloudStorageAccount.parse(configuration.getString("blob." + mode + ".secret"));
         blobClient      = storageAccount.createCloudBlobClient();
 
-        documentClient  = new DocumentClient(configuration.getString("documentDB." + mode + ".url"), configuration.getString("documentDB." + mode + ".secret") , ConnectionPolicy.GetDefault(), ConsistencyLevel.Session);
-        no_sql_database = new Database();
-        no_sql_database.setId(configuration.getString("documentDB." + mode + ".databaseName"));
-        documentDB_Path = "dbs/" + no_sql_database.getId();
-
         slack_webhook_url_channel_servers = configuration.getString("Slack.servers");
         slack_webhook_url_channel_hardware = configuration.getString("Slack.hardware");
         slack_webhook_url_channel_homer = configuration.getString("Slack.homer");
@@ -322,7 +309,7 @@ public class Server {
         try {
             role = Model_Role.getByName("SuperAdmin");
 
-            logger.warn("setAdministrator - role SuperAdmin exists");
+            logger.trace("setAdministrator - role SuperAdmin exists");
 
         } catch (NotFoundException e) {
 
@@ -354,7 +341,7 @@ public class Server {
         try {
             person = Model_Person.getByEmail("admin@byzance.cz");
 
-            logger.warn("setAdministrator - admin is already created");
+            logger.trace("setAdministrator - admin is already created");
 
         } catch (NotFoundException e) {
 
@@ -382,9 +369,11 @@ public class Server {
      */
     private static void setWidgetAndBlock() {
         try {
-            logger.warn("setWidgetAndBlock - Creating Widget and Block with " + "0000000-0000-0000-0000-000000000001");
 
             if (Model_Widget.find.query().where().eq("id", UUID.fromString("00000000-0000-0000-0000-000000000001")).findCount() == 0) {
+
+                logger.warn("setWidgetAndBlock - Creating Widget with " + "0000000-0000-0000-0000-000000000001");
+
                 Model_Widget widget = new Model_Widget();
                 widget.id = UUID.fromString("00000000-0000-0000-0000-000000000001");
                 widget.description = "Default Widget";
@@ -394,10 +383,13 @@ public class Server {
                 widget.publish_type = ProgramType.DEFAULT_MAIN;
                 widget.save();
             } else {
-                logger.warn("Model_Widget Model_Widget already exist");
+                logger.trace("setWidgetAndBlock - Model_Widget already exist");
             }
 
             if (Model_Block.find.query().where().eq("id", UUID.fromString("00000000-0000-0000-0000-000000000001")).findCount() == 0) {
+
+                logger.warn("setWidgetAndBlock - Creating Block with " + "0000000-0000-0000-0000-000000000001");
+
                 Model_Block block = new Model_Block();
                 block.id = UUID.fromString("00000000-0000-0000-0000-000000000001");
                 block.description = "Default Block";
@@ -407,7 +399,7 @@ public class Server {
                 block.publish_type = ProgramType.DEFAULT_MAIN;
                 block.save();
             } else {
-                logger.warn("setWidgetAndBlock Model_Widget already exist");
+                logger.trace("setWidgetAndBlock - Model_Block already exist");
             }
         }catch (Exception e) {
             e.printStackTrace();
@@ -423,18 +415,28 @@ public class Server {
         long start = System.currentTimeMillis();
 
         // Get classes in 'models' package
-        Reflections reflections = new Reflections(new ConfigurationBuilder()
+        Reflections reflections_postgress = new Reflections(new ConfigurationBuilder()
                 .setUrls(ClasspathHelper.forPackage("models"))
                 .setScanners(new SubTypesScanner()));
 
-        // Get classes that implements Permittable
-        Set<Class<? extends Permissible>> classes = reflections.getSubTypesOf(Permissible.class);
 
-        logger.trace("setPermission - found {} classes", classes.size());
+        Reflections reflections_mongo = new Reflections(new ConfigurationBuilder()
+                .setUrls(ClasspathHelper.forPackage("mongo"))
+                .setScanners(new SubTypesScanner()));
+
+        // Get classes that implements Permittable
+        Set<Class<? extends Permissible>> classes_post = reflections_postgress.getSubTypesOf(Permissible.class);
+        Set<Class<? extends Permissible>> classes_mongo = reflections_mongo.getSubTypesOf(Permissible.class);
+
+
+        classes_post.addAll(classes_mongo);
+
+
+        logger.trace("setPermission - found {} classes", classes_post.size());
 
         List<Model_Permission> permissions = Model_Permission.find.all();
 
-        classes.forEach(cls -> {
+        classes_post.forEach(cls -> {
             try {
                 Permissible permissible = cls.newInstance();
                 EntityType entityType = permissible.getEntityType();
@@ -463,6 +465,7 @@ public class Server {
             List<Model_Person> persons = Model_Person.find.query().where().eq("projects.id", project.id).findList();
             Model_Role adminRole = Model_Role.createProjectAdminRole();
             adminRole.project = project;
+            if(adminRole.persons == null) adminRole.persons = new ArrayList<>();
             adminRole.persons.addAll(persons);
             adminRole.save();
 
@@ -477,15 +480,47 @@ public class Server {
      */
     private static void setBaseForm() {
 
-        WS_Homer.baseFormFactory                        = Server.injector.getInstance(_BaseFormFactory.class);
-        Synchronize_Homer_Synchronize_Settings.baseFormFactory = Server.injector.getInstance(_BaseFormFactory.class);
-        DigitalOceanThreadRegister.baseFormFactory      = Server.injector.getInstance(_BaseFormFactory.class);
-        Model_HardwareBatch.baseFormFactory             = Server.injector.getInstance(_BaseFormFactory.class);
-        Model_HardwareRegistrationEntity.baseFormFactory= Server.injector.getInstance(_BaseFormFactory.class);
-        Model_InstanceSnapshot.baseFormFactory          = Server.injector.getInstance(_BaseFormFactory.class);
-        Controller_Things_Mobile.baseFormFactory   = Server.injector.getInstance(_BaseFormFactory.class);
+        WS_Homer.baseFormFactory                                = Server.injector.getInstance(_BaseFormFactory.class);
+        Synchronize_Homer_Synchronize_Settings.baseFormFactory  = Server.injector.getInstance(_BaseFormFactory.class);
+        DigitalOceanThreadRegister.baseFormFactory              = Server.injector.getInstance(_BaseFormFactory.class);
+        Model_InstanceSnapshot.baseFormFactory                  = Server.injector.getInstance(_BaseFormFactory.class);
     }
 
+    /*
+        Dočasný script, který přemigruje staré mongo na nové mongo.
+        Migrační script je nutný zejména kvuli jinému typu ukládání a frameworku
+     */
+    private static void mongoTransferScript() {
+
+        List<Model_Hardware> hardware_1 = Model_Hardware.find.query().where().eq("batch_id", "cc6b3643-652a-40c5-88ee-04cff043afa5").findList();
+        List<Model_Hardware> hardware_2 = Model_Hardware.find.query().where().eq("batch_id", "26d189c5-b61f-4565-a8f7-5a043a73963e").findList();
+        List<Model_Hardware> hardware_3 = Model_Hardware.find.query().where().eq("batch_id", "abd218dc-14ca-4d2e-a731-66f71ed41245").findList();
+
+        if(hardware_1.isEmpty() && hardware_2.isEmpty() && hardware_3.isEmpty()) return;
+
+        List<Model_Hardware> collection = new ArrayList<>();
+        collection.addAll(hardware_1);
+        collection.addAll(hardware_2);
+        collection.addAll(hardware_3);
+
+        for(Model_Hardware hardware : collection) {
+
+
+            if(hardware.batch_id.equals("cc6b3643-652a-40c5-88ee-04cff043afa5")  ) {
+                hardware.batch_id = new ObjectId("5bd5dd5423548a6f3082b428").toString();
+            }
+            else if(hardware.batch_id.equals("26d189c5-b61f-4565-a8f7-5a043a73963e")  ) {
+                hardware.batch_id = new ObjectId("5bd5dd5423548a6f3082b427").toString();
+            }
+            else if(hardware.batch_id.equals("abd218dc-14ca-4d2e-a731-66f71ed41245")  ) {
+                hardware.batch_id =  new ObjectId("5bd5dd5423548a6f3082b426").toString();
+            }
+
+
+            hardware.update();
+        }
+
+    }
 
     /**
      * Initialization Mongo Databases from config file, all collection are checked, if some missing, this method will
@@ -497,7 +532,7 @@ public class Server {
         String mode = Server.mode.name().toLowerCase();
 
         // Připojení na MongoClient v Azure
-        logger.trace("init_mongo_database:: URL {}", configuration.getString("MongoDB." + mode + ".url"));
+        logger.info("init_mongo_database:: URL {}", configuration.getString("MongoDB." + mode + ".url"));
 
 
         MongoClientOptions.Builder options_builder = new MongoClientOptions.Builder();
@@ -574,16 +609,6 @@ public class Server {
 
         return main_data_store;
     }
-
-    /**
-     * Set configuration
-     */
-    private static void setConfigurationInjectorForNonStaticClass() {
-        Controller_Things_Mobile.configuration = configuration;
-    }
-
-
-
 
     /**
      * Finds the MAC address of the current host.

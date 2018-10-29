@@ -26,7 +26,7 @@ import java.util.List;
         value = "ExampleModelName",
         description = "Model of ExampleModelName - Swagger annotation documentation"
 )
-@Entity("EXAMPLE_EXAMPLE")
+// @Entity("EXAMPLE_EXAMPLE")
 @Indexes({
         @Index(
                 fields = {

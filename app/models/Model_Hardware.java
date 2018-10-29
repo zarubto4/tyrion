@@ -11,8 +11,13 @@ import exceptions.NotFoundException;
 import io.ebean.Expr;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import mongo.ModelMongo_Hardware_ActivationStatus;
+import mongo.ModelMongo_Hardware_BackupIncident;
+import mongo.ModelMongo_Hardware_OnlineStatus;
+import mongo.ModelMongo_Hardware_RegistrationEntity;
 import org.ehcache.Cache;
 import org.mindrot.jbcrypt.BCrypt;
+import org.mongodb.morphia.query.FindOptions;
 import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheFinder;
@@ -479,32 +484,15 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
                     logger.warn("Need latest_online for device ID: {}", this.id);
 
-                    List<Document> documents = Server.documentClient.queryDocuments(Server.online_status_collection.getSelfLink(), "SELECT * FROM root r  WHERE r.hardware_id='" + this.id + "' AND r.document_type_sub_type='DEVICE_DISCONNECT'", null).getQueryIterable().toList();
 
-                    logger.trace("last_online: number of retrieved documents = {}", documents.size());
+                    ModelMongo_Hardware_OnlineStatus status = ModelMongo_Hardware_OnlineStatus.find.query().order("create").get(new FindOptions().batchSize(1));
 
-                    if (documents.size() > 0) {
-
-                        DM_Board_Disconnected record;
-
-                        if (documents.size() > 1) {
-
-                            logger.debug("last_online: more than 1 record, finding latest record");
-                            record = documents.stream().max(Comparator.comparingLong(document -> document.toObject(DM_Board_Disconnected.class).time)).get().toObject(DM_Board_Disconnected.class);
-
-                        } else {
-
-                            logger.debug("last_online: result = {}", documents.get(0).toJson());
-
-                            record = documents.get(0).toObject(DM_Board_Disconnected.class);
-                        }
-
-                        logger.debug("last_online: hardware_id: {}", record.hardware_id);
-
-                        cache_latest_online = new Date(record.time).getTime();
-
+                    if (status != null) {
+                        logger.debug("last_online: more than 1 record, finding latest record");
+                        cache_latest_online = new Date(status.created).getTime();
                         EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, getProject().id, this.id));
-
+                    } else  {
+                        cache_latest_online = 0L;
                     }
 
                 } catch (Exception e) {
@@ -1191,7 +1179,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
 
                     logger.debug("check_mqtt_hardware_connection_validation: Before, we will try to know Mqtt PASS and Name - maybe from central authority?");
-                    Model_HardwareRegistrationEntity entity = Model_HardwareRegistrationEntity.getbyFull_id(request.full_id);
+                    ModelMongo_Hardware_RegistrationEntity entity = ModelMongo_Hardware_RegistrationEntity.getbyFull_id(request.full_id);
                     if(entity != null) {
                         logger.debug("check_mqtt_hardware_connection_validation: Yes, we find HardwareRegistrationEntity  device with same full_id, now we will check MQTT NAME and PASS");
 
@@ -1208,7 +1196,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
                         if ( BCrypt.checkpw(request.password, entity.mqtt_password) && BCrypt.checkpw(request.user_name, entity.mqtt_username)) {
 
-                            logger.debug("check_mqtt_hardware_connection_validation: Device {} on public server has  right credentials Access Allowed with Model_HardwareRegistrationEntity Device check",  entity.full_id);
+                            logger.debug("check_mqtt_hardware_connection_validation: Device {} on public server has  right credentials Access Allowed with ModelMongo_Hardware_RegistrationEntity Device check",  entity.full_id);
 
                             // Save it - device has permission!
                             cache_not_dominant_hardware.put(request.full_id, record);
@@ -1218,7 +1206,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
                         // in the case of several HW, it was saved in reverse
                         } else if ( BCrypt.checkpw( request.user_name, entity.mqtt_password) && BCrypt.checkpw(request.password, entity.mqtt_username)) {
 
-                            logger.debug("check_mqtt_hardware_connection_validation: Device {} on public server has  right credentials Access Allowed with Model_HardwareRegistrationEntity Device check",  entity.full_id);
+                            logger.debug("check_mqtt_hardware_connection_validation: Device {} on public server has  right credentials Access Allowed with ModelMongo_Hardware_RegistrationEntity Device check",  entity.full_id);
 
                             // Save it - device has permission!
                             cache_not_dominant_hardware.put(request.full_id, record);
@@ -1320,10 +1308,10 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
                         System.err.println("Ne Cache neobsahuje HW s Full ID:: " + request.full_id);
 
-                        Model_HardwareRegistrationEntity entity = Model_HardwareRegistrationEntity.getbyFull_id(request.full_id);
+                        ModelMongo_Hardware_RegistrationEntity entity = ModelMongo_Hardware_RegistrationEntity.getbyFull_id(request.full_id);
                         if(entity != null) {
 
-                            System.err.println("Ne Cache neobsahuje HW s Full ID:: " + request.full_id + " ale našel jsem záznam z Model_HardwareRegistrationEntity");
+                            System.err.println("Ne Cache neobsahuje HW s Full ID:: " + request.full_id + " ale našel jsem záznam z ModelMongo_Hardware_RegistrationEntity");
 
                             // We will save last know server, where we have hardware, in case of registration under some project. SAVE is only if device has permission!!!!!
                             WS_Model_Hardware_Temporary_NotDominant_record record = new WS_Model_Hardware_Temporary_NotDominant_record();
@@ -3001,8 +2989,8 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     public void make_log_connect() {
         new Thread(() -> {
             try {
-                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_Connect.make_request(this.id), null, true);
-            } catch (DocumentClientException e) {
+                ModelMongo_Hardware_OnlineStatus.create_record(this, true);
+            } catch (Exception e) {
                 logger.internalServerError(e);
             }
         }).start();
@@ -3011,8 +2999,8 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     public void make_log_disconnect() {
         new Thread(() -> {
             try {
-                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_Disconnected.make_request(this.id), null, true);
-            } catch (DocumentClientException e) {
+                ModelMongo_Hardware_OnlineStatus.create_record(this, false);
+            } catch (Exception e) {
                 logger.internalServerError(e);
             }
         }).start();
@@ -3021,8 +3009,17 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     public void make_log_deactivated() {
         new Thread(() -> {
             try {
-                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_Dactivated.make_request(this.id), null, true);
-            } catch (DocumentClientException e) {
+                ModelMongo_Hardware_ActivationStatus.create_record(this, false);
+            } catch (Exception e) {
+                logger.internalServerError(e);
+            }
+        }).start();
+    }
+    public void make_log_activated() {
+        new Thread(() -> {
+            try {
+                ModelMongo_Hardware_ActivationStatus.create_record(this, true);
+            } catch (Exception e) {
                 logger.internalServerError(e);
             }
         }).start();
@@ -3031,8 +3028,8 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     public void make_log_backup_arrise_change() {
         new Thread(() -> {
             try {
-                Server.documentClient.createDocument(Server.online_status_collection.getSelfLink(), DM_Board_BackupIncident.make_request_success_backup(this.id), null, true);
-            } catch (DocumentClientException e) {
+                ModelMongo_Hardware_BackupIncident.create_record(this);
+            } catch (Exception e) {
                 logger.internalServerError(e);
             }
         }).start();

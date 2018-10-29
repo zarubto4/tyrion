@@ -2,23 +2,29 @@ package utilities.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers._BaseController;
+import exceptions.InvalidBodyException;
 import io.swagger.annotations.ApiModelProperty;
+import models.Model_HomerServer;
 import org.bson.types.ObjectId;
 import org.ehcache.Cache;
 import org.mongodb.morphia.Key;
 import org.mongodb.morphia.annotations.*;
 import play.data.validation.Constraints;
 import play.libs.Json;
+import utilities.Server;
 import utilities.cache.InjectCache;
 import utilities.cache.CacheMongoFinder;
 import utilities.logger.Logger;
+import utilities.permission.Action;
+import utilities.permission.JsonPermission;
+import websocket.interfaces.WS_Homer;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Indexes({
         @Index(
@@ -57,7 +63,11 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
     public Long removed;
 
     @JsonIgnore
-    public boolean is_deleted; // Default value is false in save()
+    public boolean deleted; // Default value is false in save()
+
+
+    @JsonIgnore
+    public UUID author_id; // Default value is false in save()
 
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -69,13 +79,38 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
         return id.toString();
     }
 
-    @PrePersist
-    public void trackUpdate() {
-        // TODO tady můžeme trackovat kdo kdy objekt načítal.
-    }
-
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
+
+    /**
+     * Converts this model to JSON
+     * @return JSON representation of this model
+     */
+    public ObjectNode json() {
+
+        /*
+
+        // Výrzané zrychlení kdy je cachován už rovnou celý objekt v json podobě,
+        // bohužel se musí udělat opravdu hluboké testování na veškšrou kombinatoriku protože při každé změně je nutné udělat clean tohoto jsonu
+        if(cache().get_cached_json() != null) {
+            return cache().get_cached_json();
+        }
+
+        cache().set_cached_json( Json.toJson(this));
+        return cache().get_cached_json();
+        */
+
+        return (ObjectNode) Json.toJson(this);
+
+    }
+
+    /**
+     * Converts this model to JSON and than stringify
+     * @return string from JSON representation
+     */
+    public String string() {
+        return json().toString();
+    }
 
     /**
      * Converts this model to printable string
@@ -86,13 +121,49 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
         return this.getClass() + ":\n" + Json.prettyPrint(json());
     }
 
+    /**
+     * Shortcuts for automatic validation and parsing of incoming JSON to MODEL class
+     * @param clazz
+     * @param <T>
+     * @return
+     */
+    @JsonIgnore
+    public static <T> T formFromJsonWithValidation(Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException {
+        return Server.baseFormFactory.formFromJsonWithValidation(clazz, jsonNode);
+    }
+
+    /**
+     * Binds Json data to this form - that is, handles form submission.
+     * Special Method with Response to Websocket
+     * @param clazz
+     * @param jsonNode
+     * @param <T>
+     * @return a copy of this form filled with the new data
+     */
+    public static  <T> T formFromJsonWithValidation(Model_HomerServer server, Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException, IOException {
+        return Server.baseFormFactory.formFromJsonWithValidation(server, clazz, jsonNode);
+    }
+
+    /**
+     * Binds Json data to this form - that is, handles form submission.
+     * Special Method with Response to Websocket
+     * @param clazz
+     * @param jsonNode
+     * @param <T>
+     * @return a copy of this form filled with the new data
+     */
+    public static  <T> T formFromJsonWithValidation(WS_Homer server, Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException, IOException {
+        return Server.baseFormFactory.formFromJsonWithValidation(server, clazz, jsonNode);
+    }
+
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
 
     @JsonIgnore public void save() {
 
         // Someone call Save when object is already created in database
-        if(created != null && this.id != null) {
+
+        if( this.id != null) {
             this.update();
             return;
         }
@@ -100,34 +171,26 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
         this.id = new ObjectId();
 
         // Set Time
-        this.created = System.currentTimeMillis() / 1000L;
-        this.updated = this.created;
-        this.is_deleted = false;
-
+        if (this.created == null) {
+            this.created = new Date().getTime();
+        }
+        if (this.updated == null) {
+            this.updated = new Date().getTime();
+        }
         // new Thread(this::cache).start(); // Caches the object
 
         if (its_person_operation()) {
             save_author();
         }
 
-        // Save Document do Mongo Database
-        Key<_Abstract_MongoModel> person_save = getFinder().save(this);
-
+        getFinder().save(this);
         new Thread(this::cache).start(); // Caches the object
-
-        if(id == null) {
-            System.err.println("ID je null!!!!!");
-
-            this.id = (ObjectId) person_save.getId();
-            System.err.println("Načítám ze systému: " +    this.id );
-
-        }
     }
 
     @JsonIgnore public void update() {
 
         // Set Time
-        this.updated = System.currentTimeMillis() / 1000L;
+        this.updated = new Date().getTime();
 
         // Save Document do Mongo Database
         getFinder().save(this);
@@ -142,8 +205,8 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
     @JsonIgnore public void delete() {
 
         // Set Time
-        this.removed = System.currentTimeMillis() / 1000L;
-        this.is_deleted = true;
+        this.removed = new Date().getTime();
+        this.deleted = true;
 
         // Not Remove, but update!
         getFinder().save(this);
@@ -267,7 +330,7 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
             for(Field field : fields) {
                 if(field.getName().equals("author")) {
                     if (field.get(this) == null) {
-                        field.set(this, _BaseController.person());
+                        field.set(this, _BaseController.person().id);
                         return;
                     }
                 }
@@ -291,46 +354,18 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
 
 /* Permission Contents ----------------------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(readOnly = true, value = "can be hidden", required = true)
-    public boolean update_permission; // TODO
+    @JsonPermission
+    @Transient
+    @ApiModelProperty(readOnly = true, value = "True if user can update this object.")
+    public boolean update_permission;
 
-    @ApiModelProperty(readOnly = true, value = "can be hidden", required = true)
-    public boolean delete_permission; // TODO
+    @JsonPermission(Action.DELETE) @Transient
+    @ApiModelProperty(readOnly = true, value = "True if user can delete this object.")
+    public boolean delete_permission;
 
-    /**
-     * Converts this model to JSON
-     * @return JSON representation of this model
-     */
-    public ObjectNode json() {
-
-        /*
-
-        // Výrzané zrychlení kdy je cachován už rovnou celý objekt v json podobě,
-        // bohužel se musí udělat opravdu hluboké testování na veškšrou kombinatoriku protože při každé změně je nutné udělat clean tohoto jsonu
-        if(cache().get_cached_json() != null) {
-            return cache().get_cached_json();
-        }
-
-        cache().set_cached_json( Json.toJson(this));
-        return cache().get_cached_json();
-        */
-
-        return (ObjectNode) Json.toJson(this);
-
-    }
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public abstract CacheMongoFinder<?> getFinder();
-
-
-    public String unbind(String key) {
-        return null;
-    }
-
-    public String javascriptUnbind(){
-        return null;
-    }
-
 
 }

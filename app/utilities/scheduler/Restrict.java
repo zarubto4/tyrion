@@ -12,5 +12,5 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 public @interface Restrict {
 
-    ServerMode value() default ServerMode.PRODUCTION;
+    ServerMode[] value() default ServerMode.PRODUCTION;
 }

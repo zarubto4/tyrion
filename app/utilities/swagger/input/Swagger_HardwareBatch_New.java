@@ -10,7 +10,7 @@ public class Swagger_HardwareBatch_New {
 
     @Constraints.Required @ApiModelProperty(required = true) public String revision;
     @Constraints.Required @ApiModelProperty(required = true) public String production_batch;
-    @Constraints.Required @ApiModelProperty(required = true) public String date_of_assembly;
+    @Constraints.Required @ApiModelProperty(required = true) public Long date_of_assembly;
 
     @Constraints.Required @ApiModelProperty(required = true) public String pcb_manufacture_name;
     @Constraints.Required @ApiModelProperty(required = true) public String pcb_manufacture_id;

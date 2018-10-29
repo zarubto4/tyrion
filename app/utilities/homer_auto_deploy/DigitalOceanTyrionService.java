@@ -34,21 +34,17 @@ public class DigitalOceanTyrionService {
 
     /*  VALUES -------------------------------------------------------------------------------------------------------------*/
 
-    public static  DigitalOcean apiClient = new DigitalOceanClient( "2521a027f6120a471fa1187060cc56b58e6a42dbd3e56406606488d9e2d7c07f");
+    public static DigitalOcean apiClient = new DigitalOceanClient(  Server.configuration.getString("digitalOcean.api_key"));
 
     /**
      * Holds person connection tokens and ids
      */
     public static Cache<String, Swagger_ServerRegistration_FormData> tokenCache;
 
-    private static WSClient ws;
-    private static Config configuration;
     private static _BaseFormFactory baseFormFactory;
 
     @Inject
-    public DigitalOceanTyrionService(WSClient ws, Config config, _BaseFormFactory formFactory) {
-        DigitalOceanTyrionService.ws = ws;
-        DigitalOceanTyrionService.configuration = config;
+    public DigitalOceanTyrionService(_BaseFormFactory formFactory) {
         DigitalOceanTyrionService.baseFormFactory = formFactory;
     }
 
@@ -148,6 +144,7 @@ public class DigitalOceanTyrionService {
             tags.add("product_id_" + product.id);
             tags.add("customer_id_" + product.owner.id);
         }
+
         tags.add(homer_server.server_type.name());
         tags.add(Server.mode.name());
         logger.trace("create_server::Time to add Tags: {}", tags);
@@ -250,10 +247,13 @@ public class DigitalOceanTyrionService {
         logger.trace("get_data::Start Wit Requesting");
         List<Size> sizes = apiClient.getAvailableSizes(0).getSizes();
         List<Region> regions =  apiClient.getAvailableRegions(0).getRegions();
-        logger.trace("get_data::All data in Cache");
+
+        logger.trace("get_data::All data in Cache:: sizes: {}", sizes.size() );
+        logger.trace("get_data::All data in Cache:: regions: {}", regions.size() );
+        logger.trace("get_data::All data in Cache:: regions: {}", regions.size() );
 
         // Get All Allowed config size
-        List<String> groups = configuration.getStringList("digitalOcean.allowed_server_types");
+        List<String> groups = Server.configuration.getStringList("digitalOcean.allowed_server_types");
 
         for(Size size : sizes) {
 

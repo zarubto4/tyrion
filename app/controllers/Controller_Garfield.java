@@ -4,6 +4,8 @@ import com.typesafe.config.Config;
 import exceptions.ForbiddenException;
 import io.swagger.annotations.*;
 import models.*;
+import mongo.ModelMongo_Hardware_BatchCollection;
+import mongo.ModelMongo_Hardware_RegistrationEntity;
 import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
@@ -22,6 +24,7 @@ import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_Garfield_Edit;
 import utilities.swagger.input.Swagger_Garfield_New;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -208,9 +211,9 @@ public class Controller_Garfield extends _BaseController {
 
             // Kotrola objektu
             Model_Hardware hardware = Model_Hardware.find.byId(board_id);
-            Model_HardwareRegistrationEntity entity = Model_HardwareRegistrationEntity.getbyFull_id(hardware.full_id);
+            ModelMongo_Hardware_RegistrationEntity entity = ModelMongo_Hardware_RegistrationEntity.getbyFull_id(hardware.full_id);
 
-            Model_HardwareBatch batch = Model_HardwareBatch.getById(hardware.batch_id);
+            ModelMongo_Hardware_BatchCollection batch = ModelMongo_Hardware_BatchCollection.find.byId(hardware.batch_id);
 
             // TODO tady je potřeba pohlídat online tiskárny - tiskne se na prvním garfieldovy - to není uplně super cool věc
             // Zrovna mě ale nenapadá jak v rozumném čase doprogramovat řešení lépe - snad jen pomocí selektoru tiskáren???
@@ -346,17 +349,17 @@ public class Controller_Garfield extends _BaseController {
 
             if (garfield.print_sticker_id.equals(printer_id)) {
 
-                Model_HardwareRegistrationEntity board = new Model_HardwareRegistrationEntity();
+                ModelMongo_Hardware_RegistrationEntity board = new ModelMongo_Hardware_RegistrationEntity();
                 board.full_id = "123456789123456789123456";
                 board.hash_for_adding = "dsfasdfsdfsdfsdfasdfsdfsdfsadf";
 
                 Model_HardwareType type = new Model_HardwareType();
                 type.name = "test name";
 
-                Model_HardwareBatch info = new Model_HardwareBatch();
+                ModelMongo_Hardware_BatchCollection info = new ModelMongo_Hardware_BatchCollection();
                 info.revision = "1.9.9";
                 info.production_batch = "1.9.9";
-                info.date_of_assembly = "12.11.2017";
+                info.date_of_assembly = new Date().getTime();
                 info.pcb_manufacture_name = "1.9.9";
                 info.pcb_manufacture_id = "1.9.9";
                 info.assembly_manufacture_name = "1.9.9";
