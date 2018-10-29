@@ -3,6 +3,10 @@ package controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
+import com.microsoft.azure.documentdb.ConnectionPolicy;
+import com.microsoft.azure.documentdb.ConsistencyLevel;
+import com.microsoft.azure.documentdb.Database;
+import com.microsoft.azure.documentdb.DocumentClient;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
@@ -13,7 +17,6 @@ import com.typesafe.config.Config;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.*;
-import mongo.ModelMongo_Hardware_BatchCollection;
 import mongo.ModelMongo_Hardware_RegistrationEntity;
 import org.apache.poi.ss.usermodel.*;
 import org.bson.Document;
@@ -21,11 +24,11 @@ import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
-import org.mindrot.jbcrypt.BCrypt;
 import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.Result;
 
+import utilities.Server;
 import utilities.enums.Currency;
 import utilities.enums.ExtensionType;
 import utilities.enums.InvoiceStatus;
@@ -39,7 +42,6 @@ import utilities.logger.Logger;
 
 import java.io.FileOutputStream;
 import java.math.BigDecimal;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -49,10 +51,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
-import utilities.scheduler.jobs.Job_CheckBootloaderLibraries;
-import utilities.scheduler.jobs.Job_CheckCompilationLibraries;
 import utilities.scheduler.jobs.Job_ThingsMobile_SimData_Synchronize;
-import utilities.scheduler.jobs.Job_ThingsMobile_SimListOnly_Synchronize;
 
 import static java.lang.Thread.sleep;
 
@@ -496,7 +495,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
         try {
 
 
-             new Job_ThingsMobile_SimData_Synchronize().execute(null);
+            // new Job_ThingsMobile_SimData_Synchronize().execute(null);
 
             /*
             BasicDBObject query = new BasicDBObject();
@@ -554,8 +553,17 @@ public class Controller_ZZZ_Tester extends _BaseController {
 
 
 
+
+
+
+            MongoClient mongoClient = new MongoClient(new MongoClientURI("mongodb://production-byzance-cosmos:PbimpRkWXhUrGBwRtLaR19B6NbffCgzklSfSVtHThFzMn6keUENJ9Hm50TZZgtqVOGesgbtCWLaC3yd6ENhoew==@production-byzance-cosmos.documents.azure.com:10255/?ssl=true&replicaSet=globaldb"));
+
+            // Připojení na konkrétní Databázi clienta
+            MongoDatabase database_hardware_registration = mongoClient.getDatabase("hardware-registration-authority-database");
+
             BasicDBObject query_entity = new BasicDBObject();
-            MongoCursor<Document> cursor_entity =  MongoDB.get_collection("hardware-registration-authority").find(query_entity).iterator();
+            MongoCursor<Document> cursor_entity = database_hardware_registration.getCollection("hardware-registration-authority").find(query_entity).iterator();
+
 
             List<Model_HardwareRegistrationEntity> entities = new ArrayList<>();
             while (cursor_entity.hasNext()) {
@@ -570,13 +578,11 @@ public class Controller_ZZZ_Tester extends _BaseController {
             System.out.println("Kolik máme entities: " + entities.size());
 
 
-
-
             for(Model_HardwareRegistrationEntity help : entities) {
 
                 ModelMongo_Hardware_RegistrationEntity registration_of_hardware = new ModelMongo_Hardware_RegistrationEntity();
 
-                if(help.production_batch_id.equals("cc6b3643-652a-40c5-88ee-04cff043afa5")  ) {
+                if (help.production_batch_id.equals("cc6b3643-652a-40c5-88ee-04cff043afa5")  ) {
                     registration_of_hardware.production_batch_id = new ObjectId("5bd5dd5423548a6f3082b428");
                 }
                 
@@ -591,6 +597,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
                 if(ModelMongo_Hardware_RegistrationEntity.getbyFull_id(help.full_id) != null) continue;
 
                 registration_of_hardware.mac_address = help.mac_address;
+                registration_of_hardware.full_id = help.full_id;
 
                 registration_of_hardware.hash_for_adding = help.hash_for_adding;
                 registration_of_hardware.personal_name = help.personal_name;
@@ -604,7 +611,6 @@ public class Controller_ZZZ_Tester extends _BaseController {
             }
 
             */
-
 
             return ok();
 
