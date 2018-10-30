@@ -69,7 +69,7 @@ public class Controller_Database extends _BaseController {
             Swagger_Database_New info = formFromRequestWithValidation(Swagger_Database_New.class);
 
             Model_Product product = Model_Product.find.byId(info.productId);
-
+            checkUpdatePermission(product);
             // Creeate and set Object
             Model_ProductExtension extension  = new Model_ProductExtension();
             extension.product     = product;
@@ -113,15 +113,20 @@ public class Controller_Database extends _BaseController {
     })
     public Result list_db(UUID product_id) {
         try {
+            Model_Product product = Model_Product.find.byId(product_id);
+            checkReadPermission(product);
+
             List<Model_ProductExtension> extensionList = Model_ProductExtension.find.query().where()
                                                                                             .eq("product.id", product_id)
                                                                                             .eq("active", true)
                                                                                             .eq("type", ExtensionType.DATABASE)
                                                                                             .findList();
-            
+
             List<Swagger_Database> result = extensionList.stream()
                                                          .map(Controller_Database::extensionToSwaggerDatabase)
                                                          .collect(Collectors.toList());
+
+
             return ok(result);
         } catch (Exception e) {
             return  controllerServerError(e);
@@ -142,16 +147,17 @@ public class Controller_Database extends _BaseController {
     public Result drop_db(UUID db_id) {
         try {
             Model_ProductExtension productExtension = Model_ProductExtension.find.byId(db_id);
+            delete(productExtension);
+
             productExtension.active = false;
-            MongoClient client = Server.mongoClient;
-            client.dropDatabase("" + db_id);
-            productExtension.delete();
+
+            Server.mongoClient.dropDatabase("" + db_id);
             return(ok());
         } catch ( Exception e ) {
             return controllerServerError(e);
         }
     }
-
+    
     private static Swagger_Database extensionToSwaggerDatabase(Model_ProductExtension extension) {
         Swagger_Database result = new Swagger_Database();
         result.name = extension.name;
