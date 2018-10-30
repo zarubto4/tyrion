@@ -5,6 +5,11 @@
 #CORS
 OPTIONS   /*all                                                         utilities.authentication.Controller_Security.optionLink(all)
 
+### DATABASE
+
+PUT       /database                                                     controllers.Controller_Database.create_db()
+GET       /database/all/:product_id                                     controllers.Controller_Database.list_db(product_id: java.util.UUID)
+DELETE    /database/:db_id                                              controllers.Controller_Database.drop_db(db_id: java.util.UUID)
 ### DEVELOPERS TEST ############ DEVELOPERS TEST ############### DEVELOPERS TEST ################ DEVELOPERS TEST ###################################################
 GET       /test1                                                        controllers.Controller_ZZZ_Tester.test1()
 GET       /test2                                                        controllers.Controller_ZZZ_Tester.test2()
