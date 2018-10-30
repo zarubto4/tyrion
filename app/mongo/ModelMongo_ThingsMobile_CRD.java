@@ -18,15 +18,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 @Entity("THINGSMOBILE_CRD")
-@Indexes({
-        @Index(
-                fields = {
-                        @Field("msisdn"),
-                        @Field("cdrDateStart"),
-                        @Field("cdrDateStop")
-                }
-        )
-})
 public class ModelMongo_ThingsMobile_CRD extends _Abstract_MongoModel {
 
 
@@ -90,8 +81,14 @@ public class ModelMongo_ThingsMobile_CRD extends _Abstract_MongoModel {
     }
 
     public void setMsisdn(Long msisdn) {
+        System.out.println("setMsisdn Long");
         this.msisdn = msisdn;
     }
+
+    public void setMsisdn(String msisdn) {
+        System.out.println("setMsisdn String");
+    }
+
 
     public Long getCdrImsi() {
         return cdrImsi;

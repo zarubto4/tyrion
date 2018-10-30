@@ -8,6 +8,7 @@ import com.typesafe.config.Config;
 import controllers.Controller_WebSocket;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
+import exceptions.NotFoundException;
 import io.swagger.annotations.*;
 import models.*;
 import play.Environment;
@@ -153,9 +154,20 @@ public class Controller_Security extends _BaseController {
             Swagger_EmailAndPassword help  = formFromRequestWithValidation(Swagger_EmailAndPassword.class);
 
             // Ověření Person - Heslo a email
-            Model_Person person = Model_Person.getByEmail(help.email);
+
+            Model_Person person;
+
+            try {
+
+                 person = Model_Person.getByEmail(help.email);
+
+            } catch (NotFoundException e) {
+                logger.trace("Email {} not found", help.email);
+                return forbidden("Email or password is wrong");
+            }
+
             if (person == null || !person.checkPassword(help.password)) {
-                logger.trace("Email {} or password are wrong", help.email);
+                logger.trace("Email {} -> password are wrong", help.email);
                 return forbidden("Email or password is wrong");
             }
 
@@ -243,13 +255,6 @@ public class Controller_Security extends _BaseController {
 
             // System.out.println("HMAC " + result_hash.toString());
             result.hmac = result_hash.toString();
-
-
-
-            List<String> permissions = new ArrayList<>();
-            // for ( Model_Permission m :  Model_Permission.find.query().where().eq("roles.persons.id", person.id).findList() ) permissions.add(m.name);
-
-            result.permissions = permissions;
 
             return ok(result);
 

@@ -485,7 +485,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
                     logger.warn("Need latest_online for device ID: {}", this.id);
 
 
-                    ModelMongo_Hardware_OnlineStatus status = ModelMongo_Hardware_OnlineStatus.find.query().order("create").get(new FindOptions().batchSize(1));
+                    ModelMongo_Hardware_OnlineStatus status = ModelMongo_Hardware_OnlineStatus.find.query().disableValidation().order("create").get(new FindOptions().batchSize(1));
 
                     if (status != null) {
                         logger.debug("last_online: more than 1 record, finding latest record");
@@ -786,9 +786,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
             idCache().add(Model_HardwareGroup.class,  Model_HardwareGroup.find.query().where().eq("hardware.id", id).select("id").findSingleAttributeList());
         }
 
-
         return idCache().gets(Model_HardwareGroup.class) != null ?  idCache().gets(Model_HardwareGroup.class) : new ArrayList<>();
-
     }
 
     @JsonIgnore
@@ -2482,7 +2480,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
                         logger.debug("check_backup:: Device id: {} - verze se shodují");
                     } else {
 
-                        Model_CProgramVersion version_not_cached = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", overview.binaries.backup.build_id).select("id").findOne();
+                        Model_CProgramVersion version_not_cached = Model_CProgramVersion.find.query().nullable().where().eq("compilation.firmware_build_id", overview.binaries.backup.build_id).select("id").findOne();
 
                         if (version_not_cached != null) {
 

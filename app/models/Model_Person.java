@@ -1,8 +1,10 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import controllers._BaseController;
 import exceptions.NotFoundException;
 import io.intercom.api.User;
 import io.swagger.annotations.ApiModel;
@@ -23,7 +25,9 @@ import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.permission.Action;
+import utilities.permission.JsonPermission;
 import utilities.permission.Permissible;
+import utilities.permission.WithPermission;
 
 import javax.persistence.*;
 import java.util.*;
@@ -98,6 +102,12 @@ public class Model_Person extends BaseModel implements Permissible {
             logger.internalServerError(e);
             return null;
         }
+    }
+
+    @JsonProperty()
+    @WithPermission(Action.ACTIVATE)
+    public boolean byzance_admin() {
+        return true;
     }
 
 /* JSON IGNORE VALUES --------------------------------------------------------------------------------------------------*/

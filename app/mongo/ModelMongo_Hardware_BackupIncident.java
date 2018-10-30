@@ -6,10 +6,7 @@ import models.Model_Hardware;
 import models.Model_HardwareType;
 import org.bson.types.ObjectId;
 import org.ehcache.Cache;
-import org.mongodb.morphia.annotations.Entity;
-import org.mongodb.morphia.annotations.Field;
-import org.mongodb.morphia.annotations.Index;
-import org.mongodb.morphia.annotations.Indexes;
+import org.mongodb.morphia.annotations.*;
 import play.data.validation.Constraints;
 import utilities.Server;
 import utilities.cache.CacheMongoFinder;
@@ -42,8 +39,9 @@ public class ModelMongo_Hardware_BackupIncident extends _Abstract_MongoModel {
     private static final Logger logger = new Logger(ModelMongo_Hardware_OnlineStatus.class);
 
     /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
-
+    @AlsoLoad("serverVersion") // handle old componentName field
     public String server_version;
+    @Indexed
     public UUID hardware_id;
 
 

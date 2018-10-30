@@ -45,7 +45,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.inject.*;
 
+@Singleton
 public class Server {
 
     private static final Logger logger = new Logger(Server.class);
@@ -552,6 +554,7 @@ public class Server {
 
     public static Datastore getMainMongoDatabase() {
         if(Server.main_data_store == null) {
+            logger.error("getMainMongoDatabase:: {} Required to init main_data_store ");
             init_mongo_database();
         }
 

@@ -1,6 +1,7 @@
 package mongo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.Model_HardwareType;
 import org.bson.types.ObjectId;
@@ -30,6 +31,7 @@ import java.util.*;
                 }
         )
 })
+@ApiModel("HardwareBatch")
 public class ModelMongo_Hardware_BatchCollection extends _Abstract_MongoModel implements Permissible, Publishable {
 
 

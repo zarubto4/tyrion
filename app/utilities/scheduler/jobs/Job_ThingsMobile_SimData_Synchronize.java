@@ -20,7 +20,8 @@ import static utilities.enums.ServerMode.PRODUCTION;
 import static utilities.enums.ServerMode.STAGE;
 
 // Každou hodinu v 58 minutu
-@Scheduled("0 58 * ? * * *")
+//@Scheduled("0 58 * ? * * *")
+@Scheduled("0,20 0 0 ? * * *")
 @Restrict(value = { DEVELOPER, STAGE, PRODUCTION })
 public class Job_ThingsMobile_SimData_Synchronize implements Job {
 

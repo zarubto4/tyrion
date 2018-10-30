@@ -21,7 +21,7 @@ public class PermissionFilter extends SimpleBeanPropertyFilter {
 
     @Override
     public void serializeAsField(Object pojo, JsonGenerator jgen, SerializerProvider provider, PropertyWriter writer) throws Exception {
-        if (pojo instanceof Permissible) {
+        if (pojo instanceof Permissible && _BaseController.isAuthenticated()) {
             WithPermission withPermission = writer.getAnnotation(WithPermission.class);
             if (withPermission != null) {
                 if (!this.permissionService.isAdmin(_BaseController.person())) {

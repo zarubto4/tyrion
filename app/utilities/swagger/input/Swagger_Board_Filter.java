@@ -52,7 +52,7 @@ public class Swagger_Board_Filter extends _Swagger_filter_parameter{
     public String full_id;
 
     @ApiModelProperty(value = "Hardware ID or part of ID (not necessary to send UUID)", required = false)
-    public String id;
+    public UUID id;
 
 
     /** ORDER BY ------------------------------------------------------------------------------------------------------ **/

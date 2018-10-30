@@ -21,7 +21,4 @@ public class Swagger_Person_All_Details extends _Swagger_Abstract_Default {
     @ApiModelProperty(value = "List of roles, that", readOnly = true)
     public List<Model_Role> roles;
 
-    @ApiModelProperty(readOnly = true, value = "List of all person permission (private and all collections from Person Roles (\"SecurityRole\") ")
-    public List<String> permissions;
-
 }
