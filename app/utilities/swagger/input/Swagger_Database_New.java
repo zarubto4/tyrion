@@ -7,5 +7,4 @@ public class Swagger_Database_New {
     public String description;
     public String collectionName;
     public UUID productId;
-
 }

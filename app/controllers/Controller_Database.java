@@ -78,19 +78,18 @@ public class Controller_Database extends _BaseController {
             extension.type        = ExtensionType.DATABASE;
             extension.active      = false;
 
-            // Save Object
-            extension.save();
-
-
             MongoClient client = Server.mongoClient;
             MongoDatabase database = client.getDatabase("" + extension.id);
             database.createCollection(info.collectionName);
 
+            extension.save();
 
             Swagger_Database created_database = new Swagger_Database();
             created_database.name = extension.name;
             created_database.description = extension.description;
             created_database.id = extension.id;
+
+
             extension.active = true;
             return created(created_database);
 
@@ -119,7 +118,7 @@ public class Controller_Database extends _BaseController {
                                                                                             .eq("active", true)
                                                                                             .eq("type", ExtensionType.DATABASE)
                                                                                             .findList();
-
+            
             List<Swagger_Database> result = extensionList.stream()
                                                          .map(Controller_Database::extensionToSwaggerDatabase)
                                                          .collect(Collectors.toList());
