@@ -50,7 +50,7 @@ public class PermissionSerializer extends StdSerializer<Boolean> implements Cont
 
     @Override
     public void serialize(Boolean value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        if (gen.getCurrentValue() instanceof BaseModel && gen.getCurrentValue() instanceof Permissible) {
+        if (gen.getCurrentValue() instanceof BaseModel && gen.getCurrentValue() instanceof Permissible && _BaseController.isAuthenticated()) {
 
             BaseModel model = (BaseModel) gen.getCurrentValue();
 

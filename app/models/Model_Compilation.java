@@ -10,6 +10,8 @@ import org.apache.commons.io.FileExistsException;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.Server;
+import utilities.cache.CacheFinder;
+import utilities.cache.InjectCache;
 import utilities.enums.CompilationStatus;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
@@ -55,17 +57,9 @@ public class Model_Compilation extends BaseModel {
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-    public UUID blob_id() {
-        if (idCache().get(Model_Blob.class) == null) {
-            idCache().add(Model_Blob.class, (UUID) Model_Blob.find.query().where().eq("version.id", id).select("id").findSingleAttribute());
-        }
-
-        return idCache().get(Model_Blob.class);
-    }
-
     @JsonIgnore
     public Model_Blob getBlob() {
-        return isLoaded("blob") ? blob : Model_Blob.find.query().where().eq("version.id", id).findOne();
+        return isLoaded("blob") ? blob : Model_Blob.find.query().where().eq("c_compilations_binary_file.id", id).findOne();
     }
 
     @JsonProperty
@@ -254,5 +248,6 @@ public class Model_Compilation extends BaseModel {
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
-    public static Finder<UUID, Model_Compilation> find = new Finder<>(Model_Compilation.class);
+    @InjectCache(Model_Compilation.class)
+    public static CacheFinder<Model_Compilation> find = new CacheFinder<>(Model_Compilation.class);
 }

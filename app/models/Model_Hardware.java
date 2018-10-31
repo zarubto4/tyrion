@@ -485,7 +485,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
                     logger.warn("Need latest_online for device ID: {}", this.id);
 
 
-                    ModelMongo_Hardware_OnlineStatus status = ModelMongo_Hardware_OnlineStatus.find.query().order("create").get(new FindOptions().batchSize(1));
+                    ModelMongo_Hardware_OnlineStatus status = ModelMongo_Hardware_OnlineStatus.find.query().order("created").get(new FindOptions().batchSize(1));
 
                     if (status != null) {
                         logger.debug("last_online: more than 1 record, finding latest record");
@@ -994,44 +994,41 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     // Echo o odpojení
     @JsonIgnore
     public static void device_Disconnected(WS_Message_Hardware_disconnected help) {
+
+        if (help.uuid == null) {
+            return;
+        }
+
         try {
+            Model_Hardware hardware = Model_Hardware.find.byId(help.uuid);
 
-            if (help.uuid == null) {
-                return;
-            }
-
-            Model_Hardware device = Model_Hardware.find.byId(help.uuid);
-
-            if (device == null) {
-                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.uuid);
-                return;
-            }
-
-            logger.debug("master_device_Disconnected:: Updating device status " + help.uuid + " on offline ");
+            logger.debug("master_device_Disconnected:: Updating hardware status " + help.uuid + " on offline ");
 
             // CHACHE OFFLINE
-            cache_status.put(device.id, Boolean.FALSE);
+            cache_status.put(hardware.id, Boolean.FALSE);
 
 
             // Uprava Cache Paměti
-            device.cache_latest_online = new Date().getTime();
+            hardware.cache_latest_online = new Date().getTime();
 
 
             // Standartní synchronizace
-            if (device.project().id != null) {
-                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, device.id, false, device.project().id);
+            if (hardware.project().id != null) {
+                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, hardware.id, false, hardware.project().id);
             }
 
-            if (device.developer_kit) {
+            if (hardware.developer_kit) {
                 // Notifikace
-                device.notification_board_disconnect();
+                hardware.notification_board_disconnect();
             }
 
             // Záznam do DM databáze
-            device.make_log_disconnect();
+            hardware.make_log_disconnect();
 
-            Model_Hardware.cache_status.put(device.id, false);
+            Model_Hardware.cache_status.put(hardware.id, false);
 
+        } catch (NotFoundException e) {
+            logger.warn("device_Disconnected - hardware not found, id: {} ", help.uuid);
         } catch (Exception e) {
             logger.internalServerError(e);
         }
@@ -2470,32 +2467,25 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
                 if (overview.binaries.backup != null && overview.binaries.backup.build_id != null && !overview.binaries.backup.build_id.equals("")) {
 
-
                     if (this.actual_backup_c_program_version != null && this.actual_backup_c_program_version.compilation.firmware_build_id.equals(overview.binaries.backup.build_id)) {
                         logger.debug("check_backup:: Device id: {} - verze se shodují");
                     } else {
 
-                        Model_CProgramVersion version_not_cached = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", overview.binaries.backup.build_id).select("id").findOne();
-                        if (version_not_cached != null) {
-
-                            Model_CProgramVersion cached_version = Model_CProgramVersion.find.byId(version_not_cached.id);
+                        Model_CProgramVersion version = Model_CProgramVersion.find.query().nullable().where().eq("compilation.firmware_build_id", overview.binaries.backup.build_id).findOne();
+                        if (version != null) {
 
                             logger.debug("check_backup:: Device id: {} Ještě nebyla přiřazena žádná Backup verze k HW v Tyrionovi - ale program se podařilo najít", this.id);
                             logger.debug("check_backup:: Device id: {} Actual Version ID of backup: {} build_id: {} ", this.id, this.actual_backup_c_program_version != null ? this.actual_backup_c_program_version.id : "'neni uloženo'", this.actual_backup_c_program_version != null ? this.actual_backup_c_program_version.compilation.firmware_build_id : " není uloženo ");
-                            logger.debug("check_backup:: Device id: {} Actual Version ID of backup: {} build_id: {} ", this.id, cached_version != null ? cached_version.id : "'neni uloženo'", cached_version != null ? cached_version.compilation.firmware_build_id : " není uloženo ");
+                            logger.debug("check_backup:: Device id: {} Actual Version ID of backup: {} build_id: {} ", this.id, version.id, version.compilation.firmware_build_id);
 
 
-                            if (this.actual_backup_c_program_version != null && version_not_cached.id.equals(this.actual_backup_c_program_version.id)) {
+                            if (this.actual_backup_c_program_version != null && version.id.equals(this.actual_backup_c_program_version.id)) {
                                 logger.debug("check_backup:: Version is same!");
                             }
 
-                            if (cached_version != null) {
-                                this.actual_backup_c_program_version = cached_version;
-                                this.idCache().add(Model_CProgramVersionFakeBackup.class, cached_version.get_c_program().id);
-                                this.update();
-                            } else {
-                                logger.error("check_backup:: Device id: {} - critical bug - we found version_not_cached id {} but cached version is null!!!!", this.id, version_not_cached.id);
-                            }
+                            this.actual_backup_c_program_version = version;
+                            this.idCache().add(Model_CProgramVersionFakeBackup.class, version.get_c_program().id);
+                            this.update();
                         }
                     }
                 }
@@ -2517,19 +2507,16 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
                 if (overview.binaries.backup != null && (overview.binaries.backup.build_id == null || !overview.binaries.backup.build_id.equals(""))) {
 
-                    // Try to find it in User programs and
-                    Model_CProgramVersion version_not_cached = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", overview.binaries.backup.build_id).select("id").findOne();
+                    try {
+                        Model_CProgramVersion version = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", overview.binaries.backup.build_id).findOne();
 
-                    if (version_not_cached != null) {
                         logger.debug("check_backup:: Ještě nebyla přiřazena žádná Backup verze k HW v Tyrionovi - ale program se podařilo najít");
-                        Model_CProgramVersion cached_version = Model_CProgramVersion.find.byId(version_not_cached.id);
 
-                        this.actual_backup_c_program_version = cached_version;
-                        this.idCache().add(Model_CProgramFakeBackup.class, cached_version.get_c_program().id);
-                        this.idCache().add(Model_CProgramVersionFakeBackup.class, cached_version.id);
+                        this.actual_backup_c_program_version = version;
+                        this.idCache().add(Model_CProgramFakeBackup.class, version.get_c_program().id);
+                        this.idCache().add(Model_CProgramVersionFakeBackup.class, version.id);
                         this.update();
-
-                    } else {
+                    } catch (NotFoundException e) {
                         logger.warn("check_backup:: Nastal stav, kdy mám statický backup, Tyrion v databázi nic nemá a ani se mi nepodařilo najít program (build_id)"
                                 + "který by byl kompatibilní. Což je trochu problém. Uvidíme co nabízí update procedury. \n" +
                                 "Možnosti jsou 1.) Nahrát první určený plan na hardware a tato metoda začne v podmínce najdi fungovat \n" +
@@ -2708,7 +2695,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
             logger.debug("check_bootloader:: noo default bootloader on hardware - required automatic update");
 
             // Zkontroluji jestli tam nějaká verze už je!
-            Model_BootLoader bootloader = Model_BootLoader.find.query().where().eq("version_identifier", overview.binaries.bootloader.build_id).findOne();
+            Model_BootLoader bootloader = Model_BootLoader.find.query().nullable().where().eq("version_identifier", overview.binaries.bootloader.build_id).findOne();
 
             if (bootloader != null ) {
                 logger.debug("check_bootloader:: Bootloader identificator {} recognized and found in database", overview.binaries.bootloader.build_id);
@@ -2716,8 +2703,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
                 update();
                 return;
             }
-
-
 
             if (getHardwareType().main_boot_loader() == null) {
                 logger.error("check_bootloader::Main Bootloader for Type Of Board {} is not set for update device {}", this.getHardwareType().name, this.id);
@@ -2729,7 +2714,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
             WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
             b_pair.hardware = this;
 
-            if (this.get_actual_bootloader() == null) b_pair.bootLoader =  getHardwareType().main_boot_loader();
+            if (this.get_actual_bootloader() == null) b_pair.bootLoader = getHardwareType().main_boot_loader();
             else b_pair.bootLoader = this.get_actual_bootloader();
 
             b_pairs.add(b_pair);

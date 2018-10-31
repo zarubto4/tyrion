@@ -282,6 +282,11 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
+    @JsonIgnore
+    public Model_Blob getBlob() {
+        return isLoaded("program") ? program : Model_Blob.find.query().where().eq("snapshot.id", id).findOne();
+    }
+
     @JsonIgnore @Transient
     public Model_BProgramVersion getBProgramVersion() {
         return isLoaded("b_program_version") ? b_program_version : Model_BProgramVersion.find.query().where().eq("instances.id", id).findOne();

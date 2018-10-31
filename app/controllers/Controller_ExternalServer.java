@@ -746,35 +746,7 @@ public class Controller_ExternalServer extends _BaseController {
     @Security.Authenticated(AuthenticationHomer.class)
     public Result cloud_file_get_b_program_version(UUID snapshot_id) {
         try {
-
-            // Získám soubor
-            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(snapshot_id);
-
-            // Separace na Container a Blob
-            int slash = snapshot.program.path.indexOf("/");
-            String container_name = snapshot.program.path.substring(0,slash);
-            String real_file_path = snapshot.program.path.substring(slash+1);
-
-            CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
-
-            // Create Policy
-            Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-            cal.setTime(new Date());
-            cal.add(Calendar.SECOND, 30);
-
-            SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
-            policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
-            policy.setSharedAccessExpiryTime(cal.getTime());
-
-            String sas = blob.generateSharedAccessSignature(policy, null);
-
-            String total_link = blob.getUri().toString() + "?" + sas;
-
-            logger.warn("cloud_file_get_b_program_version - download link: {}", total_link);
-
-            // Přesměruji na link
-            return redirect(total_link);
-
+            return redirect(Model_InstanceSnapshot.find.byId(snapshot_id).getBlob().getPublicDownloadLink());
         } catch (Exception e) {
            return controllerServerError(e);
         }
@@ -846,30 +818,8 @@ public class Controller_ExternalServer extends _BaseController {
                 throw new NotFoundException(Model_Blob.class);
             }
 
-            // Separace na Container a Blob
-            int slash = compilation.blob.path.indexOf("/");
-            String container_name = compilation.blob.path.substring(0,slash);
-            String real_file_path = compilation.blob.path.substring(slash+1);
-
-            CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
-
-            // Create Policy
-            Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-            cal.setTime(new Date());
-            cal.add(Calendar.SECOND, 30);
-
-            SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
-            policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
-            policy.setSharedAccessExpiryTime(cal.getTime());
-
-            String sas = blob.generateSharedAccessSignature(policy, null);
-
-            String total_link = blob.getUri().toString() + "?" + sas;
-
-            logger.debug("cloud_file_get_c_program_version - download link: {}", total_link);
-
             // Přesměruji na link
-            return redirect(total_link);
+            return redirect(compilation.getBlob().getPublicDownloadLink());
 
         } catch (Exception e) {
            return controllerServerError(e);

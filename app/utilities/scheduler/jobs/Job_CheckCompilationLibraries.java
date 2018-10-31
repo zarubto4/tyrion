@@ -17,6 +17,7 @@ import utilities.Server;
 import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
 import utilities.logger.Logger;
+import utilities.scheduler.Scheduled;
 import utilities.slack.Slack;
 import utilities.swagger.input.*;
 
@@ -29,7 +30,7 @@ import java.util.stream.Collectors;
 /**
  * This job synchronizes compilation libraries from GitHub releases.
  */
-// @Scheduled("0 0/5 * 1/1 * ? *")
+@Scheduled("0 0/5 * 1/1 * ? *")
 public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements Job {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -100,7 +101,7 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
 
                         if(obsolete_versions.contains(release.tag_name)) {
                             logger.debug("check_version_thread: Tag version  {} is mark as obsolete", release.tag_name);
-                            continue synchro_libraries;
+                            continue;
                         }
 
 
@@ -174,14 +175,9 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
                     }
 
                     hardwareType.cache_library_list.addAll(library_list_for_add);
-                    hardwareType.update();
 
                     // Sorting List
-                    List<Swagger_CompilationLibrary> libraries = new ArrayList<>();
-                    hardwareType.cache_library_list.stream().sorted((element1, element2) -> element2.name.compareTo(element1.name)).collect(Collectors.toList())
-                            .forEach(o -> libraries.add(o));
-
-                    hardwareType.cache_library_list = libraries;
+                    hardwareType.cache_library_list = hardwareType.cache_library_list.stream().sorted((element1, element2) -> element2.name.compareTo(element1.name)).collect(Collectors.toList());
                 }
 
                 logger.trace("check_version_thread:: all Library type of Board synchronized");
@@ -348,7 +344,7 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
                     }
 
 
-                    Model_CProgram c_program = Model_CProgram.find.query().where()
+                    Model_CProgram c_program = Model_CProgram.find.query().nullable().where()
                             .eq("name", json.name)
                             .eq("publish_type", ProgramType.PUBLIC)
                             .disjunction()
@@ -366,7 +362,7 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
                         c_program.description = json.description;
                         c_program.publish_type = ProgramType.PUBLIC;
 
-                        Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("compiler_target_name", json.targets.get(0)).eq("deleted", false).findOne();
+                        Model_HardwareType hardwareType = Model_HardwareType.find.query().nullable().where().eq("compiler_target_name", json.targets.get(0)).eq("deleted", false).findOne();
 
                         if (hardwareType == null) {
                             System.err.println("HW Libs Example: ERROR " + directory_with_example.getName() + " not found Model_HardwareType!");
@@ -388,7 +384,7 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
                     // Create First version
                     System.out.println("Example: " + directory_with_example.getName() + " its time to create version");
 
-                    Model_CProgramVersion version = Model_CProgramVersion.find.query().where().eq("c_program.id", c_program.id).eq("name", release.tag_name).findOne();
+                    Model_CProgramVersion version = Model_CProgramVersion.find.query().nullable().where().eq("c_program.id", c_program.id).eq("name", release.tag_name).findOne();
 
                     if (version != null) {
                         System.out.println("Example: " + directory_with_example.getName() + " version " + release.tag_name + " is already created");
@@ -416,7 +412,7 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
             }
 
 
-            if(error_for_slack.length() > 0) {
+            if(error_for_slack.length() > 0 && Server.mode != ServerMode.DEVELOPER) {
                 error_for_slack = "Toto je automatická zpráva kterou vygeneroval všemocný Tyrion Server. \n Podle GitHubu *" + release.author.login + "* vytvořil firmware release *" + release.tag_name + "* s následujícíma chybama:." + error_for_slack;
 
                 Slack.post_error(error_for_slack, Server.slack_webhook_url_channel_hardware);

@@ -1137,19 +1137,15 @@ public class Controller_Code extends _BaseController {
 
             Model_CProgramVersion version = Model_CProgramVersion.find.byId(version_id);
 
-            if (version.get_c_program().hardware_type_default == null && version.get_c_program().hardware_type_test == null) return badRequest("Version_object is not version of c_program or is not default firmware");
+            // TODO will not work
+            // if (version.get_c_program().hardware_type_default == null && version.get_c_program().hardware_type_test == null) return badRequest("Version_object is not version of c_program or is not default firmware");
 
-
-            Model_CProgramVersion previous_main_version_not_cached = Model_CProgramVersion.find.query().where().eq("c_program.id", version.get_c_program().id).isNotNull("default_program").select("id").findOne();
-            if (previous_main_version_not_cached != null) {
-
-                Model_CProgramVersion previous_main_version = Model_CProgramVersion.find.byId(previous_main_version_not_cached.id);
-                if (previous_main_version != null) {
-                    previous_main_version.default_program = null;
-                    version.get_c_program().default_main_version = null;
-                    previous_main_version.update();
-                    version.get_c_program().update();
-                }
+            Model_CProgramVersion previous_main_version = Model_CProgramVersion.find.query().nullable().where().eq("c_program.id", version.get_c_program().id).isNotNull("default_program").findOne();
+            if (previous_main_version != null) {
+                previous_main_version.default_program = null;
+                version.get_c_program().default_main_version = null;
+                previous_main_version.update();
+                version.get_c_program().update();
             }
 
             version.default_program = version.get_c_program();
