@@ -92,10 +92,29 @@ public class Controller_WebSocket extends _BaseController {
 
         logger.warn("close - closing all WebSockets");
 
-        homers.forEach((id, homer) -> homer.close());
-        homers_not_sync.forEach((id, homer) -> homer.close());
+        try {
+            homers.forEach((id, homer) -> homer.close());
+        } catch (Exception e) {
+            // Ignore
+        }
+
+        try {
+            homers_not_sync.forEach((id, homer) -> homer.close());
+        } catch (Exception e) {
+            // Ignore
+        }
+
+        try {
         compilers.forEach((id, compiler) -> compiler.close());
-        portals.forEach((id, portal) -> portal.close());
+        } catch (Exception e) {
+            // Ignore
+        }
+
+        try {
+            portals.forEach((id, portal) -> portal.close());
+        } catch (Exception e) {
+            // Ignore
+        }
 
         logger.info("close - all WebSockets closed");
     }

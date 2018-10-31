@@ -261,8 +261,8 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(value = "only if snapshot is main")
     public String program() {
         try {
-            if (program != null) {
-                return program.getPublicDownloadLink();
+            if (getBlob() != null) {
+                return getBlob().getPublicDownloadLink();
             }
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -283,6 +283,11 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore
+    public Model_Blob getBlob() {
+        return isLoaded("program") ? program : Model_Blob.find.query().where().eq("snapshot.id", id).findOne();
+    }
+
+    @JsonIgnore @Transient
     public Model_Blob getBlob() {
         return isLoaded("program") ? program : Model_Blob.find.query().where().eq("snapshot.id", id).findOne();
     }
@@ -309,16 +314,22 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
 
     @JsonIgnore @Transient
     public List<UUID> getHardwareIds() {
-        List<UUID> list = new ArrayList<>();
 
-        for (Swagger_InstanceSnapshot_JsonFile_Interface interface_hw : this.getProgram().interfaces) {
+        try {
+            List<UUID> list = new ArrayList<>();
 
-            if (interface_hw.type.equals("hardware")) {
-                list.add(interface_hw.target_id);
+            for (Swagger_InstanceSnapshot_JsonFile_Interface interface_hw : this.getProgram().interfaces) {
+
+                if (interface_hw.type.equals("hardware")) {
+                    list.add(interface_hw.target_id);
+                }
             }
-        }
 
-        return list;
+            return list;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return new ArrayList<>();
+        }
     }
 
     @JsonIgnore @Transient
@@ -372,10 +383,9 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
     @JsonIgnore @Transient
     public Swagger_InstanceSnapshot_JsonFile getProgram() {
         try {
-            if (program != null) {
-                return baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapshot_JsonFile.class, Json.parse(program.downloadString()));
-            }
-            return null;
+
+            return baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapshot_JsonFile.class, Json.parse(getBlob().downloadString()));
+
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import controllers._BaseController;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import org.apache.commons.io.FileExistsException;
 import play.libs.ws.WSClient;

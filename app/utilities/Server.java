@@ -13,7 +13,6 @@ import controllers.Controller_WebSocket;
 import controllers._BaseFormFactory;
 import io.intercom.api.Intercom;
 import models.*;
-import org.bson.types.ObjectId;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import org.mongodb.morphia.annotations.Entity;
@@ -46,7 +45,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.inject.*;
 
+@Singleton
 public class Server {
 
     private static final Logger logger = new Logger(Server.class);
@@ -65,9 +66,6 @@ public class Server {
     public static CloudStorageAccount storageAccount;
     public static CloudBlobClient blobClient;
     public static String azure_blob_Link;
-
-    // Azure - NoSQL Database
-    public static DocumentCollection online_status_collection = null;
 
     public static String becki_mainUrl;
     public static String becki_redirectOk;
@@ -158,9 +156,6 @@ public class Server {
         } catch (Exception e) {
             logger.error("start - DB is inconsistent, probably evolution will occur", e);
         }
-
-        // TODO po prvním spuštění je možné odstranit
-        mongoTransferScript();
 
         setBaseForm();
         startThreads();
@@ -415,28 +410,18 @@ public class Server {
         long start = System.currentTimeMillis();
 
         // Get classes in 'models' package
-        Reflections reflections_postgress = new Reflections(new ConfigurationBuilder()
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
                 .setUrls(ClasspathHelper.forPackage("models"))
                 .setScanners(new SubTypesScanner()));
 
-
-        Reflections reflections_mongo = new Reflections(new ConfigurationBuilder()
-                .setUrls(ClasspathHelper.forPackage("mongo"))
-                .setScanners(new SubTypesScanner()));
-
         // Get classes that implements Permittable
-        Set<Class<? extends Permissible>> classes_post = reflections_postgress.getSubTypesOf(Permissible.class);
-        Set<Class<? extends Permissible>> classes_mongo = reflections_mongo.getSubTypesOf(Permissible.class);
+        Set<Class<? extends Permissible>> classes = reflections.getSubTypesOf(Permissible.class);
 
-
-        classes_post.addAll(classes_mongo);
-
-
-        logger.trace("setPermission - found {} classes", classes_post.size());
+        logger.trace("setPermission - found {} classes", classes.size());
 
         List<Model_Permission> permissions = Model_Permission.find.all();
 
-        classes_post.forEach(cls -> {
+        classes.forEach(cls -> {
             try {
                 Permissible permissible = cls.newInstance();
                 EntityType entityType = permissible.getEntityType();
@@ -486,41 +471,6 @@ public class Server {
         Model_InstanceSnapshot.baseFormFactory                  = Server.injector.getInstance(_BaseFormFactory.class);
     }
 
-    /*
-        Dočasný script, který přemigruje staré mongo na nové mongo.
-        Migrační script je nutný zejména kvuli jinému typu ukládání a frameworku
-     */
-    private static void mongoTransferScript() {
-
-        List<Model_Hardware> hardware_1 = Model_Hardware.find.query().where().eq("batch_id", "cc6b3643-652a-40c5-88ee-04cff043afa5").findList();
-        List<Model_Hardware> hardware_2 = Model_Hardware.find.query().where().eq("batch_id", "26d189c5-b61f-4565-a8f7-5a043a73963e").findList();
-        List<Model_Hardware> hardware_3 = Model_Hardware.find.query().where().eq("batch_id", "abd218dc-14ca-4d2e-a731-66f71ed41245").findList();
-
-        if(hardware_1.isEmpty() && hardware_2.isEmpty() && hardware_3.isEmpty()) return;
-
-        List<Model_Hardware> collection = new ArrayList<>();
-        collection.addAll(hardware_1);
-        collection.addAll(hardware_2);
-        collection.addAll(hardware_3);
-
-        for(Model_Hardware hardware : collection) {
-
-
-            if(hardware.batch_id.equals("cc6b3643-652a-40c5-88ee-04cff043afa5")  ) {
-                hardware.batch_id = new ObjectId("5bd5dd5423548a6f3082b428").toString();
-            }
-            else if(hardware.batch_id.equals("26d189c5-b61f-4565-a8f7-5a043a73963e")  ) {
-                hardware.batch_id = new ObjectId("5bd5dd5423548a6f3082b427").toString();
-            }
-            else if(hardware.batch_id.equals("abd218dc-14ca-4d2e-a731-66f71ed41245")  ) {
-                hardware.batch_id =  new ObjectId("5bd5dd5423548a6f3082b426").toString();
-            }
-
-
-            hardware.update();
-        }
-
-    }
 
     /**
      * Initialization Mongo Databases from config file, all collection are checked, if some missing, this method will
@@ -604,6 +554,7 @@ public class Server {
 
     public static Datastore getMainMongoDatabase() {
         if(Server.main_data_store == null) {
+            logger.error("getMainMongoDatabase:: {} Required to init main_data_store ");
             init_mongo_database();
         }
 

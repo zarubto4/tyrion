@@ -415,7 +415,7 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
             if(error_for_slack.length() > 0 && Server.mode != ServerMode.DEVELOPER) {
                 error_for_slack = "Toto je automatická zpráva kterou vygeneroval všemocný Tyrion Server. \n Podle GitHubu *" + release.author.login + "* vytvořil firmware release *" + release.tag_name + "* s následujícíma chybama:." + error_for_slack;
 
-                Slack.post_error(error_for_slack, Server.slack_webhook_url_channel_hardware);
+                // TODO Slack.post_error(error_for_slack, Server.slack_webhook_url_channel_hardware);
                 return;
             }
 

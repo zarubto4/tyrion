@@ -786,9 +786,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
             idCache().add(Model_HardwareGroup.class,  Model_HardwareGroup.find.query().where().eq("hardware.id", id).select("id").findSingleAttributeList());
         }
 
-
         return idCache().gets(Model_HardwareGroup.class) != null ?  idCache().gets(Model_HardwareGroup.class) : new ArrayList<>();
-
     }
 
     @JsonIgnore
@@ -2012,49 +2010,55 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     @JsonIgnore
     public void hardware_firmware_state_check() {
         try {
-            logger.warn("hardware_firmware_state_check procedure");
+            logger.warn("hardware_firmware_state_check hardware id {} procedure", this.id);
 
             WS_Message_Hardware_overview_Board report = get_devices_overview();
 
-            logger.debug("hardware_firmware_state_check: Result:  {}", Json.toJson(report));
+            logger.debug("hardware_firmware_state_check hardware id {}: Result:  {}", this.id , Json.toJson(report));
 
 
             if (report.error_message != null) {
-                logger.warn("hardware_firmware_state_check - Report Device ID: {} contains ErrorCode:: {} ErrorMessage:: {} " , this.id, report.error_code, report.error_message);
+                logger.warn("hardware_firmware_state_check hardware id {} - contains ErrorCode:: {} ErrorMessage:: {} " , this.id, report.error_code, report.error_message);
 
                 if (report.error_code.equals(ErrorCode.HARDWARE_IS_OFFLINE.error_code())) {
-                    logger.warn("hardware_firmware_state_check -: Report Device ID: {} is offline" , this.id);
+                    logger.warn("hardware_firmware_state_check hardware id {} -: Report Device ID: {} is offline" , this.id , this.id);
                     return;
                 }
             }
 
             if (!report.status.equals("success")) {
-                logger.error("hardware_firmware_state_check: WS_Help_Hardware_board_overview something is wrong on device {}" , this.id);
+                logger.error("hardware_firmware_state_check hardware id {}: WS_Help_Hardware_board_overview something is wrong on device {}" , this.id);
                 return;
             }
 
             if (!report.online_status) {
-                logger.warn("hardware_firmware_state_check - device is offline");
+                logger.warn("hardware_firmware_state_check hardware id {} - device is offline", this.id);
                 return;
             }
 
             if (project().id == null) {
-                logger.warn("hardware_firmware_state_check device id:: {} - No project - synchronize is not allowed.", this.id);
+                logger.warn("hardware_firmware_state_check hardware id {} device id:: {} - No project - synchronize is not allowed.", this.id);
                 return;
             }
 
-            logger.warn("hardware_firmware_state_check - Summary information of connected master hardware: ID = {}", this.id);
+            logger.warn("hardware_firmware_state_check hardware id {} - Summary information of connected master hardware: ID = {}", this.id);
 
-            logger.warn("hardware_firmware_state_check - Settings check ", this.id);
-            if (check_settings(report)) return;
+            logger.warn("hardware_firmware_state_check hardware id {} - Settings check ", this.id);
+            if (check_settings(report)) {
 
-            logger.warn("hardware_firmware_state_check - Firmware check ", this.id);
+                logger.warn("hardware_firmware_state_check hardware id {} - check settings cancle synchronize procedure ", this.id);
+                return;
+            }
+
+
+
+            logger.warn("hardware_firmware_state_check hardware id {} - Firmware check ", this.id);
             check_firmware(report);
 
-            logger.warn("hardware_firmware_state_check - Backup check ", this.id);
+            logger.warn("hardware_firmware_state_check hardware id {} - Backup check ", this.id);
             check_backup(report);
 
-            logger.warn("hardware_firmware_state_check - Bootloader check ", this.id);
+            logger.warn("hardware_firmware_state_check hardware id {} - Bootloader check ", this.id);
             check_bootloader(report);
 
         } catch (Exception e) {
@@ -2315,7 +2319,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
                 logger.debug("check_firmware:: Device id: {}  Neexistují nedokončené procedury", this.id);
             }
 
-            logger.debug("check_firmware:: Device id: {} Totální přehled v Json: \n {} \n", this.id, Json.toJson(this).toString());
+            logger.debug("check_firmware:: Device id: {} Totální přehled v Json: \n {} \n", this.id, this.prettyPrint());
 
             // Nemám Updaty - ale verze se neshodují
             if (get_actual_c_program_version() != null && firmware_plans.isEmpty()) {
@@ -2609,15 +2613,24 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     @JsonIgnore
     private void check_bootloader(WS_Message_Hardware_overview_Board overview) {
 
+        // Nastavím bootloader který na hardwaru je
+
+        if (get_actual_bootloader() == null || overview.binaries.bootloader.build_id.equals(this.actual_bootloader().version_identifier)) {
+
+            actual_boot_loader = Model_BootLoader.find.query().where().eq("hardware_type.id", this.hardware_type().id).eq("version_identifier", overview.binaries.bootloader.build_id).findOne();
+            update();
+
+            logger.trace("check_bootloader -: Actual bootloader_id by DB not recognized and its updated :: ", overview.binaries.bootloader.build_id);
+        }
+
+
         // Pokud uživatel nechce DB synchronizaci ingoruji
         if (!this.database_synchronize) {
             logger.trace("check_bootloader - database_synchronize is forbidden - change parameters not allowed!");
             return;
         }
 
-        if (get_actual_bootloader() == null) {
-            logger.trace("check_bootloader -: Actual bootloader_id by DB not recognized :: ", overview.binaries.bootloader.build_id);
-        }
+
 
         // Vylistuji seznam úkolů k updatu
         List<Model_HardwareUpdate> firmware_plans = Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id)
@@ -2695,7 +2708,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
             logger.debug("check_bootloader:: noo default bootloader on hardware - required automatic update");
 
             // Zkontroluji jestli tam nějaká verze už je!
-            Model_BootLoader bootloader = Model_BootLoader.find.query().nullable().where().eq("version_identifier", overview.binaries.bootloader.build_id).findOne();
+            Model_BootLoader bootloader = Model_BootLoader.find.query().nullable().where().eq("hardware_type.id", this.hardware_type().id).eq("version_identifier", overview.binaries.bootloader.build_id).findOne();
 
             if (bootloader != null ) {
                 logger.debug("check_bootloader:: Bootloader identificator {} recognized and found in database", overview.binaries.bootloader.build_id);

@@ -12,20 +12,12 @@ import utilities.cache.InjectCache;
 import utilities.logger.Logger;
 import utilities.model._Abstract_MongoModel;
 
+import java.beans.Transient;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 @Entity("THINGSMOBILE_CRD")
-@Indexes({
-        @Index(
-                fields = {
-                        @Field("msisdn"),
-                        @Field("cdrDateStart"),
-                        @Field("cdrDateStop")
-                }
-        )
-})
 public class ModelMongo_ThingsMobile_CRD extends _Abstract_MongoModel {
 
 
@@ -50,16 +42,19 @@ public class ModelMongo_ThingsMobile_CRD extends _Abstract_MongoModel {
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
+    @Transient
     @JsonProperty()
     public Long data_in_bites(){
         return cdrTraffic;
     }
 
+    @Transient
     @JsonProperty()
     public Long data_in_kb(){
         return cdrTraffic / 1024;
     }
 
+    @Transient
     @JsonProperty()
     public Long data_in_mb(){
         return cdrTraffic / 1024 / 1024;
@@ -68,16 +63,56 @@ public class ModelMongo_ThingsMobile_CRD extends _Abstract_MongoModel {
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
 
+    @Transient
     @JsonIgnore()
     public LocalDateTime date_from(){
         return  Instant.ofEpochMilli(cdrDateStart).atZone(ZoneId.systemDefault()).toLocalDateTime();
     }
 
+    @Transient
     @JsonIgnore()
     public LocalDateTime date_to(){
         return  Instant.ofEpochMilli(cdrDateStop).atZone(ZoneId.systemDefault()).toLocalDateTime();
     }
 
+
+    public Long getMsisdn() {
+        return msisdn;
+    }
+
+    public void setMsisdn(Long msisdn) {
+        System.out.println("setMsisdn Long");
+        this.msisdn = msisdn;
+    }
+
+    public void setMsisdn(String msisdn) {
+        System.out.println("setMsisdn String");
+    }
+
+
+    public Long getCdrImsi() {
+        return cdrImsi;
+    }
+
+    public void setCdrImsi(Long cdrImsi) {
+        this.cdrImsi = cdrImsi;
+    }
+
+    public Long getCdrDateStart() {
+        return cdrDateStart;
+    }
+
+    public void setCdrDateStart(Long cdrDateStart) {
+        this.cdrDateStart = cdrDateStart;
+    }
+
+    public Long getCdrDateStop() {
+        return cdrDateStop;
+    }
+
+    public void setCdrDateStop(Long cdrDateStop) {
+        this.cdrDateStop = cdrDateStop;
+    }
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

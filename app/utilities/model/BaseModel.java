@@ -85,7 +85,14 @@ public abstract class BaseModel extends Model implements JsonSerializable {
                         cacheMap.put(c, ids);
                     } else {
                         if (cacheMap.get(c) != null) {
-                            cacheMap.get(c).addAll(0, ids);
+
+                            List<UUID> list = cacheMap.get(c);
+                            for (UUID id : ids){
+                                if (!list.contains(id)) {
+                                    list.add(id);
+                                }
+                            }
+
                         } else {
                             cacheMap.put(c, ids);
                         }

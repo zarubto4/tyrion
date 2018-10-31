@@ -357,7 +357,7 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
     @JsonPermission
     @Transient
     @ApiModelProperty(readOnly = true, value = "True if user can update this object.")
-    public boolean update_permission;
+        public boolean update_permission;
 
     @JsonPermission(Action.DELETE) @Transient
     @ApiModelProperty(readOnly = true, value = "True if user can delete this object.")

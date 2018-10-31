@@ -2016,14 +2016,12 @@ public class Controller_Hardware extends _BaseController {
 
             if (help.full_id != null && help.full_id.length() > 0) {
                 System.out.println("Full ID vyplněno: " + help.full_id + " l: " + help.full_id.length());
-
-
                 query.where().icontains("full_id", help.full_id);
             }
 
-            if (help.id != null && help.id.length() > 1) {
+            if (help.id != null) {
                 System.out.println("ID vyplněno: " + help.id);
-                query.where().icontains("id", help.id);
+                query.where().eq("id", help.id);
             }
 
             if (help.name != null && help.name.length() > 0) {

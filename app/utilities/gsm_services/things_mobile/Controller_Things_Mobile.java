@@ -188,9 +188,6 @@ public class Controller_Things_Mobile {
                         node.totalTrafficThreshold       = Long.valueOf(eElement.getElementsByTagName("totalTrafficThreshold").item(0).getTextContent());
 
 
-                        System.out.println("Budu louskat cdrs");
-                        System.out.println("Co mám v CDRS: size: " + ((Element) nNode).getElementsByTagName("cdrs").getLength() );
-                        System.out.println("Co mám v CDRS: print: " + ((Element) nNode).getElementsByTagName("cdrs"));
 
 
                         NodeList cdrs_list =  ((Element) nNode).getElementsByTagName("cdr");
@@ -290,7 +287,7 @@ public class Controller_Things_Mobile {
 
                         System.out.println("Budu louskat cdrs");
                         System.out.println("Co mám v CDRS: size: " + ((Element) nNode).getElementsByTagName("cdrs").getLength());
-                        System.out.println("Co mám v CDRS: print: " + ((Element) nNode).getElementsByTagName("cdrs"));
+                        System.out.println("Co mám v CDRS: print: " + ((Element) nNode).getElementsByTagName("cdrs").toString());
 
                         for (int cdr_pointer = 0; cdr_pointer < cdrs_list.getLength(); cdr_pointer++) {
 
