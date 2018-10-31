@@ -17,4 +17,6 @@ public class Swagger_Database extends _Swagger_Abstract_Default {
     public String description;
     @ApiModelProperty(required = false, readOnly = true )
     public UUID id;
+    @ApiModelProperty(required = false, readOnly = true)
+    public String conectionString;
 }
