@@ -25,7 +25,7 @@ public class MongoCloudApi {
     }
 
     public String getConnectionStringForUser(SwaggerMongoCloudUser user){
-        return "testConnectionString";
+        return "mongodb://4344786c-910e-445e-a9eb-503899048073:b864c324-3c10-43c1-b354-6f9a43264312@testcluster-shard-00-00-waqlo.gcp.mongodb.net:27017,testcluster-shard-00-01-waqlo.gcp.mongodb.net:27017,testcluster-shard-00-02-waqlo.gcp.mongodb.net:27017/test?ssl=true&replicaSet=TestCluster-shard-0&authSource=admin&retryWrites=true";
     }
 
     public SwaggerMongoCloudUser createUser(UUID product_id, String databaseName) throws Exception{

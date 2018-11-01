@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 //@Security.Authenticated(Authentication.class)
 @Api(value = "Database")
 public class Controller_Database extends _BaseController {
-
+    private MongoCloudApi mongoclient;
 
 // LOGGER ##############################################################################################################
 
@@ -49,6 +49,7 @@ public class Controller_Database extends _BaseController {
     @Inject
     public Controller_Database(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
         super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+        mongoclient = new MongoCloudApi(ws, formFactory);
     }
 
 
@@ -87,7 +88,6 @@ public class Controller_Database extends _BaseController {
                     .eq("type", ExtensionType.DATABASE)
                     .findList();
             SwaggerMongoCloudUser user;
-
 
             Model_ProductExtension extension  = new Model_ProductExtension();
             extension.product     = product;
@@ -199,6 +199,7 @@ public class Controller_Database extends _BaseController {
         result.name = extension.name;
         result.description = extension.description;
         result.id = extension.id;
+        result.conectionString =
         return result;
     }
 }
