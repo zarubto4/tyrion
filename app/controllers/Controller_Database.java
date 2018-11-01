@@ -76,21 +76,19 @@ public class Controller_Database extends _BaseController {
     })
     public Result create_db() {
         try {
-            // Get and Validate Object
             Swagger_Database_New info = formFromRequestWithValidation(Swagger_Database_New.class);
 
             Model_Product product = Model_Product.find.byId(info.product_id);
-  //          checkUpdatePermission(product);
+            checkUpdatePermission(product);
 
-            Optional<Model_ProductExtension> existingDatabase = Model_ProductExtension.find.query().where()
+            List<Model_ProductExtension> existingDatabaseList = Model_ProductExtension.find.query().where()
                     .eq("product.id", info.product_id)
                     .eq("active", true)
-                    .eq("type", ExtensionType.DATABASE).findOneOrEmpty();
+                    .eq("type", ExtensionType.DATABASE)
+                    .findList();
+            SwaggerMongoCloudUser user;
 
 
-
-
-            // Creeate and set Object
             Model_ProductExtension extension  = new Model_ProductExtension();
             extension.product     = product;
             extension.name        = info.name;
@@ -99,24 +97,28 @@ public class Controller_Database extends _BaseController {
             extension.active      = false;
             extension.save();
 
+            MongoCloudApi mongoApi = new MongoCloudApi(ws, baseFormFactory);
+            if( !existingDatabaseList.isEmpty() ) {
+                JsonNode json = Json.parse(existingDatabaseList.get(0).configuration);
+                user = this.baseFormFactory.formFromJsonWithValidation(SwaggerMongoCloudUser.class, json);
+                user = mongoApi.addRole(user, ""+extension.id);
+            } else {
+                user = mongoApi.createUser(info.product_id,""+extension.id);
+            }
+
+
             MongoClient client = Server.mongoClient;
             MongoDatabase database = client.getDatabase("" + extension.id);
             database.createCollection(info.collection_name);
 
 
-             SwaggerMongoCloudUser user;
-            MongoCloudApi mongoApi = new MongoCloudApi(ws, baseFormFactory);
-            if(existingDatabase.isPresent()) {
-                JsonNode json = Json.parse(existingDatabase.get().configuration);
-                user = this.baseFormFactory.formFromJsonWithValidation(SwaggerMongoCloudUser.class, json);
-                user = mongoApi.addRole(user, ""+extension.id );
-            } else {
-                user = mongoApi.createUser(info.product_id, "" + extension.id);
 
-            }
 
-            extension.configuration = Json.toJson(user).toString();
-            extension.update();
+
+
+
+            JsonNode jsonedUser = Json.toJson(user);
+            extension.configuration = jsonedUser.toString();
 
             Swagger_Database created_database = new Swagger_Database();
             created_database.name = extension.name;
@@ -124,7 +126,8 @@ public class Controller_Database extends _BaseController {
             created_database.id = extension.id;
             created_database.conectionString = mongoApi.getConnectionStringForUser(user);
 
-            extension.active = true;
+            extension.setActive(true);
+            extension.update();
             return created(created_database);
 
         } catch (Exception e) {
