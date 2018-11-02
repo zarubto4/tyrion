@@ -34,10 +34,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-//@Security.Authenticated(Authentication.class)
+@Security.Authenticated(Authentication.class)
 @Api(value = "Database")
 public class Controller_Database extends _BaseController {
-    private MongoCloudApi mongoclient;
+    private MongoCloudApi mongoApi;
 
 // LOGGER ##############################################################################################################
 
@@ -49,7 +49,7 @@ public class Controller_Database extends _BaseController {
     @Inject
     public Controller_Database(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
         super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
-        mongoclient = new MongoCloudApi(ws, formFactory);
+        mongoApi = new MongoCloudApi(ws, formFactory);
     }
 
 
@@ -97,7 +97,6 @@ public class Controller_Database extends _BaseController {
             extension.active      = false;
             extension.save();
 
-            MongoCloudApi mongoApi = new MongoCloudApi(ws, baseFormFactory);
             if( !existingDatabaseList.isEmpty() ) {
                 JsonNode json = Json.parse(existingDatabaseList.get(0).configuration);
                 user = this.baseFormFactory.formFromJsonWithValidation(SwaggerMongoCloudUser.class, json);
@@ -159,7 +158,7 @@ public class Controller_Database extends _BaseController {
                                                                                             .findList();
 
             List<Swagger_Database> result = extensionList.stream()
-                                                         .map(Controller_Database::extensionToSwaggerDatabase)
+                                                         .map(this::extensionToSwaggerDatabase)
                                                          .collect(Collectors.toList());
 
 
@@ -183,6 +182,7 @@ public class Controller_Database extends _BaseController {
     public Result drop_db(UUID db_id) {
         try {
             Model_ProductExtension productExtension = Model_ProductExtension.find.byId(db_id);
+            checkDeletePermission(productExtension);
             delete(productExtension);
 
             productExtension.active = false;
@@ -194,12 +194,13 @@ public class Controller_Database extends _BaseController {
         }
     }
 
-    private static Swagger_Database extensionToSwaggerDatabase(Model_ProductExtension extension) {
+    private Swagger_Database extensionToSwaggerDatabase(Model_ProductExtension extension) {
         Swagger_Database result = new Swagger_Database();
         result.name = extension.name;
         result.description = extension.description;
         result.id = extension.id;
-        result.conectionString =
+        SwaggerMongoCloudUser user = this.baseFormFactory.formFromJsonWithValidation(SwaggerMongoCloudUser.class, Json.parse(extension.configuration));
+        result.conectionString = mongoApi.getConnectionStringForUser(user);
         return result;
     }
 }
