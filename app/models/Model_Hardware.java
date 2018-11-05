@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.microsoft.azure.documentdb.Document;
-import com.microsoft.azure.documentdb.DocumentClientException;
 import exceptions.NotFoundException;
 import io.ebean.Expr;
 import io.swagger.annotations.ApiModel;
@@ -36,7 +34,7 @@ import utilities.permission.Permissible;
 import utilities.swagger.input.Swagger_Board_Developer_parameters;
 import utilities.swagger.output.Swagger_Short_Reference;
 import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
-import websocket.WS_Message;
+import websocket.Request;
 import websocket.interfaces.WS_Homer;
 import websocket.messages.homer_hardware_with_tyrion.*;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
@@ -576,7 +574,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     public String picture_link() {
         try {
 
-            if ( this.idCache().get(Model_Blob.class) == null) {
+            if (this.idCache().get(Model_Blob.class) == null) {
                 Model_Blob blob = Model_Blob.find.query().nullable().where().eq("hardware.id",id).findOne();
                 if (blob != null) {
                     this.idCache().add(Model_Blob.class,  blob.id);
@@ -1419,7 +1417,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     /* Servers Parallel tasks  ----------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public void sendWithResponseAsync(WS_Message message, Consumer<ObjectNode> consumer) {
+    public void sendWithResponseAsync(Request message, Consumer<ObjectNode> consumer) {
 
         if (this.connected_server_id != null) {
 
@@ -1479,50 +1477,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
             return request;
         }
         return server.write_with_confirmation(json, time, delay, number_of_retries);
-    }
-
-    // Metoda překontroluje odeslání a pak předává objektu - zpráva plave skrze program
-    @JsonIgnore
-    public void write_without_confirmation(ObjectNode json) {
-
-        if (this.connected_server_id == null) {
-            return;
-        }
-
-        Model_HomerServer server = Model_HomerServer.find.byId(this.connected_server_id);
-
-        if (server == null) {
-
-            logger.internalServerError(new Exception("write_without_confirmation:: Hardware " + id + " has not exist server id " + this.connected_server_id + " and it wll be removed!"));
-
-            this.connected_server_id = null;
-            this.update();
-
-            return;
-        }
-        server.write_without_confirmation(json);
-    }
-
-    // Metoda překontroluje odeslání a pak předává objektu - zpráva plave skrze program
-    @JsonIgnore
-    public void write_without_confirmation(String message_id, ObjectNode json) {
-
-        if (this.connected_server_id == null) {
-            return;
-        }
-
-        Model_HomerServer server = Model_HomerServer.find.byId(this.connected_server_id);
-
-        if (server == null) {
-
-            logger.internalServerError(new Exception("write_without_confirmation::message_id " + message_id + " Hardware " + id + " has not exist server id " + this.connected_server_id + " and it wll be removed!"));
-
-            this.connected_server_id = null;
-            this.update();
-
-            return;
-        }
-        server.write_without_confirmation(message_id, json);
     }
 
 /* Commands ----------------------------------------------------------------------------------------------*/
@@ -1678,7 +1632,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
             this.update_bootloader_configuration(configuration);
 
-            this.sendWithResponseAsync(new WS_Message(message, 0, 5000, 2), (response) -> {
+            this.sendWithResponseAsync(new Request(message, 0, 5000, 2), (response) -> {
                 WS_Message_Hardware_set_settings result = formFromJsonWithValidation(WS_Message_Hardware_set_settings.class, response);
 
                 if (!result.status.equals("success")) {

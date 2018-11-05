@@ -5,13 +5,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.microsoft.azure.documentdb.DocumentClientException;
 import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import mongo.ModelMongo_CompilationServer_OnlineStatus;
 import play.libs.Json;
-import utilities.Server;
 import utilities.cache.CacheFinder;
 import utilities.cache.InjectCache;
 import utilities.enums.CompilationStatus;
@@ -25,7 +23,7 @@ import utilities.permission.Permissible;
 import utilities.permission.WithPermission;
 import utilities.threads.compilator_server.Compilation_After_BlackOut;
 import utilities.logger.Logger;
-import websocket.WS_Message;
+import websocket.Request;
 import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
 import websocket.messages.compilator_with_tyrion.WS_Message_Ping_compilation_server;
 
@@ -118,7 +116,7 @@ public class Model_CompilationServer extends BaseModel implements Permissible, P
                 return request;
             }
 
-            return Controller_WebSocket.compilers.get(this.id).sendWithResponse(new WS_Message(json, delay, time, number_of_retries));
+            return Controller_WebSocket.compilers.get(this.id).sendWithResponse(new Request(json, delay, time, number_of_retries));
 
         } catch (Exception e) {
             logger.error("write_with_confirmation - exception", e);

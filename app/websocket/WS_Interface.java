@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-public abstract class WS_Interface extends AbstractActor implements WebSocketInterface {
+public abstract class WS_Interface extends AbstractActor {
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 
@@ -52,10 +52,10 @@ public abstract class WS_Interface extends AbstractActor implements WebSocketInt
     /**
      * Sends WebSocket message synchronously.
      * This operation is blocking until the response is received.
-     * @param message {@link WS_Message} to send
+     * @param message {@link Request} to send
      * @return response
      */
-    public ObjectNode sendWithResponse(WS_Message message) {
+    public ObjectNode sendWithResponse(Request message) {
         logger.trace("sendWithResponse:: Set Sender {} ", message.toString());
         message.setSender(this);
         logger.trace("sendWithResponse:: Message Buffer ID: {} ", message.getId());
@@ -67,10 +67,10 @@ public abstract class WS_Interface extends AbstractActor implements WebSocketInt
      * Sends WebSocket message asynchronously.
      * This operation is non-blocking, it executes the consumer callback
      * when the result is received.
-     * @param message {@link WS_Message} to send
+     * @param message {@link Request} to send
      * @param consumer asynchronous callback
      */
-    public void sendWithResponseAsync(WS_Message message, Consumer<ObjectNode> consumer) {
+    public void sendWithResponseAsync(Request message, Consumer<ObjectNode> consumer) {
         message.setSender(this);
         messageBuffer.put(message.getId(), message);
         message.sendAsync(consumer);
@@ -104,7 +104,7 @@ public abstract class WS_Interface extends AbstractActor implements WebSocketInt
      * kde jí vlákno v intervalech hledá. Tam si jí vlákno taktéž vyzvedne. Pokud
      * nedojde k během určitého intervalu k odovědi, vláknu vyprší životnost a zavolá vyjímku TimeoutException.
      */
-    public Map<UUID, WS_Message> messageBuffer = new HashMap<>();
+    public Map<UUID, Request> messageBuffer = new HashMap<>();
     private final ActorRef out;
 
     private void onMessage(JsonNode message) {

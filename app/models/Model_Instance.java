@@ -435,42 +435,6 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
         return server.write_with_confirmation(json, time, delay, number_of_retries);
     }
 
-    // Metoda překontroluje odeslání a pak předává objektu - zpráva plave skrze program
-    @JsonIgnore
-    private void write_without_confirmation(ObjectNode json) {
-
-        Model_HomerServer server = Model_HomerServer.find.byId(this.getServer_id());
-        if (server == null) {
-
-            logger.internalServerError(new Exception("write_without_confirmation:: Instance " + id + " server not found"));
-
-            return;
-        }
-
-        json.put("instance_id", id.toString());
-        server.write_without_confirmation(json);
-
-    }
-
-    // Metoda překontroluje odeslání a pak předává objektu - zpráva plave skrze program
-    @JsonIgnore
-    public void write_without_confirmation(String message_id, ObjectNode json) {
-
-        if (this.getServer_id() == null) {
-            return;
-        }
-
-        Model_HomerServer server = Model_HomerServer.find.byId(this.getServer_id());
-
-        if (server == null) {
-            logger.internalServerError(new Exception("write_without_confirmation:: Instance " + id + " server not found"));
-            return;
-        }
-
-        json.put("instance_id", id.toString());
-        server.write_without_confirmation(message_id, json);
-    }
-
     //-- Instance Status -- //
     @JsonIgnore
     public WS_Message_Instance_status get_instance_status() {

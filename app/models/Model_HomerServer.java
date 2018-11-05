@@ -27,7 +27,7 @@ import utilities.permission.Permissible;
 import utilities.permission.WithPermission;
 import utilities.slack.Slack;
 import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
-import websocket.WS_Message;
+import websocket.Request;
 import websocket.interfaces.WS_Homer;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_online_status;
 import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Command;
@@ -331,7 +331,7 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
     }
 
     @JsonIgnore
-    public void sendWithResponseAsync(WS_Message message, Consumer<ObjectNode> consumer) {
+    public void sendWithResponseAsync(Request message, Consumer<ObjectNode> consumer) {
         if (Controller_WebSocket.homers.containsKey(this.id)) {
             Controller_WebSocket.homers.get(this.id).sendWithResponseAsync(message, consumer);
         } else {
@@ -359,7 +359,7 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
                 return request;
             }
 
-            return Controller_WebSocket.homers.get(this.id).sendWithResponse(new WS_Message(json, delay, time, number_of_retries));
+            return Controller_WebSocket.homers.get(this.id).sendWithResponse(new Request(json, delay, time, number_of_retries));
 
         } catch (Exception e) {
             logger.error("write_with_confirmation - exception", e);

@@ -2,7 +2,6 @@ package websocket.interfaces;
 
 import akka.actor.ActorRef;
 import akka.actor.Props;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -11,12 +10,9 @@ import models.Model_CompilationServer;
 import play.libs.Json;
 import utilities.logger.Logger;
 import websocket.WS_Interface;
-import websocket.WS_Message;
+import websocket.Request;
 import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 public class WS_Compiler extends WS_Interface {
@@ -56,7 +52,7 @@ public class WS_Compiler extends WS_Interface {
      *
      */
     @Override
-    public ObjectNode sendWithResponse(WS_Message message) {
+    public ObjectNode sendWithResponse(Request message) {
 
         // Speciální případ - Vynucený dvojnásobný request
         if(message.message_type.equals(WS_Message_Make_compilation.message_type)) {
@@ -69,7 +65,7 @@ public class WS_Compiler extends WS_Interface {
     }
 
 
-    public ObjectNode make_Compilation(WS_Message message) {
+    public ObjectNode make_Compilation(Request message) {
 
         logger.trace("make_Compilation Start");
         // Odpověd
@@ -111,7 +107,7 @@ public class WS_Compiler extends WS_Interface {
         UUID build_id = UUID.fromString(response_one.get("build_id").asText());
         response_one.put("message_id", build_id.toString());
 
-        WS_Message get_compilation = new WS_Message(response_one, 1000 * 60, 0, 0);
+        Request get_compilation = new Request(response_one, 1000 * 60, 0, 0);
         logger.trace("make_Compilation:: Add Message id {} to Buffer!", build_id.toString());
         messageBuffer.put(build_id, get_compilation);
 

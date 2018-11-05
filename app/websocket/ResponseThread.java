@@ -4,20 +4,18 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import play.libs.Json;
 import utilities.errors.ErrorCode;
 import utilities.logger.Logger;
-import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
 
-import javax.xml.crypto.Data;
 import java.util.Date;
 import java.util.UUID;
 import java.util.function.Supplier;
 
 import static java.lang.Thread.sleep;
 
-public class WS_ConfirmationThread implements Supplier<ObjectNode> {
+public class ResponseThread implements Supplier<ObjectNode> {
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger logger = new Logger(WS_ConfirmationThread.class);
+    private static final Logger logger = new Logger(ResponseThread.class);
 
     private WS_Interface sender;
     private ObjectNode message;
@@ -28,7 +26,7 @@ public class WS_ConfirmationThread implements Supplier<ObjectNode> {
     private boolean resolved;
     private UUID websocket_identificator;
 
-    public WS_ConfirmationThread(ObjectNode message, int delay, int timeout, int retries, UUID websocket_identificator) {
+    public ResponseThread(ObjectNode message, int delay, int timeout, int retries, UUID websocket_identificator) {
         this.message = message;
         this.delay = delay;
         this.timeout = timeout;

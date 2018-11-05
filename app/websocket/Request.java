@@ -7,18 +7,18 @@ import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
 
-public class WS_Message {
+public class Request {
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger logger = new Logger(WS_Message.class);
+    private static final Logger logger = new Logger(Request.class);
 
 /* PUBLIC API ----------------------------------------------------------------------------------------------------------*/
 
     private UUID id;
     public String message_type; // Its Required public for special operation
 
-    public WS_Message(ObjectNode message, int delay, int timeout, int retries) {
+    public Request(ObjectNode message, int delay, int timeout, int retries) {
 
         this.message_type = message.get("message_type").asText();
 
@@ -28,7 +28,7 @@ public class WS_Message {
         } else {
             this.id = UUID.fromString(message.get("message_id").asText());
         }
-        this.confirmationThread = new WS_ConfirmationThread(message, delay, timeout, retries, id);
+        this.confirmationThread = new ResponseThread(message, delay, timeout, retries, id);
     }
 
 
@@ -52,13 +52,13 @@ public class WS_Message {
     }
 
     public void resolve(ObjectNode message) {
-        logger.trace("resolve:: {}",message.toString());
+        logger.trace("resolve - {}", message.toString());
         future.complete(message);
         confirmationThread.stop();
     }
 
     public void setSender(WS_Interface sender) {
-        logger.trace("setSender:: sender ID {} ", sender.id);
+        logger.trace("setSender - sender ID: {} ", sender.id);
         this.confirmationThread.setSender(sender);
     }
 
@@ -68,6 +68,6 @@ public class WS_Message {
 
 /* PRIVATE API ---------------------------------------------------------------------------------------------------------*/
 
-    private WS_ConfirmationThread confirmationThread;
+    private ResponseThread confirmationThread;
     private CompletableFuture<ObjectNode> future;
 }

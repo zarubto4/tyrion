@@ -1,12 +1,6 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
-import com.microsoft.azure.documentdb.ConnectionPolicy;
-import com.microsoft.azure.documentdb.ConsistencyLevel;
-import com.microsoft.azure.documentdb.Database;
-import com.microsoft.azure.documentdb.DocumentClient;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
@@ -14,15 +8,11 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.typesafe.config.Config;
-import io.ebean.Ebean;
-import io.ebean.Query;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.*;
-import mongo.ModelMongo_Hardware_RegistrationEntity;
 import org.apache.poi.ss.usermodel.*;
 import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
@@ -30,7 +20,7 @@ import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.Result;
 
-import utilities.Server;
+import play.mvc.WebSocket;
 import utilities.enums.Currency;
 import utilities.enums.ExtensionType;
 import utilities.enums.InvoiceStatus;
@@ -54,9 +44,8 @@ import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.scheduler.jobs.Job_ThingsMobile_SimData_Synchronize;
-
-import static java.lang.Thread.sleep;
-
+import websocket.Interface;
+import websocket.WebSocketService;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_ZZZ_Tester extends _BaseController {
@@ -67,9 +56,12 @@ public class Controller_ZZZ_Tester extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
+    protected final WebSocketService webSocketService;
+
     @Inject
-    public Controller_ZZZ_Tester(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+    public Controller_ZZZ_Tester(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService, WebSocketService webSocketService) {
         super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+        this.webSocketService = webSocketService;
     }
 
     @Inject
@@ -78,61 +70,17 @@ public class Controller_ZZZ_Tester extends _BaseController {
 // CONTROLLER CONTENT ##################################################################################################
 
     @ApiOperation(value = "Hidden test Method", hidden = true)
-    public Result test1() {
-        try {
-
-            Model_Role role = Model_Role.getByName("SuperAdmin");
-
-            System.out.println("Persons in role: " + role.persons.size() + " but person found: " + Model_Person.find.query().where().eq("roles.id", role.id).findCount());
-
-            role.persons.forEach(r -> System.out.println(r.email));
-
-            Model_Person person = new Model_Person();
-            person.email = UUID.randomUUID() + "@mail.com";
-            person.nick_name = "test" + UUID.randomUUID();
-            person.validated = true;
-            person.setPassword("password");
-
-            person.save();
-
-            System.out.println("Person saved");
-
-            role.persons.add(person);
-
-            System.out.println("Persons in role: " + role.persons.size() + " but still person found: " + Model_Person.find.query().where().eq("roles.id", role.id).findCount());
-
-            role.update();
-
-            System.out.println("Persons in role after update: " + role.persons.size() + " but person found: " + Model_Person.find.query().where().eq("roles.id", role.id).findCount());
-            role.persons.forEach(r -> System.out.println(r.email));
-
-            role.refresh();
-
-            System.out.println("Persons in role after refresh: " + role.persons.size() + " but person found: " + Model_Person.find.query().where().eq("roles.id", role.id).findCount());
-            role.persons.forEach(r -> System.out.println(r.email));
-
-            return ok("Done");
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return badRequest();
-        }
+    public WebSocket test1() {
+        return WebSocket.Json.accept(requestHeader -> this.webSocketService.register(new Interface(UUID.randomUUID())));
     }
 
     @ApiOperation(value = "Hidden test Method", hidden = true)
     public Result test2() {
         try {
 
-            Model_Role role = Model_Role.getByName("SuperAdmin");
+            this.webSocketService.test();
 
-            List<Model_Person> persons = Model_Person.find.query().where().eq("roles.id", role.id).findList();
-
-            persons.forEach(person -> {
-                System.out.print("Roles size:" + person.roles.size());
-
-                person.roles.forEach(r -> System.out.println(r.name));
-            });
-
-            return ok(role);
+            return ok();
 
         } catch (Exception e) {
             logger.internalServerError(e);

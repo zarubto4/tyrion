@@ -1,7 +1,5 @@
 package controllers;
 
-import akka.actor.ActorSystem;
-import akka.stream.Materializer;
 import com.typesafe.config.Config;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -13,7 +11,6 @@ import models.Model_Person;
 import org.ehcache.Cache;
 import play.Environment;
 import play.libs.F;
-import play.libs.streams.ActorFlow;
 import play.libs.ws.WSClient;
 import play.mvc.*;
 import responses.Result_InternalServerError;
@@ -24,10 +21,9 @@ import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.output.Swagger_Websocket_Token;
-import websocket.interfaces.WS_Portal;
-import websocket.interfaces.WS_Compiler;
-import websocket.interfaces.WS_Homer;
-import websocket.interfaces.WS_PortalSingle;
+import websocket.WebSocketService;
+import websocket.interfaces.*;
+import websocket.interfaces.Compiler;
 import websocket.messages.compilator_with_tyrion.WS_Message_Ping_compilation_server;
 import websocket.messages.homer_with_tyrion.WS_Message_Homer_ping;
 
@@ -44,18 +40,15 @@ public class Controller_WebSocket extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-
-    private final ActorSystem actorSystem;
-    private final Materializer materializer;
-    private Config config;
     private static List<String> list_of_portal_alowed_url_connection = null;
+
+    private final WebSocketService webSocketService;
 
 
     @Inject
-    public Controller_WebSocket(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, ActorSystem actorSystem, Materializer materializer, PermissionService permissionService) {
+    public Controller_WebSocket(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService, WebSocketService webSocketService) {
         super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
-        this.actorSystem = actorSystem;
-        this.materializer = materializer;
+        this.webSocketService = webSocketService;
     }
 
 /* STATIC --------------------------------------------------------------------------------------------------------------*/
@@ -89,34 +82,6 @@ public class Controller_WebSocket extends _BaseController {
      * Closes all WebSocket connections
      */
     public static void close() {
-
-        logger.warn("close - closing all WebSockets");
-
-        try {
-            homers.forEach((id, homer) -> homer.close());
-        } catch (Exception e) {
-            // Ignore
-        }
-
-        try {
-            homers_not_sync.forEach((id, homer) -> homer.close());
-        } catch (Exception e) {
-            // Ignore
-        }
-
-        try {
-        compilers.forEach((id, compiler) -> compiler.close());
-        } catch (Exception e) {
-            // Ignore
-        }
-
-        try {
-            portals.forEach((id, portal) -> portal.close());
-        } catch (Exception e) {
-            // Ignore
-        }
-
-        logger.info("close - all WebSockets closed");
     }
 
     /* PUBLIC API ----------------------------------------------------------------------------------------------------------*/
@@ -167,14 +132,14 @@ public class Controller_WebSocket extends _BaseController {
 
                 //Find object (only ID)
                 Model_HomerServer homer = Model_HomerServer.find.query().where().eq("connection_identifier", token).select("id").findOne();
-                if(homer != null){
-                    if (homers.containsKey(homer.id)) {
+                if (homer != null) {
+                    if (this.webSocketService.isRegistered(homer.id)) {
                         logger.warn("homer - server is already connected, trying to ping previous connection");
 
                         WS_Message_Homer_ping result = homer.ping();
-                        if(!result.status.equals("success")){
+                        if (!result.status.equals("success")) {
                             logger.error("homer - ping failed, removing previous connection");
-                            homers.get(homer.id).close();
+                            this.webSocketService.getInterface(homer.id).close();
                         } else {
                             logger.warn("homer - server is already connected, connection is working, cannot connect twice");
                             return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
@@ -182,7 +147,7 @@ public class Controller_WebSocket extends _BaseController {
                     }
 
                     logger.info("homer - connection was successful. Server {}", homer.name);
-                    return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(actorRef -> WS_Homer.props(actorRef, homer.id), actorSystem, materializer)));
+                    return CompletableFuture.completedFuture(F.Either.Right(this.webSocketService.register(new Homer(homer.id))));
 
                 } else {
                     logger.warn("homer - server with token: {} is not registered in the database, rejecting connection wtih token: {}", token);
@@ -207,7 +172,7 @@ public class Controller_WebSocket extends _BaseController {
                 Model_CompilationServer compiler = Model_CompilationServer.find.query().where().eq("connection_identifier", token).select("id").findOne();
                 if(compiler != null){
 
-                    if (compilers.containsKey(compiler.id)) {
+                    if (this.webSocketService.isRegistered(compiler.id)) {
                         logger.error("compiler - server is already connected, trying to ping previous connection");
 
                         WS_Message_Ping_compilation_server result = compiler.ping();
@@ -215,7 +180,7 @@ public class Controller_WebSocket extends _BaseController {
                         logger.trace("compiler:: Error::{} {}" , result.error , result.error_message);
                         if(!result.status.equals("success") && !result.error.equals("Missing field code.")){
                             logger.error("compiler - ping failed, removing previous connection");
-                            compilers.get(compiler.id).close();
+                            this.webSocketService.getInterface(compiler.id).close();
                         } else {
                             logger.warn("compiler - server is already connected, connection is working, cannot connect twice");
                             return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
@@ -223,7 +188,7 @@ public class Controller_WebSocket extends _BaseController {
                     }
 
                     logger.info("compiler - connection was successful");
-                    return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(actorRef -> WS_Compiler.props(actorRef, compiler.id), actorSystem, materializer)));
+                    return CompletableFuture.completedFuture(F.Either.Right(this.webSocketService.register(new Compiler(compiler.id))));
 
                 } else {
                     logger.warn("compiler - server with token: {} is not registered in the database, rejecting token: {}", token);
@@ -255,24 +220,22 @@ public class Controller_WebSocket extends _BaseController {
 
                 if (sameOriginCheck(request)) {
 
-                    if (tokenCache.containsKey(token) && person != null) {
+                    if (tokenCache.containsKey(token)) {
 
-                        WS_Portal portal;
+                        Portal portal = this.webSocketService.getInterface(person.id);
 
-                        if (portals.containsKey(person.id)) {
+                        if (portal == null) {
                             logger.trace("portal - User {} is already connected somewhere else", person.nick_name);
-                            portal = portals.get(person.id);
-                        } else {
-                            logger.trace("portal - User {} its first connection!", person.nick_name);
-                            portal =  new WS_Portal(person.id);
+                            portal = new Portal(person.id);
+                            this.webSocketService.register(portal); // Intentionally ignore the result of register -> it is null
                         }
 
                         // Remove Token from Cache
                         tokenCache.remove(token);
 
-                        if (!portal.all_person_connections.containsKey(token)) {
+                        if (!portal.isRegistered(token)) {
 
-                            return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(actorRef -> WS_PortalSingle.props(actorRef, portal, token), actorSystem, materializer)));
+                            return CompletableFuture.completedFuture(F.Either.Right(portal.register(new SinglePortal(token, portal))));
 
                         } else {
                             logger.info("portal - rejecting connection: {}, already established", token);
@@ -290,9 +253,7 @@ public class Controller_WebSocket extends _BaseController {
 
             return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
         });
-
     }
-
 
 
     /**

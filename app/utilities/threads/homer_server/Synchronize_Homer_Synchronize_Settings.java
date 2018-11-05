@@ -4,12 +4,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import controllers._BaseFormFactory;
 import models.Model_HomerServer;
-import play.libs.Json;
 import utilities.logger.Logger;
-import websocket.WS_Message;
+import websocket.Request;
 import websocket.interfaces.WS_Homer;
 import websocket.messages.homer_with_tyrion.configuration.WS_Message_Homer_Get_homer_server_configuration;
-import websocket.messages.homer_with_tyrion.verification.WS_Message_Check_homer_server_permission;
 
 public class Synchronize_Homer_Synchronize_Settings extends Thread {
 
@@ -34,7 +32,7 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
 
             terminal_logger.trace("Spouštím Sycnhronizační proceduru Synchronize_Homer_Synchronize_Settings");
 
-            ObjectNode ask_for_configuration = homer_server.sendWithResponse(new WS_Message(new WS_Message_Homer_Get_homer_server_configuration().make_request() , 0, 1000 * 60, 0));
+            ObjectNode ask_for_configuration = homer_server.sendWithResponse(new Request(new WS_Message_Homer_Get_homer_server_configuration().make_request() , 0, 1000 * 60, 0));
 
             /*final Form<WS_Message_Homer_Get_homer_server_configuration> form = Form.form(WS_Message_Homer_Get_homer_server_configuration.class).bind(ask_for_configuration);
             if (form.hasErrors()) {
