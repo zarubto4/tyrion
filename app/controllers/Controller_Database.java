@@ -62,7 +62,7 @@ public class Controller_Database extends _BaseController {
     @ApiImplicitParams({
             @ApiImplicitParam(
                     name = "body",
-                    dataType = "utilities.swagger.output.Swagger_Database", // Class that describes what I consume
+                    dataType = "utilities.swagger.input.Swagger_Database_New", // Class that describes what I consume
                     required = true,
                     paramType = "body",
                     value = "Contains Json with values" // Description about body in http request
@@ -193,6 +193,8 @@ public class Controller_Database extends _BaseController {
             return controllerServerError(e);
         }
     }
+
+    
 
     private Swagger_Database extensionToSwaggerDatabase(Model_ProductExtension extension) {
         Swagger_Database result = new Swagger_Database();
