@@ -2,6 +2,7 @@ package utilities.mongo_cloud_api;
 
 
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import controllers._BaseFormFactory;
 import play.libs.ws.WSAuthScheme;
 import play.libs.ws.WSClient;
@@ -17,11 +18,13 @@ public class MongoCloudApi {
 
     private WSClient ws;
     private _BaseFormFactory formFactory;
+    private Config config;
 
     @Inject
-    public MongoCloudApi(WSClient ws, _BaseFormFactory formFactory) {
+    public MongoCloudApi(WSClient ws, _BaseFormFactory formFactory, Config config) {
         this.ws = ws;
         this.formFactory = formFactory;
+        this.config = config;
     }
 
     public String getConnectionStringForUser(SwaggerMongoCloudUser user){
@@ -51,7 +54,6 @@ public class MongoCloudApi {
 
             switch (response.getStatus()) {
                 case 201:
-                    response.asJson();
                     SwaggerMongoCloudUser createdUser = formFactory.formFromJsonWithValidation(SwaggerMongoCloudUser.class, response.asJson());
                     createdUser.password = "" + password;
                     return createdUser;
@@ -61,7 +63,8 @@ public class MongoCloudApi {
 
     }
 
-    public SwaggerMongoCloudUser addRole(SwaggerMongoCloudUser user, String database) throws Exception{
+    public SwaggerMongoCloudUser addRole(String username, String database) throws Exception{
+            SwaggerMongoCloudUser user = getUser(username);
             SwaggerMongoCloudUserRole newRole = new SwaggerMongoCloudUserRole();
             newRole.databaseName = database;
             newRole.roleName = "readWrite";
@@ -93,5 +96,18 @@ public class MongoCloudApi {
             }
     }
 
+    public SwaggerMongoCloudUser getUser(String username) throws Exception {
+        WSResponse response =  ws.url("https://cloud.mongodb.com/api/atlas/v1.0/groups/5bcd86829ccf64e6ceceea27/databaseUsers/admin/" + username)
+                .setAuth("shvachka.alexey@gmail.com",
+                        "3288dd5f-2cf5-43b9-acce-3e15afb97e8e",
+                        WSAuthScheme.DIGEST).setContentType("application/json").get().toCompletableFuture().get();
+
+        switch (response.getStatus()) {
+            case 200:
+                return formFactory.formFromJsonWithValidation(SwaggerMongoCloudUser.class, response.asJson());
+             default:
+                throw new Exception();
+        }
+    }
 }
 

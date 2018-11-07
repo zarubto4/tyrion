@@ -9,9 +9,10 @@ import io.swagger.annotations.*;
 import models.Model_Product;
 import models.Model_ProductExtension;
 import play.Environment;
+import play.api.Configuration;
 import play.api.libs.ws.WSRequest;
-import play.libs.Json;
 import play.libs.ws.WSAuthScheme;
+import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import play.mvc.Result;
@@ -20,6 +21,10 @@ import responses.*;
 import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.enums.ExtensionType;
+import utilities.financial.extensions.configurations.Configuration_Database;
+import utilities.financial.extensions.extensions.Extension_Database;
+import utilities.financial.products.ConfigurationProduct;
+import utilities.financial.services.ProductService;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.mongo_cloud_api.MongoCloudApi;
@@ -27,7 +32,9 @@ import utilities.mongo_cloud_api.SwaggerMongoCloudUser;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_Database_New;
+import utilities.swagger.input.Swagger_ProductExtension_New;
 import utilities.swagger.output.Swagger_Database;
+import utilities.swagger.output.Swagger_Database_Collections;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,18 +45,19 @@ import java.util.stream.Collectors;
 @Api(value = "Database")
 public class Controller_Database extends _BaseController {
     private MongoCloudApi mongoApi;
-
+    private ProductService productService;
 // LOGGER ##############################################################################################################
 
     private static final Logger logger = new Logger(Controller_Database.class);
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-
     @Inject
-    public Controller_Database(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+    public Controller_Database(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService, ProductService productService) {
         super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+        this.productService = productService;
         mongoApi = new MongoCloudApi(ws, formFactory);
+
     }
 
 
@@ -89,35 +97,41 @@ public class Controller_Database extends _BaseController {
                     .findList();
             SwaggerMongoCloudUser user;
 
-            Model_ProductExtension extension  = new Model_ProductExtension();
-            extension.product     = product;
-            extension.name        = info.name;
-            extension.description = info.description;
-            extension.type        = ExtensionType.DATABASE;
-            extension.active      = false;
-            extension.save();
+            Swagger_ProductExtension_New extensionData = new Swagger_ProductExtension_New();
+            extensionData.name = info.name;
+            extensionData.description = info.description;
+            extensionData.extension_type = ExtensionType.DATABASE.toString();
+            extensionData.config = Configuration_Database.getDefault().toJsonString();
+            extensionData.color = Extension_Database.defaultColour;
 
-            if( !existingDatabaseList.isEmpty() ) {
-                JsonNode json = Json.parse(existingDatabaseList.get(0).configuration);
-                user = this.baseFormFactory.formFromJsonWithValidation(SwaggerMongoCloudUser.class, json);
-                user = mongoApi.addRole(user, ""+extension.id);
-            } else {
-                user = mongoApi.createUser(info.product_id,""+extension.id);
+            Model_ProductExtension extension = productService.createAndActivateExtension(product,extensionData);
+            extension.setActive(false); // extension should remain deactivated until database is actually created
+
+
+            ConfigurationProduct configuration;
+            if ( product.configuration != null && !product.configuration.isEmpty() ) {
+                configuration = baseFormFactory.formFromJsonWithValidation(ConfigurationProduct.class, Json.parse(product.configuration));
+                if (configuration == null ) {
+                    configuration = new ConfigurationProduct();
+                }
+            }
+            else {
+                configuration = new ConfigurationProduct();
             }
 
+            if ( configuration.mongoDatabaseUserPassword == null) { // if user not exist in database
+                user = mongoApi.createUser(info.product_id, extension.id.toString());
+                configuration.mongoDatabaseUserPassword = user.password;
+            }
+            else {
+                user = mongoApi.addRole(product.id.toString(), extension.id.toString());
+            }
 
             MongoClient client = Server.mongoClient;
-            MongoDatabase database = client.getDatabase("" + extension.id);
+            MongoDatabase database = client.getDatabase(extension.id.toString());
             database.createCollection(info.collection_name);
 
-
-
-
-
-
-
-            JsonNode jsonedUser = Json.toJson(user);
-            extension.configuration = jsonedUser.toString();
+            extension.configuration = Json.toJson(user).toString();
 
             Swagger_Database created_database = new Swagger_Database();
             created_database.name = extension.name;
@@ -194,7 +208,27 @@ public class Controller_Database extends _BaseController {
         }
     }
 
-    
+
+    @ApiOperation(
+            value = "get collections",
+            tags = {"Database"},
+            notes = "List all collection by database"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Database_Collections.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result get_collections(UUID database_id){
+        try{
+            Model_ProductExtension databaseExtension = Model_ProductExtension.find.byId(database_id);
+            return(ok());
+        } catch ( Exception e ) {
+            return controllerServerError(e);
+        }
+    }
 
     private Swagger_Database extensionToSwaggerDatabase(Model_ProductExtension extension) {
         Swagger_Database result = new Swagger_Database();
