@@ -28,6 +28,7 @@ public class MongoCloudApi {
     }
 
     public String getConnectionStringForUser(SwaggerMongoCloudUser user){
+
         return "mongodb://4344786c-910e-445e-a9eb-503899048073:b864c324-3c10-43c1-b354-6f9a43264312@testcluster-shard-00-00-waqlo.gcp.mongodb.net:27017,testcluster-shard-00-01-waqlo.gcp.mongodb.net:27017,testcluster-shard-00-02-waqlo.gcp.mongodb.net:27017/test?ssl=true&replicaSet=TestCluster-shard-0&authSource=admin&retryWrites=true";
     }
 
@@ -45,9 +46,9 @@ public class MongoCloudApi {
             user.roles = new SwaggerMongoCloudUserRole[]{role};
 
 
-            WSResponse response =  ws.url("https://cloud.mongodb.com/api/atlas/v1.0/groups/5bcd86829ccf64e6ceceea27/databaseUsers")
-                    .setAuth("shvachka.alexey@gmail.com",
-                            "3288dd5f-2cf5-43b9-acce-3e15afb97e8e",
+            WSResponse response =  ws.url(getBaseConnectionString() + "/databaseUsers")
+                    .setAuth(getMongoCloudLogin(),
+                            getApiKey(),
                             WSAuthScheme.DIGEST).setContentType("application/json").post(Json.pretty(user)).toCompletableFuture().get();
 
 
@@ -58,6 +59,7 @@ public class MongoCloudApi {
                     createdUser.password = "" + password;
                     return createdUser;
                     default :
+                        System.out.println(response.getStatus());
                         throw new Exception();
             }
 
@@ -78,9 +80,9 @@ public class MongoCloudApi {
 
             SwaggerMongoCloudUser updatedUser = new SwaggerMongoCloudUser();
             updatedUser.roles = newRoles;
-            WSResponse response =  ws.url("https://cloud.mongodb.com/api/atlas/v1.0/groups/5bcd86829ccf64e6ceceea27/databaseUsers/admin/" + user.username)
-                    .setAuth("shvachka.alexey@gmail.com",
-                            "3288dd5f-2cf5-43b9-acce-3e15afb97e8e",
+            WSResponse response =  ws.url(getBaseConnectionString() + "/databaseUsers/admin/" + user.username)
+                    .setAuth(getMongoCloudLogin(),
+                            getApiKey(),
                             WSAuthScheme.DIGEST).setContentType("application/json").patch(Json.pretty(updatedUser)).toCompletableFuture().get();
 
             switch (response.getStatus()) {
@@ -97,9 +99,9 @@ public class MongoCloudApi {
     }
 
     public SwaggerMongoCloudUser getUser(String username) throws Exception {
-        WSResponse response =  ws.url("https://cloud.mongodb.com/api/atlas/v1.0/groups/5bcd86829ccf64e6ceceea27/databaseUsers/admin/" + username)
-                .setAuth("shvachka.alexey@gmail.com",
-                        "3288dd5f-2cf5-43b9-acce-3e15afb97e8e",
+        WSResponse response =  ws.url(getBaseConnectionString() + "/databaseUsers/admin/" + username)
+                .setAuth(getMongoCloudLogin(),
+                        getApiKey(),
                         WSAuthScheme.DIGEST).setContentType("application/json").get().toCompletableFuture().get();
 
         switch (response.getStatus()) {
@@ -108,6 +110,18 @@ public class MongoCloudApi {
              default:
                 throw new Exception();
         }
+    }
+
+    private String getBaseConnectionString() {
+        return config.getString("mongoCloudAPI.baseConnectionString");
+    }
+
+    private String getMongoCloudLogin() {
+        return config.getString("mongoCloudAPI.login");
+    }
+
+    private String getApiKey() {
+        return config.getString("mongoCloudAPI.apiKey");
     }
 }
 

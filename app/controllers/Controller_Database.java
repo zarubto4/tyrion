@@ -5,6 +5,7 @@ import com.google.inject.Inject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.typesafe.config.Config;
+import io.ebeaninternal.server.core.Message;
 import io.swagger.annotations.*;
 import models.Model_Product;
 import models.Model_ProductExtension;
@@ -35,7 +36,9 @@ import utilities.swagger.input.Swagger_Database_New;
 import utilities.swagger.input.Swagger_ProductExtension_New;
 import utilities.swagger.output.Swagger_Database;
 import utilities.swagger.output.Swagger_Database_Collections;
+import utilities.swagger.output.Swagger_Database_List;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -53,10 +56,10 @@ public class Controller_Database extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @Inject
-    public Controller_Database(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService, ProductService productService) {
+    public Controller_Database(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService, ProductService productService, MongoCloudApi mongoApi) {
         super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
         this.productService = productService;
-        mongoApi = new MongoCloudApi(ws, formFactory);
+        this.mongoApi = mongoApi;
 
     }
 
@@ -65,7 +68,7 @@ public class Controller_Database extends _BaseController {
             value = "create database",
             tags = {"Database"},
             notes = "Create database with collection",
-            code = 201  // Only if we have 201 Code (for 200 its not required, its default value)
+            code = 201
     )
     @ApiImplicitParams({
             @ApiImplicitParam(
@@ -119,9 +122,12 @@ public class Controller_Database extends _BaseController {
                 configuration = new ConfigurationProduct();
             }
 
-            if ( configuration.mongoDatabaseUserPassword == null) { // if user not exist in database
+            if ( configuration.mongoDatabaseUserPassword == null || configuration.mongoDatabaseUserPassword.isEmpty()) { // if user not exist in database
+
                 user = mongoApi.createUser(info.product_id, extension.id.toString());
                 configuration.mongoDatabaseUserPassword = user.password;
+                product.configuration = Json.toJson(configuration).toString();
+                product.update();
             }
             else {
                 user = mongoApi.addRole(product.id.toString(), extension.id.toString());
@@ -130,8 +136,6 @@ public class Controller_Database extends _BaseController {
             MongoClient client = Server.mongoClient;
             MongoDatabase database = client.getDatabase(extension.id.toString());
             database.createCollection(info.collection_name);
-
-            extension.configuration = Json.toJson(user).toString();
 
             Swagger_Database created_database = new Swagger_Database();
             created_database.name = extension.name;
@@ -154,7 +158,7 @@ public class Controller_Database extends _BaseController {
             notes = "List all databases by product_id"
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Database.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Database_List.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
@@ -171,10 +175,18 @@ public class Controller_Database extends _BaseController {
                                                                                             .eq("type", ExtensionType.DATABASE)
                                                                                             .findList();
 
-            List<Swagger_Database> result = extensionList.stream()
-                                                         .map(this::extensionToSwaggerDatabase)
-                                                         .collect(Collectors.toList());
+            Swagger_Database_List result = new Swagger_Database_List();
+            result.databases = extensionList.stream()
+                                            .map(this::extensionToSwaggerDatabase)
+                                            .collect(Collectors.toList());
 
+            String password = this.baseFormFactory
+                                  .formFromJsonWithValidation(ConfigurationProduct.class, Json.parse(product.configuration))
+                                  .mongoDatabaseUserPassword;
+
+            result.connection_string = MessageFormat.format(config.getString("mongoCloudAPI.connectionStringTemplate"),
+                                                            product.id.toString(),  //login
+                                                            password);             
 
             return ok(result);
         } catch (Exception e) {
@@ -202,28 +214,6 @@ public class Controller_Database extends _BaseController {
             productExtension.active = false;
 
             Server.mongoClient.dropDatabase("" + db_id);
-            return(ok());
-        } catch ( Exception e ) {
-            return controllerServerError(e);
-        }
-    }
-
-
-    @ApiOperation(
-            value = "get collections",
-            tags = {"Database"},
-            notes = "List all collection by database"
-    )
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Database_Collections.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result get_collections(UUID database_id){
-        try{
-            Model_ProductExtension databaseExtension = Model_ProductExtension.find.byId(database_id);
             return(ok());
         } catch ( Exception e ) {
             return controllerServerError(e);
