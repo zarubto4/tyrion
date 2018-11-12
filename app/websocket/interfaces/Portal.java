@@ -5,13 +5,13 @@ import akka.stream.Materializer;
 import akka.stream.javadsl.Flow;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.inject.Inject;
+import controllers._BaseFormFactory;
 import exceptions.NotSupportedException;
 import models.Model_Garfield;
 import utilities.logger.Logger;
-import websocket.Interface;
-import websocket.Message;
-import websocket.Request;
-import websocket.WebSocketInterface;
+import utilities.network.NetworkStatusService;
+import websocket.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,17 +23,16 @@ public class Portal extends Interface {
 
     private static final Logger logger = new Logger(Portal.class);
 
-    private Materializer materializer;
-
     private Map<UUID, WebSocketInterface> children = new HashMap<>();
 
-    public Portal(UUID id) {
-        super(id);
+    @Inject
+    public Portal(NetworkStatusService networkStatusService, Materializer materializer, _BaseFormFactory formFactory) {
+        super(networkStatusService, materializer, formFactory);
     }
 
     @Override
-    public Flow<JsonNode, JsonNode, NotUsed> materialize(Materializer materializer) {
-        this.materializer = materializer;
+    public Flow<JsonNode, JsonNode, NotUsed> materialize(WebSocketService webSocketService) {
+        this.webSocketService = webSocketService;
         return null;
     }
 
@@ -64,12 +63,12 @@ public class Portal extends Interface {
     }
 
     @Override
-    public ObjectNode sendWithResponse(Request request) {
+    public Message sendWithResponse(Request request) {
         throw new NotSupportedException("Messages with response are bot supported by this interface. (Portal)");
     }
 
     @Override
-    public void sendWithResponseAsync(Request message, Consumer<ObjectNode> consumer) {
+    public void sendWithResponseAsync(Request request, Consumer<Message> consumer) {
         throw new NotSupportedException("Messages with response are bot supported by this interface. (Portal)");
     }
 
@@ -84,7 +83,7 @@ public class Portal extends Interface {
             }
         });
 
-        return iface.materialize(this.materializer);
+        return iface.materialize(this.webSocketService);
     }
 
     public boolean isRegistered(UUID id) {

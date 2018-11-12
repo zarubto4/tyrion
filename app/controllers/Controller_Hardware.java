@@ -1,6 +1,7 @@
 package controllers;
 
 import com.typesafe.config.Config;
+import exceptions.FailedMessageException;
 import exceptions.ForbiddenException;
 import io.ebean.Ebean;
 import io.ebean.Query;
@@ -17,6 +18,8 @@ import responses.*;
 import utilities.authentication.Authentication;
 import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import exceptions.NotFoundException;
+import utilities.hardware.HardwareInterface;
+import utilities.hardware.HardwareService;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.enums.*;
@@ -24,14 +27,12 @@ import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerController;
+import utilities.scheduler.SchedulerService;
 import utilities.swagger.Picture2Mb;
 import utilities.swagger.input.*;
 import utilities.swagger.output.*;
 import utilities.swagger.output.filter_results.Swagger_HardwareGroup_List;
 import utilities.swagger.output.filter_results.Swagger_Hardware_List;
-import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_change_server;
-import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_set_settings;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 
 import java.nio.charset.IllegalCharsetNameException;
@@ -47,9 +48,12 @@ public class Controller_Hardware extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
+    private final HardwareService hardwareService;
+
     @javax.inject.Inject
-    public Controller_Hardware(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+    public Controller_Hardware(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService, HardwareService hardwareService) {
         super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+        this.hardwareService = hardwareService;
     }
 
 ///###################################################################################################################*/
@@ -1589,13 +1593,11 @@ public class Controller_Hardware extends _BaseController {
             // Uprava objektu v databázi
             hardware.update();
 
+            // TODO might be async
+            HardwareInterface hardwareInterface = this.hardwareService.getInterface(hardware);
+            hardwareInterface.setAlias(hardware.name);
+
             hardware.setTags(help.tags);
-
-            // Synchronizace s Homer serverem
-            if(!hardware.name.equals(help_previouse_name)) {
-                hardware.set_alias(hardware.name);
-            }
-
 
             // Vrácení upravenéh objektu
             return ok(hardware);
@@ -1643,6 +1645,8 @@ public class Controller_Hardware extends _BaseController {
 
             this.checkUpdatePermission(hardware);
 
+            HardwareInterface hardwareInterface = this.hardwareService.getInterface(hardware);
+
             switch (help.parameter_type.toLowerCase()) {
 
                 case "developer_kit": {
@@ -1655,13 +1659,22 @@ public class Controller_Hardware extends _BaseController {
 
                 case "alias": {
                     // Synchronizace s Homer serverem a databází
-                    hardware.set_alias(help.string_value);
+
+                    hardware.name = help.string_value;
+
+                    hardwareInterface.setAlias(hardware.name);
+
+                    hardware.update();
+
                     break;
                 }
 
                 case "database_synchronize": {
-                    // Synchronizace s Homer serverem a databází
-                    hardware.set_database_synchronize(help.boolean_value);
+                    hardware.database_synchronize = help.boolean_value;
+
+                    hardwareInterface.setDatabaseSynchronize(hardware.database_synchronize);
+
+                    hardware.update();
                     break;
                 }
 
@@ -1674,7 +1687,7 @@ public class Controller_Hardware extends _BaseController {
                     if(help.integer_value < 30) {
                         help.integer_value = 30;
                     }
-                    hardware.set_hardware_configuration_parameter(help);
+                    hardwareInterface.setConfiguration(help);
                     break;
                 }
 
@@ -1687,7 +1700,7 @@ public class Controller_Hardware extends _BaseController {
                     if(help.integer_value < 30) {
                         help.integer_value = 30;
                     }
-                    hardware.set_hardware_configuration_parameter(help);
+                    hardwareInterface.setConfiguration(help);
                     break;
                 }
 
@@ -1701,14 +1714,14 @@ public class Controller_Hardware extends _BaseController {
                         return badRequest("netsource must be string! Allowed values: 6lowpan, ethernet, gsm");
                     }
 
-                    hardware.set_hardware_configuration_parameter(help);
+                    hardwareInterface.setConfiguration(help);
                     break;
                 }
 
                 default: {
 
                     try {
-                        hardware.set_hardware_configuration_parameter(help);
+                        hardwareInterface.setConfiguration(help);
                         return ok(hardware);
                     } catch (IllegalArgumentException e) {
                         logger.trace("IllegalArgumentException" + e.getMessage());
@@ -1854,39 +1867,41 @@ public class Controller_Hardware extends _BaseController {
             for (Swagger_HardwareBackupSettings.HardwareBackupPair hardware_backup_pair : help.hardware_backup_pairs) {
 
                 // Kotrola objektu
-                Model_Hardware board = Model_Hardware.find.byId(hardware_backup_pair.hardware_id);
+                Model_Hardware hardware = Model_Hardware.find.byId(hardware_backup_pair.hardware_id);
+
+                HardwareInterface hardwareInterface = this.hardwareService.getInterface(hardware);
 
                 // Pokud je nastaven autobackup na true
                 if (hardware_backup_pair.backup_mode) {
 
                     // Na devicu byla nastavená statická - Proto je potřeba jí odstranit a nahradit autobackupem
-                    if (!board.backup_mode) {
+                    if (!hardware.backup_mode) {
 
-                        DM_Board_Bootloader_DefaultConfig config = board.bootloader_core_configuration();
+                        DM_Board_Bootloader_DefaultConfig config = hardware.bootloader_core_configuration();
                         config.autobackup = hardware_backup_pair.backup_mode;
-                        board.update_bootloader_configuration(config);
+                        hardware.update_bootloader_configuration(config);
 
                         logger.debug("hardware_updateBackup - To TRUE:: Board Id: {} has own Static Backup - Removing static backup procedure required", hardware_backup_pair.hardware_id);
 
-                        board.actual_backup_c_program_version = null;
-                        board.backup_mode = true;
-                        board.update();
+                        hardware.actual_backup_c_program_version = null;
+                        hardware.backup_mode = true;
+                        hardware.update();
 
-                        WS_Message_Hardware_set_settings result = board.set_auto_backup();
+                        hardwareInterface.setAutoBackup();
 
                     // Na devicu už autobackup zapnutý byl - nic nedělám jen překokontroluji???
                     } else {
 
                         logger.debug("hardware_updateBackup - To TRUE:: Board Id: {} has already sat as a dynamic Backup", hardware_backup_pair.hardware_id);
 
-                        WS_Message_Hardware_set_settings result = board.set_auto_backup();
+                        // TODO WS_Message_Hardware_set_settings result = hardware.set_auto_backup();
                         if (result.status.equals("success")) {
                             logger.debug("hardware_updateBackup - To TRUE:: Board Id: {} Success of setting of dynamic backup", hardware_backup_pair.hardware_id);
 
                             // Toto je pro výjmečné případy - kdy při průběhu updatu padne tyrion a transakce není komplentí
-                            if ( board.actual_backup_c_program_version != null) {
-                                board.actual_backup_c_program_version = null;
-                                board.update();
+                            if ( hardware.actual_backup_c_program_version != null) {
+                                hardware.actual_backup_c_program_version = null;
+                                hardware.update();
                             }
                         }
                     }
@@ -1911,20 +1926,20 @@ public class Controller_Hardware extends _BaseController {
                     if (!c_program_version.compilation.status.name().equals(CompilationStatus.SUCCESS.name())) return badRequest("The program is not yet compiled & Restored");
 
                     WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
-                    b_pair.hardware = board;
+                    b_pair.hardware = hardware;
                     b_pair.c_program_version = c_program_version;
 
                     hardware_pairs.add(b_pair);
 
-                    if (!board.backup_mode) {
-                        board.actual_backup_c_program_version = null;
-                        board.backup_mode = false;
-                        board.update();
+                    if (!hardware.backup_mode) {
+                        hardware.actual_backup_c_program_version = null;
+                        hardware.backup_mode = false;
+                        hardware.update();
                     }
 
-                    DM_Board_Bootloader_DefaultConfig config = board.bootloader_core_configuration();
+                    DM_Board_Bootloader_DefaultConfig config = hardware.bootloader_core_configuration();
                     config.autobackup = hardware_backup_pair.backup_mode;
-                    board.update_bootloader_configuration(config);
+                    hardware.update_bootloader_configuration(config);
                 }
             }
 
@@ -2229,7 +2244,9 @@ public class Controller_Hardware extends _BaseController {
 
             logger.trace("hardware_redirect_to_server:: Příjem zprávy:: " + Json.toJson(help));
 
-            Model_Hardware board = Model_Hardware.find.byId(hardware_id);
+            Model_Hardware hardware = Model_Hardware.find.byId(hardware_id);
+
+            HardwareInterface hardwareInterface = this.hardwareService.getInterface(hardware);
 
             // Jedná se o přesměrování na server v rámci stejné hierarchie - na server co mám v DB
             if (help.server_id != null) {
@@ -2237,7 +2254,8 @@ public class Controller_Hardware extends _BaseController {
                 logger.trace("hardware_redirect_to_server:: Bude se přesměrovávat z databáze");
 
                 Model_HomerServer server = Model_HomerServer.find.byId(help.server_id);
-                board.device_relocate_server(server);
+
+                hardwareInterface.relocate(server);
 
             // Jedná se o server mimo náš svět - například z dev na stage, nebo z produkce na dev
             } else {
@@ -2245,14 +2263,11 @@ public class Controller_Hardware extends _BaseController {
                 if (help.server_port == null || help.server_url == null) {
                     return badRequest("its required send server_id  or server_url + server_port ");
                 }
-
-                WS_Message_Hardware_change_server response = board.device_relocate_server(help.server_url, help.server_port);
-                if (response.status.equals("success")) {
-                    return ok();
-                } else {
-                    return badRequest("Cloud Device Execution Error: " + response.error_message);
+                try {
+                    hardwareInterface.relocate(help.server_url, help.server_port);
+                } catch (FailedMessageException e) {
+                    return badRequest("Cloud Device Execution Error: " + e.getFailedMessage().getErrorMessage());
                 }
-
             }
 
             return ok();
@@ -2296,7 +2311,9 @@ public class Controller_Hardware extends _BaseController {
             }
 
             this.checkUpdatePermission(hardware);
-            hardware.execute_command(help.command, true);
+
+            HardwareInterface hardwareInterface = this.hardwareService.getInterface(hardware);
+            hardwareInterface.command(help.command, true);
 
             return ok();
         } catch (Exception e) {
@@ -2388,13 +2405,7 @@ public class Controller_Hardware extends _BaseController {
     })
     public Result hardware_get(UUID hardware_id) {
         try {
-
-            // Kotrola objektu
-            Model_Hardware board = Model_Hardware.find.byId(hardware_id);
-
-            // vrácení objektu
-            return ok(board);
-
+            return read(Model_Hardware.find.byId(hardware_id));
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -2778,14 +2789,16 @@ public class Controller_Hardware extends _BaseController {
 
             if (help.device_synchro != null) {
 
-                Model_Hardware board = Model_Hardware.find.byId(help.device_synchro.hardware_id);
+                Model_Hardware hardware = Model_Hardware.find.byId(help.device_synchro.hardware_id);
+
+                HardwareInterface hardwareInterface = this.hardwareService.getInterface(hardware);
                 
-                logger.debug("board_group_update_device_list - board: {}", board.id);
+                logger.debug("board_group_update_device_list - hardware: {}", hardware.id);
 
 
-                logger.debug("board_group_update_device_list - cached groups: {}", Json.toJson(board.get_hardware_group_ids()));
+                logger.debug("board_group_update_device_list - cached groups: {}", Json.toJson(hardware.get_hardware_group_ids()));
 
-                List<UUID> group_hardware_ids = board.get_hardware_group_ids();
+                List<UUID> group_hardware_ids = hardware.get_hardware_group_ids();
 
                 // Cyklus pro přidávání
                 if(help.device_synchro.hardware_group_ids != null) {
@@ -2796,38 +2809,38 @@ public class Controller_Hardware extends _BaseController {
 
                             logger.debug("board_group_update_device_list - adding group {}", board_group_id);
 
-                            if ( Model_Hardware.find.query().where().eq("hardware_groups.id", board_group_id).eq("id", board.id).findCount() > 0) {
+                            if ( Model_Hardware.find.query().where().eq("hardware_groups.id", board_group_id).eq("id", hardware.id).findCount() > 0) {
                                 continue;
                             }
 
                             Model_HardwareGroup group = Model_HardwareGroup.find.byId(board_group_id);
 
-                            board.get_hardware_group_ids().add(group.id);
-                            board.hardware_groups.add(group);
+                            hardware.get_hardware_group_ids().add(group.id);
+                            hardware.hardware_groups.add(group);
                             group.cache_group_size += 1;
 
                             if (group.idCache().get(Model_HardwareType.class) == null) {
                                  group.idCache().add(Model_HardwareType.class,  new ArrayList<>());
                             }
 
-                            if(!group.idCache().gets(Model_HardwareType.class).contains(board.getHardwareTypeCache_id())){
-                                    group.idCache().add(Model_HardwareType.class, board.getHardwareTypeCache_id());
+                            if(!group.idCache().gets(Model_HardwareType.class).contains(hardware.getHardwareTypeCache_id())){
+                                    group.idCache().add(Model_HardwareType.class, hardware.getHardwareTypeCache_id());
                             }
 
-                            board.get_hardware_group_ids();
+                            hardware.get_hardware_group_ids();
                         }
                     }
                 }
 
                 // Cyklus pro mazání java.util.ConcurrentModificationException
-                for (Iterator<UUID> it = board.get_hardware_group_ids().iterator(); it.hasNext(); ) {
+                for (Iterator<UUID> it = hardware.get_hardware_group_ids().iterator(); it.hasNext(); ) {
 
                     UUID board_group_id = it.next();
 
                     // NEní žádná, tak odstraním všechny
                     if(help.device_synchro.hardware_group_ids == null) {
                         Model_HardwareGroup group = Model_HardwareGroup.find.byId(board_group_id);
-                        board.hardware_groups.remove(group);
+                        hardware.hardware_groups.remove(group);
                         group.cache_group_size -= 1;
                         group.idCache().removeAll(Model_HardwareType.class);  // Clean cache
                         it.remove();
@@ -2841,7 +2854,7 @@ public class Controller_Hardware extends _BaseController {
 
                             Model_HardwareGroup group = Model_HardwareGroup.find.byId(board_group_id);
 
-                            board.hardware_groups.remove(group);
+                            hardware.hardware_groups.remove(group);
 
                             group.cache_group_size -= 1;
                             group.idCache().removeAll(Model_HardwareType.class);
@@ -2850,9 +2863,10 @@ public class Controller_Hardware extends _BaseController {
                     }
                 }
 
-                board.set_hardware_groups_on_hardware(board.get_hardware_group_ids(),  Enum_type_of_command.SET);
-                board.idCache().removeAll(Model_HardwareGroup.class);
-                board.update();
+                hardwareInterface.setHardwareGroups(hardware.get_hardware_group_ids(), Enum_type_of_command.SET);
+
+                hardware.idCache().removeAll(Model_HardwareGroup.class);
+                hardware.update();
             }
 
             if (help.group_synchro != null) {

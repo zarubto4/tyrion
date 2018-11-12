@@ -1,8 +1,5 @@
 package utilities.authentication;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.github.scribejava.core.model.*;
-import com.github.scribejava.core.oauth.OAuth20Service;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import controllers.Controller_WebSocket;
@@ -12,25 +9,19 @@ import exceptions.NotFoundException;
 import io.swagger.annotations.*;
 import models.*;
 import play.Environment;
-import play.data.DynamicForm;
-import play.libs.Json;
 import play.libs.ws.WSClient;
-import play.libs.ws.WSResponse;
 import play.mvc.*;
 import responses.*;
-import utilities.Server;
 import utilities.enums.TokenType;
 import utilities.enums.PlatformAccess;
 import utilities.financial.FinancialPermission;
 import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerController;
+import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.Swagger_EmailAndPassword;
-import utilities.swagger.input.Swagger_SocialNetwork_Login;
 import utilities.swagger.output.Swagger_Blocko_Token_validation_result;
 import utilities.swagger.output.Swagger_Login_Token;
 import utilities.swagger.output.Swagger_Person_All_Details;
-import utilities.swagger.output.Swagger_SocialNetwork_Result;
 import utilities.threads.Check_Online_Status_after_user_login;
 import utilities.logger.Logger;
 import utilities.swagger.input.Swagger_Blocko_Token_validation_request;
@@ -38,9 +29,7 @@ import websocket.interfaces.WS_Portal;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.CompletionStage;
 
 /**
  * Třída Controller_Security slouží k ověřování uživatelů pro přihlášení i odhlášení a to jak pro Becki, tak i Administraci Tyriona.
@@ -57,7 +46,7 @@ public class Controller_Security extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @Inject
-    public Controller_Security(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+    public Controller_Security(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
         super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 

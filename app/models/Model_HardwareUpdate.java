@@ -174,21 +174,19 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
+    @JsonIgnore
+    public UUID getComponentId() {
+        switch (this.firmware_type) {
+            case FIRMWARE:
+            case BACKUP: return this.c_program_version_for_update.id;
+            case BOOTLOADER: return this.getBootloader().id;
+            default: return null;
+        }
+    }
+
     @JsonIgnore @Override
     public Model_Project getProject() {
         return getHardware().getProject();
-    }
-
-    @JsonIgnore
-    public UUID getHardwareId() {
-
-
-        if (idCache().get(Model_Hardware.class) == null) {
-            idCache().add(Model_Hardware.class, (UUID) Model_Hardware.find.query().where().eq("updates.id", id).ne("deleted", true).select("id").findSingleAttribute());
-        }
-
-        return idCache().get(Model_Hardware.class);
-
     }
 
     @JsonIgnore
@@ -208,12 +206,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
     @JsonIgnore
     public Model_UpdateProcedure getActualizationProcedure() {
-        try {
-            return Model_UpdateProcedure.find.byId(getActualizationProcedureId());
-        }catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return isLoaded("actualization_procedure") ? actualization_procedure : Model_UpdateProcedure.find.query().where().eq("updates.id", id).findOne();
     }
 
     @JsonIgnore
@@ -226,12 +219,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
     @JsonIgnore
     public Model_BootLoader getBootloader() {
-        try {
-            return Model_BootLoader.find.byId(getBootloaderId());
-        }catch (Exception e) {
-            // No Log Expeption!
-            return null;
-        }
+        return isLoaded("bootloader") ? bootloader : Model_BootLoader.find.query().nullable().where().eq("updates.id", id).findOne();
     }
 
 
@@ -657,14 +645,14 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
                         if (plan.firmware_type == FirmwareType.FIRMWARE) {
 
-                            logger.debug("update_procedure_progress: firmware:: on HW id: {} now:: {} ", hardware.id,  hardware.get_actual_c_program_version() == null ? " nothing by DB" : hardware.get_actual_c_program_version().compilation.firmware_build_id);
+                            logger.debug("update_procedure_progress: firmware:: on HW id: {} now:: {} ", hardware.id,  hardware.getCurrentFirmware() == null ? " nothing by DB" : hardware.getCurrentFirmware().compilation.firmware_build_id);
 
                             if(plan.c_program_version_for_update != null ) {
 
                                 logger.debug("update_procedure_progress: required by update: {} ", plan.c_program_version_for_update.compilation.firmware_build_id);
 
                                 logger.debug("update_procedure_progress: Na Hardwaru je teď CProgram " + hardware.get_actual_c_program().name);
-                                logger.debug("update_procedure_progress: Na Hardwaru je teď CProgram Verze " + hardware.get_actual_c_program_version().name + " id: " + hardware.get_actual_c_program_version().id);
+                                logger.debug("update_procedure_progress: Na Hardwaru je teď CProgram Verze " + hardware.getCurrentFirmware().name + " id: " + hardware.getCurrentFirmware().id);
 
 
                                 logger.debug("update_procedure_progress: Co by tam ale mělo za chvíli být je CProgram " + plan.c_program_version_for_update.get_c_program().name);
@@ -685,7 +673,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
                                 hardware.idCache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
 
                                 logger.debug("update_procedure_progress: Před updatem Na Hardwaru je teď CProgram " + hardware.get_actual_c_program().name);
-                                logger.debug("update_procedure_progress: Před updatem Na Hardwaru je teď CProgram Verze " + hardware.get_actual_c_program_version().name + " id: " + hardware.get_actual_c_program_version().id);
+                                logger.debug("update_procedure_progress: Před updatem Na Hardwaru je teď CProgram Verze " + hardware.getCurrentFirmware().name + " id: " + hardware.getCurrentFirmware().id);
 
                                 hardware.update();
 
@@ -695,7 +683,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
                                 hardware.idCache().add(Model_CProgramVersion.class, hardware.actual_c_program_version.id);
 
                                 logger.debug("update_procedure_progress: PO updatu Na Hardwaru je teď CProgram " + hardware.get_actual_c_program().name);
-                                logger.debug("update_procedure_progress: PO updatu Na Hardwaru je teď CProgram Verze " + hardware.get_actual_c_program_version().name + " id: " + hardware.get_actual_c_program_version().id);
+                                logger.debug("update_procedure_progress: PO updatu Na Hardwaru je teď CProgram Verze " + hardware.getCurrentFirmware().name + " id: " + hardware.getCurrentFirmware().id);
 
                             } else {
 
@@ -743,27 +731,12 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
                     }
                 }
 
-                case PHASE_WAITING: {
-                    try {
-
-                        logger.debug("update_procedure_progress - procedure {} is PHASE_WAITING", plan.id);
-
-                        plan.state = HardwareUpdateState.WAITING_FOR_DEVICE;
-                        plan.update();
-                        Model_UpdateProcedure.find.byId(report.tracking_group_id).change_state(plan, plan.state);
-
-                        return;
-                    } catch (Exception e) {
-                        logger.internalServerError(e);
-                    }
-                }
-
                 case NEW_VERSION_DOESNT_MATCH: {
                     try {
 
                         logger.error("update_procedure_progress - procedure {} is NEW_VERSION_DOESNT_MATCH", plan.id);
 
-                        plan.state = HardwareUpdateState.NOT_UPDATED;
+                        plan.state = HardwareUpdateState.FAILED;
                         plan.error_code = ErrorCode.NEW_VERSION_DOESNT_MATCH.error_code();
                         plan.error = ErrorCode.NEW_VERSION_DOESNT_MATCH.error_message();
                         plan.date_of_finish = new Date();

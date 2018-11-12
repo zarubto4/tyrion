@@ -79,7 +79,7 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
                 if(pair.uuid.length() < 25) {
                     logger.warn("check_device_on_server:: Device: ID: {} there is a  same full ID: {} as a UUID {} from Server", board.id, pair.full_id, pair.full_id);
                     logger.warn("check_device_on_server:: Device: ID: {} Its required change pair on homer server", board.id);
-                    board.device_converted_id_clean_switch_on_server(pair.uuid);
+                    // TODO board.device_converted_id_clean_switch_on_server(pair.uuid);
                     continue;
                 }
 
@@ -89,7 +89,7 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
                     logger.warn("check_device_on_server:: Device: ID: {} Its required change pair on homer server!", board.id);
 
 
-                    board.device_converted_id_clean_switch_on_server(pair.uuid);
+                    // TODO board.device_converted_id_clean_switch_on_server(pair.uuid);
                     continue;
                 }
 
@@ -104,7 +104,7 @@ public class Synchronize_Homer_Hardware_after_connection extends Thread{
                 */
 
 
-                WS_Message_Hardware_overview_Board overview = board.get_devices_overview();
+                // TODO WS_Message_Hardware_overview_Board overview = board.get_devices_overview();
 
                 if (overview.status.equals("success")) {
                     logger.trace("check_device_on_server:: Device: ID: {} Status HW je {}", board.id, overview.online_status);

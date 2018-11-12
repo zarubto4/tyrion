@@ -1,16 +1,19 @@
 package websocket.interfaces;
 
+import akka.stream.Materializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.inject.Inject;
+import controllers._BaseFormFactory;
+import utilities.network.NetworkStatusService;
 import websocket.Interface;
 import websocket.Message;
 import websocket.Request;
 
-import java.util.UUID;
-
 public class Compiler extends Interface {
 
-    public Compiler(UUID id) {
-        super(id);
+    @Inject
+    public Compiler(NetworkStatusService networkStatusService, Materializer materializer, _BaseFormFactory formFactory) {
+        super(networkStatusService, materializer, formFactory);
     }
 
     public ObjectNode requestCompilation(Request message) {

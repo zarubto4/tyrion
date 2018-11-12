@@ -22,7 +22,7 @@ import utilities.model.BaseModel;
 import utilities.model.JsonSerializable;
 import utilities.permission.Action;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerController;
+import utilities.scheduler.SchedulerService;
 import utilities.server_measurement.RequestLatency;
 
 import java.io.File;
@@ -53,11 +53,11 @@ public abstract class _BaseController {
     protected final Environment environment;
     protected final YouTrack youTrack;
     protected final Config config;
-    protected final SchedulerController scheduler;
+    protected final SchedulerService scheduler;
     protected final PermissionService permissionService;
 
     @Inject
-    public _BaseController(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+    public _BaseController(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
         this.environment = environment;
         this.ws = ws;
         this.baseFormFactory = formFactory;

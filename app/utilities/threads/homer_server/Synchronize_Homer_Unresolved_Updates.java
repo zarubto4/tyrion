@@ -51,8 +51,6 @@ public class Synchronize_Homer_Unresolved_Updates extends Thread {
                             .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
                             .add(Expr.eq("state", HardwareUpdateState.NOT_UPDATED))
                             .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
-                            .add(Expr.eq("state", HardwareUpdateState.WAITING_FOR_DEVICE))
-                            .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
                             .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
                             .add(Expr.isNull("state"))
                         .endJunction()

@@ -9,9 +9,11 @@ import akka.stream.OverflowStrategy;
 import akka.stream.javadsl.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import controllers._BaseFormFactory;
 import org.reactivestreams.Publisher;
 import play.libs.Json;
 import utilities.logger.Logger;
+import utilities.network.NetworkStatusService;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -35,6 +37,11 @@ public class Interface implements WebSocketInterface {
     protected Consumer<Interface> onClose;
 
     /**
+     * Reference to the owning WebSocket service.
+     */
+    protected WebSocketService webSocketService;
+
+    /**
      * Reference for the actor representing the output of the interface.
      */
     private ActorRef out;
@@ -44,16 +51,33 @@ public class Interface implements WebSocketInterface {
      */
     private Map<UUID, Request> messageBuffer = new HashMap<>();
 
-    public Interface(UUID id) {
-        this.id = id;
+    protected final NetworkStatusService networkStatusService;
+    protected final Materializer materializer;
+    protected final _BaseFormFactory formFactory;
+
+    public Interface(NetworkStatusService networkStatusService, Materializer materializer, _BaseFormFactory formFactory) {
+        this.networkStatusService = networkStatusService;
+        this.materializer = materializer;
+        this.formFactory = formFactory;
+    }
+
+    public void setId(UUID id) {
+        if (this.id == null) {
+            this.id = id;
+        } else {
+            throw new RuntimeException("Cannot set id twice");
+        }
     }
 
     public UUID getId() {
         return this.id;
     }
 
-    public Flow<JsonNode, JsonNode, NotUsed> materialize(Materializer materializer) {
-        Pair<ActorRef, Publisher<JsonNode>> both = Source.<JsonNode>actorRef(50, OverflowStrategy.dropNew()).toMat(Sink.asPublisher(AsPublisher.WITH_FANOUT), Keep.both()).run(materializer);
+    public Flow<JsonNode, JsonNode, NotUsed> materialize(WebSocketService webSocketService) {
+
+        this.webSocketService = webSocketService;
+
+        Pair<ActorRef, Publisher<JsonNode>> both = Source.<JsonNode>actorRef(50, OverflowStrategy.dropNew()).toMat(Sink.asPublisher(AsPublisher.WITH_FANOUT), Keep.both()).run(this.materializer);
 
         Instant start = Instant.now();
 
@@ -84,7 +108,7 @@ public class Interface implements WebSocketInterface {
                 UUID messageId = message.getId();
 
                 if (messageBuffer.containsKey(messageId)) {
-                    messageBuffer.get(messageId).resolve((ObjectNode) msg);
+                    messageBuffer.get(messageId).resolve(message);
                     messageBuffer.remove(messageId);
                 } else {
                     logger.trace("onReceived - message_id not found found in buffer");
@@ -107,7 +131,7 @@ public class Interface implements WebSocketInterface {
 
     private Message parseMessage(JsonNode message) {
         if (message.has("message_id") && message.has("message_type") && message.has("message_channel")) {
-            return new Message((ObjectNode) message);
+            return new Message((ObjectNode) message, this.formFactory);
         } else {
             throw new RuntimeException("parseMessage - (" + this.getClass().getSimpleName() + ") - id: " + this.id + " received an invalid message: " + message.toString());
         }
@@ -142,7 +166,7 @@ public class Interface implements WebSocketInterface {
      * @return response
      */
     @Override
-    public ObjectNode sendWithResponse(Request request) {
+    public Message sendWithResponse(Request request) {
         logger.trace("sendWithResponse - sending request synchronously");
         // request.setSender(this);
         messageBuffer.put(request.getId(), request);
@@ -153,15 +177,15 @@ public class Interface implements WebSocketInterface {
      * Sends WebSocket message asynchronously.
      * This operation is non-blocking, it executes the consumer callback
      * when the result is received.
-     * @param message {@link Request} to send
+     * @param request {@link Request} to send
      * @param consumer asynchronous callback
      */
     @Override
-    public void sendWithResponseAsync(Request message, Consumer<ObjectNode> consumer) {
+    public void sendWithResponseAsync(Request request, Consumer<Message> consumer) {
         logger.trace("sendWithResponseAsync - sending request asynchronously");
         // message.setSender(this);
-        messageBuffer.put(message.getId(), message);
-        message.sendAsync(consumer);
+        messageBuffer.put(request.getId(), request);
+        request.sendAsync(consumer);
     }
 
     @Override

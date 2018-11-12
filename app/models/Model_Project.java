@@ -632,7 +632,7 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
                 if (hardware.online_state() == NetworkStatus.ONLINE) {
                     hardware.make_log_deactivated();
                     // If device is online, restart it. So Device will connect immediately and it will find probably a new activated alternative of Device
-                    hardware.device_converted_id_clean_remove_from_server();
+                    // TODO hardware.device_converted_id_clean_remove_from_server();
                 }
 
                 Model_Hardware.cache_status.remove(hardware.id);

@@ -1,5 +1,6 @@
 package controllers;
 
+import com.google.inject.Injector;
 import com.typesafe.config.Config;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -19,7 +20,7 @@ import utilities.authentication.Authentication;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerController;
+import utilities.scheduler.SchedulerService;
 import utilities.swagger.output.Swagger_Websocket_Token;
 import websocket.WebSocketService;
 import websocket.interfaces.*;
@@ -44,11 +45,13 @@ public class Controller_WebSocket extends _BaseController {
 
     private final WebSocketService webSocketService;
 
+    private final Injector injector;
 
     @Inject
-    public Controller_WebSocket(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService, WebSocketService webSocketService) {
+    public Controller_WebSocket(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService, WebSocketService webSocketService, Injector injector) {
         super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
         this.webSocketService = webSocketService;
+        this.injector = injector;
     }
 
 /* STATIC --------------------------------------------------------------------------------------------------------------*/
@@ -131,23 +134,27 @@ public class Controller_WebSocket extends _BaseController {
                 logger.trace("homer - incoming connection: " + token);
 
                 //Find object (only ID)
-                Model_HomerServer homer = Model_HomerServer.find.query().where().eq("connection_identifier", token).select("id").findOne();
-                if (homer != null) {
-                    if (this.webSocketService.isRegistered(homer.id)) {
+                Model_HomerServer server = Model_HomerServer.find.query().where().eq("connection_identifier", token).select("id").findOne();
+                if (server != null) {
+                    if (this.webSocketService.isRegistered(server.id)) {
                         logger.warn("homer - server is already connected, trying to ping previous connection");
 
-                        WS_Message_Homer_ping result = homer.ping();
+                        WS_Message_Homer_ping result = server.ping();
                         if (!result.status.equals("success")) {
                             logger.error("homer - ping failed, removing previous connection");
-                            this.webSocketService.getInterface(homer.id).close();
+                            this.webSocketService.getInterface(server.id).close();
                         } else {
                             logger.warn("homer - server is already connected, connection is working, cannot connect twice");
                             return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
                         }
                     }
 
-                    logger.info("homer - connection was successful. Server {}", homer.name);
-                    return CompletableFuture.completedFuture(F.Either.Right(this.webSocketService.register(new Homer(homer.id))));
+                    logger.info("homer - connection was successful. Server {}", server.name);
+
+                    Homer homer = injector.getInstance(Homer.class);
+                    homer.setId(server.id);
+
+                    return CompletableFuture.completedFuture(F.Either.Right(this.webSocketService.register(homer)));
 
                 } else {
                     logger.warn("homer - server with token: {} is not registered in the database, rejecting connection wtih token: {}", token);
@@ -169,26 +176,29 @@ public class Controller_WebSocket extends _BaseController {
                 logger.debug("compiler - incoming connection: {}", token);
 
                 //Find object (only ID)
-                Model_CompilationServer compiler = Model_CompilationServer.find.query().where().eq("connection_identifier", token).select("id").findOne();
-                if(compiler != null){
+                Model_CompilationServer server = Model_CompilationServer.find.query().where().eq("connection_identifier", token).select("id").findOne();
+                if(server != null){
 
-                    if (this.webSocketService.isRegistered(compiler.id)) {
+                    if (this.webSocketService.isRegistered(server.id)) {
                         logger.error("compiler - server is already connected, trying to ping previous connection");
 
-                        WS_Message_Ping_compilation_server result = compiler.ping();
+                        WS_Message_Ping_compilation_server result = server.ping();
 
                         logger.trace("compiler:: Error::{} {}" , result.error , result.error_message);
                         if(!result.status.equals("success") && !result.error.equals("Missing field code.")){
                             logger.error("compiler - ping failed, removing previous connection");
-                            this.webSocketService.getInterface(compiler.id).close();
+                            this.webSocketService.getInterface(server.id).close();
                         } else {
                             logger.warn("compiler - server is already connected, connection is working, cannot connect twice");
                             return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
                         }
                     }
 
+                    Compiler compiler = injector.getInstance(Compiler.class);
+                    compiler.setId(server.id);
+
                     logger.info("compiler - connection was successful");
-                    return CompletableFuture.completedFuture(F.Either.Right(this.webSocketService.register(new Compiler(compiler.id))));
+                    return CompletableFuture.completedFuture(F.Either.Right(this.webSocketService.register(compiler)));
 
                 } else {
                     logger.warn("compiler - server with token: {} is not registered in the database, rejecting token: {}", token);
@@ -226,7 +236,8 @@ public class Controller_WebSocket extends _BaseController {
 
                         if (portal == null) {
                             logger.trace("portal - User {} is already connected somewhere else", person.nick_name);
-                            portal = new Portal(person.id);
+                            portal = injector.getInstance(Portal.class);
+                            portal.setId(person.id);
                             this.webSocketService.register(portal); // Intentionally ignore the result of register -> it is null
                         }
 
@@ -235,7 +246,11 @@ public class Controller_WebSocket extends _BaseController {
 
                         if (!portal.isRegistered(token)) {
 
-                            return CompletableFuture.completedFuture(F.Either.Right(portal.register(new SinglePortal(token, portal))));
+                            SinglePortal singlePortal = injector.getInstance(SinglePortal.class);
+                            singlePortal.setId(token);
+                            singlePortal.setParent(portal);
+
+                            return CompletableFuture.completedFuture(F.Either.Right(portal.register(singlePortal)));
 
                         } else {
                             logger.info("portal - rejecting connection: {}, already established", token);

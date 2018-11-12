@@ -8,8 +8,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.*;
 import play.Environment;
-import play.data.Form;
-import play.data.FormFactory;
 import play.libs.ws.WSClient;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -22,8 +20,7 @@ import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Link;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerController;
-import utilities.swagger.input.Swagger_C_Program_Version_Update;
+import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.Swagger_Notification_Test;
 
 import java.util.Date;
@@ -44,7 +41,7 @@ public class NotificationTester extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public NotificationTester(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+    public NotificationTester(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
         super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 

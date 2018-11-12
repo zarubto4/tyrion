@@ -1,21 +1,13 @@
 package utilities.financial.goPay;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
 import models.Model_Product;
 import models.Model_Invoice;
-import models.Model_PaymentDetails;
 import play.Environment;
-import play.api.Play;
-import play.data.Form;
-import play.data.FormFactory;
-import play.libs.Json;
 import play.libs.ws.WSClient;
-import play.libs.ws.WSResponse;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -25,15 +17,11 @@ import utilities.financial.fakturoid.FakturoidService;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerController;
-import utilities.swagger.input.Swagger_Fakturoid_Callback;
-import utilities.swagger.input.Swagger_Payment_Refund;
+import utilities.scheduler.SchedulerService;
 
 
-import java.time.Duration;
 import java.util.Date;
 import java.util.UUID;
-import java.util.concurrent.CompletionStage;
 
 /**
  * Class is used to communicate with GoPay,
@@ -61,7 +49,7 @@ public class GoPay extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public GoPay(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, FakturoidService fakturoid, PermissionService permissionService) {
+    public GoPay(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, FakturoidService fakturoid, PermissionService permissionService) {
         super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
         this.fakturoid = fakturoid;
     }

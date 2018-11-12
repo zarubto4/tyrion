@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 
 import static java.lang.Thread.sleep;
 
-public class ResponseThread implements Supplier<ObjectNode> {
+public class ResponseThread implements Supplier<Message> {
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 
@@ -36,7 +36,7 @@ public class ResponseThread implements Supplier<ObjectNode> {
     }
 
     @Override
-    public ObjectNode get() {
+    public Message get() {
         try {
 
             logger.trace("Sending Thread Start:: {}:{} Planed delay: {}", new Date().getMinutes(), new Date().getSeconds(), this.delay);
@@ -81,7 +81,7 @@ public class ResponseThread implements Supplier<ObjectNode> {
         this.resolved = true;
     }
 
-    public ObjectNode time_out_exception_error_response() {
+    public Message time_out_exception_error_response() {
 
         logger.error("time_out_exception_error_response:: message_id: {}, message_type: {}, retries: {}, timeout: {}  ", id, message.get("message_type").asText(), retries, timeout);
 
@@ -95,6 +95,6 @@ public class ResponseThread implements Supplier<ObjectNode> {
 
         this.sender.removeMessage(this.id);
 
-        return request;
+        return new Message(request, null);
     }
 }

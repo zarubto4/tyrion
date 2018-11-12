@@ -18,6 +18,10 @@ public class Request {
     private UUID id;
     public String message_type; // Its Required public for special operation
 
+    public Request(ObjectNode message) {
+        this(message, 0, 7500, 3);
+    }
+
     public Request(ObjectNode message, int delay, int timeout, int retries) {
 
         this.message_type = message.get("message_type").asText();
@@ -32,7 +36,7 @@ public class Request {
     }
 
 
-    public ObjectNode send() {
+    public Message send() {
         try {
             logger.trace("send:: call ");
             future = CompletableFuture.supplyAsync(this.confirmationThread);
@@ -42,7 +46,7 @@ public class Request {
         }
     }
 
-    public void sendAsync(Consumer<ObjectNode> consumer) {
+    public void sendAsync(Consumer<Message> consumer) {
         try {
             future = CompletableFuture.supplyAsync(this.confirmationThread);
             future.thenAcceptAsync(consumer);
@@ -51,8 +55,8 @@ public class Request {
         }
     }
 
-    public void resolve(ObjectNode message) {
-        logger.trace("resolve - {}", message.toString());
+    public void resolve(Message message) {
+        logger.trace("resolve - {}", message.getMessage().toString());
         future.complete(message);
         confirmationThread.stop();
     }
@@ -69,5 +73,5 @@ public class Request {
 /* PRIVATE API ---------------------------------------------------------------------------------------------------------*/
 
     private ResponseThread confirmationThread;
-    private CompletableFuture<ObjectNode> future;
+    private CompletableFuture<Message> future;
 }

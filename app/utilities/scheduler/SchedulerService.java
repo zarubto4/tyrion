@@ -25,16 +25,16 @@ import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 @Singleton
-public class SchedulerController {
+public class SchedulerService {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger logger = new Logger(SchedulerController.class);
+    private static final Logger logger = new Logger(SchedulerService.class);
 
 /*  VALUES -------------------------------------------------------------------------------------------------------------*/
 
     @Inject
-    public SchedulerController(Scheduler scheduler) {
+    public SchedulerService(Scheduler scheduler) {
         this.scheduler = scheduler;
     }
 

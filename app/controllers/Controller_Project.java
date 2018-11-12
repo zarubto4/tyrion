@@ -1,6 +1,7 @@
 package controllers;
 
 import com.typesafe.config.Config;
+import exceptions.BadRequestException;
 import io.swagger.annotations.*;
 import models.*;
 import mongo.ModelMongo_Hardware_RegistrationEntity;
@@ -18,20 +19,19 @@ import utilities.enums.NetworkStatus;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
 import utilities.enums.ParticipantStatus;
+import utilities.hardware.HardwareService;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerController;
+import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.*;
-import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_uuid_converter_cleaner;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Model_Hardware_Temporary_NotDominant_record;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -46,9 +46,12 @@ public class Controller_Project extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
+    private final HardwareService hardwareService;
+
     @javax.inject.Inject
-    public Controller_Project(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+    public Controller_Project(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService, HardwareService hardwareService) {
         super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+        this.hardwareService = hardwareService;
     }
 
 // GENERAL PROJECT #######-##############################################################################################
@@ -644,25 +647,14 @@ public class Controller_Project extends _BaseController {
                 }
             }
 
-            // Set Dominance if its possible (Not dominant in diferent project!)
-            if (Model_Hardware.find.query().where().eq("full_id", hardware.full_id).eq("dominant_entity", true).findCount() == 0) {
-                hardware.dominant_entity = true;
-
-                // Najdi všechny kterří mají stejné FUll Full-ID
-
+            if (this.dominanceService.setDominant(hardware)) {
                 List<Model_Hardware> hardware_for_cache_clean =  Model_Hardware.find.query().where().eq("full_id", hardware.full_id).select("id").findList();
                 for(Model_Hardware clean_hw: hardware_for_cache_clean) {
-                    System.out.println("Posílám update o zaplnění HW na HW: " + clean_hw.id);
                     EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, Model_Project.find.query().where().eq("hardware.id", clean_hw.id).select("id").findSingleAttribute(), clean_hw.id));
                 }
             }
 
-            // Update
-            hardware.update();
-
-            // Set hardware as Dominant if is not dominant in another project
             project.idCache().add(Model_Hardware.class, hardware.id);
-
 
             logger.warn("project_addHardware. Step 1 - is_online_get_from_cache");
 
@@ -700,7 +692,7 @@ public class Controller_Project extends _BaseController {
 
                         logger.warn("project_addHardware. Step 2 - Command Send");
 
-                        WS_Message_Hardware_uuid_converter_cleaner change = hardware.device_converted_id_clean_switch_on_server(record.random_temporary_hardware_id.toString());
+                         // TODO WS_Message_Hardware_uuid_converter_cleaner change = hardware.device_converted_id_clean_switch_on_server(record.random_temporary_hardware_id.toString());
                         logger.warn("project_addHardware:: Step 2 - Response: Change on Homer Server: ", Json.toJson(change).toString());
 
                     }
@@ -767,18 +759,7 @@ public class Controller_Project extends _BaseController {
                 return badRequest("Already deactivated");
             }
 
-            hardware.dominant_entity = false;
-            hardware.update();
-
-            // log Hard disconection
-            if(hardware.online_state() == NetworkStatus.ONLINE) {
-                hardware.make_log_deactivated();
-                // If device is online, restart it. So Device will connect immediately and it will find probably a new activated alternative of Device
-                hardware.device_converted_id_clean_remove_from_server();
-            }
-
-            Model_Hardware.cache_status.remove(hardware.id);
-
+            this.hardwareService.deactivateHardware(hardware);
 
             return ok(hardware);
 
@@ -811,13 +792,16 @@ public class Controller_Project extends _BaseController {
             this.checkActivatePermission(hardware);
 
             if (hardware.dominant_entity) {
-                return badRequest("Already activated");
+                throw new BadRequestException("Already activated");
+            }
+
+            Model_Hardware dominant = Model_Hardware.find.query().nullable().where().eq("full_id", hardware.full_id).eq("dominant_entity", true).findOne();
+            if (dominant != null) {
+                throw new BadRequestException("Hardware is already active in another project");
             }
 
             hardware.dominant_entity = true;
             hardware.update();
-
-            hardware.is_online_get_from_cache();
 
             logger.warn("project_activeHardware. Step 1 - is_online_get_from_cache");
 
@@ -844,7 +828,7 @@ public class Controller_Project extends _BaseController {
 
                     logger.warn("project_activeHardware. Step 2 - Command Send");
 
-                    WS_Message_Hardware_uuid_converter_cleaner change = hardware.device_converted_id_clean_switch_on_server(record.random_temporary_hardware_id.toString());
+                    // TODO WS_Message_Hardware_uuid_converter_cleaner change = hardware.device_converted_id_clean_switch_on_server(record.random_temporary_hardware_id.toString());
                     logger.warn("project_activeHardware:: Step 2 - Response: Change on Homer Server: ", Json.toJson(change).toString());
 
                 }

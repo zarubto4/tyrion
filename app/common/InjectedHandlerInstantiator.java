@@ -1,4 +1,4 @@
-package utilities.permission;
+package common;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.cfg.HandlerInstantiator;
@@ -7,14 +7,18 @@ import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.google.inject.Inject;
+import utilities.network.NetworkStatusSerializer;
+import utilities.permission.PermissionSerializer;
 
-public class PermissionHandlerInstantiator extends HandlerInstantiator {
+public class InjectedHandlerInstantiator extends HandlerInstantiator {
 
     private final PermissionSerializer permissionSerializer;
+    private final NetworkStatusSerializer networkStatusSerializer;
 
     @Inject
-    public PermissionHandlerInstantiator(PermissionSerializer permissionSerializer) {
+    public InjectedHandlerInstantiator(PermissionSerializer permissionSerializer, NetworkStatusSerializer networkStatusSerializer) {
         this.permissionSerializer = permissionSerializer;
+        this.networkStatusSerializer = networkStatusSerializer;
     }
 
     @Override
@@ -32,6 +36,10 @@ public class PermissionHandlerInstantiator extends HandlerInstantiator {
 
         if (serClass == PermissionSerializer.class) {
             return this.permissionSerializer;
+        }
+
+        if (serClass == NetworkStatusSerializer.class) {
+            return this.networkStatusSerializer;
         }
 
         return null;

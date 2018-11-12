@@ -1,13 +1,10 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.inject.Inject;
 import com.typesafe.config.Config;
-import io.intercom.api.User;
 import io.swagger.annotations.*;
 import models.*;
 import play.Environment;
-import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import play.mvc.BodyParser;
@@ -21,11 +18,9 @@ import utilities.enums.NotificationAction;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.notifications.NotificationActionHandler;
-import utilities.permission.Action;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerController;
+import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.*;
-import utilities.swagger.output.Swagger_Compilation_Ok;
 import utilities.swagger.output.Swagger_Entity_Validation_Out;
 
 import java.time.Duration;
@@ -44,7 +39,7 @@ public class Controller_Person extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public Controller_Person(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+    public Controller_Person(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
         super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
     }
 

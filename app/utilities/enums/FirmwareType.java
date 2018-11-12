@@ -23,8 +23,4 @@ public enum FirmwareType {
 
         return null;
     }
-
-    public String get_firmwareType() {
-        return firmwareType;
-    }
 }

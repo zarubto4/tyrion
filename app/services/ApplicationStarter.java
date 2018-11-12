@@ -17,8 +17,8 @@ import utilities.cache.CacheService;
 import utilities.enums.ServerMode;
 import utilities.logger.ServerLogger;
 import utilities.permission.PermissionFilter;
-import utilities.permission.PermissionHandlerInstantiator;
-import utilities.scheduler.SchedulerController;
+import common.InjectedHandlerInstantiator;
+import utilities.scheduler.SchedulerService;
 
 /**
  * This class demonstrates how to run code when the
@@ -41,13 +41,13 @@ public class ApplicationStarter {
     private final ApplicationLifecycle appLifecycle;
     private final Config configuration;
     private final Instant start;
-    private final SchedulerController scheduler;
+    private final SchedulerService scheduler;
     private final CacheService cache;
 
     private final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("application");
 
     @Inject
-    public ApplicationStarter(Clock clock, ApplicationLifecycle appLifecycle, Config configuration, Injector injector, SchedulerController scheduler, CacheService cache, ApplicationEvolutions applicationEvolutions) {
+    public ApplicationStarter(Clock clock, ApplicationLifecycle appLifecycle, Config configuration, Injector injector, SchedulerService scheduler, CacheService cache, ApplicationEvolutions applicationEvolutions) {
 
         this.clock = clock;
         this.appLifecycle = appLifecycle;
@@ -67,7 +67,7 @@ public class ApplicationStarter {
             // For dependency injected serializer for permissions
             Json.mapper()
                     .setFilterProvider(new SimpleFilterProvider().addFilter("permission", injector.getInstance(PermissionFilter.class)))
-                    .setHandlerInstantiator(injector.getInstance(PermissionHandlerInstantiator.class));
+                    .setHandlerInstantiator(injector.getInstance(InjectedHandlerInstantiator.class));
 
             Server.start(injector);
             this.scheduler.start();

@@ -1,9 +1,9 @@
 package websocket;
 
-import akka.stream.Materializer;
 import akka.stream.javadsl.Flow;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import play.libs.Json;
 
@@ -15,7 +15,7 @@ import java.util.UUID;
 @Singleton
 public class WebSocketService {
 
-    private final Materializer materializer;
+    private final Injector injector;
 
     /**
      * Contains WebSocket connections from compiler servers.
@@ -23,8 +23,8 @@ public class WebSocketService {
     private Map<UUID, WebSocketInterface> interfaces = new HashMap<>();
 
     @Inject
-    public WebSocketService(Materializer materializer) {
-        this.materializer = materializer;
+    public WebSocketService(Injector injector) {
+        this.injector = injector;
     }
 
     public Flow<JsonNode, JsonNode, ?> register(WebSocketInterface iface) {
@@ -33,7 +33,7 @@ public class WebSocketService {
 
         iface.onClose(i -> this.interfaces.remove(i.getId()));
 
-        return iface.materialize(this.materializer);
+        return iface.materialize(this);
     }
 
     public boolean isRegistered(UUID id) {

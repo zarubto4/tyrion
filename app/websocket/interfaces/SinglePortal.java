@@ -1,27 +1,36 @@
 package websocket.interfaces;
 
+import akka.stream.Materializer;
+import com.google.inject.Inject;
+import controllers._BaseFormFactory;
 import models.Model_Project;
 import utilities.logger.Logger;
+import utilities.network.NetworkStatusService;
 import websocket.Interface;
 import websocket.Message;
 import websocket.WebSocketInterface;
 import websocket.messages.tyrion_with_becki.WS_Message_Subscribe_Notifications;
 import websocket.messages.tyrion_with_becki.WS_Message_UnSubscribe_Notifications;
 
-import java.util.UUID;
-
 public class SinglePortal extends Interface {
 
     private static final Logger logger = new Logger(SinglePortal.class);
 
-    private final WebSocketInterface parent;
+    private WebSocketInterface parent;
 
     private boolean notificationSubscribed;
 
-    public SinglePortal(UUID id, WebSocketInterface parent) {
-        super(id);
+    @Inject
+    public SinglePortal(NetworkStatusService networkStatusService, Materializer materializer, _BaseFormFactory formFactory) {
+        super(networkStatusService, materializer, formFactory);
+    }
 
-        this.parent = parent;
+    public void setParent(WebSocketInterface parent) {
+        if (this.parent == null) {
+            this.parent = parent;
+        } else {
+            throw new RuntimeException("Cannot set parent twice");
+        }
     }
 
     @Override

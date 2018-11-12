@@ -19,10 +19,10 @@ public interface WebSocketInterface {
 
     /**
      * Materializes the interface to the flow.
-     * @param materializer for materialization
+     * @param webSocketService
      * @return flow
      */
-    Flow<JsonNode, JsonNode, NotUsed> materialize(Materializer materializer);
+    Flow<JsonNode, JsonNode, NotUsed> materialize(WebSocketService webSocketService);
 
     /**
      * Sends a message to the WebSocket interface.
@@ -37,7 +37,7 @@ public interface WebSocketInterface {
      * @param message object with details such as delay, timeout or tries.
      * @return JSON object response
      */
-    ObjectNode sendWithResponse(Request message);
+    Message sendWithResponse(Request message);
 
     /**
      * Sends a message to the WebSocket interface. Response is required.
@@ -45,7 +45,7 @@ public interface WebSocketInterface {
      * @param message object with details such as delay, timeout or tries.
      * @param consumer function to execute with provided response
      */
-    void sendWithResponseAsync(Request message, Consumer<ObjectNode> consumer);
+    void sendWithResponseAsync(Request message, Consumer<Message> consumer);
 
     /**
      * This method receives all messages, that were not responses to waiting requests.

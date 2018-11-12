@@ -42,7 +42,7 @@ import java.util.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerController;
+import utilities.scheduler.SchedulerService;
 import utilities.scheduler.jobs.Job_ThingsMobile_SimData_Synchronize;
 import websocket.Interface;
 import websocket.WebSocketService;
@@ -59,7 +59,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
     protected final WebSocketService webSocketService;
 
     @Inject
-    public Controller_ZZZ_Tester(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService, WebSocketService webSocketService) {
+    public Controller_ZZZ_Tester(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService, WebSocketService webSocketService) {
         super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
         this.webSocketService = webSocketService;
     }

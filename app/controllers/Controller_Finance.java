@@ -23,7 +23,7 @@ import utilities.financial.goPay.GoPay;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerController;
+import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Invoice_FullDetails;
 import utilities.swagger.output.Swagger_Product_Active;
@@ -51,7 +51,7 @@ public class Controller_Finance extends _BaseController {
 
     @javax.inject.Inject
     public Controller_Finance(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config,
-                              SchedulerController scheduler, FakturoidService fakturoid, ProductService productService, GoPay goPay, PermissionService permissionService) {
+                              SchedulerService scheduler, FakturoidService fakturoid, ProductService productService, GoPay goPay, PermissionService permissionService) {
         super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
         this.fakturoid = fakturoid;
         this.goPay = goPay;

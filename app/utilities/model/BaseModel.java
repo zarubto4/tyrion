@@ -57,7 +57,11 @@ public abstract class BaseModel extends Model implements JsonSerializable {
     @JsonIgnore @SoftDelete
     public boolean deleted;
 
-/* GENERAL OBJECT CACHE ------------------------------------------------------------------------------------------------*/
+    public UUID getId() {
+        return id;
+    }
+
+    /* GENERAL OBJECT CACHE ------------------------------------------------------------------------------------------------*/
 
    @JsonIgnore @Transient
     public IDCache idCache(){

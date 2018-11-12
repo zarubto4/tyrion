@@ -130,7 +130,6 @@ public class Model_UpdateProcedure extends BaseModel implements Permissible, Und
                 .eq("actualization_procedure.id", id).where()
                 .disjunction()
                     .add(Expr.eq("state", HardwareUpdateState.COMPLETE))
-                    .add(Expr.eq("state", HardwareUpdateState.PROHIBITED_BY_CONFIG))
                     .add(Expr.eq("state", HardwareUpdateState.OBSOLETE))
                 .endJunction()
                 .findCount();
@@ -316,9 +315,7 @@ public class Model_UpdateProcedure extends BaseModel implements Permissible, Und
                 .eq("actualization_procedure.id",id).where()
                 .disjunction()
                 .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
-                .add(Expr.eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE))
                 .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
-                .add(Expr.eq("state", HardwareUpdateState.WAITING_FOR_DEVICE))
                 .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
                 .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
                 .add(Expr.isNull("state"))
@@ -545,9 +542,7 @@ public class Model_UpdateProcedure extends BaseModel implements Permissible, Und
                     int waiting_for_device = Model_HardwareUpdate.find.query().where()
                             .eq("actualization_procedure.id", id).where()
                             .disjunction()
-                            .eq("state", HardwareUpdateState.WAITING_FOR_DEVICE)
                             .eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE)
-                            .eq("state", HardwareUpdateState.INSTANCE_INACCESSIBLE)
                             .endJunction()
                             .findCount();
 
