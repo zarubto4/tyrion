@@ -136,10 +136,8 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     @JsonIgnore @OneToMany(mappedBy = "hardware", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_HardwareUpdate> updates = new ArrayList<>();
 
 
-
     @JsonIgnore public UUID connected_server_id;      // Latest know Server ID
     @JsonIgnore public UUID connected_instance_id;    // Latest know Instance ID
-
 
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
@@ -178,6 +176,16 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
             return this.getProject().ref();
         } catch (Exception e) {
             logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonProperty
+    public Swagger_Short_Reference cellular() {
+        try {
+            return this.getGSM().ref();
+        } catch (Exception e) {
+            // Can be null!
             return null;
         }
     }
@@ -779,6 +787,38 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     @JsonIgnore @Override
     public Model_Project getProject() {
         return isLoaded("project") ? project : Model_Project.find.query().nullable().where().eq("hardware.id", id).findOne();
+    }
+
+    @JsonIgnore
+    public UUID getGSM_id() {
+        try {
+            if (idCache().get(Model_GSM.class) == null) {
+
+                if (bootloader_core_configuration().iccid != null) {
+
+                    Model_GSM gsm = Model_GSM.find.query().nullable().where().icontains("iccid", bootloader_core_configuration().iccid).findOne();
+                    if (gsm != null) {
+                        idCache().add(Model_CProgramVersion.class, gsm.id);
+                    }
+                }
+
+            }
+
+            return idCache().get(Model_GSM.class);
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonIgnore
+    public Model_GSM getGSM() {
+        try {
+            return Model_GSM.find.byId(getGSM_id());
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @JsonIgnore
