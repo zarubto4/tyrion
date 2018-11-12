@@ -19,6 +19,8 @@ public class WS_Message_Hardware_overview_Board implements Constraints.Validatab
 
 
                           @Valid public WS_Message_Hardware_overview_Board_Binaries binaries;
+
+    public String lowpan_credentials;
     public String target;  // třeba Yoda G3
     public String alias; // "John 33" - can be null
     public String ip;
@@ -26,14 +28,17 @@ public class WS_Message_Hardware_overview_Board implements Constraints.Validatab
     public Boolean autobackup;                // Default 0                    // user configurable ( 0 or 1)
     public Boolean blreport;                  // Default 0                    // user configurable
     public Boolean wdenable;                  // Default 1                    // user configurable
-    public String  netsource;                 // Default ethernet   // user configurable ( 0 or 1)
+    public String  netsource;                 // Default ethernet             // user configurable ( 0 or 1)
     public Boolean webview;                   // Default  1                   // user configurable via Bootloader & Portal ( 0 or 1)
     public Integer webport;                   // Default  80                  // user configurable via Bootloader & Portal ( 80 - 9999)
     public Integer timeoffset;                // Default  0                   // user configurable
     public Boolean timesync;                  // Default  1                   // user configurable
     public Boolean lowpanbr;                  // Default  0                   // user configurable
     public Integer autojump;                  // Default  0                   // user configurable
-    public Integer wdtime;             // Default 30                   // user configurable
+    public Integer wdtime;                    // Default 30                   // user configurable
+
+    public String imsi;                       // Default null                 // permanent, optional
+    public String iccid;                      // Default null                 // permanent, optional
 
 
     public String normal_mqtt_connection;       // ip addressa:port

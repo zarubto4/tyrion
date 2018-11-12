@@ -1691,6 +1691,14 @@ public class Controller_Hardware extends _BaseController {
                     break;
                 }
 
+                case "imsi": {
+                    return badRequest("imsi IS NOT possible to change!");
+                }
+
+                case "iccid": {
+                    return badRequest("iccid IS NOT possible to change!");
+                }
+
                 case "netsource": {
 
                     if (help.string_value  == null) {

@@ -26,6 +26,8 @@ public class Extension_RestApi implements Extension {
     @Override
     public Consumption_RestApi getConsumption(Model_ProductExtension extension, Date from, Date to) {
         Consumption_RestApi consumption = new Consumption_RestApi();
+
+        // VELIKOST DATABÁ * 4,5 * 1 E
         return consumption;
     }
 

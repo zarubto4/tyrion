@@ -9,6 +9,7 @@ import play.data.FormFactory;
 import play.data.format.Formatters;
 import play.i18n.Lang;
 import play.i18n.MessagesApi;
+import play.libs.Json;
 import play.mvc.Controller;
 import exceptions.InvalidBodyException;
 import utilities.logger.Logger;
@@ -71,8 +72,10 @@ public class _BaseFormFactory extends FormFactory {
         Form<T> bind =  form.bind(jsonNode);
 
         if (bind.hasErrors()){
-            logger.error("formFromJsonWithValidation::InvalidBody::JsonFor ParserControl:: {}", jsonNode.toString());
-            logger.error("formFromJsonWithValidation::InvalidBody::ErrorList::{}", bind.errorsAsJson(Lang.forCode("en-US")).toString());
+
+            logger.error("formFromJsonWithValidation::InvalidBody::JsonFor ParserControl:: Class: {}, \n {}",clazz.getSimpleName(), Json.prettyPrint(jsonNode));
+            logger.error("formFromJsonWithValidation::InvalidBody::ErrorList:: \n {}", Json.prettyPrint(bind.errorsAsJson(Lang.forCode("en-US"))));
+
             throw new InvalidBodyException(bind.errorsAsJson(Lang.forCode("en-US")));
         }
 

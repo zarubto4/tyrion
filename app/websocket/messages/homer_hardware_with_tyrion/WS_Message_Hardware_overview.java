@@ -88,14 +88,17 @@ public class WS_Message_Hardware_overview extends WS_AbstractMessage {
                 "binaries",                     // Binaries info of firwmare, bootloader and backup
                 "webport",                      // Port, where you can get webserver with device information
                 "webview",                      // Boolean if device support webview
-                "blreport",                     // Boolean if device support webview
-                "wdenable",                     // Boolean if device support webview
-                "timeoffset",                   // Boolean if device support webview
-                "timesync",                     // Boolean if device support webview
-                "lowpanbr",                     // Boolean if device support webview
-                "autojump",                     // Boolean if device support webview
-                "wdtime",                       // Boolean if device support webview
-                "netsource"                     // Boolean if device support webview
+                "blreport",                     //
+                "wdenable",                     //
+                "timeoffset",                   //
+                "timesync",                     //
+                "lowpanbr",                     //
+                "autojump",                     //
+                "wdtime",                       //
+                "netsource",                    //
+                "lowpan_credentials",           //
+                "imsi",                          // Optional, temporary
+                "iccid"                          // Optional, temporary
         )));
 
         return request;
