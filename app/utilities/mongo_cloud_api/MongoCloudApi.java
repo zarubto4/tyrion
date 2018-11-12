@@ -4,6 +4,7 @@ package utilities.mongo_cloud_api;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import controllers._BaseFormFactory;
+import io.ebeaninternal.server.core.Message;
 import play.libs.ws.WSAuthScheme;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
@@ -11,6 +12,7 @@ import play.libs.ws.WSResponse;
 
 import io.swagger.util.Json;
 import java.lang.reflect.Array;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -27,10 +29,9 @@ public class MongoCloudApi {
         this.config = config;
     }
 
-    public String getConnectionStringForUser(SwaggerMongoCloudUser user){
+  //  public String getConnectionStringForUser(String username, String password){
 
-        return "mongodb://4344786c-910e-445e-a9eb-503899048073:b864c324-3c10-43c1-b354-6f9a43264312@testcluster-shard-00-00-waqlo.gcp.mongodb.net:27017,testcluster-shard-00-01-waqlo.gcp.mongodb.net:27017,testcluster-shard-00-02-waqlo.gcp.mongodb.net:27017/test?ssl=true&replicaSet=TestCluster-shard-0&authSource=admin&retryWrites=true";
-    }
+//    }
 
     public SwaggerMongoCloudUser createUser(UUID product_id, String databaseName) throws Exception{
 
@@ -41,8 +42,8 @@ public class MongoCloudApi {
             role.roleName = "readWrite";
             SwaggerMongoCloudUser user = new SwaggerMongoCloudUser();
             user.databaseName = "admin";
-            user.username = "" + product_id;
-            user.password = "" + password;
+            user.username =  product_id.toString();
+            user.password =  password.toString();
             user.roles = new SwaggerMongoCloudUserRole[]{role};
 
 

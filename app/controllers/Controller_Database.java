@@ -122,6 +122,7 @@ public class Controller_Database extends _BaseController {
                 configuration = new ConfigurationProduct();
             }
 
+
             if ( configuration.mongoDatabaseUserPassword == null || configuration.mongoDatabaseUserPassword.isEmpty()) { // if user not exist in database
 
                 user = mongoApi.createUser(info.product_id, extension.id.toString());
@@ -130,7 +131,7 @@ public class Controller_Database extends _BaseController {
                 product.update();
             }
             else {
-                user = mongoApi.addRole(product.id.toString(), extension.id.toString());
+                mongoApi.addRole(product.id.toString(), extension.id.toString());
             }
 
             MongoClient client = Server.mongoClient;
@@ -141,7 +142,6 @@ public class Controller_Database extends _BaseController {
             created_database.name = extension.name;
             created_database.description = extension.description;
             created_database.id = extension.id;
-            created_database.conectionString = mongoApi.getConnectionStringForUser(user);
 
             extension.setActive(true);
             extension.update();
@@ -176,9 +176,14 @@ public class Controller_Database extends _BaseController {
                                                                                             .findList();
 
             Swagger_Database_List result = new Swagger_Database_List();
+
             result.databases = extensionList.stream()
                                             .map(this::extensionToSwaggerDatabase)
                                             .collect(Collectors.toList());
+
+            if (result.databases.isEmpty()) {
+                return ok(result);
+            }
 
             String password = this.baseFormFactory
                                   .formFromJsonWithValidation(ConfigurationProduct.class, Json.parse(product.configuration))
@@ -213,7 +218,7 @@ public class Controller_Database extends _BaseController {
 
             productExtension.active = false;
 
-            Server.mongoClient.dropDatabase("" + db_id);
+            Server.mongoClient.dropDatabase(db_id.toString());
             return(ok());
         } catch ( Exception e ) {
             return controllerServerError(e);
@@ -225,8 +230,6 @@ public class Controller_Database extends _BaseController {
         result.name = extension.name;
         result.description = extension.description;
         result.id = extension.id;
-        SwaggerMongoCloudUser user = this.baseFormFactory.formFromJsonWithValidation(SwaggerMongoCloudUser.class, Json.parse(extension.configuration));
-        result.conectionString = mongoApi.getConnectionStringForUser(user);
         return result;
     }
 }
