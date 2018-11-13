@@ -622,4 +622,10 @@ public class Controller_ZZZ_Tester extends _BaseController {
         }
     }
 
+    @ApiOperation(value = "Hidden test Method", hidden = true)
+    public Result test9() {
+        System.out.println(ExtensionType.DATABASE.toString());
+        return(ok());
+    }
+
 }
