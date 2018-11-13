@@ -49,10 +49,10 @@ public abstract class _GitHubZipHelper {
             } else {
 
                 if(new File(path).delete()){
-                    System.out.println(path + " is deleted!");
+                    logger.trace(path + " is deleted!");
                 }else{
 
-                    System.out.println("Delete " +path + " operation is failed.");
+                    logger.error("Delete " +path + " operation is failed.");
                 }
             }
         } catch (Exception e) {

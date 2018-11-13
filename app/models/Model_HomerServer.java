@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers.Controller_WebSocket;
+import exceptions.NotFoundException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import mongo.ModelMongo_HomerServer_OnlineStatus;
@@ -449,12 +450,9 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
 
 
             Model_HomerServer server = Model_HomerServer.find.byId(ws_homer.id);
-            if (server == null) {
-                logger.error("validate_incoming_user_connection_to_hardware_logger:: homer server is null");
-                return;
-            }
 
             Model_AuthorizationToken model_token = null;
+
 
             // Zjistím, zda v Cache už token není Pokud není - vyhledám Token objekt a ověřím jeho platnost
             if (!Model_Person.token_cache.containsKey(UUID.fromString(message.client_token))) {
@@ -469,7 +467,7 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
                 try {
                     model_token.getPerson();
                     Model_Person.token_cache.put(UUID.fromString(message.client_token), model_token.get_person_id());
-                } catch (Exception e){
+                } catch (Exception e) {
                     logger.error("getUsername:: Model_FloatingPersonToken not contains Person!");
                     ws_homer.send(message.get_result(false));
                     return;
@@ -478,31 +476,34 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
 
             Model_Person person = Model_Person.find.byId(Model_Person.token_cache.get(UUID.fromString(message.client_token)));
 
-            if(person == null) {
-                logger.warn("validate_incoming_user_connection_to_hardware_logger:: person is null!");
-                ws_homer.send(message.get_result(false));
-                return;
-            }
+            // Permition for everyone!
+            if (server.server_type == HomerType.PUBLIC || server.server_type == HomerType.BACKUP || server.server_type == HomerType.MAIN) {
 
-           // Permition for everyone!
-           if (server.server_type == HomerType.PUBLIC || server.server_type == HomerType.BACKUP || server.server_type == HomerType.MAIN) {
+                logger.trace("validate_incoming_user_connection_to_hardware_logger:: validation true for token {}", message.client_token);
+                ws_homer.send(message.get_result(true));
 
-               logger.trace("validate_incoming_user_connection_to_hardware_logger:: validation true for token {}", message.client_token);
-               ws_homer.send(message.get_result(true));
+                // Kontrola oprávnění k serveru navíc
+            } else {
 
-           // Kontrola oprávnění k serveru navíc
-           } else {
-
-                if(Model_Project.find.query().nullable().where().eq("servers.id", server.id).eq("persons.id", person.id).select("id").findOne() != null) {
+                if (Model_Project.find.query().nullable().where().eq("servers.id", server.id).eq("persons.id", person.id).select("id").findOne() != null) {
                     logger.trace("validate_incoming_user_connection_to_hardware_logger:: Private Server Find fot this Person");
                     ws_homer.send(message.get_result(true));
                     return;
-                }else {
+                } else {
                     logger.warn("validate_incoming_user_connection_to_hardware_logger:: Private Server NOT Find fot this Person");
                     ws_homer.send(message.get_result(false));
                     return;
                 }
-           }
+            }
+        } catch (NotFoundException e) {
+
+            logger.warn("validate_incoming_user_connection_to_hardware_logger:: person is null!");
+            ws_homer.send(message.get_result(false));
+
+
+        } catch (NumberFormatException e) {
+            logger.warn("validate_incoming_user_connection_to_hardware_logger:: Invalid Token Format - Its not probably UUID");
+            ws_homer.send(message.get_result(false));
 
         } catch (Exception e) {
             logger.internalServerError(e);

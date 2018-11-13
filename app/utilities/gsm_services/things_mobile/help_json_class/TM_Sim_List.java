@@ -33,8 +33,13 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
     @JsonProperty(value = "last_connection_date")   @ApiModelProperty(name = "last_connection_date")   public String lastConnectionDate;
 
 
-
     public Long msisdn;
+
+    // Zatím nepodporováno ze strany Things Mobile
+    public String iccid; // Optional Value
+    public String imsi;
+
+
     public String name;
     public String plan;
 

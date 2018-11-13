@@ -3,10 +3,12 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.azure.documentdb.Document;
 import com.microsoft.azure.documentdb.DocumentClientException;
+import exceptions.InvalidBodyException;
 import exceptions.NotFoundException;
 import io.ebean.Expr;
 import io.swagger.annotations.ApiModel;
@@ -134,10 +136,8 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     @JsonIgnore @OneToMany(mappedBy = "hardware", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_HardwareUpdate> updates = new ArrayList<>();
 
 
-
     @JsonIgnore public UUID connected_server_id;      // Latest know Server ID
     @JsonIgnore public UUID connected_instance_id;    // Latest know Instance ID
-
 
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
@@ -176,6 +176,16 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
             return this.getProject().ref();
         } catch (Exception e) {
             logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonProperty
+    public Swagger_Short_Reference cellular() {
+        try {
+            return this.getGSM().ref();
+        } catch (Exception e) {
+            // Can be null!
             return null;
         }
     }
@@ -780,6 +790,38 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
+    public UUID getGSM_id() {
+        try {
+            if (idCache().get(Model_GSM.class) == null) {
+
+                if (bootloader_core_configuration().iccid != null) {
+
+                    Model_GSM gsm = Model_GSM.find.query().nullable().where().icontains("iccid", bootloader_core_configuration().iccid).findOne();
+                    if (gsm != null) {
+                        idCache().add(Model_CProgramVersion.class, gsm.id);
+                    }
+                }
+
+            }
+
+            return idCache().get(Model_GSM.class);
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonIgnore
+    public Model_GSM getGSM() {
+        try {
+            return Model_GSM.find.byId(getGSM_id());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @JsonIgnore
     public List<UUID> get_hardware_group_ids() {
 
         if (idCache().gets(Model_HardwareGroup.class) == null) {
@@ -878,6 +920,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
                         Model_Hardware.check_hardware_logger_access_terminal_validation(homer, formFromJsonWithValidation(homer, WS_Message_Hardware_terminal_logger_validation_request.class, json));
                         return;
+
                     }
 
                     case WS_Message_Hardware_uuid_converter.message_type: {
@@ -918,6 +961,27 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
                     }
                 }
 
+            } catch (InvalidBodyException e) {
+
+                if (json.has("message_type")) {
+
+                    json.put("error_message", "InvalidBodyException");
+                    json.set("errors", e.getErrors());
+                    json.put("error_code", 400);
+
+                    homer.send(json);
+                }
+
+            } catch (JsonMappingException e) {
+
+                if (json.has("message_type")) {
+
+                    json.put("error_message", "JsonMappingException");
+                    json.put("error_code", 400);
+
+                    homer.send(json);
+
+                }
             } catch (Exception e) {
                 if (!json.has("message_type")) {
                     homer.send(json.put("error_message", "Your message not contains message_type").put("error_code", 400));
@@ -1617,7 +1681,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     public WS_Message_Hardware_set_hardware_groups set_hardware_groups_on_hardware(List<UUID> hardware_groups_ids, Enum_type_of_command command) {
         try {
 
-            System.out.println("WS_Message_Hardware_set_hardware_groups: hardware_group_ids set: hardware_groups_ids" + hardware_groups_ids.toString() + " Command: " + command);
+           logger.trace("WS_Message_Hardware_set_hardware_groups: hardware_group_ids set: hardware_groups_ids" + hardware_groups_ids.toString() + " Command: " + command);
 
             JsonNode node = write_with_confirmation(new WS_Message_Hardware_set_hardware_groups().make_request(Collections.singletonList(this), hardware_groups_ids, command), 1000 * 5, 0, 2);
 
@@ -2083,7 +2147,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
         for(UUID hardware_group_id : get_hardware_group_ids()) {
             // Pokud neobsahuje přidám - ale abych si ušetřil čas - nastavím rovnou celý seznam - Homer si s tím poradí
             if (overview.hardware_group_ids == null || overview.hardware_group_ids.isEmpty() || !overview.hardware_group_ids.contains(hardware_group_id)) {
-                System.out.println("check_settings - Nastavení Hardware Groups!!!!!!!! ");
+                logger.trace("check_settings - Nastavení Hardware Groups!!!!!!!! ");
                 set_hardware_groups_on_hardware(get_hardware_group_ids(), Enum_type_of_command.SET);
                 break;
             }
@@ -2097,7 +2161,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
                 new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, get_project_id(), this.id))).start();
             }
         }
-
 
         // ---- ZDE už dělám změny na HW!! -----
 

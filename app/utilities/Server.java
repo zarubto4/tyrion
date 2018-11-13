@@ -482,7 +482,8 @@ public class Server {
         String mode = Server.mode.name().toLowerCase();
 
         // Připojení na MongoClient v Azure
-        logger.info("init_mongo_database:: URL {}", configuration.getString("MongoDB." + mode + ".url"));
+        logger.info("init_mongo_database:");
+        logger.trace("init_mongo_database:: URL {}", configuration.getString("MongoDB." + mode + ".url"));
 
 
         MongoClientOptions.Builder options_builder = new MongoClientOptions.Builder();
@@ -554,7 +555,7 @@ public class Server {
 
     public static Datastore getMainMongoDatabase() {
         if(Server.main_data_store == null) {
-            logger.error("getMainMongoDatabase:: {} Required to init main_data_store ");
+            logger.error("getMainMongoDatabase:: Required to init main_data_store.");
             init_mongo_database();
         }
 

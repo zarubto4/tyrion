@@ -180,6 +180,11 @@ public class Controller_Things_Mobile {
                         node.monthlyTraffic              = Long.valueOf(eElement.getElementsByTagName("monthlyTraffic").item(0).getTextContent());
                         node.monthlyTrafficThreshold     = Long.valueOf(eElement.getElementsByTagName("monthlyTrafficThreshold").item(0).getTextContent());
                         node.msisdn                      = Long.valueOf(eElement.getElementsByTagName("msisdn").item(0).getTextContent());
+
+                        // TODO Things Mobile
+                        // node.iccid                      = Long.valueOf(eElement.getElementsByTagName("msisdn").item(0).getTextContent());
+                        // node.imsi                       = Long.valueOf(eElement.getElementsByTagName("msisdn").item(0).getTextContent());
+
                         node.name                        = eElement.getElementsByTagName("name").item(0).getTextContent();
                         node.status                      = eElement.getElementsByTagName("status").item(0).getTextContent();
                         node.plan                        = eElement.getElementsByTagName("plan").item(0).getTextContent();
