@@ -14,7 +14,9 @@ import io.swagger.util.Json;
 import java.lang.reflect.Array;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class MongoCloudApi {
 
@@ -29,9 +31,6 @@ public class MongoCloudApi {
         this.config = config;
     }
 
-  //  public String getConnectionStringForUser(String username, String password){
-
-//    }
 
     public SwaggerMongoCloudUser createUser(UUID product_id, String databaseName) throws Exception{
 
@@ -66,37 +65,31 @@ public class MongoCloudApi {
 
     }
 
-    public SwaggerMongoCloudUser addRole(String username, String database) throws Exception{
-            SwaggerMongoCloudUser user = getUser(username);
-            SwaggerMongoCloudUserRole newRole = new SwaggerMongoCloudUserRole();
-            newRole.databaseName = database;
-            newRole.roleName = "readWrite";
-            SwaggerMongoCloudUserRole[] newRoles;
-            if(user.roles == null) {
-                newRoles = new SwaggerMongoCloudUserRole[]{newRole};
-            } else {
-                newRoles = Arrays.copyOf(user.roles, user.roles.length+1);
-                newRoles[user.roles.length] = newRole;
-            }
+    public void addRole(String username, String database) throws Exception{
+        SwaggerMongoCloudUser user = getUser(username);
+        SwaggerMongoCloudUserRole newRole = new SwaggerMongoCloudUserRole();
+        newRole.databaseName = database;
+        newRole.roleName = "readWrite";
+        SwaggerMongoCloudUserRole[] newRoles;
+        if(user.roles == null) {
+            newRoles = new SwaggerMongoCloudUserRole[]{newRole};
+        } else {
+            newRoles = Arrays.copyOf(user.roles, user.roles.length+1);
+            newRoles[user.roles.length] = newRole;
+        }
 
-            SwaggerMongoCloudUser updatedUser = new SwaggerMongoCloudUser();
-            updatedUser.roles = newRoles;
-            WSResponse response =  ws.url(getBaseConnectionString() + "/databaseUsers/admin/" + user.username)
-                    .setAuth(getMongoCloudLogin(),
-                            getApiKey(),
-                            WSAuthScheme.DIGEST).setContentType("application/json").patch(Json.pretty(updatedUser)).toCompletableFuture().get();
+        SwaggerMongoCloudUser updatedUser = new SwaggerMongoCloudUser();
+        updatedUser.roles = newRoles;
+        setRolesForUser(username, newRoles);
+    }
 
-            switch (response.getStatus()) {
-                case 200:
-                    SwaggerMongoCloudUser updated = new SwaggerMongoCloudUser();
-                    updated.username = user.username;
-                    updated.password = user.password;
-                    updated.groupId  = user.groupId;
-                    updated.roles    = newRoles;
-                    return updated;
-                 default:
-                     throw new Exception();
-            }
+    public void removeRole(String username, String database) throws Exception {
+        SwaggerMongoCloudUser user = getUser(username);
+        SwaggerMongoCloudUserRole[] newRoles = Arrays.stream( user.roles )
+                                                     .filter( role -> !role.databaseName.equals(database) )
+                                                     .toArray( SwaggerMongoCloudUserRole[]::new );
+
+        setRolesForUser(username, newRoles);
     }
 
     public SwaggerMongoCloudUser getUser(String username) throws Exception {
@@ -109,6 +102,22 @@ public class MongoCloudApi {
             case 200:
                 return formFactory.formFromJsonWithValidation(SwaggerMongoCloudUser.class, response.asJson());
              default:
+                throw new Exception();
+        }
+    }
+
+    private void setRolesForUser(String username, SwaggerMongoCloudUserRole[] roles) throws Exception{
+        SwaggerMongoCloudUser updatedUser = new SwaggerMongoCloudUser();
+        updatedUser.roles = roles;
+        WSResponse response =  ws.url(getBaseConnectionString() + "/databaseUsers/admin/" + username)
+                .setAuth(getMongoCloudLogin(), getApiKey(), WSAuthScheme.DIGEST)
+                .setContentType("application/json")
+                .patch(Json.pretty(updatedUser))
+                .toCompletableFuture().get();
+        switch (response.getStatus()) {
+            case 200:
+                return;
+            default:
                 throw new Exception();
         }
     }
