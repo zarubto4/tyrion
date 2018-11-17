@@ -2,6 +2,7 @@ package utilities.mongo_cloud_api;
 
 
 import com.google.inject.Inject;
+import com.mongodb.client.MongoIterable;
 import com.typesafe.config.Config;
 import controllers._BaseFormFactory;
 import io.ebeaninternal.server.core.Message;
@@ -9,10 +10,12 @@ import play.libs.ws.WSAuthScheme;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
-
 import io.swagger.util.Json;
+import utilities.Server;
+
 import java.lang.reflect.Array;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -38,7 +41,7 @@ public class MongoCloudApi {
 
             SwaggerMongoCloudUserRole role = new SwaggerMongoCloudUserRole();
             role.databaseName = databaseName;
-            role.roleName = "readWrite";
+            role.roleName = "dbAdmin";
             SwaggerMongoCloudUser user = new SwaggerMongoCloudUser();
             user.databaseName = "admin";
             user.username =  product_id.toString();
@@ -78,8 +81,6 @@ public class MongoCloudApi {
             newRoles[user.roles.length] = newRole;
         }
 
-        SwaggerMongoCloudUser updatedUser = new SwaggerMongoCloudUser();
-        updatedUser.roles = newRoles;
         setRolesForUser(username, newRoles);
     }
 
@@ -91,6 +92,7 @@ public class MongoCloudApi {
 
         setRolesForUser(username, newRoles);
     }
+
 
     public SwaggerMongoCloudUser getUser(String username) throws Exception {
         WSResponse response =  ws.url(getBaseConnectionString() + "/databaseUsers/admin/" + username)
@@ -105,6 +107,16 @@ public class MongoCloudApi {
                 throw new Exception();
         }
     }
+
+    public List<String> getCollections(String databaseId) throws Exception {
+        MongoIterable<String> collections = Server.mongoClient.getDatabase(databaseId).listCollectionNames();
+        List<String> result = new ArrayList<>();
+        for (String collectionName : collections ){
+            result.add(collectionName);
+        }
+        return result;
+    }
+
 
     private void setRolesForUser(String username, SwaggerMongoCloudUserRole[] roles) throws Exception{
         SwaggerMongoCloudUser updatedUser = new SwaggerMongoCloudUser();

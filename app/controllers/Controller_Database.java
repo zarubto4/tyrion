@@ -33,8 +33,10 @@ import utilities.mongo_cloud_api.SwaggerMongoCloudUser;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_Database_New;
+import utilities.swagger.input.Swagger_NameAndDescription;
 import utilities.swagger.input.Swagger_ProductExtension_New;
 import utilities.swagger.output.Swagger_Database;
+import utilities.swagger.output.Swagger_DatabaseCollectionList;
 import utilities.swagger.output.Swagger_Database_Collections;
 import utilities.swagger.output.Swagger_Database_List;
 
@@ -214,14 +216,73 @@ public class Controller_Database extends _BaseController {
         try {
             Model_ProductExtension productExtension = Model_ProductExtension.find.byId(db_id);
             checkDeletePermission(productExtension);
-            delete(productExtension);
+            mongoApi.removeRole(productExtension.product.id.toString(), productExtension.id.toString());
+            productExtension.setActive(false);
 
-            productExtension.active = false;
-
-            Server.mongoClient.dropDatabase(db_id.toString());
             return(ok());
         } catch ( Exception e ) {
             return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "edit Database",
+            tags = {"Database"},
+            notes = "Edit database",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_NameAndDescription",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result edit_db(UUID db_id){
+        Swagger_NameAndDescription updated = formFromRequestWithValidation(Swagger_NameAndDescription.class);
+
+        Model_ProductExtension productExtension = Model_ProductExtension.find.byId(db_id);
+        checkUpdatePermission(productExtension);
+
+        productExtension.name        = updated.name;
+        productExtension.description = updated.description;
+
+        productExtension.update();
+        return ok();
+    }
+
+
+    @ApiOperation(
+            value = "get collections",
+            tags = {"Database"},
+            notes = "List all collections by database id"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_DatabaseCollectionList.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result get_colections(UUID db_id){
+        Swagger_DatabaseCollectionList collectionList = new Swagger_DatabaseCollectionList();
+        try {
+            collectionList.names = mongoApi.getCollections(db_id.toString());
+            return ok(collectionList);
+        }
+        catch (Exception e) {
+            return  externalServerError();
         }
     }
 
