@@ -13,7 +13,7 @@ import websocket.messages.homer_with_tyrion.verification.WS_Message_Check_homer_
 
 public class Synchronize_Homer_Synchronize_Settings extends Thread {
 
-    @Inject public static _BaseFormFactory baseFormFactory;
+    @Inject public static _BaseFormFactory formFactory;
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -50,7 +50,7 @@ public class Synchronize_Homer_Synchronize_Settings extends Thread {
                 return;
             }*/
 
-            WS_Message_Homer_Get_homer_server_configuration help = baseFormFactory.formFromJsonWithValidation(WS_Message_Homer_Get_homer_server_configuration.class, ask_for_configuration);
+            WS_Message_Homer_Get_homer_server_configuration help = formFactory.formFromJsonWithValidation(WS_Message_Homer_Get_homer_server_configuration.class, ask_for_configuration);
 
             // Homer server má novější novou konfiguraci
             terminal_logger.debug("synchronize_configuration: Homer server {} has new configuration", homer_server.id);

@@ -359,7 +359,7 @@ public class Controller_Admin extends _BaseController {
                     .get();
 
             // Get and Validate Object
-            GitHub_Release release = baseFormFactory.formFromJsonWithValidation(GitHub_Release.class, (releases.asJson()));
+            GitHub_Release release = formFactory.formFromJsonWithValidation(GitHub_Release.class, (releases.asJson()));
 
             logger.debug("server_scheduleUpdate - got release");
 

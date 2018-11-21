@@ -53,6 +53,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
+import utilities.scheduler.jobs.Job_CheckCompilationLibraries;
 import utilities.scheduler.jobs.Job_ThingsMobile_SimData_Synchronize;
 
 import static java.lang.Thread.sleep;
@@ -496,6 +497,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
     public Result test8() {
         try {
 
+            new Job_CheckCompilationLibraries(this.ws, this.config, this.formFactory).execute(null);
 
             // new Job_ThingsMobile_SimData_Synchronize().execute(null);
 
@@ -510,7 +512,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
 
                 String string_json = cursor.next().toJson();
                 ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
-                Model_HardwareBatch batch = baseFormFactory.formFromJsonWithValidation(Model_HardwareBatch.class, json);
+                Model_HardwareBatch batch = formFactory.formFromJsonWithValidation(Model_HardwareBatch.class, json);
                 batches.add(batch);
             }
 
@@ -572,7 +574,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
 
                 String string_json = cursor_entity.next().toJson();
                 ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
-                Model_HardwareRegistrationEntity batch = baseFormFactory.formFromJsonWithValidation(Model_HardwareRegistrationEntity.class, json);
+                Model_HardwareRegistrationEntity batch = formFactory.formFromJsonWithValidation(Model_HardwareRegistrationEntity.class, json);
                 entities.add(batch);
             }
 

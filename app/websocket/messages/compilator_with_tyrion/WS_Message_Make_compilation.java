@@ -23,7 +23,8 @@ public class WS_Message_Make_compilation extends WS_AbstractMessage {
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
     public String interface_code;        // Optional value - Only if there is no build_errors
-    public String build_id;              // Optional value - Only if there is no build_errors
+    public UUID build_id;                // Optional value - Only if there is no build_errors
+    public String build_id_in_firmware;  // Optional value - Only if there is no build_errors
     public String build_url;             // Optional value - Only if there is no build_errors
 
     @Valid public List<Swagger_Compilation_Build_Error> build_errors = new ArrayList<>();

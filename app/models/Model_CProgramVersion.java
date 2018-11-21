@@ -428,7 +428,7 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
                     logger.trace("compile_program_procedure:: Body is ok - uploading to Azure was successful");
                     this.compilation.status = CompilationStatus.SUCCESS;
                     this.compilation.build_url = compilation.build_url;
-                    this.compilation.firmware_build_id = compilation.build_id;
+                    this.compilation.firmware_build_id = compilation.build_id_in_firmware;
                     this.compilation.virtual_input_output = compilation.interface_code;
                     this.compilation.firmware_build_datetime = new Date();
                     this.compilation.update();

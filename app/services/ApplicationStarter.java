@@ -9,9 +9,11 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.typesafe.config.Config;
+import controllers._BaseFormFactory;
 import play.api.db.evolutions.ApplicationEvolutions;
 import play.inject.ApplicationLifecycle;
 import play.libs.Json;
+import play.libs.ws.WSClient;
 import utilities.Server;
 import utilities.cache.CacheService;
 import utilities.enums.ServerMode;
@@ -47,7 +49,16 @@ public class ApplicationStarter {
     private final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("application");
 
     @Inject
-    public ApplicationStarter(Clock clock, ApplicationLifecycle appLifecycle, Config configuration, Injector injector, SchedulerController scheduler, CacheService cache, ApplicationEvolutions applicationEvolutions) {
+    public ApplicationStarter(Clock clock,
+                              ApplicationLifecycle appLifecycle,
+                              Config configuration,
+                              Injector injector,
+                              SchedulerController scheduler,
+                              CacheService cache,
+                              ApplicationEvolutions applicationEvolutions,
+                              WSClient ws,
+                              _BaseFormFactory formFactory
+    ) {
 
         this.clock = clock;
         this.appLifecycle = appLifecycle;
@@ -69,7 +80,8 @@ public class ApplicationStarter {
                     .setFilterProvider(new SimpleFilterProvider().addFilter("permission", injector.getInstance(PermissionFilter.class)))
                     .setHandlerInstantiator(injector.getInstance(PermissionHandlerInstantiator.class));
 
-            Server.start(injector);
+            Server.start(injector, ws, formFactory);
+
             this.scheduler.start();
         } catch (Exception e) {
             logger.error("Error starting the application", e);

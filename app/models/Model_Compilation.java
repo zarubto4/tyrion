@@ -105,7 +105,7 @@ public class Model_Compilation extends BaseModel {
         logger.trace("compile_program_procedure:: Body is ok - uploading to Azure was successful");
         compilation.status = CompilationStatus.SUCCESS;
         compilation.build_url = compilation_Result.build_url;
-        compilation.firmware_build_id = compilation_Result.build_id;
+        compilation.firmware_build_id = compilation_Result.build_id_in_firmware;
         compilation.virtual_input_output = compilation_Result.interface_code;
         compilation.firmware_build_datetime = new Date();
         compilation.update();

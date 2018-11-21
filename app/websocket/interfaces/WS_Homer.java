@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 public class WS_Homer extends WS_Interface {
 
-    public static _BaseFormFactory baseFormFactory; // Its Required to set this in Server.class Component
+    public static _BaseFormFactory formFactory; // Its Required to set this in Server.class Component
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 
@@ -143,7 +143,7 @@ public class WS_Homer extends WS_Interface {
 
             if (json.get("message_channel").asText().equals(Model_HomerServer.CHANNEL) && json.get("message_type").asText().equals(WS_Message_Check_homer_server_permission.message_type)) {
 
-                Model_HomerServer.approve_validation_for_homer_server(this, baseFormFactory.formFromJsonWithValidation(WS_Message_Check_homer_server_permission.class, json));
+                Model_HomerServer.approve_validation_for_homer_server(this, formFactory.formFromJsonWithValidation(WS_Message_Check_homer_server_permission.class, json));
 
             } else {
 

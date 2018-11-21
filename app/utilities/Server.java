@@ -21,6 +21,7 @@ import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
+import play.libs.ws.WSClient;
 import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
@@ -34,6 +35,7 @@ import utilities.models_update_echo.RefreshTouch_echo_handler;
 import utilities.notifications.NotificationHandler;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
+import utilities.scheduler.jobs.Job_GetCompilationLibraries;
 import utilities.threads.homer_server.Synchronize_Homer_Synchronize_Settings;
 import websocket.interfaces.WS_Homer;
 
@@ -52,8 +54,9 @@ public class Server {
 
     private static final Logger logger = new Logger(Server.class);
 
-    public static _BaseFormFactory baseFormFactory;
+    public static _BaseFormFactory formFactory;
     public static Config configuration;
+    public static WSClient ws;
     public static Injector injector;
 
     public static ServerMode mode;
@@ -138,9 +141,10 @@ public class Server {
      * @param injector default application injector
      * @throws Exception if error occurs when starting the server
      */
-    public static void start(Injector injector) throws Exception {
+    public static void start(Injector injector,  WSClient ws, _BaseFormFactory formFactory) throws Exception {
         Server.injector = injector;
-        Server.baseFormFactory = Server.injector.getInstance(_BaseFormFactory.class);
+        Server.formFactory = formFactory;
+        Server.ws = ws;
 
         setConstants();
 
@@ -159,6 +163,9 @@ public class Server {
 
         setBaseForm();
         startThreads();
+
+        // Set Libraries
+        new Job_GetCompilationLibraries(ws, configuration, formFactory).execute(null);
     }
 
     /**
@@ -290,6 +297,9 @@ public class Server {
 
         // Set token to InterCom
         Intercom.setToken(configuration.getString("Intercom.token"));
+
+
+
     }
 
     /**
@@ -465,10 +475,10 @@ public class Server {
      */
     private static void setBaseForm() {
 
-        WS_Homer.baseFormFactory                                = Server.injector.getInstance(_BaseFormFactory.class);
-        Synchronize_Homer_Synchronize_Settings.baseFormFactory  = Server.injector.getInstance(_BaseFormFactory.class);
-        DigitalOceanThreadRegister.baseFormFactory              = Server.injector.getInstance(_BaseFormFactory.class);
-        Model_InstanceSnapshot.baseFormFactory                  = Server.injector.getInstance(_BaseFormFactory.class);
+        WS_Homer.formFactory                                = Server.injector.getInstance(_BaseFormFactory.class);
+        Synchronize_Homer_Synchronize_Settings.formFactory  = Server.injector.getInstance(_BaseFormFactory.class);
+        DigitalOceanThreadRegister.formFactory              = Server.injector.getInstance(_BaseFormFactory.class);
+        Model_InstanceSnapshot.formFactory                  = Server.injector.getInstance(_BaseFormFactory.class);
     }
 
 

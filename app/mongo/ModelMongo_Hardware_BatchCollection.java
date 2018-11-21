@@ -164,7 +164,7 @@ public class ModelMongo_Hardware_BatchCollection extends _Abstract_MongoModel im
             // Set latest latest_used_mac_address if its empty
             if (latest_used_mac_address == null) latest_used_mac_address = mac_address_start;
 
-            // Try To make a Json and check validation properties of object  baseFormFactory.formFromJsonWithValidation
+            // Try To make a Json and check validation properties of object  formFactory.formFromJsonWithValidation
             super.save();
 
         } catch (Exception e){
