@@ -108,7 +108,7 @@ public class MongoCloudApi {
         }
     }
 
-    public List<String> getCollections(String databaseId) throws Exception {
+    public List<String> getCollections(String databaseId) {
         MongoIterable<String> collections = Server.mongoClient.getDatabase(databaseId).listCollectionNames();
         List<String> result = new ArrayList<>();
         for (String collectionName : collections ){
