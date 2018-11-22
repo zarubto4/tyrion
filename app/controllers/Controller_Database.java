@@ -162,7 +162,7 @@ public class Controller_Database extends _BaseController {
             notes = "List all databases by product_id"
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Database_List.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Database.class, responseContainer = "List"),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
@@ -179,23 +179,21 @@ public class Controller_Database extends _BaseController {
                                                                                             .eq("type", ExtensionType.DATABASE)
                                                                                             .findList();
 
-            Swagger_Database_List result = new Swagger_Database_List();
-
-            result.databases = extensionList.stream()
-                                            .map(this::extensionToSwaggerDatabase)
-                                            .collect(Collectors.toList());
-
-            if (result.databases.isEmpty()) {
-                return ok(result);
-            }
 
             String password = this.formFactory
                                   .formFromJsonWithValidation(ConfigurationProduct.class, Json.parse(product.configuration))
                                   .mongoDatabaseUserPassword;
 
-            result.connection_string = MessageFormat.format(config.getString("mongoCloudAPI.connectionStringTemplate"),
-                                                            product.id.toString(),  //login
-                                                            password);             
+            String baseConnectionString = MessageFormat.format(config.getString("mongoCloudAPI.connectionStringTemplate"),
+                    product.id.toString(),  //login
+                    password);
+
+
+
+            List<Swagger_Database> result = extensionList.stream()
+                                            .map(databaseExtension -> extensionToSwaggerDatabase(databaseExtension, baseConnectionString))
+                                            .collect(Collectors.toList());
+
 
             return ok(result);
         } catch (Exception e) {
@@ -245,6 +243,7 @@ public class Controller_Database extends _BaseController {
             }
     )
     @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -288,11 +287,13 @@ public class Controller_Database extends _BaseController {
         }
     }
 
-    private Swagger_Database extensionToSwaggerDatabase(Model_ProductExtension extension) {
+    private Swagger_Database extensionToSwaggerDatabase(Model_ProductExtension extension, String baseConnectionString) {
         Swagger_Database result = new Swagger_Database();
         result.name = extension.name;
         result.description = extension.description;
         result.id = extension.id;
+        result.connection_string = baseConnectionString + "/" + extension.id.toString();
+        result.collections = mongoApi.getCollections(extension.id.toString());
         return result;
     }
 }
