@@ -580,7 +580,7 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
             logger.debug("cloud_verification_token_GRID::  Instance ID:: {} ", help.instance_id);
             logger.debug("cloud_verification_token_GRID::  App ID:: {}", help.grid_app_id);
 
-            Model_GridTerminal terminal = Model_GridTerminal.find.query().where().eq("terminal_token", help.token).findOne();
+            Model_GridTerminal terminal = Model_GridTerminal.find.query().nullable().where().eq("terminal_token", help.token).findOne();
 
             // Pokud je terminall null - nikdy se uživatel nepřihlásit a nevytvořil se o tom záznam - ale to stále neznamená že není možno povolit přístup
             if (terminal == null) {
@@ -695,12 +695,6 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
 
             Model_AuthorizationToken floatingPersonToken = Model_AuthorizationToken.find.query().where().eq("token", help.token).findOne();
 
-            if (floatingPersonToken == null) {
-                logger.warn("cloud_verification_token:: FloatingPersonToken not found!");
-                homer.send(help.get_result(false));
-                return;
-            }
-
             logger.debug("Cloud_Homer_server:: cloud_verification_token:: WebView FloatingPersonToken Token found and user have permission");
 
             // Kontola operávnění ke konkrétní instanci??
@@ -719,7 +713,7 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
                     homer.send(help.get_result(false));
                 }
 
-            // Provátní server
+                // Provátní server
             } else {
 
                 logger.warn("cloud_verification_token:: Its a private Server!");
@@ -734,6 +728,12 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
 
                 }
             }
+        } catch (NotFoundException e) {
+
+            logger.warn("cloud_verification_token:: FloatingPersonToken not found! ID {} - This TOKEN NOT EXIST IN DATABASE", help.token);
+            logger.error("cloud_verification_token:: FloatingPersonToken not found! ID {} - This TOKEN NOT EXIST IN DATABASE", help.token);
+            homer.send(help.get_result(false));
+
         } catch (Exception e) {
             logger.internalServerError(e);
         }
