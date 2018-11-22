@@ -68,7 +68,7 @@ public class Controller_UploadFiles extends _BaseController {
             }
 
             // Get and Validate Object
-            Swagger_GitHubReleases help = baseFormFactory.formFromJsonWithValidation(Swagger_GitHubReleases.class, ws_response_get_all_releases.asJson());
+            Swagger_GitHubReleases help = formFactory.formFromJsonWithValidation(Swagger_GitHubReleases.class, ws_response_get_all_releases.asJson());
 
             System.out.println("Release Number: " +  help.name);
             System.out.println("Component Name: " +  component);

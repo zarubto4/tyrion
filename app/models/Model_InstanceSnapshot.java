@@ -52,7 +52,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
     /**
      * _BaseFormFactory
      */
-    public static _BaseFormFactory baseFormFactory; // Its Required to set this in Server.class Component
+    public static _BaseFormFactory formFactory; // Its Required to set this in Server.class Component
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -119,7 +119,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
         try {
 
             if (this.json_additional_parameter != null) {
-                return baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapShotConfiguration.class, Json.parse(this.json_additional_parameter));
+                return formFactory.formFromJsonWithValidation(Swagger_InstanceSnapShotConfiguration.class, Json.parse(this.json_additional_parameter));
             } else {
 
                 Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.query().where().eq("instance.id", instance.id).ne("id", this.id).isNotNull("json_additional_parameter").orderBy("deployed").setMaxRows(1).findOne();
@@ -379,7 +379,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
     public Swagger_InstanceSnapshot_JsonFile getProgram() {
         try {
 
-            return baseFormFactory.formFromJsonWithValidation(Swagger_InstanceSnapshot_JsonFile.class, Json.parse(getBlob().downloadString()));
+            return formFactory.formFromJsonWithValidation(Swagger_InstanceSnapshot_JsonFile.class, Json.parse(getBlob().downloadString()));
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -562,7 +562,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
 
             JsonNode node = getInstance().write_with_confirmation(new WS_Message_Instance_set_program().make_request(this), 1000 * 6, 0, 2);
 
-            return baseFormFactory.formFromJsonWithValidation(WS_Message_Instance_set_program.class, node);
+            return formFactory.formFromJsonWithValidation(WS_Message_Instance_set_program.class, node);
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -940,7 +940,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
             List<Swagger_GridWidgetVersion_GridApp_source> list = new ArrayList<>();
 
             // Create object
-            M_Program_Parser program_parser = baseFormFactory.formFromJsonWithValidation(M_Program_Parser.class, m_code);
+            M_Program_Parser program_parser = formFactory.formFromJsonWithValidation(M_Program_Parser.class, m_code);
 
             // Loking for objects
             for (Widget_Parser widget_parser : program_parser.screens.main.get(0).widgets) {

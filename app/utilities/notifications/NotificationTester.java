@@ -39,7 +39,7 @@ public class NotificationTester extends _BaseController {
     private static final Logger terminal_logger = new Logger(NotificationTester.class);
 
     @Inject
-    public static _BaseFormFactory baseFormFactory;
+    public static _BaseFormFactory formFactory;
 
 // CONTROLLER CONFIGURATION ############################################################################################
 

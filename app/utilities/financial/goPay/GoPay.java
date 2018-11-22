@@ -215,7 +215,7 @@ public class GoPay extends _BaseController {
 //            logger.debug("singlePayment: Response from GoPay: " + response.toString());
 //
 //            // Get and Validate Object
-//            GoPay_Result help = baseFormFactory.formFromJsonWithValidation(GoPay_Result.class, response);
+//            GoPay_Result help = formFactory.formFromJsonWithValidation(GoPay_Result.class, response);
 //
 //            logger.debug("singlePayment: Set GoPay ID to Invoice");
 //
@@ -322,7 +322,7 @@ public class GoPay extends _BaseController {
 //                case 200: {
 //
 //                    // Get and Validate Object
-//                    GoPay_Result help = baseFormFactory.formFromJsonWithValidation(GoPay_Result.class, result);
+//                    GoPay_Result help = formFactory.formFromJsonWithValidation(GoPay_Result.class, result);
 //
 //                    invoice.gopay_id = help.id;
 //                    invoice.gw_url = null;
@@ -520,7 +520,7 @@ public class GoPay extends _BaseController {
 //                    if (response.getStatus() == 200) {
 //
 //                        // Get and Validate Object
-//                        GoPay_Result help = baseFormFactory.formFromJsonWithValidation(GoPay_Result.class, result);
+//                        GoPay_Result help = formFactory.formFromJsonWithValidation(GoPay_Result.class, result);
 //
 //                        switch (help.state) {
 //

@@ -134,7 +134,7 @@ public class Controller_Code extends _BaseController {
 
                     logger.trace("compile_C_Program_code:: Library contains files");
 
-                    Swagger_Library_File_Load lib_file = baseFormFactory.formFromJsonWithValidation(Swagger_Library_File_Load.class, Json.parse(lib_version.file.downloadString()));
+                    Swagger_Library_File_Load lib_file = formFactory.formFromJsonWithValidation(Swagger_Library_File_Load.class, Json.parse(lib_version.file.downloadString()));
                     library_files.addAll(lib_file.files);
 
                 }

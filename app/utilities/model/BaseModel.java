@@ -245,7 +245,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
      */
     @JsonIgnore
     public static <T> T formFromJsonWithValidation(Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException {
-        return Server.baseFormFactory.formFromJsonWithValidation(clazz, jsonNode);
+        return Server.formFactory.formFromJsonWithValidation(clazz, jsonNode);
     }
 
     /**
@@ -257,7 +257,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
      * @return a copy of this form filled with the new data
      */
     public static  <T> T formFromJsonWithValidation(Model_HomerServer server, Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException, IOException {
-        return Server.baseFormFactory.formFromJsonWithValidation(server, clazz, jsonNode);
+        return Server.formFactory.formFromJsonWithValidation(server, clazz, jsonNode);
     }
 
     /**
@@ -269,7 +269,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
      * @return a copy of this form filled with the new data
      */
     public static  <T> T formFromJsonWithValidation(WS_Homer server, Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException, IOException {
-        return Server.baseFormFactory.formFromJsonWithValidation(server, clazz, jsonNode);
+        return Server.formFactory.formFromJsonWithValidation(server, clazz, jsonNode);
     }
 
 /* COMMON METHODS ------------------------------------------------------------------------------------------------------*/

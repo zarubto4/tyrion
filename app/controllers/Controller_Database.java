@@ -117,7 +117,7 @@ public class Controller_Database extends _BaseController {
 
             ConfigurationProduct configuration;
             if ( product.configuration != null && !product.configuration.isEmpty() ) {
-                configuration = baseFormFactory.formFromJsonWithValidation(ConfigurationProduct.class, Json.parse(product.configuration));
+                configuration = formFactory.formFromJsonWithValidation(ConfigurationProduct.class, Json.parse(product.configuration));
                 if (configuration == null ) {
                     configuration = new ConfigurationProduct();
                 }
@@ -180,13 +180,14 @@ public class Controller_Database extends _BaseController {
                                                                                             .findList();
 
 
-            String password = this.baseFormFactory
-                    .formFromJsonWithValidation(ConfigurationProduct.class, Json.parse(product.configuration))
-                    .mongoDatabaseUserPassword;
+            String password = this.formFactory
+                                  .formFromJsonWithValidation(ConfigurationProduct.class, Json.parse(product.configuration))
+                                  .mongoDatabaseUserPassword;
 
             String baseConnectionString = MessageFormat.format(config.getString("mongoCloudAPI.connectionStringTemplate"),
                     product.id.toString(),  //login
                     password);
+
 
 
             List<Swagger_Database> result = extensionList.stream()
