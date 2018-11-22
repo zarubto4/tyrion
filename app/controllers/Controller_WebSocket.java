@@ -3,6 +3,7 @@ package controllers;
 import akka.actor.ActorSystem;
 import akka.stream.Materializer;
 import com.typesafe.config.Config;
+import exceptions.NotFoundException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -32,6 +33,7 @@ import websocket.messages.compilator_with_tyrion.WS_Message_Ping_compilation_ser
 import websocket.messages.homer_with_tyrion.WS_Message_Homer_ping;
 
 import javax.inject.Inject;
+import java.awt.geom.NoninvertibleTransformException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -167,26 +169,26 @@ public class Controller_WebSocket extends _BaseController {
 
                 //Find object (only ID)
                 Model_HomerServer homer = Model_HomerServer.find.query().where().eq("connection_identifier", token).select("id").findOne();
-                if(homer != null){
-                    if (homers.containsKey(homer.id)) {
-                        logger.warn("homer - server is already connected, trying to ping previous connection");
 
-                        WS_Message_Homer_ping result = homer.ping();
-                        if(!result.status.equals("success")){
-                            logger.error("homer - ping failed, removing previous connection");
-                            homers.get(homer.id).close();
-                        } else {
-                            logger.warn("homer - server is already connected, connection is working, cannot connect twice");
-                            return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
-                        }
+                if (homers.containsKey(homer.id)) {
+                    logger.warn("homer - server is already connected, trying to ping previous connection");
+
+                    WS_Message_Homer_ping result = homer.ping();
+                    if (!result.status.equals("success")) {
+                        logger.error("homer - ping failed, removing previous connection");
+                        homers.get(homer.id).close();
+                    } else {
+                        logger.warn("homer - server is already connected, connection is working, cannot connect twice");
+                        return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
                     }
-
-                    logger.info("homer - connection was successful. Server {}", homer.name);
-                    return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(actorRef -> WS_Homer.props(actorRef, homer.id), actorSystem, materializer)));
-
-                } else {
-                    logger.warn("homer - server with token: {} is not registered in the database, rejecting connection wtih token: {}", token);
                 }
+
+                logger.info("homer - connection was successful. Server {}", homer.name);
+                return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(actorRef -> WS_Homer.props(actorRef, homer.id), actorSystem, materializer)));
+
+
+            } catch (NotFoundException e) {
+                logger.warn("homer - server with token: {} is not registered in the database, rejecting connection wtih token: {}", token);
 
             } catch (Exception e) {
                 logger.internalServerError(e);
@@ -205,29 +207,28 @@ public class Controller_WebSocket extends _BaseController {
 
                 //Find object (only ID)
                 Model_CompilationServer compiler = Model_CompilationServer.find.query().where().eq("connection_identifier", token).select("id").findOne();
-                if(compiler != null){
 
-                    if (compilers.containsKey(compiler.id)) {
-                        logger.error("compiler - server is already connected, trying to ping previous connection");
+                if (compilers.containsKey(compiler.id)) {
+                    logger.error("compiler - server is already connected, trying to ping previous connection");
 
-                        WS_Message_Ping_compilation_server result = compiler.ping();
+                    WS_Message_Ping_compilation_server result = compiler.ping();
 
-                        logger.trace("compiler:: Error::{} {}" , result.error , result.error_message);
-                        if(!result.status.equals("success") && !result.error.equals("Missing field code.")){
-                            logger.error("compiler - ping failed, removing previous connection");
-                            compilers.get(compiler.id).close();
-                        } else {
-                            logger.warn("compiler - server is already connected, connection is working, cannot connect twice");
-                            return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
-                        }
+                    logger.trace("compiler:: Error::{} {}" , result.error , result.error_message);
+                    if(!result.status.equals("success") && !result.error.equals("Missing field code.")){
+                        logger.error("compiler - ping failed, removing previous connection");
+                        compilers.get(compiler.id).close();
+                    } else {
+                        logger.warn("compiler - server is already connected, connection is working, cannot connect twice");
+                        return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
                     }
-
-                    logger.info("compiler - connection was successful");
-                    return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(actorRef -> WS_Compiler.props(actorRef, compiler.id), actorSystem, materializer)));
-
-                } else {
-                    logger.warn("compiler - server with token: {} is not registered in the database, rejecting token: {}", token);
                 }
+
+                logger.info("compiler - connection was successful");
+                return CompletableFuture.completedFuture(F.Either.Right(ActorFlow.actorRef(actorRef -> WS_Compiler.props(actorRef, compiler.id), actorSystem, materializer)));
+
+
+            } catch (NotFoundException e) {
+                logger.warn("compiler - server with token: {} is not registered in the database, rejecting connection wtih token: {}", token);
 
             } catch (Exception e) {
                 logger.internalServerError(e);
@@ -249,7 +250,6 @@ public class Controller_WebSocket extends _BaseController {
                     logger.warn("portal - incoming connection: {} not recognized and pair with Person. ", token);
                     return CompletableFuture.completedFuture(F.Either.Left(forbidden("Token not found!")));
                 }
-
 
                 Model_Person person = Model_Person.find.byId(user_token);
 
@@ -283,6 +283,9 @@ public class Controller_WebSocket extends _BaseController {
                 } else {
                     logger.info("Error! - Origins not Allowed!");
                 }
+
+            } catch (NotFoundException e) {
+                logger.warn("portal - user with token not found", token);
 
             } catch (Exception e) {
                 logger.internalServerError(e);

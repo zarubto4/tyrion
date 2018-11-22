@@ -9,6 +9,7 @@ import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
 import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
 /**

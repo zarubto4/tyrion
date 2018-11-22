@@ -420,8 +420,6 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
                     WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_HomerServer.class,homer_server.id, true, homer_server.get_project_id());
                 }
 
-                return;
-
             } else {
 
                 logger.error("approve_validation_for_homer_server:: Hash is not same on Server {} {}", server.id, server.name);
@@ -432,7 +430,6 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
                 ws_homer.token = null;
 
                 ws_homer.verificationFail(message.message_id);
-                return;
             }
 
         } catch (Exception e) {
