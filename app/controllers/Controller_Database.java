@@ -180,7 +180,6 @@ public class Controller_Database extends _BaseController {
                                                                                             .eq("type", ExtensionType.DATABASE)
                                                                                             .findList();
 
-
             if (product.configuration != null && !product.configuration.isEmpty()) {
                 String password = this.formFactory
                                       .formFromJsonWithValidation(ConfigurationProduct.class, Json.parse(product.configuration))
@@ -281,6 +280,8 @@ public class Controller_Database extends _BaseController {
     })
     public Result get_colections(UUID db_id){
         Swagger_DatabaseCollectionList collectionList = new Swagger_DatabaseCollectionList();
+        Model_ProductExtension database = Model_ProductExtension.find.byId(db_id);
+        checkReadPermission(database);
         try {
             collectionList.names = mongoApi.getCollections(db_id.toString());
             return ok(collectionList);
@@ -288,6 +289,25 @@ public class Controller_Database extends _BaseController {
         catch (Exception e) {
             return  externalServerError();
         }
+    }
+
+    @ApiOperation(
+            value = "create collection",
+            tags = {"Database"},
+            notes = "Create collection in database"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result create_collection(UUID db_id, String collection_name){
+        Model_ProductExtension database = Model_ProductExtension.find.byId(db_id);
+        checkReadPermission(database);
+        mongoApi.createCollection(db_id.toString(), collection_name);
+        return ok();
     }
 
     private Swagger_Database extensionToSwaggerDatabase(Model_ProductExtension extension, String baseConnectionString) {
