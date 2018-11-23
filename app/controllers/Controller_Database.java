@@ -41,6 +41,7 @@ import utilities.swagger.output.Swagger_Database_Collections;
 import utilities.swagger.output.Swagger_Database_List;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -180,22 +181,24 @@ public class Controller_Database extends _BaseController {
                                                                                             .findList();
 
 
-            String password = this.formFactory
-                                  .formFromJsonWithValidation(ConfigurationProduct.class, Json.parse(product.configuration))
-                                  .mongoDatabaseUserPassword;
+            if (product.configuration != null && !product.configuration.isEmpty()) {
+                String password = this.formFactory
+                                      .formFromJsonWithValidation(ConfigurationProduct.class, Json.parse(product.configuration))
+                                      .mongoDatabaseUserPassword;
+                String baseConnectionString = MessageFormat.format(config.getString("mongoCloudAPI.connectionStringTemplate"),
+                        product.id.toString(),  //login
+                        password);
 
-            String baseConnectionString = MessageFormat.format(config.getString("mongoCloudAPI.connectionStringTemplate"),
-                    product.id.toString(),  //login
-                    password);
-
-
-
-            List<Swagger_Database> result = extensionList.stream()
-                                            .map(databaseExtension -> extensionToSwaggerDatabase(databaseExtension, baseConnectionString))
-                                            .collect(Collectors.toList());
+                List<Swagger_Database> result = extensionList.stream()
+                        .map(databaseExtension -> extensionToSwaggerDatabase(databaseExtension, baseConnectionString))
+                        .collect(Collectors.toList());
 
 
-            return ok(result);
+                return ok(result);
+            }
+
+            return ok(new ArrayList<Swagger_Database>());
+
         } catch (Exception e) {
             return  controllerServerError(e);
         }
