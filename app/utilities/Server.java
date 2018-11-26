@@ -1,7 +1,6 @@
 package utilities;
 
 import com.google.inject.Injector;
-import com.microsoft.azure.documentdb.*;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.mongodb.MongoClient;
@@ -34,8 +33,6 @@ import utilities.models_update_echo.RefreshTouch_echo_handler;
 import utilities.notifications.NotificationHandler;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
-import utilities.threads.homer_server.Synchronize_Homer_Synchronize_Settings;
-import websocket.interfaces.WS_Homer;
 
 import java.math.RoundingMode;
 import java.net.InetAddress;
@@ -464,9 +461,6 @@ public class Server {
      * Set BaseForm for Json Control
      */
     private static void setBaseForm() {
-
-        WS_Homer.baseFormFactory                                = Server.injector.getInstance(_BaseFormFactory.class);
-        Synchronize_Homer_Synchronize_Settings.baseFormFactory  = Server.injector.getInstance(_BaseFormFactory.class);
         DigitalOceanThreadRegister.baseFormFactory              = Server.injector.getInstance(_BaseFormFactory.class);
         Model_InstanceSnapshot.baseFormFactory                  = Server.injector.getInstance(_BaseFormFactory.class);
     }

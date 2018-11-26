@@ -22,6 +22,7 @@ import utilities.cache.InjectCache;
 import utilities.enums.CompilationStatus;
 import utilities.enums.EntityType;
 import exceptions.NotFoundException;
+import utilities.hardware.update.Updatable;
 import utilities.logger.Logger;
 import utilities.model.UnderProject;
 import utilities.model.VersionModel;
@@ -43,7 +44,7 @@ import java.util.concurrent.CompletionStage;
 @Entity
 @ApiModel( value = "CProgramVersion", description = "Model of CProgramVersion")
 @Table(name="CProgramVersion")
-public class Model_CProgramVersion extends VersionModel implements Permissible, UnderProject {
+public class Model_CProgramVersion extends VersionModel implements Permissible, UnderProject, Updatable {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -160,7 +161,6 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
     public Model_Project getProject() {
         return this.get_c_program().getProject();
     }
-
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 

@@ -11,8 +11,6 @@ import io.ebean.annotation.SoftDelete;
 import io.ebean.bean.EntityBean;
 import io.ebean.bean.EntityBeanIntercept;
 import io.swagger.annotations.ApiModelProperty;
-import models.Model_HomerServer;
-import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheFinder;
@@ -22,13 +20,11 @@ import utilities.logger.Logger;
 import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
 import utilities.permission.JsonPermission;
-import websocket.interfaces.WS_Homer;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -250,30 +246,6 @@ public abstract class BaseModel extends Model implements JsonSerializable {
     @JsonIgnore
     public static <T> T formFromJsonWithValidation(Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException {
         return Server.baseFormFactory.formFromJsonWithValidation(clazz, jsonNode);
-    }
-
-    /**
-     * Binds Json data to this form - that is, handles form submission.
-     * Special Method with Response to Websocket
-     * @param clazz
-     * @param jsonNode
-     * @param <T>
-     * @return a copy of this form filled with the new data
-     */
-    public static  <T> T formFromJsonWithValidation(Model_HomerServer server, Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException, IOException {
-        return Server.baseFormFactory.formFromJsonWithValidation(server, clazz, jsonNode);
-    }
-
-    /**
-     * Binds Json data to this form - that is, handles form submission.
-     * Special Method with Response to Websocket
-     * @param clazz
-     * @param jsonNode
-     * @param <T>
-     * @return a copy of this form filled with the new data
-     */
-    public static  <T> T formFromJsonWithValidation(WS_Homer server, Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException, IOException {
-        return Server.baseFormFactory.formFromJsonWithValidation(server, clazz, jsonNode);
     }
 
 /* COMMON METHODS ------------------------------------------------------------------------------------------------------*/

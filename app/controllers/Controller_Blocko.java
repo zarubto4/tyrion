@@ -1,5 +1,6 @@
 package controllers;
 
+import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.ebean.*;
 import io.swagger.annotations.*;
@@ -16,6 +17,7 @@ import utilities.emails.Email;
 import utilities.enums.Approval;
 import utilities.enums.ProgramType;
 import exceptions.NotFoundException;
+import utilities.instance.InstanceService;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.permission.Action;
@@ -39,9 +41,12 @@ public class Controller_Blocko extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    @javax.inject.Inject
-    public Controller_Blocko(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
+    private final InstanceService instanceService;
+
+    @Inject
+    public Controller_Blocko(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService, InstanceService instanceService) {
         super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+        this.instanceService = instanceService;
     }
 
 // B PROGRAM ###########################################################################################################
@@ -1009,11 +1014,7 @@ public class Controller_Blocko extends _BaseController {
 
                 logger.trace("instanceSnapshot_deploy:: Deploy Snapshot Immediately");
 
-                // Deploy immediately!
-                snapshot.deployed = new Date();
-                snapshot.update();
-
-                snapshot.deploy();
+                this.instanceService.deploy(snapshot);
             }
 
             return ok();

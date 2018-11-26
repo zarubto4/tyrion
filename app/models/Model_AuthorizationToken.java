@@ -59,7 +59,7 @@ public class Model_AuthorizationToken extends BaseModel implements Permissible, 
 
     @JsonIgnore @Transient
     public Model_Person getPerson() {
-        return isLoaded("person") ? person : Model_Person.find.query().where().eq("authorization_tokens.id", id).select("id").findOne();
+        return isLoaded("person") ? person : Model_Person.find.query().where().eq("authorization_tokens.id", id).findOne();
     }
 
     @JsonIgnore @Transient
@@ -155,23 +155,8 @@ public class Model_AuthorizationToken extends BaseModel implements Permissible, 
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    /**
-     * For this case, we have Model_AuthorizationToken objects in storage, but ID is not a TOKEN name!
-     * So, thets why we have two cache storage one for Model, one for connection from Token to Model (M:N)!
-     */
-    @InjectCache(value = UUID.class, duration = InjectCache.DayCacheConstant, maxElements = 10000, name = "Model_AuthorizationToken_Token")
-    public static Cache<UUID, UUID> cache_token_name;
-
     public static Model_AuthorizationToken getByToken(UUID token) {
-
-        UUID tokenValue = cache_token_name.get(token);
-        if (tokenValue == null) {
-
-            Model_AuthorizationToken model = find.query().where().eq("token", token).select("id").findOne();
-
-            cache_token_name.put(token, model.id);
-        }
-        return find.byId(cache_token_name.get(token));
+        return find.query().where().eq("token", token).findOne();
     }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/

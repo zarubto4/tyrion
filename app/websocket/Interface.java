@@ -10,16 +10,18 @@ import akka.stream.javadsl.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers._BaseFormFactory;
+import exceptions.InvalidBodyException;
 import org.reactivestreams.Publisher;
 import play.libs.Json;
+import scala.concurrent.duration.FiniteDuration;
 import utilities.logger.Logger;
 import utilities.network.NetworkStatusService;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class Interface implements WebSocketInterface {
@@ -83,7 +85,7 @@ public class Interface implements WebSocketInterface {
 
         this.out = both.first();
         return Flow.fromSinkAndSourceCoupled(Sink.foreach(this::onReceived), Source.fromPublisher(both.second()))
-                .keepAlive(Duration.ofSeconds(60), this::keepAlive)
+                .keepAlive(new FiniteDuration(60L, TimeUnit.SECONDS), this::keepAlive)
                 .watchTermination((notUsed, whenDone) -> {
                     whenDone.thenAccept(done -> {
                         logger.info("watchTermination$lambda - connection lasted for {} s", Instant.now().getEpochSecond() - start.getEpochSecond());
@@ -103,21 +105,18 @@ public class Interface implements WebSocketInterface {
 
             Message message = this.parseMessage(msg);
 
-            if (message.getId() != null) {
+            UUID messageId = message.getId();
 
-                UUID messageId = message.getId();
-
-                if (messageBuffer.containsKey(messageId)) {
-                    messageBuffer.get(messageId).resolve(message);
-                    messageBuffer.remove(messageId);
-                } else {
-                    logger.trace("onReceived - message_id not found found in buffer");
-                    this.onMessage(message);
-                }
+            if (messageBuffer.containsKey(messageId)) {
+                messageBuffer.get(messageId).resolve(message);
+                messageBuffer.remove(messageId);
             } else {
+                logger.trace("onReceived - message_id not found found in buffer");
                 this.onMessage(message);
             }
 
+        } catch (InvalidBodyException e) {
+            // TODO send message back
         } catch (Exception e) {
             logger.internalServerError(e);
 

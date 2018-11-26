@@ -54,6 +54,13 @@ public class Message {
         return null;
     }
 
+    public Integer getErrorCode() {
+        if (this.message.has("error_code")) {
+            return this.message.get("error_code").asInt();
+        }
+        return null;
+    }
+
     public ObjectNode getMessage() {
         return this.message;
     }

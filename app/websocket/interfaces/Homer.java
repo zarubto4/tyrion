@@ -2,20 +2,27 @@ package websocket.interfaces;
 
 import akka.stream.Materializer;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import controllers._BaseFormFactory;
 import exceptions.NotFoundException;
-import models.Model_CProgramVersion;
-import models.Model_Hardware;
-import models.Model_Person;
-import models.Model_Project;
+import models.*;
 import mongo.ModelMongo_Hardware_RegistrationEntity;
 import org.mindrot.jbcrypt.BCrypt;
 import play.libs.Json;
 import utilities.Server;
 import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
+import utilities.enums.HomerType;
 import utilities.enums.NetworkStatus;
 import utilities.enums.ServerMode;
-import utilities.hardware.synchronization.SynchronizationService;
+import utilities.hardware.HardwareEvents;
+import utilities.hardware.HardwareService;
+import utilities.homer.HomerService;
+import utilities.homer.HomerSynchronizationTask;
+import utilities.swagger.input.Swagger_InstanceSnapShotConfiguration;
+import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationFile;
+import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationProgram;
+import utilities.synchronization.SynchronizationService;
+import utilities.hardware.update.UpdateService;
 import utilities.logger.Logger;
 import utilities.network.NetworkStatusService;
 import websocket.Interface;
@@ -23,38 +30,302 @@ import websocket.Message;
 import websocket.messages.homer_hardware_with_tyrion.*;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Model_Hardware_Temporary_NotDominant_record;
 import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
+import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_hardware;
+import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_program;
+import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_terminals;
+import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_status;
+import websocket.messages.homer_instance_with_tyrion.verification.WS_Message_Grid_token_verification;
+import websocket.messages.homer_instance_with_tyrion.verification.WS_Message_WebView_token_verification;
+import websocket.messages.homer_with_tyrion.WS_Message_Homer_Token_validation_request;
+import websocket.messages.homer_with_tyrion.verification.WS_Message_Check_homer_server_permission;
+import websocket.messages.homer_with_tyrion.verification.WS_Message_Homer_Verification_result;
 import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
 
-import java.util.Date;
+import java.util.HashMap;
 import java.util.UUID;
 
 public class Homer extends Interface {
 
     private static final Logger logger = new Logger(Homer.class);
 
-    private final SynchronizationService synchronizationService;
+    public static HashMap<UUID, Homer> apiKeys = new HashMap<>(); // TODO use DI instead of static field
 
-    private boolean authorized;
+    private final HardwareEvents hardwareEvents;
+    private final SynchronizationService synchronizationService;
+    private final HardwareService hardwareService;
+    private final UpdateService updateService;
+    private final HomerService homerService;
+    private final Injector injector;
+
+    private boolean authorized = false;
+    private UUID apiKey;
 
     @Inject
-    public Homer(NetworkStatusService networkStatusService, Materializer materializer, _BaseFormFactory formFactory, SynchronizationService synchronizationService) {
+    public Homer(NetworkStatusService networkStatusService, Materializer materializer, _BaseFormFactory formFactory, Injector injector, HardwareEvents hardwareEvents,
+                 SynchronizationService synchronizationService, UpdateService updateService, HardwareService hardwareService, HomerService homerService) {
         super(networkStatusService, materializer, formFactory);
+        this.hardwareEvents = hardwareEvents;
         this.synchronizationService = synchronizationService;
+        this.hardwareService = hardwareService;
+        this.updateService = updateService;
+        this.homerService = homerService;
+        this.injector = injector;
     }
 
     @Override
     public void onMessage(Message message) {
-        try {
-            switch (message.getChannel()) {
-                case "homer_server": break;
-                case "hardware": this.onMessageHardware(message); break;
-                case "instance": break;
 
-                default:
+        if (!this.authorized) {
+            if (message.getType().equals(WS_Message_Check_homer_server_permission.message_type)) {
+                this.onHomerAuthenticate(message.as(WS_Message_Check_homer_server_permission.class));
+            } else {
+                // TODO send fail and close
             }
+
+            return; // Do not accept any messages until the server is authorized
+        }
+
+        switch (message.getChannel()) {
+            case "homer_server": this.onMessageHomer(message); break;
+            case "hardware": this.onMessageHardware(message); break;
+            case "instance": this.onMessageInstance(message); break;
+            default: logger.warn("onMessage - cannot consume message with id: {}, unknown channel: {}", message.getId(), message.getChannel());
+        }
+    }
+
+    @Override
+    protected void onClose() {
+        super.onClose();
+        apiKeys.remove(this.apiKey);
+    }
+
+/* HOMER MESSAGES ------------------------------------------------------------------------------------------------------*/
+
+    private void onMessageHomer(Message message) {
+        switch (message.getType()) {
+            case "tyrion_ping": break;
+            case WS_Message_Check_homer_server_permission.message_type: this.onHomerAuthenticate(message.as(WS_Message_Check_homer_server_permission.class)); break;
+            case WS_Message_Homer_Token_validation_request.message_type: this.onLoggerSubscriptionAuthenticate(message.as(WS_Message_Homer_Token_validation_request.class));
+            default: logger.warn("onMessageHomer - cannot consume message with id: {}, unknown type: {}", message.getId(), message.getType());
+        }
+    }
+
+    private void onHomerAuthenticate(WS_Message_Check_homer_server_permission message) {
+        try {
+
+            Model_HomerServer server = Model_HomerServer.find.byId(this.id);
+
+            if (message.hash_token.equals(server.hash_certificate)) {
+
+                server.make_log_connect(); // TODO injection
+
+                this.apiKey = UUID.randomUUID();
+
+                apiKeys.put(this.apiKey, this);
+
+                this.authorized = true;
+
+                this.send(new WS_Message_Homer_Verification_result().make_request(true, this.apiKey.toString()).put("message_id", message.message_id));
+
+                // TODO injection rework
+                // Send echo to all connected users (its public servers)
+                if (server.isPublic()) {
+                    WS_Message_Online_Change_status.synchronize_online_state_with_becki_public_objects(Model_HomerServer.class, server.id, true);
+                } else {
+                    WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_HomerServer.class, server.id, true, server.get_project_id());
+                }
+
+                HomerSynchronizationTask task = this.injector.getInstance(HomerSynchronizationTask.class);
+                task.setServer(server);
+
+                this.synchronizationService.submit(task);
+
+            } else {
+                this.send(new WS_Message_Homer_Verification_result().make_request(false, null).put("message_id", message.message_id));
+            }
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            this.send(new WS_Message_Homer_Verification_result().make_request(false, null).put("message_id", message.message_id));
+        }
+    }
+
+    private void onLoggerSubscriptionAuthenticate(WS_Message_Homer_Token_validation_request message) {
+        try {
+            Model_HomerServer server = Model_HomerServer.find.byId(this.id);
+
+            Model_AuthorizationToken authorizationToken = Model_AuthorizationToken.getByToken(UUID.fromString(message.client_token));
+            if (authorizationToken.isValid()) {
+                if (!server.isPublic()) {
+                    Model_Person person = authorizationToken.getPerson();
+                    if (Model_Project.find.query().where().eq("servers.id", server.id).eq("persons.id", person.id).findCount() == 0) {
+                        this.send(message.get_result(false));
+                        return;
+                    }
+                }
+
+                this.send(message.get_result(true));
+                return;
+            }
+        } catch (NotFoundException e) {
+            logger.warn("onLoggerSubscriptionAuthenticate - not found");
+        }
+
+        this.send(message.get_result(false));
+    }
+
+/* INSTANCE MESSAGES ---------------------------------------------------------------------------------------------------*/
+
+    public void onMessageInstance(Message message) {
+        switch (message.getType()) {
+            case WS_Message_Grid_token_verification.message_type: this.onTerminalVerify(message.as(WS_Message_Grid_token_verification.class)); break;
+            case WS_Message_WebView_token_verification.messageType: this.onRemoteViewVerify(message.as(WS_Message_WebView_token_verification.class)); break;
+            case WS_Message_Instance_set_hardware.message_type: { logger.warn("WS_Message_Instance_device_set_snap: A message with a very high delay has arrived."); return;}
+            case WS_Message_Instance_status.message_type: { logger.warn("WS_Message_Instance_status: A message with a very high delay has arrived."); return;}
+            case WS_Message_Instance_set_terminals.message_type: { logger.warn("WS_Message_Instance_terminal_set_snap: A message with a very high delay has arrived."); return;}
+            case WS_Message_Instance_set_program.message_type: { logger.warn("WS_Message_Instance_upload_blocko_program: A message with a very high delay has arrived."); return;}
+
+            default: logger.warn("onMessageInstance - cannot consume message with id: {}, unknown type: {}", message.getId(), message.getType());
+        }
+    }
+
+    public void onTerminalVerify(WS_Message_Grid_token_verification message) {
+        try {
+
+            logger.info("onTerminalVerify - verifying GRID token: {}, for instance: {}", message.token, message.instance_id);
+
+            Model_GridTerminal terminal = Model_GridTerminal.find.query().nullable().where().eq("terminal_token", message.token).findOne();
+
+            // Pokud je terminall null - nikdy se uživatel nepřihlásit a nevytvořil se o tom záznam - ale to stále neznamená že není možno povolit přístup
+            if (terminal == null) {
+
+                logger.trace("cloud_verification_token_GRID:: terminal == null");
+                // Najít c configuráku token
+
+                Swagger_InstanceSnapShotConfiguration settings = this.current_snapshot().settings();
+                Swagger_InstanceSnapShotConfigurationFile collection = null;
+                Swagger_InstanceSnapShotConfigurationProgram program = null;
+
+
+                if(settings == null){
+                    logger.error("SnapShotConfiguration is missing return null");
+                    throw new NotFoundException(Swagger_InstanceSnapShotConfiguration.class);
+                }
+
+                for(Swagger_InstanceSnapShotConfigurationFile grids_collection : settings.grids_collections){
+                    for(Swagger_InstanceSnapShotConfigurationProgram grids_program : grids_collection.grid_programs){
+                        if(grids_program.grid_program_id.equals(message.grid_app_id) || grids_program.grid_program_version_id.equals(message.grid_app_id)){
+                            logger.debug("cloud_verification_token_GRID:: set collection and program");
+                            collection = grids_collection;
+                            program = grids_program;
+                            break;
+                        }
+                    }
+                }
+
+                if(collection == null){
+                    logger.error("SnapShotConfigurationFile is missing return null");
+                    throw new NotFoundException(Swagger_InstanceSnapShotConfigurationFile.class);
+                }
+
+                logger.debug("Enum_MProgram_SnapShot_settings: {}", program.snapshot_settings);
+
+                switch (program.snapshot_settings) {
+
+                    case PUBLIC: {
+
+                        this.send(message.get_result(true));
+                        return;
+                    }
+
+                    case PROJECT: {
+
+                        this.send(message.get_result(false));
+                        return;
+                    }
+
+                    case TESTING:{
+
+                        this.send(message.get_result(false));
+                        return;
+                    }
+
+                    default: {
+
+                        this.send(message.get_result(false));
+                    }
+                }
+            } else {
+
+                logger.trace("cloud_verification_token_GRID::  terminal != null");
+                logger.debug("cloud_verification_token_GRID::  Person id:: {}", terminal.person.id);
+                logger.debug("cloud_verification_token_GRID::  Person mail:: {}", terminal.person.email);
+                logger.debug("cloud_verification_token_GRID::  Instance ID:: {} ", message.instance_id);
+                logger.debug("cloud_verification_token_GRID::  App ID:: {}", message.grid_app_id);
+
+
+                if (terminal.person == null) {
+                    logger.trace("cloud_verification_token_GRID:: Person is null");
+                    logger.debug("cloud_verification_token:: Grid_Terminal object has not own Person - its probably public - Trying to find Instance");
+
+                    if (Model_Instance.find.query().where().eq("id", message.instance_id).findCount() > 0) {
+                        logger.trace("cloud_verification_token_GRID:: Permission found");
+                        this.send(message.get_result(true));
+                    } else {
+                        logger.trace("cloud_verification_token_GRID:: Permission not found");
+                        this.send(message.get_result(false));
+                    }
+
+                } else {
+                    logger.trace("cloud_verification_token_GRID:: Person is not null!");
+                    logger.debug("cloud_verification_token:: Grid_Terminal object has  own Person - its probably private or it can be public - Trying to find Instance with user ID and public value");
+                    if (Model_Instance.find.query().where()
+                            .eq("id", message.instance_id)
+                            .eq("project.persons.id", terminal.person.id)
+                            // .or(Expr.eq("project.participants.person.id", terminal.person.id), Expr.eq("actual_instance.version.public_version", true)) TODO find grid access settings
+                            .findCount() > 0) {
+                        logger.trace("cloud_verification_token_GRID:: Permission found");
+                        this.send(message.get_result(true));
+                    } else {
+                        logger.trace("cloud_verification_token_GRID:: Permission not found");
+                        this.send(message.get_result(false));
+                    }
+                }
+            }
+
         } catch (Exception e) {
             logger.internalServerError(e);
         }
+    }
+
+    public void onRemoteViewVerify(WS_Message_WebView_token_verification message) {
+        try {
+
+            logger.info("onRemoteViewVerify - verifying VIEW token: {}, for instance: {}", message.token, message.instance_id);
+
+            Model_HomerServer server = Model_HomerServer.find.byId(this.id);
+
+            Model_AuthorizationToken authorizationToken = Model_AuthorizationToken.getByToken(message.token);
+            if (authorizationToken.isValid()) {
+                Model_Person person = authorizationToken.getPerson();
+                if (!server.isPublic()) {
+                    if (Model_Project.find.query().where().eq("servers.id", server.id).eq("persons.id", person.id).findCount() == 0) {
+                        this.send(message.get_result(false));
+                        return;
+                    }
+                } else if (Model_Instance.find.query().where().eq("id", message.instance_id).eq("b_program.project.persons.id", authorizationToken.get_person_id()).findCount() == 0) {
+                    this.send(message.get_result(false));
+                    return;
+                }
+
+                this.send(message.get_result(true));
+                return;
+            }
+        } catch (NotFoundException e) {
+            logger.warn("onRemoteViewVerify - not found");
+        }
+
+        this.send(message.get_result(false));
     }
 
 /* HARDWARE MESSAGES ---------------------------------------------------------------------------------------------------*/
@@ -62,15 +333,10 @@ public class Homer extends Interface {
     public void onMessageHardware(Message message) {
         switch (message.getType()) {
             case WS_Message_Hardware_connected.message_type: this.onHardwareConnected(message.as(WS_Message_Hardware_connected.class)); break;
-
             case WS_Message_Hardware_disconnected.message_type: this.onHardwareDisconnected(message.as(WS_Message_Hardware_disconnected.class)); break;
-
             case WS_Message_Hardware_online_status.message_type: this.device_online_synchronization_echo(message.as(WS_Message_Hardware_online_status.class)); break; // TODO probably not needed
-
             case WS_Message_Hardware_autobackup_made.message_type: this.device_auto_backup_done_echo(message.as(WS_Message_Hardware_autobackup_made.class)); break;
-
             case WS_Message_Hardware_autobackup_making.message_type: this.device_auto_backup_start_echo(message.as(WS_Message_Hardware_autobackup_making.class)); break;
-
             case WS_Message_Hardware_UpdateProcedure_Progress.message_type: {
 
                 Model_HardwareUpdate.update_procedure_progress(formFromJsonWithValidation(homer, WS_Message_Hardware_UpdateProcedure_Progress.class, json));
@@ -78,11 +344,8 @@ public class Homer extends Interface {
             }
 
             case WS_Message_Hardware_validation_request.message_type: this.check_mqtt_hardware_connection_validation(message.as(WS_Message_Hardware_validation_request.class)); break;
-
             case WS_Message_Hardware_terminal_logger_validation_request.message_type: this.check_hardware_logger_access_terminal_validation(message.as(WS_Message_Hardware_terminal_logger_validation_request.class)); break;
-
             case WS_Message_Hardware_uuid_converter.message_type: this.convert_hardware_full_id_uuid(message.as(WS_Message_Hardware_uuid_converter.class)); break;
-
             case WS_Message_Hardware_set_settings.message_type: this.device_settings_set(message.as(WS_Message_Hardware_set_settings.class)); break;
 
             // Ignor messages - Jde pravděpodobně o zprávy - které přišly s velkým zpožděním - Tyrion je má ignorovat
@@ -115,36 +378,13 @@ public class Homer extends Interface {
 
             Model_Hardware hardware = Model_Hardware.find.byId(help.uuid);
 
-            this.networkStatusService.setStatus(hardware, NetworkStatus.ONLINE);
-
-            if (hardware.project().id == null) {
-                logger.warn("onHardwareConnected - hardware {} is not in project", hardware.id);
-            }
-
-            if (hardware.database_synchronize) {
-                this.synchronizationService.synchronize(hardware);
-            }
-
-            // Notifikce
-            if (hardware.developer_kit) {
-                try {
-                    hardware.notification_board_connect();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
             if (hardware.connected_server_id != this.getId()) {
                 logger.warn("onHardwareConnected - updating connected server id property to: {}", this.getId());
                 hardware.connected_server_id = this.getId();
                 hardware.update();
             }
 
-            hardware.make_log_connect();
-
-            // ZDe do budoucna udělat synchronizaci jen když to bude opravdu potřeba - ale momentálně je nad lidské síly udělat argoritmus,
-            // který by vyřešil zbytečné dotazování
-            hardware.hardware_firmware_state_check();
+            this.hardwareEvents.connected(hardware);
 
         } catch (NotFoundException e) {
             logger.warn("Hardware not found. Message from Homer server: ID = " + help.websocket_identificator + ". Unregistered Hardware Id: " + help.uuid);
@@ -162,29 +402,7 @@ public class Homer extends Interface {
         try {
             Model_Hardware hardware = Model_Hardware.find.byId(help.uuid);
 
-            logger.debug("master_device_Disconnected:: Updating hardware status " + help.uuid + " on offline ");
-
-            this.networkStatusService.setStatus(hardware, NetworkStatus.OFFLINE);
-
-
-            // Uprava Cache Paměti
-            hardware.cache_latest_online = new Date().getTime();
-
-
-            // Standartní synchronizace
-            if (hardware.project().id != null) {
-                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, hardware.id, false, hardware.project().id);
-            }
-
-            if (hardware.developer_kit) {
-                // Notifikace
-                hardware.notification_board_disconnect();
-            }
-
-            // Záznam do DM databáze
-            hardware.make_log_disconnect();
-
-            Model_Hardware.cache_status.put(hardware.id, false);
+            this.hardwareEvents.disconnected(hardware);
 
         } catch (NotFoundException e) {
             logger.warn("onHardwareDisconnected - hardware not found, id: {} ", help.uuid);

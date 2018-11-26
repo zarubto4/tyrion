@@ -1,9 +1,11 @@
 package utilities.scheduler.jobs;
 
+import com.google.inject.Inject;
 import models.Model_InstanceSnapshot;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import utilities.instance.InstanceService;
 import utilities.logger.Logger;
 
 import java.util.Date;
@@ -20,7 +22,12 @@ public class Job_UploadBlockoToCloud implements Job {
 
 //**********************************************************************************************************************
 
-    public Job_UploadBlockoToCloud() {}
+    private final InstanceService instanceService;
+
+    @Inject
+    public Job_UploadBlockoToCloud(InstanceService instanceService) {
+        this.instanceService = instanceService;
+    }
 
     private UUID record_id;
     
@@ -44,11 +51,10 @@ public class Job_UploadBlockoToCloud implements Job {
                 if (record_id == null) throw new NullPointerException("Job was instantiated without record_id in the JobExecutionContext or the record_id is null for some reason.");
 
                 Model_InstanceSnapshot record = Model_InstanceSnapshot.find.byId(record_id);
-                if (record == null) throw new NullPointerException("Cannot find the Instance Record in the DB.");
 
                 logger.trace("upload_blocko_thread: uploading the record");
 
-                record.deploy();
+                instanceService.deploy(record);
 
             } catch (Exception e) {
                 logger.internalServerError(e);

@@ -542,7 +542,7 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
                     try {
                         Model_HomerServer server = Model_HomerServer.find.byId(homer_id);
                         if (server.online_state() == NetworkStatus.ONLINE) {
-                            WS_Message_Hardware_online_status response = server.device_online_synchronization_ask(Model_Hardware.find.query().where().eq("project.id", id).eq("connected_server_id", homer_id).select("id").findSingleAttributeList());
+                            // TODO injection WS_Message_Hardware_online_status response = server.device_online_synchronization_ask(Model_Hardware.find.query().where().eq("project.id", id).eq("connected_server_id", homer_id).select("id").findSingleAttributeList());
                             if (response.status.equals("success")) {
 
                                 for (WS_Message_Hardware_online_status.DeviceStatus status : response.hardware_list) {
@@ -615,6 +615,7 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
     public boolean delete() {
         logger.debug("delete - deleting from database, id: {} ", this.id);
 
+        // TODO should not be here
         List<UUID> hardware_list = Model_Hardware.find.query().where()
                 .eq("project.id", this.id)
                 .eq("dominant_entity", true)
@@ -634,8 +635,6 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
                     // If device is online, restart it. So Device will connect immediately and it will find probably a new activated alternative of Device
                     // TODO hardware.device_converted_id_clean_remove_from_server();
                 }
-
-                Model_Hardware.cache_status.remove(hardware.id);
 
             } catch (Exception e) {
                 logger.internalServerError(e);

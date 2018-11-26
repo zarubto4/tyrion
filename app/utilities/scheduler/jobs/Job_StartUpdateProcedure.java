@@ -48,7 +48,7 @@ public class Job_StartUpdateProcedure implements Job {
 
                 logger.trace("start_update_procedure_thread:: uploading the record");
 
-                procedure.execute_update_procedure();
+                // TODO update procedure.execute_update_procedure();
 
             } catch (Exception e) {
                 logger.internalServerError(e);

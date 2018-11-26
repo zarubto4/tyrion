@@ -1,97 +1,97 @@
 package websocket.interfaces;
 
-import akka.NotUsed;
 import akka.stream.Materializer;
-import akka.stream.javadsl.Flow;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import controllers._BaseFormFactory;
-import exceptions.NotSupportedException;
 import models.Model_Garfield;
+import models.Model_Project;
 import utilities.logger.Logger;
 import utilities.network.NetworkStatusService;
-import websocket.*;
+import utilities.notifications.NotificationService;
+import websocket.Interface;
+import websocket.Message;
+import websocket.messages.tyrion_with_becki.WS_Message_Subscribe_Notifications;
+import websocket.messages.tyrion_with_becki.WS_Message_UnSubscribe_Notifications;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 public class Portal extends Interface {
 
     private static final Logger logger = new Logger(Portal.class);
 
-    private Map<UUID, WebSocketInterface> children = new HashMap<>();
+    private UUID personId;
+
+    private boolean notificationSubscribed;
+
+    private final NotificationService notificationService;
 
     @Inject
-    public Portal(NetworkStatusService networkStatusService, Materializer materializer, _BaseFormFactory formFactory) {
+    public Portal(NetworkStatusService networkStatusService, Materializer materializer, _BaseFormFactory formFactory, NotificationService notificationService) {
         super(networkStatusService, materializer, formFactory);
+        this.notificationService = notificationService;
     }
 
-    @Override
-    public Flow<JsonNode, JsonNode, NotUsed> materialize(WebSocketService webSocketService) {
-        this.webSocketService = webSocketService;
-        return null;
+    public void setPersonId(UUID personId) {
+        if (this.personId == null) {
+            this.personId = personId;
+        } else {
+            throw new RuntimeException("Cannot set parent twice");
+        }
+    }
+
+    public UUID getPersonId() {
+        return personId;
     }
 
     @Override
     public void onMessage(Message message) {
         switch (message.getChannel()) {
             case Model_Garfield.CHANNEL: { // TODO make interface for garfield
-
-                // Není komu co zasílat - zahazuji - Je připojen jen tento kanál
-                if (children.size() < 2) {
-                    return;
-                }
-
-                for (UUID key : children.keySet()) {
-                    if (key.equals(UUID.fromString(message.getMessage().get("single_connection_token").asText()))) continue;
-                    children.get(key).send(message.getMessage());
-                }
-
                 break;
             }
-            default: // TODO
+            default: {
+                switch (message.getType()) {
+                    case WS_Message_Subscribe_Notifications.message_type: onSubscribeNotification(message); break;
+                    case WS_Message_UnSubscribe_Notifications.message_type: onUnsubscribeNotification(message); break;
+                    default: // TODO
+                }
+            }
         }
     }
 
-    @Override
-    public void send(ObjectNode message) {
-        this.children.values().forEach(children -> children.send(message));
+    public void onSubscribeNotification(Message message) {
+        try {
+
+            logger.trace("onSubscribeNotification - id: {}", this.id);
+
+            this.notificationService.subscribe(this);
+
+            this.notificationSubscribed = true;
+
+            Model_Project.becki_person_id_subscribe(this.personId); // TODO ugly -> rework
+
+            this.send(WS_Message_Subscribe_Notifications.approve_result(message.getId().toString()));
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+        }
     }
 
-    @Override
-    public Message sendWithResponse(Request request) {
-        throw new NotSupportedException("Messages with response are bot supported by this interface. (Portal)");
-    }
+    public void onUnsubscribeNotification(Message message) {
+        try {
 
-    @Override
-    public void sendWithResponseAsync(Request request, Consumer<Message> consumer) {
-        throw new NotSupportedException("Messages with response are bot supported by this interface. (Portal)");
-    }
+            logger.trace("onUnsubscribeNotification - id: {}", this.id);
 
-    public Flow<JsonNode, JsonNode, NotUsed> register(WebSocketInterface iface) {
+            this.notificationService.unsubscribe(this);
 
-        this.children.put(iface.getId(), iface);
+            this.notificationSubscribed = false;
 
-        iface.onClose(i -> {
-            this.children.remove(i.getId());
-            if (this.children.isEmpty() && this.onClose != null) {
-                this.onClose.accept(this);
-            }
-        });
+            Model_Project.becki_person_id_unsubscribe(this.personId); // TODO ugly -> rework
 
-        return iface.materialize(this.webSocketService);
-    }
+            this.send(WS_Message_UnSubscribe_Notifications.approve_result(message.getId().toString()));
 
-    public boolean isRegistered(UUID id) {
-        return this.children.containsKey(id);
-    }
-
-    @Override
-    public void close() {
-        new ArrayList<>(this.children.keySet()).forEach(key -> this.children.get(key).close());
+        } catch (Exception e) {
+            logger.internalServerError(e);
+        }
     }
 }

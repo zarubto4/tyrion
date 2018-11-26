@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.google.inject.Inject;
+import utilities.network.LastOnlineSerializer;
 import utilities.network.NetworkStatusSerializer;
 import utilities.permission.PermissionSerializer;
 
@@ -14,11 +15,13 @@ public class InjectedHandlerInstantiator extends HandlerInstantiator {
 
     private final PermissionSerializer permissionSerializer;
     private final NetworkStatusSerializer networkStatusSerializer;
+    private final LastOnlineSerializer lastOnlineSerializer;
 
     @Inject
-    public InjectedHandlerInstantiator(PermissionSerializer permissionSerializer, NetworkStatusSerializer networkStatusSerializer) {
+    public InjectedHandlerInstantiator(PermissionSerializer permissionSerializer, NetworkStatusSerializer networkStatusSerializer, LastOnlineSerializer lastOnlineSerializer) {
         this.permissionSerializer = permissionSerializer;
         this.networkStatusSerializer = networkStatusSerializer;
+        this.lastOnlineSerializer = lastOnlineSerializer;
     }
 
     @Override
@@ -40,6 +43,10 @@ public class InjectedHandlerInstantiator extends HandlerInstantiator {
 
         if (serClass == NetworkStatusSerializer.class) {
             return this.networkStatusSerializer;
+        }
+
+        if (serClass == LastOnlineSerializer.class) {
+            return this.lastOnlineSerializer;
         }
 
         return null;

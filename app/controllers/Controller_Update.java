@@ -252,7 +252,7 @@ public class Controller_Update extends _BaseController {
                     Model_HardwareUpdate plan = new Model_HardwareUpdate();
                     plan.hardware = hardware;
                     plan.firmware_type = firmware_type;
-                    plan.state = HardwareUpdateState.NOT_YET_STARTED;
+                    plan.state = HardwareUpdateState.PENDING;
 
                     if (firmware_type == FirmwareType.FIRMWARE || firmware_type == FirmwareType.BACKUP) {
                         plan.c_program_version_for_update = c_program_version;
@@ -261,11 +261,6 @@ public class Controller_Update extends _BaseController {
                     if (firmware_type == FirmwareType.BOOTLOADER) {
                         plan.bootloader = bootLoader;
                     }
-
-                    if(!hardware.database_synchronize) {
-                        plan.state = HardwareUpdateState.PROHIBITED_BY_CONFIG;
-                    }
-
 
                     procedure.updates.add(plan);
                 }
@@ -343,7 +338,7 @@ public class Controller_Update extends _BaseController {
                 new Thread(() -> {
                     try {
 
-                        Model_Hardware.create_update_procedure(help.firmware_type, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, b_pairs);
+                        // TODO update Model_Hardware.create_update_procedure(help.firmware_type, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, b_pairs);
 
                     } catch (Exception e) {
                         logger.internalServerError(e);

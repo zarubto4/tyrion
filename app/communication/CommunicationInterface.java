@@ -10,5 +10,5 @@ public interface CommunicationInterface<T> {
 
     void send(T message);
 
-    T sendWithResponse()
+    T sendWithResponse();
 }

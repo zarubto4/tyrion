@@ -222,7 +222,6 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
         return isLoaded("bootloader") ? bootloader : Model_BootLoader.find.query().nullable().where().eq("updates.id", id).findOne();
     }
 
-
     @JsonIgnore
     public Swagger_UpdatePlan_brief_for_homer get_brief_for_update_homer_server() {
         try {
@@ -318,21 +317,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
         logger.debug("save :: Creating new Object");
         count_of_tries = 0;
 
-        if (this.state == null) this.state = HardwareUpdateState.NOT_YET_STARTED;
-
-        // Set Cache parameter
-        idCache().add(Model_Hardware.class, hardware.id);
-
-        // set Cache Parameter
-        if (c_program_version_for_update != null) {
-            idCache().add(Model_CProgramVersion.class, c_program_version_for_update.id);
-        }
-
-        // set Cache Parameter
-        if (bootloader != null) {
-            idCache().add(Model_BootLoader.class, bootloader.id);
-        }
-
+        if (this.state == null) this.state = HardwareUpdateState.PENDING;
         super.save();
     }
 
@@ -347,8 +332,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
                 if (this.state == HardwareUpdateState.OBSOLETE
                         || this.state == HardwareUpdateState.COMPLETE
-                        || this.state == HardwareUpdateState.NOT_UPDATED
-                        || this.state == HardwareUpdateState.CRITICAL_ERROR
+                        || this.state == HardwareUpdateState.FAILED
                         ) {
 
                     logger.trace("update :: call in new thread actualization_procedure.update_state()");
@@ -360,7 +344,6 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
             if (procedure.get_project_id() != null) {
                 new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_HardwareUpdate.class, procedure.get_project_id() , this.id))).start();
             }
-
         }
     }
 
@@ -406,7 +389,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
                 logger.warn("update_procedure_progress  Update Fail! Device ID: {}, update procedure: {}", plan.getHardware().id, plan.id);
 
                 plan.date_of_finish = new Date();
-                plan.state = HardwareUpdateState.CRITICAL_ERROR;
+                plan.state = HardwareUpdateState.FAILED;
                 plan.error_code = report.error_code;
                 plan.error = report.error + report.error_message;
                 plan.update();
@@ -780,7 +763,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
                         if (plan.firmware_type == FirmwareType.FIRMWARE) {
 
-                            if(hardware.get_actual_c_program_version_id() == null || !hardware.get_actual_c_program_version_id().equals(plan.c_program_version_for_update.id)) {
+                            if(hardware.getCurrentFirmware().id == null || !hardware.get_actual_c_program_version_id().equals(plan.c_program_version_for_update.id)) {
                                 hardware.actual_c_program_version = plan.c_program_version_for_update;
                                 hardware.idCache().removeAll(Model_CProgram.class);
                                 hardware.idCache().removeAll(Model_CProgramVersion.class);
@@ -805,7 +788,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
                         } else if (plan.firmware_type == FirmwareType.BACKUP) {
 
-                            if (hardware.get_backup_c_program_version_id() == null || !hardware.get_backup_c_program_version_id().equals(plan.c_program_version_for_update.id)) {
+                            if (hardware.getCurrentBackup().id == null || !hardware.getCurrentBackup().id.equals(plan.c_program_version_for_update.id)) {
 
                                 hardware.idCache().removeAll(Model_CProgramFakeBackup.class);
                                 hardware.idCache().removeAll(Model_CProgramVersionFakeBackup.class);

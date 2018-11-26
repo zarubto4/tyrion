@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.NotFoundException;
 import io.ebean.Expr;
 import io.swagger.annotations.ApiModel;
@@ -12,39 +11,30 @@ import io.swagger.annotations.ApiModelProperty;
 import mongo.ModelMongo_Hardware_ActivationStatus;
 import mongo.ModelMongo_Hardware_BackupIncident;
 import mongo.ModelMongo_Hardware_OnlineStatus;
-import mongo.ModelMongo_Hardware_RegistrationEntity;
 import org.ehcache.Cache;
-import org.mindrot.jbcrypt.BCrypt;
 import org.mongodb.morphia.query.FindOptions;
 import play.libs.Json;
-import utilities.Server;
 import utilities.cache.CacheFinder;
 import utilities.cache.InjectCache;
 import utilities.cache.Cached;
 import utilities.document_mongo_db.document_objects.*;
 import utilities.enums.*;
-import utilities.errors.ErrorCode;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
+import utilities.network.JsonLastOnline;
 import utilities.network.JsonNetworkStatus;
 import utilities.network.Networkable;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
 import utilities.swagger.output.Swagger_Short_Reference;
-import utilities.swagger.output.Swagger_UpdatePlan_brief_for_homer;
-import websocket.interfaces.WS_Homer;
-import websocket.messages.homer_hardware_with_tyrion.*;
-import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Model_Hardware_Temporary_NotDominant_record;
-import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import javax.persistence.Transient;
-import java.lang.reflect.Field;
 import java.util.*;
 
 @Entity
@@ -143,6 +133,9 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     @JsonNetworkStatus @Transient @ApiModelProperty(required = true, value = "Value is cached with asynchronous refresh")
     public NetworkStatus online_state;
 
+    @JsonLastOnline @Transient @ApiModelProperty(value = "Value is cached with asynchronous refresh")
+    public Long latest_online;
+
     @JsonProperty
     public BackupMode backup_mode() {
         return backup_mode ? BackupMode.AUTO_BACKUP : BackupMode.STATIC_BACKUP;
@@ -177,7 +170,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
     @JsonProperty public Model_BootLoader actual_bootloader() {
         try {
-            return get_actual_bootloader();
+            return getCurrentBootloader();
         } catch (Exception e){
             logger.internalServerError(e);
             return null;
@@ -193,10 +186,8 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
             if (idCache().get(Model_hardware_update_update_in_progress_bootloader.class) == null) {
                 UUID update_id = (UUID) Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id)
                         .disjunction()
-                        .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
-                        .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
-                        .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
-                        .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
+                        .add(Expr.eq("state", HardwareUpdateState.PENDING))
+                        .add(Expr.eq("state", HardwareUpdateState.RUNNING))
                         .endJunction()
                         .eq("firmware_type", FirmwareType.BOOTLOADER)
                         .select("id")
@@ -240,7 +231,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
             } else {
 
                 // TODO custom serializer
-                if(online_state() == NetworkStatus.ONLINE){
+                if(online_state == NetworkStatus.ONLINE){
                     new Thread(() -> {
                         try {
 
@@ -354,8 +345,8 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
             List<Model_HardwareUpdate> c_program_plans = Model_HardwareUpdate.find.query().where()
                     .disjunction()
-                    .eq("state", HardwareUpdateState.IN_PROGRESS)
-                    .eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE)
+                    .eq("state", HardwareUpdateState.PENDING)
+                    .eq("state", HardwareUpdateState.RUNNING)
                     .endJunction()
                     .eq("hardware.id", id).order().asc("actualization_procedure.created").findList();
 
@@ -446,8 +437,8 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
     @JsonProperty
     public Swagger_Short_Reference actual_c_program_backup_version() {
-        try{
-            Model_CProgramVersion version = this.get_backup_c_program_version();
+        try {
+            Model_CProgramVersion version = this.getCurrentBackup();
             if (version != null) {
                 return version.ref();
             } else {
@@ -457,15 +448,14 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
             logger.internalServerError(e);
             return null;
         }
-
     }
 
     // TODO custom serializer
-    @JsonProperty
+   /* @JsonProperty
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @ApiModelProperty(value = "Value is missing, if device status is online")
     public Long latest_online() {
-        if (online_state() == NetworkStatus.ONLINE) return null;
+        if (online_state == NetworkStatus.ONLINE) return null;
         try {
 
             if (cache_latest_online != null) {
@@ -499,7 +489,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
             logger.internalServerError(e);
             return null;
         }
-    }
+    }*/
 
     @JsonProperty @ApiModelProperty(required = true)
     public List<Swagger_Short_Reference> hardware_groups() {
@@ -629,6 +619,11 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
+    public Model_CProgramVersion getCurrentBackup() {
+        return isLoaded("actual_backup_c_program_version") ? actual_backup_c_program_version : Model_CProgramVersion.find.query().nullable().where().eq("c_program_version_backup_boards.id", id).findOne();
+    }
+
+    @JsonIgnore
     public UUID get_actual_bootloader_id() {
 
         if (idCache().get(Model_BootLoader.class) == null) {
@@ -642,7 +637,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
-    public Model_BootLoader get_actual_bootloader(){
+    public Model_BootLoader getCurrentBootloader(){
         return isLoaded("actual_boot_loader") ? actual_boot_loader : Model_BootLoader.find.query().nullable().where().eq("hardware.id", id).findOne();
     }
 
@@ -663,30 +658,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
         try {
             return Model_CProgram.find.byId(get_backup_c_program_id());
-        }catch (Exception e) {
-            return null;
-        }
-
-    }
-
-    @JsonIgnore
-    public UUID get_backup_c_program_version_id() {
-
-        if (idCache().get(Model_CProgramVersion.class) == null) {
-
-            UUID uuid =  Model_CProgramVersion.find.query().where().eq("c_program_version_boards.id", id).orderBy("UPPER(name) ASC").select("id").findSingleAttribute();
-            if(uuid == null) return null;
-            idCache().add(Model_CProgramVersion.class, uuid);
-        }
-
-        return idCache().get(Model_CProgramVersion.class);
-    }
-
-    @JsonIgnore
-    public Model_CProgramVersion get_backup_c_program_version() {
-
-        try {
-            return Model_CProgramVersion.find.byId(get_backup_c_program_version_id());
         }catch (Exception e) {
             return null;
         }
@@ -752,7 +723,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
     @JsonIgnore
     public boolean update_boot_loader_required() {
-        if (getHardwareType().main_boot_loader() == null || get_actual_bootloader() == null) return true;
+        if (getHardwareType().main_boot_loader() == null || getCurrentBootloader() == null) return true;
         return (!this.getHardwareType().get_main_boot_loader_id().equals(get_actual_bootloader_id()));
     }
 
@@ -769,1353 +740,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     @JsonIgnore
     public UUID get_id() {
         return id;
-    }
-
-    // Kontrola připojení - Echo o připojení
-    @JsonIgnore
-    public static void device_Connected(WS_Message_Hardware_connected help) {
-        try {
-
-            logger.debug("master_device_Connected:: Updating device ID:: {} is online ", help.uuid);
-
-            Model_Hardware device = Model_Hardware.find.byId(help.uuid);
-
-            if(device == null) {
-                if( cache_not_dominant_hardware.containsKey(help.full_id)) {
-                    return;
-                }
-            }
-
-            // Aktualizuji cache status online HW
-            cache_status.put(device.id, Boolean.TRUE);
-
-            if (device.project().id == null) {
-                logger.warn("device_Connected - hardware {} is not in project", device.id);
-            }
-
-            // Notifikce
-            if (device.developer_kit) {
-                try {
-                    device.notification_board_connect();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            // Standartní synchronizace s Becki - že je device online - pokud někdo na frotnendu (uživatel) poslouchá
-            if (device.project().id != null) {
-                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, device.id, true, device.project().id);
-            }
-
-            // Nastavím server_id - pokud nekoresponduje s tím, který má HW v databázi uložený
-            if (help.websocket_identificator != null && (device.connected_server_id == null || !device.connected_server_id.equals(help.websocket_identificator))) {
-                logger.warn("master_device_Connected:: Changing server id property to {} ", help.websocket_identificator);
-                device.connected_server_id = help.websocket_identificator;
-                device.update();
-            }
-
-            device.make_log_connect();
-
-            // ZDe do budoucna udělat synchronizaci jen když to bude opravdu potřeba - ale momentálně je nad lidské síly udělat argoritmus,
-            // který by vyřešil zbytečné dotazování
-            device.hardware_firmware_state_check();
-
-        } catch (NotFoundException e) {
-            logger.warn("Hardware not found. Message from Homer server: ID = " + help.websocket_identificator + ". Unregistered Hardware Id: " + help.uuid);
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    // Echo o odpojení
-    @JsonIgnore
-    public static void device_Disconnected(WS_Message_Hardware_disconnected help) {
-
-        if (help.uuid == null) {
-            return;
-        }
-
-        try {
-            Model_Hardware hardware = Model_Hardware.find.byId(help.uuid);
-
-            logger.debug("master_device_Disconnected:: Updating hardware status " + help.uuid + " on offline ");
-
-            // CHACHE OFFLINE
-            cache_status.put(hardware.id, Boolean.FALSE);
-
-
-            // Uprava Cache Paměti
-            hardware.cache_latest_online = new Date().getTime();
-
-
-            // Standartní synchronizace
-            if (hardware.project().id != null) {
-                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, hardware.id, false, hardware.project().id);
-            }
-
-            if (hardware.developer_kit) {
-                // Notifikace
-                hardware.notification_board_disconnect();
-            }
-
-            // Záznam do DM databáze
-            hardware.make_log_disconnect();
-
-            Model_Hardware.cache_status.put(hardware.id, false);
-
-        } catch (NotFoundException e) {
-            logger.warn("device_Disconnected - hardware not found, id: {} ", help.uuid);
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    // Device dělá autobackup
-    @JsonIgnore
-    public static void device_auto_backup_start_echo(WS_Message_Hardware_autobackup_making help) {
-        try {
-
-            logger.debug("device_auto_backup_echo:: Device send Echo about making backup on device ID:: {} ", help.uuid);
-
-            Model_Hardware device = Model_Hardware.find.byId(help.uuid);
-
-            if (device == null) {
-                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.uuid);
-                return;
-            }
-
-            if (device.developer_kit) {
-                // TODO notification
-            }
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    // Device udělal autobackup
-    @JsonIgnore
-    public static void device_auto_backup_done_echo(WS_Message_Hardware_autobackup_made help) {
-        try {
-
-            logger.debug("device_auto_backup_done_echo:: Device send Echo about backup done on device ID:: {} ", help.uuid);
-
-            Model_Hardware device = Model_Hardware.find.byId(help.uuid);
-
-            if (device == null) {
-                logger.warn("device_Disconnected:: Hardware not recognized: ID = {} ", help.uuid);
-                return;
-            }
-            Model_CProgramVersion c_program_version = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", help.uuid).select("id").findOne();
-            if (c_program_version == null) throw new Exception("Firmware with build ID = " + help.uuid + " was not found in the database!");
-
-            device.actual_backup_c_program_version = c_program_version;
-            device.update();
-
-            if (device.developer_kit) {
-                // TODO notification
-            }
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    // žádost void o synchronizaci online stavu
-    @JsonIgnore
-    public static void device_online_synchronization_echo(WS_Message_Hardware_online_status report) {
-        try {
-            for (WS_Message_Hardware_online_status.DeviceStatus status : report.hardware_list) {
-
-                try{
-                    UUID uuid = UUID.fromString(status.uuid);
-                    //do something
-
-                    cache_status.put(uuid, status.online_status);
-                    // Odešlu echo pomocí websocketu do becki
-                    Model_Hardware device = find.byId(uuid);
-                    WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, device.id, status.online_status, device.project().id);
-
-                } catch (IllegalArgumentException exception){
-                    //handle the case where string is not valid UUID
-                }
-
-            }
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    @JsonIgnore
-    public static void check_mqtt_hardware_connection_validation(WS_Homer homer, WS_Message_Hardware_validation_request request) {
-
-        try {
-
-            logger.debug("check_mqtt_hardware_connection_validation: {} ", Json.toJson(request) );
-
-
-            Model_Hardware board = request.get_hardware();
-
-            if(board == null) {
-                logger.debug("check_mqtt_hardware_connection_validation: Device has not any active or dominant entity in local database");
-
-
-                // For public Homer server are all hardware allowed, but only if we find this Hardware in Central authority database!
-                if(homer.getModelHomerServer().server_type == HomerType.PUBLIC) {
-
-
-                    // We will save last know server, where we have hardware, in case of registration under some project. SAVE is only if device has permission!!!!!
-                    WS_Model_Hardware_Temporary_NotDominant_record record = new WS_Model_Hardware_Temporary_NotDominant_record();
-                    record.homer_server_id = homer.id;
-                    record.random_temporary_hardware_id = UUID.randomUUID();
-
-                    logger.debug("check_mqtt_hardware_connection_validation: Device is on Public Server but wihtout dominant entity - so we will save it to cache");
-
-                    logger.debug("check_mqtt_hardware_connection_validation: Before, we will try to know Mqtt PASS and Name - maybe from historical devices in local database?");
-                    board = Model_Hardware.find.query().where().eq("full_id", request.full_id).setMaxRows(1).select("id").findOne();
-                    if(board != null) {
-                        logger.debug("check_mqtt_hardware_connection_validation: Yes, we find historical device wiht same full_id, now we will check MQTT NAME and PASS");
-
-                        logger.debug("check_mqtt_hardware_connection_validation: Request PASS:: {}", request.password );
-                        logger.debug("check_mqtt_hardware_connection_validation: entity PASS:: {}", board.mqtt_password );
-
-                        logger.debug("check_mqtt_hardware_connection_validation: Request NAME:: {}", request.user_name );
-                        logger.debug("check_mqtt_hardware_connection_validation: entity NAME:: {}", board.mqtt_username );
-
-                        if (BCrypt.checkpw(request.password, board.mqtt_password) && BCrypt.checkpw(request.user_name, board.mqtt_username)) {
-
-                            // Save it - device has permission!
-                            cache_not_dominant_hardware.put(request.full_id, record);
-                            homer.send(request.get_result(true,  record.random_temporary_hardware_id, null, false));
-                            return;
-
-                        // in the case of several HW, it was saved in reverse
-                        } else if (BCrypt.checkpw( request.user_name, board.mqtt_password) && BCrypt.checkpw(request.password, board.mqtt_username)) {
-
-                            // Save it - device has permission!
-                            cache_not_dominant_hardware.put(request.full_id, record);
-                            homer.send(request.get_result(true, record.random_temporary_hardware_id, null, false));
-                            return;
-
-                        } else if( Server.mode == ServerMode.DEVELOPER && request.user_name.equals("user") && request.password.equals("pass")) {
-
-                            cache_not_dominant_hardware.put(request.full_id, record);
-                            homer.send(request.get_result(true,  record.random_temporary_hardware_id, null, false));
-                            return;
-
-                        } else {
-
-                            logger.debug("check_mqtt_hardware_connection_validation: Device {} on public server has not right credentials Access Denied ",  board.full_id);
-                            homer.send(request.get_result(false,  null, null, false));
-                            return;
-
-                        }
-                    }
-
-
-                    logger.debug("check_mqtt_hardware_connection_validation: Before, we will try to know Mqtt PASS and Name - maybe from central authority?");
-                    ModelMongo_Hardware_RegistrationEntity entity = ModelMongo_Hardware_RegistrationEntity.getbyFull_id(request.full_id);
-                    if(entity != null) {
-                        logger.debug("check_mqtt_hardware_connection_validation: Yes, we find HardwareRegistrationEntity  device with same full_id, now we will check MQTT NAME and PASS");
-
-                        logger.debug("check_mqtt_hardware_connection_validation: Request PASS:: {}", request.password );
-                        logger.debug("check_mqtt_hardware_connection_validation: entity PASS:: {}", entity.mqtt_password );
-
-                        logger.debug("check_mqtt_hardware_connection_validation: Request NAME:: {}", request.user_name );
-                        logger.debug("check_mqtt_hardware_connection_validation: entity NAME:: {}", entity.mqtt_username );
-
-
-                        logger.debug("check_mqtt_hardware_connection_validation: PASS valid: {}", BCrypt.checkpw(request.password, entity.mqtt_password));
-                        logger.debug("check_mqtt_hardware_connection_validation: USERNAME valid {}", BCrypt.checkpw(request.user_name, entity.mqtt_username));
-
-
-                        if ( BCrypt.checkpw(request.password, entity.mqtt_password) && BCrypt.checkpw(request.user_name, entity.mqtt_username)) {
-
-                            logger.debug("check_mqtt_hardware_connection_validation: Device {} on public server has  right credentials Access Allowed with ModelMongo_Hardware_RegistrationEntity Device check",  entity.full_id);
-
-                            // Save it - device has permission!
-                            cache_not_dominant_hardware.put(request.full_id, record);
-                            homer.send(request.get_result(true, record.random_temporary_hardware_id, null, false));
-                            return;
-
-                        // in the case of several HW, it was saved in reverse
-                        } else if ( BCrypt.checkpw( request.user_name, entity.mqtt_password) && BCrypt.checkpw(request.password, entity.mqtt_username)) {
-
-                            logger.debug("check_mqtt_hardware_connection_validation: Device {} on public server has  right credentials Access Allowed with ModelMongo_Hardware_RegistrationEntity Device check",  entity.full_id);
-
-                            // Save it - device has permission!
-                            cache_not_dominant_hardware.put(request.full_id, record);
-                            homer.send(request.get_result(true, record.random_temporary_hardware_id, null, false));
-                            return;
-
-                            // Only for DEV server!
-                        } else if( Server.mode == ServerMode.DEVELOPER && request.user_name.equals("user") && request.password.equals("pass")) {
-
-                            cache_not_dominant_hardware.put(request.full_id, record);
-                            homer.send(request.get_result(true,  record.random_temporary_hardware_id, null, false));
-                            return;
-
-                        } else {
-
-                            logger.debug("check_mqtt_hardware_connection_validation: Device {} on public server has not right credentials Access Denied with  HardwareRegistrationEntity check",  entity.full_id);
-                            homer.send(request.get_result(false, null, null, false));
-                            return;
-
-                        }
-                    }
-
-                    logger.debug("check_mqtt_hardware_connection_validation: Device {} on public server we havent historical or HardwareRegistrationEntity, so Access Denied",  request.full_id);
-                    homer.send(request.get_result(false,  null, null, false));
-                    return;
-
-                } else {
-
-                    logger.debug("check_mqtt_hardware_connection_validation: Device is on PRIVATE!!!! Server but without dominant entity. This is not ok! Wo we will redirect this device to another server");
-
-                    // Find public server and redirect Hardware:
-                    homer.send(request.get_result(false, null, "redirect_url", false));
-                    return;
-
-                }
-            }
-
-            logger.debug("check_mqtt_hardware_connection_validation: Request PASS:: {}", request.password );
-            logger.debug("check_mqtt_hardware_connection_validation: Hardware PASS:: {}", board.mqtt_password );
-
-            logger.debug("check_mqtt_hardware_connection_validation: Request NAME:: {}", request.user_name );
-            logger.debug("check_mqtt_hardware_connection_validation: Hardware NAME:: {}", board.mqtt_username );
-
-
-            if (BCrypt.checkpw(request.password, board.mqtt_password) && BCrypt.checkpw(request.user_name, board.mqtt_username)) {
-                logger.debug("check_mqtt_hardware_connection_validation: Device {}:: Access Approve", board.full_id);
-                homer.send(request.get_result(true, board.id, null, true));
-            } else if (BCrypt.checkpw(request.user_name, board.mqtt_password) && BCrypt.checkpw(request.password, board.mqtt_username)) {
-                logger.debug("check_mqtt_hardware_connection_validation: Device {}:: Access Approve", board.full_id);
-                homer.send(request.get_result(true, board.id, null, true));
-            }  else if( Server.mode == ServerMode.DEVELOPER && request.user_name.equals("user") && request.password.equals("pass")) {
-                logger.debug("check_mqtt_hardware_connection_validation: Device {}:: Access Approve - DEV server - user and pass", board.full_id);
-                homer.send(request.get_result(true, board.id, null, true));
-            } else {
-                logger.debug("check_mqtt_hardware_connection_validation: Device {}:: Access Denied",  board.full_id);
-                homer.send(request.get_result(false,  board.id, null, false));
-            }
-
-        } catch (Exception e) {
-
-            logger.internalServerError(e);
-
-            if(Server.mode == ServerMode.DEVELOPER) {
-                logger.error("check_mqtt_hardware_connection_validation:: Device has not right permission to connect. But this is Dev version of Tyrion. So its allowed.");
-                homer.send(request.get_result(true, null, null, true));
-                // Save it - device has permission!
-                return;
-            }
-
-            logger.internalServerError(e);
-            homer.send(request.get_result(false, null, null, true));
-        }
-    }
-
-    @JsonIgnore
-    public static void convert_hardware_full_id_uuid(WS_Homer homer, WS_Message_Hardware_uuid_converter request) {
-        try {
-
-            logger.debug("convert_hardware_full_id_to_uuid:: Incomimng Request for Transformation:: ", Json.toJson(request));
-
-            // Přejlad na UUID
-            if(request.full_id != null) {
-                Model_Hardware board = Model_Hardware.getByFullId(request.full_id);
-
-                if (board == null) {
-                    logger.debug("convert_hardware_full_id_to_uuid:: {} Device Not Found with Dominant Entity - bus there is still hope! with Cache", request.full_id);
-
-                    System.err.println("Právě je čas zkontrolovat cache_not_dominant_hardware od kterého očekávám, že bude mít HW id v sobě: Kontrolované ID je  " + request.full_id);
-
-                    if(cache_not_dominant_hardware.containsKey(request.full_id)) {
-
-                        System.err.println("Ano - Cache obsahuje HW s Full ID:: " + request.full_id);
-
-                        logger.debug("convert_hardware_full_id_to_uuid:: Device Found in cache_not_dominant_hardware");
-                        homer.send(request.get_result(cache_not_dominant_hardware.get(request.full_id).random_temporary_hardware_id, request.full_id));
-                        return;
-
-                    } else {
-
-                        System.err.println("Ne Cache neobsahuje HW s Full ID:: " + request.full_id);
-
-                        ModelMongo_Hardware_RegistrationEntity entity = ModelMongo_Hardware_RegistrationEntity.getbyFull_id(request.full_id);
-                        if(entity != null) {
-
-                            System.err.println("Ne Cache neobsahuje HW s Full ID:: " + request.full_id + " ale našel jsem záznam z ModelMongo_Hardware_RegistrationEntity");
-
-                            // We will save last know server, where we have hardware, in case of registration under some project. SAVE is only if device has permission!!!!!
-                            WS_Model_Hardware_Temporary_NotDominant_record record = new WS_Model_Hardware_Temporary_NotDominant_record();
-                            record.homer_server_id = homer.id;
-                            record.random_temporary_hardware_id = UUID.randomUUID();
-                            cache_not_dominant_hardware.put(request.full_id, record);
-
-                            homer.send(request.get_result(cache_not_dominant_hardware.get(request.full_id).random_temporary_hardware_id, request.full_id));
-                            return;
-
-                        } else {
-
-                            logger.debug("convert_hardware_full_id_to_uuid:: Device Not Found and also not found in cache");
-                            homer.send(request.get_result_error());
-                            return;
-                        }
-                    }
-                }
-
-                logger.debug("convert_hardware_full_id_to_uuid:: Device found - Return Success");
-                homer.send(request.get_result(board.id, board.full_id));
-                return;
-            }
-
-            // Přejlad na FULL_ID
-            if(request.uuid != null) {
-                Model_Hardware board = Model_Hardware.find.byId(request.uuid);
-
-                if (board == null) {
-                    logger.debug("convert_hardware_full_id_to_uuid:: Device Not Found!");
-                    homer.send(request.get_result_error());
-                    return;
-                }
-
-                logger.debug("convert_hardware_full_id_to_uuid:: Device found - Return Success");
-                homer.send(request.get_result(board.id, board.full_id));
-                return;
-            }
-
-            logger.error("convert_hardware_full_id_to_uuid: Incoming message not contain full_id or uuid!!!!");
-
-        }catch (Exception e){
-            logger.internalServerError(e);
-        }
-
-    }
-
-    @JsonIgnore
-    public static void check_hardware_logger_access_terminal_validation(WS_Homer homer, WS_Message_Hardware_terminal_logger_validation_request request) {
-        try {
-
-            UUID project_id = null;
-
-            for (UUID id : request.uuid_ids) {
-
-                Model_Hardware board =  Model_Hardware.find.byId(id);
-                if (board == null) {
-                    homer.send(request.get_result(false));
-                    return;
-                }
-
-                if (project_id != null  && project_id.equals(board.project().id)) continue;
-                if (project_id != null && !project_id.equals(board.project().id)) project_id = null;
-
-                // P5edpokládá se že project_id bude u všech desek stejné - tak se podle toho bude taky kontrolovat
-                if (project_id == null) {
-                    Model_Person person = Model_Person.getByAuthToken(request.token);
-                    if (person == null) {
-                        homer.send(request.get_result(false));
-                        return;
-                    }
-
-                    Model_Project project = Model_Project.find.query().where().eq("persons.id", person.id).eq("id", board.project().id).findOne();
-
-                    if (project == null) {
-                        homer.send(request.get_result(false));
-                        return;
-                    }
-
-                    project_id = project.id;
-                }
-            }
-
-            homer.send(request.get_result(true));
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    public static void device_settings_set(WS_Message_Hardware_set_settings settings) {
-        if (settings.key != null) {
-            if (settings.uuid != null) {
-                Model_Hardware hardware = Model_Hardware.find.byId(settings.uuid);
-
-                DM_Board_Bootloader_DefaultConfig configuration = hardware.bootloader_core_configuration();
-
-                configuration.pending.remove(settings.key.toLowerCase());
-
-                hardware.update_bootloader_configuration(configuration);
-
-            } else {
-                logger.warn("device_settings_set - got message without 'uuid' property");
-            }
-        } else {
-            logger.warn("device_settings_set - got message without 'key' property");
-        }
-    }
-
-    ///-- Send Update Procedure to All Hardware's  --//
-    @JsonIgnore
-    public static void execute_update_plan(Model_HardwareUpdate plan) {
-        logger.debug("execute_update_plan - start execution of plan: {}", plan.id );
-        logger.debug("execute_update_plan - actual state: {} ", plan.state.name());
-
-        if (plan.getActualizationProcedure().state == Enum_Update_group_procedure_state.COMPLETE || plan.getActualizationProcedure().state == Enum_Update_group_procedure_state.SUCCESSFULLY_COMPLETE ) {
-            logger.debug("execute_update_plan - procedure: {} is done (successful_complete or complete) -> return", plan.getActualizationProcedureId());
-            return;
-        }
-
-        if (plan.getActualizationProcedure().getUpdates().isEmpty()) {
-            plan.getActualizationProcedure().state = Enum_Update_group_procedure_state.COMPLETE_WITH_ERROR;
-            plan.getActualizationProcedure().update();
-            logger.debug("execute_update_plan - procedure: {} is empty -> return" , plan.getActualizationProcedureId());
-            return;
-        }
-
-        plan.getActualizationProcedure().state = Enum_Update_group_procedure_state.IN_PROGRESS;
-        plan.getActualizationProcedure().update();
-
-        try {
-
-            if ( plan.count_of_tries > 5 ) {
-                plan.state = HardwareUpdateState.CRITICAL_ERROR;
-                plan.error = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message();
-                plan.error_code = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code();
-                plan.update();
-                logger.warn("execute_update_plan - Procedure id:: {} plan {} CProgramUpdatePlan:: Error:: {} Message:: {} Continue Cycle. " , plan.getActualizationProcedureId() , plan.id, ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code() , ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message());
-                return;
-            }
-
-            if (plan.getHardware().connected_server_id == null) {
-                plan.state = HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED;
-                plan.update();
-                return;
-            }
-
-            if (Model_HomerServer.find.byId(plan.getHardware().connected_server_id).online_state() != NetworkStatus.ONLINE) {
-                logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", plan.getActualizationProcedureId() , plan.id, Model_HomerServer.find.byId(plan.getHardware().connected_server_id).name);
-                plan.state = HardwareUpdateState.HOMER_SERVER_IS_OFFLINE;
-                plan.update();
-                return;
-            }
-
-            plan.state = HardwareUpdateState.IN_PROGRESS;
-            plan.update();
-
-            Model_HomerServer.find.byId(plan.getHardware().connected_server_id).update_devices_firmware(Collections.singletonList(plan.get_brief_for_update_homer_server()));
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            plan.state = HardwareUpdateState.CRITICAL_ERROR;
-            plan.error_code = ErrorCode.CRITICAL_TYRION_SERVER_SIDE_ERROR.error_code();
-            plan.error = ErrorCode.CRITICAL_TYRION_SERVER_SIDE_ERROR.error_message();
-            plan.update();
-        }
-    }
-
-    @JsonIgnore
-    public static void execute_update_procedure(Model_UpdateProcedure procedure) {
-
-        logger.debug("execute_update_procedure - start execution of procedure: {}", procedure.id );
-        logger.debug("execute_update_procedure - actual state: {} ", procedure.state.name());
-
-        if (procedure.state == Enum_Update_group_procedure_state.COMPLETE || procedure.state == Enum_Update_group_procedure_state.SUCCESSFULLY_COMPLETE ) {
-            logger.debug("execute_update_procedure - procedure: {} is done (successful_complete or complete) -> return", procedure.id);
-            return;
-        }
-
-        if (procedure.getUpdates().isEmpty()) {
-            procedure.state = Enum_Update_group_procedure_state.COMPLETE_WITH_ERROR;
-            procedure.update();
-            logger.error("execute_update_procedure - procedure: {} is empty -> return" , procedure.id);
-            return;
-        }
-
-        procedure.state = Enum_Update_group_procedure_state.IN_PROGRESS;
-        procedure.update();
-
-        List<Model_HardwareUpdate> plans = Model_HardwareUpdate.find.query().where().eq("actualization_procedure.id", procedure.id)
-                .disjunction()
-                .eq("state", HardwareUpdateState.NOT_YET_STARTED)
-                .eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE)
-                .eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED)
-                .endJunction()
-                .findList();
-
-        if (plans.isEmpty()) {
-            logger.debug("execute_update_procedure - Procedure id:: {} all updates is done or in progress. -> Return.", procedure.id );
-            return;
-        }
-
-        logger.debug("execute_update_procedure - Procedure id:: {} . Number of C_Procedures By database for execution:: {}" , procedure.id , plans.size());
-
-        HashMap<UUID, List<Model_HardwareUpdate> > server_device_sort = new HashMap<>();
-
-        for (Model_HardwareUpdate plan : plans) {
-            try {
-
-                logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: ID:: {} - New Cycle" , procedure.id , plan.id, plan.id);
-                logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Board ID:: {}" , procedure.id , plan.id,  plan.getHardware().id);
-                logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Status:: {} ", procedure.id , plan.id,  plan.state);
-
-                logger.debug("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Number of tries {} ", procedure.id , plan.id,  plan.count_of_tries);
-
-                if (plan.count_of_tries == null) {
-                    plan.count_of_tries = 0;
-                }
-
-
-                if(!plan.getHardware().database_synchronize) {
-                    plan.state = HardwareUpdateState.PROHIBITED_BY_CONFIG;
-                    plan.update();
-                    continue;
-                }
-
-                // Pokud HW nemá nastavený Backup Mode - nastaví se
-                if (plan.firmware_type == FirmwareType.BACKUP) {
-                    if (!plan.getHardware().backup_mode) {
-                        // Na Homera Nemusím posílat příkaz o změně registru, protože Homer při updatu Backupu vždy sám přepne register hardwaru pokud tak nahardwaru není
-                        // JE to trochu vybočení ze standardu, ale byl problém s tím, že se registr nastavil a pak se mohlo posrat ještě milion věcí.
-                        // Takto Homer register mění až ve chvíli, kdy přenese bynárku do bufru hardwaru a řekne udělej z toho backup (což je jen zpoždění jedné mqtt nstrukce)
-                        // V Configu
-                        DM_Board_Bootloader_DefaultConfig configuration = plan.getHardware().bootloader_core_configuration();
-                        configuration.autobackup = false;
-                        plan.getHardware().update_bootloader_configuration(configuration);
-                        // V databázi
-                        plan.getHardware().backup_mode = false;
-                        plan.getHardware().update();
-                    }
-                }
-
-                if (plan.count_of_tries > 5) {
-                    plan.state = HardwareUpdateState.CRITICAL_ERROR;
-                    plan.error = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message();
-                    plan.error_code = ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code();
-                    plan.update();
-                    logger.warn("execute_update_procedure - Procedure id:: {} plan {} CProgramUpdatePlan:: Error:: {} Message:: {} Continue Cycle. " , procedure.id , plan.id, ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_code() , ErrorCode.NUMBER_OF_ATTEMPTS_EXCEEDED.error_message());
-                    continue;
-                }
-
-                if (plan.getHardware().connected_server_id == null) {
-                    plan.state = HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED;
-                    plan.update();
-                    continue;
-                }
-
-                if (!server_device_sort.containsKey(plan.getHardware().connected_server_id)) {
-                    server_device_sort.put(plan.getHardware().connected_server_id, new ArrayList<>());
-                }
-
-                if (Model_HomerServer.find.byId(plan.getHardware().connected_server_id).online_state() != NetworkStatus.ONLINE) {
-                    logger.warn("execute_update_procedure - Procedure id:: {}  plan {}  Server {} is offline. Putting off the task for later. -> Return. ", procedure.id , plan.id, Model_HomerServer.find.byId(plan.getHardware().connected_server_id).name);
-                    plan.state = HardwareUpdateState.HOMER_SERVER_IS_OFFLINE;
-                    plan.update();
-                    continue;
-                }
-
-                server_device_sort.get(plan.getHardware().connected_server_id).add(plan);
-
-                logger.debug("execute_update_procedure - Procedure id:: {}  plan {} of blocko program is online and connected with Tyrion", procedure.id, plan.id);
-
-                plan.state = HardwareUpdateState.IN_PROGRESS;
-                plan.update();
-
-            } catch (Exception e) {
-                logger.internalServerError(e);
-                plan.state = HardwareUpdateState.CRITICAL_ERROR;
-                plan.error_code = ErrorCode.CRITICAL_TYRION_SERVER_SIDE_ERROR.error_code();
-                plan.error = ErrorCode.CRITICAL_TYRION_SERVER_SIDE_ERROR.error_message();
-                plan.update();
-                break;
-            }
-        }
-
-        logger.debug("execute_update_procedure - Summary for actualizations");
-
-        for (UUID server_id : server_device_sort.keySet()) {
-
-            List<Swagger_UpdatePlan_brief_for_homer> tasks = new ArrayList<>();
-
-            for (Model_HardwareUpdate plan : server_device_sort.get(server_id)) {
-                tasks.add(plan.get_brief_for_update_homer_server());
-            }
-
-            Model_HomerServer.find.byId(server_id).update_devices_firmware(tasks);
-        }
-    }
-
-    /**
-     * Kontrola po připojení zařízení - každé připojení zařízení odstartuje kontrolní proceduru,
-     * nejdříve korekntí nastavení s očekávaným podel DM_Board_Bootloader_DefaultConfig,
-     * dále firmware, bootloader a backup.
-     *
-     *
-      */
-/* CHECK BOARD RIGHT FIRMWARE || BACKUP || BOOTLOADER STATUS -----------------------------------------------------------*/
-
-    // Kontrola up_to_date hardwaru
-    @JsonIgnore
-    public void hardware_firmware_state_check() {
-        try {
-            logger.warn("hardware_firmware_state_check hardware id {} procedure", this.id);
-
-            // TODO WS_Message_Hardware_overview_Board report = get_devices_overview();
-
-            logger.debug("hardware_firmware_state_check hardware id {}: Result:  {}", this.id , Json.toJson(report));
-
-
-            if (report.error_message != null) {
-                logger.warn("hardware_firmware_state_check hardware id {} - contains ErrorCode:: {} ErrorMessage:: {} " , this.id, report.error_code, report.error_message);
-
-                if (report.error_code.equals(ErrorCode.HARDWARE_IS_OFFLINE.error_code())) {
-                    logger.warn("hardware_firmware_state_check hardware id {} -: Report Device ID: {} is offline" , this.id , this.id);
-                    return;
-                }
-            }
-
-            if (!report.status.equals("success")) {
-                logger.error("hardware_firmware_state_check hardware id {}: WS_Help_Hardware_board_overview something is wrong on device {}" , this.id);
-                return;
-            }
-
-            if (!report.online_status) {
-                logger.warn("hardware_firmware_state_check hardware id {} - device is offline", this.id);
-                return;
-            }
-
-            if (project().id == null) {
-                logger.warn("hardware_firmware_state_check hardware id {} device id:: {} - No project - synchronize is not allowed.", this.id);
-                return;
-            }
-
-            logger.warn("hardware_firmware_state_check hardware id {} - Summary information of connected master hardware: ID = {}", this.id);
-
-            logger.warn("hardware_firmware_state_check hardware id {} - Settings check ", this.id);
-            if (check_settings(report)) {
-
-                logger.warn("hardware_firmware_state_check hardware id {} - check settings cancle synchronize procedure ", this.id);
-                return;
-            }
-
-
-
-            logger.warn("hardware_firmware_state_check hardware id {} - Firmware check ", this.id);
-            check_firmware(report);
-
-            logger.warn("hardware_firmware_state_check hardware id {} - Backup check ", this.id);
-            check_backup(report);
-
-            logger.warn("hardware_firmware_state_check hardware id {} - Bootloader check ", this.id);
-            check_bootloader(report);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    /**
-     * Pokud máme odchylku od databáze na hardwaru, to jest nesedí firmware_build_id na hW s tím co říká databáze
-     * @param overview object of WS_Message_Hardware_overview_Board
-     */
-    @JsonIgnore
-    private void check_firmware(WS_Message_Hardware_overview_Board overview) {
-        try {
-
-            logger.warn("check_firmware: Device id: {} : CHECK FIRMWARE --------------------------------------------------------------------", this.id);
-            // Pokud uživatel nechce DB synchronizaci ingoruji
-            if (!this.database_synchronize) {
-                logger.warn("check_firmware: Device id: {} : database_synchronize is forbidden - change parameters not allowed!", this.id);
-                return;
-            }
-
-            if (getCurrentFirmware() == null) {
-                logger.warn("check_firmware: Device id: {} : Actual firmware by DB not recognized :: {}", this.id, overview.binaries.firmware.build_id);
-            }
-
-            if (overview.binaries.firmware == null) {
-                logger.error("check_firmware: Device id: {} : overview.binaries.firmware is null!!", this.id);
-                return;
-            }
-
-            if (overview.binaries.firmware.build_id == null || overview.binaries.firmware.build_id.equals("")) {
-                logger.error("check_firmware: Device id: {} : overview.binaries.firmware.build_id is null", this.id);
-                return;
-            }
-
-            // Vylistuji seznam úkolů k updatu
-            List<Model_HardwareUpdate> firmware_plans = Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id)
-                    .disjunction()
-                    .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
-                    .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
-                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
-                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
-                    .add(Expr.eq("state", HardwareUpdateState.CRITICAL_ERROR))
-                    .endJunction()
-                    .eq("firmware_type", FirmwareType.FIRMWARE.name())
-                    .lt("actualization_procedure.date_of_planing", new Date())
-                    .order().desc("actualization_procedure.date_of_planing")
-                    .findList();
-
-            // Kontrola Firmwaru a přepsání starých
-            // Je žádoucí přepsat všechny předhozí update plány - ale je nutné se podívat jestli nejsou rozdílné!
-            // To jest pokud mám 2 updaty firmwaru pak ten starší zahodím
-            // Ale jestli mám udpate firmwaru a backupu pak k tomu dojít nesmí!
-            // Poměrně krkolomné řešení a HNUS kod - ale chyba je výjmečná a stává se jen sporadicky těsně před nebo po restartu serveru
-            if (firmware_plans.size() > 1) {
-                logger.warn("check_firmware: Device id: {} : there is more than one active firmware_plans. Its time to override it!", this.id);
-                for (int i = 1; i < firmware_plans.size(); i++) {
-                    firmware_plans.get(i).state = HardwareUpdateState.OBSOLETE;
-                    firmware_plans.get(i).update();
-                }
-            }
-
-            if (!firmware_plans.isEmpty()) {
-
-                logger.warn("check_firmware: Device id: {} : existují nedokončené procedury", this.id);
-
-                Model_HardwareUpdate plan = firmware_plans.get(0);
-
-                logger.warn("Plan:: {} status: {} ", plan.id, plan.state);
-
-                // Mám shodu firmwaru oproti očekávánemů
-                if (getCurrentFirmware() != null) {
-                    logger.warn("Firmware:: Device id: {} :   --------------------------------------------------------------------", this.id);
-                    logger.warn("Firmware:: Device id: {} :  Co aktuálně je na HW podle Tyriona??:: CProgram Name {} Version Name {} Build Id {} ", this.id, getCurrentFirmware().get_c_program().name, getCurrentFirmware().name,  getCurrentFirmware().compilation.firmware_build_id);
-                    logger.warn("Firmware:: Device id: {} :  Co aktuálně je na HW podle Homera??:: {}", this.id, overview.binaries.firmware.build_id);
-                    logger.warn("Firmware:: Device id: {} :  Co očekává nedokončená procedura??:: CProgram Name {} Version Name {} Build Id {} ", this.id, plan.c_program_version_for_update.get_c_program().name, plan.c_program_version_for_update.name, plan.c_program_version_for_update.compilation.firmware_build_id);
-
-                    // Verze se rovnají
-                    if (overview.binaries.firmware.build_id.equals(plan.c_program_version_for_update.compilation.firmware_build_id)) {
-
-                        logger.debug("check_firmware:: Device id: {} : verze se shodují - tím pádem je procedura dokončená a uzavírám", this.id);
-                        this.actual_c_program_version = plan.c_program_version_for_update;
-
-                        this.idCache().add(Model_CProgram.class,  this.actual_c_program_version.get_c_program().id);
-                        this.idCache().add(Model_CProgramVersion.class,  this.actual_c_program_version.id);
-
-                        this.update();
-
-                        logger.debug("check_firmware:: Device id: {} : - up to date, procedure is done", this.id);
-                        plan.state = HardwareUpdateState.COMPLETE;
-                        plan.date_of_finish = new Date();
-                        plan.update();
-                        return;
-
-                    } else {
-                        logger.debug("check_firmware verze se neshodují");
-                        logger.debug("check_firmware - need update, system starts a update again, number of tries {}", plan.count_of_tries);
-                        plan.state = HardwareUpdateState.NOT_YET_STARTED;
-                        plan.count_of_tries++;
-                        plan.update();
-                        execute_update_plan(plan);
-                    }
-
-                } else {
-
-                    logger.debug("check_firmware - no firmware, system starts a new update");
-                    plan.state = HardwareUpdateState.NOT_YET_STARTED;
-                    plan.count_of_tries++;
-                    plan.update();
-
-                    execute_update_plan(plan);
-                }
-
-                return;
-            } else {
-                logger.debug("check_firmware:: Device id: {}  Neexistují nedokončené procedury", this.id);
-            }
-
-            logger.debug("check_firmware:: Device id: {} Totální přehled v Json: \n {} \n", this.id, this.prettyPrint());
-
-            // Nemám Updaty - ale verze se neshodují
-            if (getCurrentFirmware() != null && firmware_plans.isEmpty()) {
-
-                logger.debug("check_firmware - current firmware according to Tyrion: C_Program Name {} Version {} build_id {} ", getCurrentFirmware().get_c_program().name, getCurrentFirmware().name, getCurrentFirmware().compilation.firmware_build_id);
-                logger.debug("check_firmware - current firmware according to Homer: C_Program Name {} Version {} build_id {} ", overview.binaries.firmware.usr_name, overview.binaries.firmware.usr_version, overview.binaries.firmware.build_id);
-
-                if (!getCurrentFirmware().compilation.firmware_build_id.equals(overview.binaries.firmware.build_id)) {
-                    // Na HW není to co by na něm mělo být.
-                    logger.debug("check_firmware - no update procedures found, but versions are not equal");
-                    logger.debug("check_firmware - Different firmware versions versus database");
-
-                    if (get_backup_c_program_version() != null && get_backup_c_program_version().compilation.firmware_build_id.equals(overview.binaries.bootloader.build_id)) {
-
-                        logger.warn("check_firmware - We have problem with firmware version. Backup is now running");
-
-                        // Notifikace uživatelovi
-                        this.notification_board_unstable_actual_firmware_version(getCurrentFirmware());
-
-                        // Označit firmare za nestabilní
-                        getCurrentFirmware().compilation.status = CompilationStatus.UNSTABLE;
-                        getCurrentFirmware().compilation.update();
-
-                        // Přemapovat hardware
-                        actual_c_program_version = get_backup_c_program_version();
-
-                        this.idCache().add(Model_CProgram.class, actual_c_program_version.id);                // C Program
-                        this.idCache().add(Model_CProgramVersion.class, actual_c_program_version.id);
-
-                        this.idCache().add(Model_CProgramFakeBackup.class, actual_c_program_version.id);      // Backup
-                        this.idCache().add(Model_CProgramVersionFakeBackup.class, actual_c_program_version.id);
-
-                        this.update();
-
-                        return;
-                    }
-
-                    // Backup to není
-                    else {
-
-                        logger.warn("check_firmware - Wrong version on hardware - or null version on hardware");
-                        logger.warn("check_firmware - Now System set Default Firmware or Firmware by Database!!!");
-
-                        // Nastavuji nový systémový update
-                        List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
-
-                        WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
-                        b_pair.hardware = this;
-                        b_pair.c_program_version = getCurrentFirmware();
-
-                        b_pairs.add(b_pair);
-
-                        Model_UpdateProcedure procedure = create_update_procedure(FirmwareType.FIRMWARE, UpdateType.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
-                        procedure.execute_update_procedure();
-
-                        return;
-                    }
-
-                } else {
-                    // Na HW je to co by na něm podle databáze mělo být.
-                    logger.debug("check_firmware - hardware is up to date");
-                    return;
-                }
-            }
-
-            // Set Defualt Program protože žádný teď nemáš
-            if (getCurrentFirmware() == null && firmware_plans.isEmpty()) {
-
-                logger.debug("check_firmware:: Device id: {} Actual firmware_id is not recognized by the DB - Device has not firmware required by Tyrion", this.id);
-                logger.debug("check_firmware:: Device id: {} Tyrion will try to find Default C Program Main Version for this type of hardware. If is it set, Tyrion will update device to starting state", this.id);
-
-                // Ověřím - jestli nemám nově nahraný firmware na Hardwaru (to je ten co je teď výcohí firmware pro aktuální typ hardwaru)
-                if (overview.binaries != null && overview.binaries.firmware != null
-                        && overview.binaries.firmware.build_id != null
-                        && getHardwareType().get_main_c_program().default_main_version != null
-                        && getHardwareType().get_main_c_program().default_main_version.compilation.firmware_build_id != null
-                        && overview.binaries.firmware.build_id.equals(getHardwareType().get_main_c_program().default_main_version.compilation.firmware_build_id)
-                        ) {
-
-                    logger.debug("check_firmware:: Device id: {}  hardware is brand new, but already has required default hardware type firmware", this.id);
-
-                    // SET MAIN
-                    this.actual_c_program_version = getHardwareType().get_main_c_program().default_main_version;
-
-                    // Clean Cache
-                    this.idCache().removeAll(Model_CProgram.class);
-                    this.idCache().removeAll(Model_CProgramVersion.class);
-
-                    this.idCache().add(Model_CProgram.class, getHardwareType().get_main_c_program().id);
-                    this.idCache().add(Model_CProgramVersion.class, getHardwareType().get_main_c_program().default_main_version.id);
-
-                    // SET BACKUP
-                    this.actual_backup_c_program_version = getHardwareType().get_main_c_program().default_main_version; // Udělám rovnou zálohu, protože taková by tam měla být
-
-                    // Clean Cache
-                    this.idCache().removeAll(Model_CProgramFakeBackup.class);
-                    this.idCache().removeAll(Model_CProgramVersionFakeBackup.class);
-
-                    this.idCache().add(Model_CProgramFakeBackup.class, getHardwareType().get_main_c_program().id);
-                    this.idCache().add(Model_CProgramVersionFakeBackup.class, getHardwareType().get_main_c_program().default_main_version.id);
-
-                    this.update();
-                    return;
-                }
-
-                // Nastavím default firmware podle schématu Tyriona!
-                // Defaultní firmware je v v backandu určený výchozí program k typu desky.
-                if (getHardwareType().get_main_c_program() != null && getHardwareType().get_main_c_program().default_main_version != null) {
-
-                    logger.debug("check_firmware:: Device id: {} Yes, Default Version for Type Of Device {} is set", this.id , getHardwareType().name);
-
-                    List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
-
-                    WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
-                    b_pair.hardware = this;
-                    b_pair.c_program_version = getHardwareType().get_main_c_program().default_main_version;
-
-                    b_pairs.add(b_pair);
-
-                    this.notification_board_not_databased_version();
-
-                    Model_UpdateProcedure procedure = create_update_procedure(FirmwareType.FIRMWARE, UpdateType.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
-                    procedure.execute_update_procedure();
-
-                } else {
-                    logger.error("check_firmware:: Device id: {} Attention please! This is not a critical bug - Tyrion server is not just set for this type of device! Set main C_Program and version!", this.id  );
-                    logger.error("check_firmware:: Device id: {} Default main code version is not set for Type Of Board {} please set that!", this.id , getHardwareType().name);
-                }
-            }
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    @JsonIgnore
-    private void check_backup(WS_Message_Hardware_overview_Board overview) {
-        try {
-            // Pokud uživatel nechce DB synchronizaci ingoruji
-            if (!this.database_synchronize) {
-                logger.trace("check_backup:: Device id: {} - database_synchronize is forbidden - change parameters not allowed!", this.id );
-                return;
-            }
-
-            // když je autobackup tak sere pes - změna autobacku je rovnou z devicu
-            if (backup_mode) {
-                logger.trace("check_backup:: Device id: {}- autobackup is true change parameters not allowed!", this.id );
-
-                // Ale mohl bych udělat záznam o tom co tam je - kdyby to nebylo stejné s tím co si myslí tyrion že tam je:
-
-                if (overview.binaries.backup != null && overview.binaries.backup.build_id != null && !overview.binaries.backup.build_id.equals("")) {
-
-                    if (this.actual_backup_c_program_version != null && this.actual_backup_c_program_version.compilation.firmware_build_id.equals(overview.binaries.backup.build_id)) {
-                        logger.debug("check_backup:: Device id: {} - verze se shodují");
-                    } else {
-
-                        Model_CProgramVersion version = Model_CProgramVersion.find.query().nullable().where().eq("compilation.firmware_build_id", overview.binaries.backup.build_id).findOne();
-                        if (version != null) {
-
-                            logger.debug("check_backup:: Device id: {} Ještě nebyla přiřazena žádná Backup verze k HW v Tyrionovi - ale program se podařilo najít", this.id);
-                            logger.debug("check_backup:: Device id: {} Actual Version ID of backup: {} build_id: {} ", this.id, this.actual_backup_c_program_version != null ? this.actual_backup_c_program_version.id : "'neni uloženo'", this.actual_backup_c_program_version != null ? this.actual_backup_c_program_version.compilation.firmware_build_id : " není uloženo ");
-                            logger.debug("check_backup:: Device id: {} Actual Version ID of backup: {} build_id: {} ", this.id, version.id, version.compilation.firmware_build_id);
-
-
-                            if (this.actual_backup_c_program_version != null && version.id.equals(this.actual_backup_c_program_version.id)) {
-                                logger.debug("check_backup:: Version is same!");
-                            }
-
-                            this.actual_backup_c_program_version = version;
-                            this.idCache().add(Model_CProgramVersionFakeBackup.class, version.get_c_program().id);
-                            this.update();
-                        }
-                    }
-                }
-
-                return;
-            }
-
-            logger.debug("check_backup:: third check backup! - Backup is static!! ");
-
-            // Backup je takový jaký očekává tyrion
-            if (get_backup_c_program_version() != null && get_backup_c_program_version().compilation.firmware_build_id.equals(overview.binaries.backup.build_id)) {
-                logger.debug("check_backup:: Backup is same as on hardware as on Tyrion");
-                return;
-            }
-
-            // Backup není - to by se stát nemělo - ale šup sem sním
-            if (get_backup_c_program_version() == null) {
-                logger.warn("check_backup:: Static Backup is required - but tyrion not set any backup!");
-
-                if (overview.binaries.backup != null && (overview.binaries.backup.build_id == null || !overview.binaries.backup.build_id.equals(""))) {
-
-                    try {
-                        Model_CProgramVersion version = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", overview.binaries.backup.build_id).findOne();
-
-                        logger.debug("check_backup:: Ještě nebyla přiřazena žádná Backup verze k HW v Tyrionovi - ale program se podařilo najít");
-
-                        this.actual_backup_c_program_version = version;
-                        this.idCache().add(Model_CProgramFakeBackup.class, version.get_c_program().id);
-                        this.idCache().add(Model_CProgramVersionFakeBackup.class, version.id);
-                        this.update();
-                    } catch (NotFoundException e) {
-                        logger.warn("check_backup:: Nastal stav, kdy mám statický backup, Tyrion v databázi nic nemá a ani se mi nepodařilo najít program (build_id)"
-                                + "který by byl kompatibilní. Což je trochu problém. Uvidíme co nabízí update procedury. \n" +
-                                "Možnosti jsou 1.) Nahrát první určený plan na hardware a tato metoda začne v podmínce najdi fungovat \n" +
-                                "nebo 2) přepnu do autobacku");
-                    }
-                }
-            }
-
-            List<Model_HardwareUpdate> firmware_plans = Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id)
-                    .disjunction()
-                    .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
-                    .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
-                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
-                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
-                    .endJunction()
-                    .eq("firmware_type", FirmwareType.BACKUP.name())
-                    .lt("actualization_procedure.date_of_planing", new Date())
-                    .order().desc("actualization_procedure.date_of_planing")
-                    .findList();
-
-            // Zaloha kdyby byly stále platné aktualizace na backup
-            for (int i = 1; i < firmware_plans.size(); i++) {
-                firmware_plans.get(i).state = HardwareUpdateState.OBSOLETE;
-                firmware_plans.get(i).update();
-            }
-
-            // Kontrola Firmwaru a přepsání starých
-            // Je žádoucí přepsat všechny předhozí update plány - ale je nutné se podívat jestli nejsou rozdílné!
-            // To jest pokud mám 2 updaty firmwaru pak ten starší zahodím
-            // Ale jestli mám udpate firmwaru a backupu pak k tomu dojít nesmí!
-            // Poměrně krkolomné řešení a HNUS kod - ale chyba je výjmečná a stává se jen sporadicky těsně před nebo po restartu serveru
-            if (firmware_plans.size() > 1) {
-                for (int i = 1; i < firmware_plans.size(); i++) {
-                    firmware_plans.get(i).state = HardwareUpdateState.OBSOLETE;
-                    firmware_plans.get(i).update();
-                }
-            }
-
-            // Mám updaty a tak kontroluji
-            if (!firmware_plans.isEmpty()) {
-
-                Model_HardwareUpdate plan = firmware_plans.get(0);
-
-                logger.debug("check_backup - Actual backup according to Tyrion: {}", get_backup_c_program_version().compilation.firmware_build_id);
-                logger.debug("check_backup - Actual backup according to Homer: {}", overview.binaries.backup.build_id);
-                logger.debug("check_backup - incomplete procedure expects: {}", plan.c_program_version_for_update.compilation.firmware_build_id);
-
-                if (plan.getHardware().get_backup_c_program_version() != null) {
-
-                    // Verze se rovnají
-                    if (get_backup_c_program_version().compilation.firmware_build_id.equals(plan.c_program_version_for_update.compilation.firmware_build_id)) {
-
-                        logger.debug("check_backup - up to date, procedure is done");
-                        plan.state = HardwareUpdateState.COMPLETE;
-                        plan.date_of_finish = new Date();
-                        plan.update();
-
-                    } else {
-
-                        logger.debug("check_backup - need update, system starts a new update, number of tries {}", plan.count_of_tries);
-                        plan.state = HardwareUpdateState.NOT_YET_STARTED;
-                        plan.count_of_tries++;
-                        plan.update();
-                        execute_update_procedure(plan.getActualizationProcedure());
-                    }
-
-                } else {
-
-                    logger.debug("check_backup - no backup, system starts a new update");
-                    plan.state = HardwareUpdateState.NOT_YET_STARTED;
-                    plan.count_of_tries++;
-                    plan.update();
-
-                    execute_update_procedure(plan.getActualizationProcedure());
-                }
-                return;
-            }
-
-            // Nemám updaty ale verze se neshodují
-            if (get_backup_c_program_version() == null && firmware_plans.isEmpty()) {
-                // TODO set_auto_backup();
-            }
-        } catch (Exception e) {
-           logger.internalServerError(e);
-        }
-    }
-
-    @JsonIgnore
-    private void check_bootloader(WS_Message_Hardware_overview_Board overview) {
-
-        // Nastavím bootloader který na hardwaru je
-
-        if (get_actual_bootloader() == null || overview.binaries.bootloader.build_id.equals(this.actual_bootloader().version_identifier)) {
-
-            actual_boot_loader = Model_BootLoader.find.query().where().eq("hardware_type.id", this.hardware_type().id).eq("version_identifier", overview.binaries.bootloader.build_id).findOne();
-            update();
-
-            logger.trace("check_bootloader -: Actual bootloader_id by DB not recognized and its updated :: ", overview.binaries.bootloader.build_id);
-        }
-
-
-        // Pokud uživatel nechce DB synchronizaci ingoruji
-        if (!this.database_synchronize) {
-            logger.trace("check_bootloader - database_synchronize is forbidden - change parameters not allowed!");
-            return;
-        }
-
-
-
-        // Vylistuji seznam úkolů k updatu
-        List<Model_HardwareUpdate> firmware_plans = Model_HardwareUpdate.find.query().where().eq("hardware.id", this.id)
-                .disjunction()
-                    .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
-                    .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
-                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
-                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
-                .endJunction()
-                .eq("firmware_type", FirmwareType.BOOTLOADER)
-                .le("actualization_procedure.date_of_planing", new Date())
-                .order().desc("actualization_procedure.date_of_planing")
-                .findList();
-
-        // Kontrola Bootloader a přepsání starých
-        // Je žádoucí přepsat všechny předhozí update plány - ale je nutné se podívat jestli nejsou rozdílné!
-        // To jest pokud mám 2 updaty firmwaru pak ten starší zahodím
-        // Ale jestli mám udpate firmwaru a backupu pak k tomu dojít nesmí!
-        // Poměrně krkolomné řešení a HNUS kod - ale chyba je výjmečná a stává se jen sporadicky těsně před nebo po restartu serveru
-        if (firmware_plans.size() > 1) {
-            logger.trace("check_bootloader:: firmware_plans.size() > 1 ");
-            for (int i = 1; i < firmware_plans.size(); i++) {
-                logger.trace("check_bootloader:: OBSOLETE procedure ID {}", firmware_plans.get(i).id);
-                firmware_plans.get(i).state = HardwareUpdateState.OBSOLETE;
-                firmware_plans.get(i).update();
-            }
-        }
-
-        if (!firmware_plans.isEmpty()) {
-
-            Model_HardwareUpdate plan = firmware_plans.get(0);
-
-            if (plan.getHardware().get_actual_bootloader() != null) {
-
-                // Verze se rovnají
-                if (plan.getHardware().get_actual_bootloader().version_identifier.equals(plan.getBootloader().version_identifier)) {
-
-                    logger.debug("check_bootloader - up to date, procedure is done");
-                    plan.state = HardwareUpdateState.COMPLETE;
-                    plan.date_of_finish = new Date();
-                    plan.update();
-
-                    this.actual_boot_loader = plan.getBootloader();
-                    this.idCache().add(Model_BootLoader.class, plan.getBootloader().id);
-                    //this.cache_actual_boot_loader_id = plan.getBootloader().id;
-                    update();
-
-                } else {
-
-                    logger.debug("check_bootloader - need update, system starts a new update, number of tries {}", plan.count_of_tries);
-                    plan.state = HardwareUpdateState.NOT_YET_STARTED;
-                    plan.count_of_tries++;
-                    plan.update();
-                    execute_update_procedure(plan.getActualizationProcedure());
-                }
-
-            } else {
-
-                logger.debug("check_bootloader:: no bootloader, system starts a update again");
-                plan.state = HardwareUpdateState.NOT_YET_STARTED;
-                plan.count_of_tries++;
-                plan.update();
-
-                execute_update_procedure(plan.getActualizationProcedure());
-            }
-
-            return;
-        }
-
-        // Pokud na HW opravdu žádný bootloader není a není ani vytvořená update procedura
-        if (get_actual_bootloader() == null && firmware_plans.isEmpty()) {
-
-            logger.debug("check_bootloader:: noo default bootloader on hardware - required automatic update");
-
-            // Zkontroluji jestli tam nějaká verze už je!
-            Model_BootLoader bootloader = Model_BootLoader.find.query().nullable().where().eq("hardware_type.id", this.hardware_type().id).eq("version_identifier", overview.binaries.bootloader.build_id).findOne();
-
-            if (bootloader != null ) {
-                logger.debug("check_bootloader:: Bootloader identificator {} recognized and found in database", overview.binaries.bootloader.build_id);
-                actual_boot_loader = bootloader;
-                update();
-                return;
-            }
-
-            if (getHardwareType().main_boot_loader() == null) {
-                logger.error("check_bootloader::Main Bootloader for Type Of Board {} is not set for update device {}", this.getHardwareType().name, this.id);
-                return;
-            }
-
-            List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
-
-            WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
-            b_pair.hardware = this;
-
-            if (this.get_actual_bootloader() == null) b_pair.bootLoader = getHardwareType().main_boot_loader();
-            else b_pair.bootLoader = this.get_actual_bootloader();
-
-            b_pairs.add(b_pair);
-
-            logger.debug("check_bootloader:: - creating update procedure for bootloader");
-            Model_UpdateProcedure procedure = create_update_procedure(FirmwareType.BOOTLOADER, UpdateType.AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE, b_pairs);
-            procedure.execute_update_procedure();
-        }
-    }
-
-/* UPDATE --------------------------------------------------------------------------------------------------------------*/
-
-    public static Model_UpdateProcedure create_update_procedure(FirmwareType firmware_type, UpdateType type_of_update, List<WS_Help_Hardware_Pair> board_for_update) {
-
-        if (board_for_update == null || board_for_update.isEmpty()) {
-            throw new NullPointerException("List<WS_Help_Hardware_Pair> board_for_update) is empty");
-        }
-
-
-        Model_UpdateProcedure procedure = new Model_UpdateProcedure();
-        procedure.project_id = board_for_update.get(0).hardware.get_project_id();
-        procedure.state = Enum_Update_group_procedure_state.NOT_START_YET;
-        procedure.type_of_update = type_of_update;
-
-        for (WS_Help_Hardware_Pair b_pair : board_for_update) {
-
-            List<Model_HardwareUpdate> obsolete = Model_HardwareUpdate.find.query()
-                    .where()
-                    .eq("firmware_type", firmware_type)
-                    .disjunction()
-                    .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
-                    .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
-                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
-                    .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
-                    .endJunction()
-                    .eq("hardware.id", b_pair.hardware.id).findList();
-
-            for (Model_HardwareUpdate update : obsolete) {
-                update.state = HardwareUpdateState.OBSOLETE;
-                update.date_of_finish = new Date();
-                update.update();
-            }
-
-            Model_HardwareUpdate plan = new Model_HardwareUpdate();
-            plan.hardware = b_pair.hardware;
-            plan.firmware_type = firmware_type;
-            plan.actualization_procedure = procedure;
-
-            // Firmware
-            if (firmware_type == FirmwareType.FIRMWARE) {
-
-                plan.c_program_version_for_update = b_pair.c_program_version;
-                plan.binary_file                  = b_pair.blob;
-                plan.state                        = HardwareUpdateState.NOT_YET_STARTED;
-            }
-
-            // Backup
-            else if (firmware_type == FirmwareType.BACKUP) {
-                plan.c_program_version_for_update = b_pair.c_program_version;
-                plan.binary_file                  = b_pair.blob;
-                plan.state = HardwareUpdateState.NOT_YET_STARTED;
-            }
-
-            // Bootloader
-            else if (firmware_type == FirmwareType.BOOTLOADER) {
-                plan.bootloader                   = b_pair.bootLoader;
-                plan.binary_file                  = b_pair.blob;
-                plan.state = HardwareUpdateState.NOT_YET_STARTED;
-            }
-
-            if(!b_pair.hardware.database_synchronize) {
-                plan.state = HardwareUpdateState.PROHIBITED_BY_CONFIG;
-            }
-
-            procedure.updates.add(plan);
-
-        }
-
-        procedure.save();
-
-
-        if(procedure.getUpdates().isEmpty()){
-            logger.error("create_update_procedure: Update List is Empty!!!");
-        }
-
-        return procedure;
     }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
@@ -2334,8 +958,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 /* HELPER CLASS  ----------------------------------------------------------------------------------------------------------*/
 
     // Používáme protože nemáme rezervní klíč pro cachoání backup c program verze v lokální chache
-    public abstract class Model_CProgramVersionFakeBackup {}
-    public abstract class Model_CProgramFakeBackup {}
     public abstract class Model_hardware_update_update_in_progress_bootloader {}
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/

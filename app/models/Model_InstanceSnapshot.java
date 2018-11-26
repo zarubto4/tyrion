@@ -32,12 +32,8 @@ import utilities.swagger.output.Swagger_Mobile_Connection_Summary;
 import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Message_Homer_Hardware_ID_UUID_Pair;
 import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_hardware;
-import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_status;
-import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_program;
 import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_terminals;
-import websocket.messages.homer_with_tyrion.WS_Message_Homer_Instance_add;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
-import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
 
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -287,17 +283,17 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
         return isLoaded("program") ? program : Model_Blob.find.query().where().eq("snapshot.id", id).findOne();
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public Model_BProgramVersion getBProgramVersion() {
         return isLoaded("b_program_version") ? b_program_version : Model_BProgramVersion.find.query().where().eq("instances.id", id).findOne();
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public Model_Instance getInstance() {
-        return isLoaded("instance") ? instance : Model_Instance.find.query().nullable().where().eq("snapshots.id", id).findOne();
+        return isLoaded("instance") ? instance : Model_Instance.find.query().where().eq("snapshots.id", id).findOne();
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public UUID get_instance_id() {
 
         if (idCache().gets(Model_Instance.class) == null) {
@@ -307,7 +303,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
         return idCache().get(Model_Instance.class);
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public List<UUID> getHardwareIds() {
 
         try {
@@ -327,8 +323,8 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
         }
     }
 
-    @JsonIgnore @Transient
-    public List<UUID> getHardwareGroupseIds() {
+    @JsonIgnore
+    public List<UUID> getHardwareGroupIds() {
         List<UUID> list = new ArrayList<>();
 
         for (Swagger_InstanceSnapshot_JsonFile_Interface interface_hw : this.getProgram().interfaces) {
@@ -341,13 +337,13 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
         return list;
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public Model_Product getProduct() {
         return this.getInstance().getProject().getProduct();
 
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public List<UUID> getUpdateProcedureIds() {
 
         if (idCache().gets(Model_UpdateProcedure.class) == null) {
@@ -357,7 +353,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
         return idCache().gets(Model_UpdateProcedure.class) != null ?  idCache().gets(Model_UpdateProcedure.class) : new ArrayList<>();
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public List<Model_UpdateProcedure> getUpdateProcedure() {
         try {
 
@@ -375,7 +371,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
         }
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public Swagger_InstanceSnapshot_JsonFile getProgram() {
         try {
 
@@ -392,220 +388,38 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
         return this.getInstance().getProject();
     }
 
-/* Actions --------------------------------------------------------------------------------------------------------*/
+    @JsonIgnore
+    public List<Model_Hardware> getRequiredHardware() {
+        List<Model_Hardware> hardwareList = new ArrayList<>();
 
-    public void deploy() {
-        Model_Person person = its_person_operation() ? _BaseController.person() : null;
-        new Thread(() -> {
-
-            try {
-
-                Model_Instance instance = getInstance();
-                // Step 1
-                logger.debug("deploy - begin - step 1");
-                if (instance.current_snapshot_id != null && !instance.current_snapshot_id.equals(this.id)) {
-                    logger.debug("deploy - stop previous running snapshot current_snapshot_id: {}", instance.current_snapshot_id);
-                    instance.current_snapshot_id = null;
-                    instance.update();
-                }
-
-                if (getInstance().getServer().online_state() != NetworkStatus.ONLINE) {
-                    logger.debug("deploy - server is offline, it is not possible to continue");
-
-                    instance.current_snapshot_id = this.id;
-                    instance.update();
-
-                    if (person != null) {
-                        notification_instance_set_wait_for_server(person);
-                    }
-                    return;
-                }
-
-                if (instance.current_snapshot_id == null) {
-                    instance.current_snapshot_id = this.id;
-                    instance.update();
-                }
-
-                WS_Message_Instance_status status = instance.get_instance_status();
-
-                WS_Message_Instance_status.InstanceStatus instanceStatus = status.get_status(get_instance_id());
-
-                if (instanceStatus.error_code != null) {
-                    logger.warn("deploy - instance {} is not set in Homer Server ", get_instance_id());
-                }
-
-                // Instance status
-                if (!instanceStatus.status) {
-                    // Vytvořím Instanci
-                    WS_Message_Homer_Instance_add result_instance = instance.getServer().add_instance(instance);
-                    if (!result_instance.status.equals("success")) {
-                        logger.internalServerError(new Exception("Failed to add Instance. ErrorCode: " + result_instance.error_code + ". Error: " + result_instance.error + result_instance.error_message));
-                        return;
-                    }
-                }
-
-                // Step 2
-                WS_Message_Instance_set_program result_step_2 = this.setProgram();
-                if (!result_step_2.status.equals("success")) {
-                    logger.warn("deploy - instance {}, step 2 failed: {}", get_instance_id(), result_step_2.error_code);
-                    return;
-                }
-
-                // Step 3
-                WS_Message_Instance_set_hardware result_step_3 = this.setHardware();
-                if (!result_step_3.status.equals("success")) {
-                    logger.warn("deploy - instance {}, step 3 failed: {}", get_instance_id(), result_step_3.error_code);
-                    return;
-                }
-
-                // Step 4
-                WS_Message_Instance_set_terminals result_step_4 = this.setTerminals();
-                if (!result_step_4.status.equals("success")) {
-                    logger.warn("deploy - instance {}, step 4 failed: {}", get_instance_id(), result_step_4.error_code);
-                    return;
-                }
-
-                Model_Instance.cache_status.put(get_instance_id(), true);
-                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, get_instance_id(), true, instance.getProjectId());
-
-                // Only if there are hardware for update
-                if (getProgram().interfaces.size() > 0) {
-
-                    // Step 5
-                    logger.trace("deploy - instance {}, step 5 - Override all previous update procedures in this snapshot ", get_instance_id());
-
-                    this.override_all_actualization_hardware_request();
-
-                    logger.trace("deploy - instance {}, step 6 - Deploy Hardware ", get_instance_id());
-                    this.create_and_start_actualization_hardware_request();
-
-                }
-
-                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, get_instance_id(), true, instance.getProjectId());
-
-                logger.warn("Sending Update for Instance ID: {}", this.id);
-                new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Instance.class, instance.getProject().id, get_instance_id()))).start();
-
-
-            }catch (Exception e) {
-                logger.internalServerError(e);
-            }
-
-        }).start();
-    }
-
-    @JsonIgnore @Transient
-    public WS_Message_Instance_set_hardware setHardware() {
-        try {
-
-            // Seznam - který by na instanci měl běžet!
-            List<UUID> hardware_ids_required_by_instance = getHardwareIds();
-            List<UUID> group_hardware_ids_required_by_instance = Model_Hardware.find.query().where().in("hardware_groups.id", getHardwareGroupseIds()).select("id").findSingleAttributeList();
-
-            hardware_ids_required_by_instance.addAll(group_hardware_ids_required_by_instance);
-
-            List<WS_Message_Homer_Hardware_ID_UUID_Pair> hardwares = new ArrayList<>();
-
-
-            for(UUID uuid: hardware_ids_required_by_instance) {
+        this.getProgram().interfaces.forEach(iface -> {
+            if (iface.type.equals("hardware")) {
                 try {
+                    if (hardwareList.stream().noneMatch(hw -> hw.id == iface.target_id)) {
+                        hardwareList.add(Model_Hardware.find.byId(iface.target_id));
+                    }
+                } catch (NotFoundException e) {
+                    logger.warn("getRequiredHardware - hardware from added interfaces was not found, id: {}", iface.target_id);
+                }
+            } else if (iface.type.equals("group")) {
+                try {
+                    Model_HardwareGroup group = Model_HardwareGroup.find.byId(iface.target_id);
+                    group.getHardware().forEach(hardware -> {
+                        if (!hardwareList.contains(hardware)) {
+                            hardwareList.add(hardware);
+                        }
+                    });
 
-                    Model_Hardware hw = Model_Hardware.find.byId(uuid);
-
-                    WS_Message_Homer_Hardware_ID_UUID_Pair pair = new WS_Message_Homer_Hardware_ID_UUID_Pair();
-                    pair.full_id = hw.full_id;
-                    pair.uuid = hw.id.toString(); // Must be string!
-
-                    hardwares.add(pair);
-
-                }catch (Exception e){
-                    logger.internalServerError(e);
+                } catch (NotFoundException e) {
+                    logger.warn("getRequiredHardware - hardware group from added interfaces was not found, id: {}", iface.target_id);
                 }
             }
+        });
 
-            // Přidat nový otisk hardwaru
-            if (!hardwares.isEmpty()) {
-                return getInstance().set_device_to_instance(hardwares);
-            } else {
-                WS_Message_Instance_set_hardware result = new WS_Message_Instance_set_hardware();
-                result.status = "success";
-                return result;
-            }
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new WS_Message_Instance_set_hardware();
-        }
+        return hardwareList;
     }
 
-    @JsonIgnore @Transient
-    public WS_Message_Instance_set_terminals setTerminals() {
-        try {
-
-            // TODO Update terminals command to connected devices
-            // List<UUID> terminalIds = new ArrayList<>();
-            // return getInstance().setTerminals(terminalIds);
-
-            WS_Message_Instance_set_terminals result = new WS_Message_Instance_set_terminals();
-            result.status = "success";
-            return result;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new WS_Message_Instance_set_terminals();
-        }
-    }
-
-    @JsonIgnore @Transient
-    public WS_Message_Instance_set_program setProgram() {
-        try {
-
-            JsonNode node = getInstance().write_with_confirmation(new WS_Message_Instance_set_program().make_request(this), 1000 * 6, 0, 2);
-
-            return baseFormFactory.formFromJsonWithValidation(WS_Message_Instance_set_program.class, node);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new WS_Message_Instance_set_program();
-        }
-    }
-
-    @JsonIgnore @Transient
-    public void override_all_actualization_hardware_request(){
-
-        logger.debug("override_all_actualization_hardware_request Snapshot {} : start with override_all_actualization_hardware_request", this.id);
-        logger.debug("override_all_actualization_hardware_request Snapshot {} : size of updates procedure for instance id {} is: {} ", this.id, this.get_instance_id(), getUpdateProcedure().size());
-        for(Model_UpdateProcedure procedure : getUpdateProcedure()) {
-
-            logger.debug("override_all_actualization_hardware_request Snapshot {} : FOR CYCLE Procedure ID: {}", this.id, procedure.id);
-
-            if (procedure.state == Enum_Update_group_procedure_state.CANCELED) {
-                logger.debug("override_all_actualization_hardware_request Snapshot {} : FOR CYCLE Procedure ID: {} procedure is CANCELED ", this.id, procedure.id);
-                continue;
-            }
-
-            if(procedure.state ==  Enum_Update_group_procedure_state.COMPLETE || procedure.state == Enum_Update_group_procedure_state.SUCCESSFULLY_COMPLETE) {
-                logger.debug("override_all_actualization_hardware_request Snapshot {} : FOR CYCLE Procedure ID: {} procedure is COMPLETE or  SUCCESSFULLY_COMPLETE", this.id, procedure.id);
-                continue;
-            }
-
-            logger.debug("override_all_actualization_hardware_request Snapshot {} : FOR CYCLE Procedure ID: {} canceling this procedure ", this.id, procedure.id);
-
-            procedure.update();
-
-            for(Model_HardwareUpdate update : procedure.getUpdates()) {
-                if(update.state != HardwareUpdateState.COMPLETE) {
-                    update.state = HardwareUpdateState.OBSOLETE;
-                }
-                update.date_of_finish = new Date();
-                update.update();
-            }
-
-            procedure.state = Enum_Update_group_procedure_state.CANCELED;
-            procedure.date_of_finish = new Date();
-            procedure.update();
-        }
-    }
+/* Actions --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
     public void create_and_start_actualization_hardware_request(){

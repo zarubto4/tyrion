@@ -7,10 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers._BaseController;
 import exceptions.InvalidBodyException;
 import io.swagger.annotations.ApiModelProperty;
-import models.Model_HomerServer;
 import org.bson.types.ObjectId;
-import org.ehcache.Cache;
-import org.mongodb.morphia.Key;
 import org.mongodb.morphia.annotations.*;
 import play.data.validation.Constraints;
 import play.libs.Json;
@@ -20,9 +17,7 @@ import utilities.cache.CacheMongoFinder;
 import utilities.logger.Logger;
 import utilities.permission.Action;
 import utilities.permission.JsonPermission;
-import websocket.interfaces.WS_Homer;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -130,30 +125,6 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
     @JsonIgnore
     public static <T> T formFromJsonWithValidation(Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException {
         return Server.baseFormFactory.formFromJsonWithValidation(clazz, jsonNode);
-    }
-
-    /**
-     * Binds Json data to this form - that is, handles form submission.
-     * Special Method with Response to Websocket
-     * @param clazz
-     * @param jsonNode
-     * @param <T>
-     * @return a copy of this form filled with the new data
-     */
-    public static  <T> T formFromJsonWithValidation(Model_HomerServer server, Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException, IOException {
-        return Server.baseFormFactory.formFromJsonWithValidation(server, clazz, jsonNode);
-    }
-
-    /**
-     * Binds Json data to this form - that is, handles form submission.
-     * Special Method with Response to Websocket
-     * @param clazz
-     * @param jsonNode
-     * @param <T>
-     * @return a copy of this form filled with the new data
-     */
-    public static  <T> T formFromJsonWithValidation(WS_Homer server, Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException, IOException {
-        return Server.baseFormFactory.formFromJsonWithValidation(server, clazz, jsonNode);
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/

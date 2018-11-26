@@ -1,17 +1,24 @@
 package utilities.authentication;
 
+import com.google.inject.Inject;
 import controllers._BaseController;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.logger.Logger;
-import websocket.interfaces.WS_Homer;
+import websocket.interfaces.Homer;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public class AuthenticationHomer extends Security.Authenticator {
 
     private static final Logger logger = new Logger(AuthenticationHomer.class);
+
+    @Inject
+    public AuthenticationHomer() {
+        // TODO inject token cache
+    }
 
     @Override
     public String getUsername(Http.Context ctx) {
@@ -22,7 +29,7 @@ public class AuthenticationHomer extends Security.Authenticator {
 
         if (header.isPresent()) {
             String token = header.get();
-            if (WS_Homer.token_cache.containsKey(token)) {
+            if (Homer.apiKeys.containsKey(UUID.fromString(token))) {
                 return token;
             }
             logger.error("getUsername - cannot find homer by token");

@@ -759,7 +759,7 @@ public class Controller_Project extends _BaseController {
                 return badRequest("Already deactivated");
             }
 
-            this.hardwareService.deactivateHardware(hardware);
+            this.hardwareService.deactivate(hardware);
 
             return ok(hardware);
 

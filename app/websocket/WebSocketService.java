@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 @Singleton
 public class WebSocketService {
@@ -18,7 +19,7 @@ public class WebSocketService {
     private final Injector injector;
 
     /**
-     * Contains WebSocket connections from compiler servers.
+     * Contains all WebSocket connections.
      */
     private Map<UUID, WebSocketInterface> interfaces = new HashMap<>();
 
@@ -38,6 +39,10 @@ public class WebSocketService {
 
     public boolean isRegistered(UUID id) {
         return this.interfaces.containsKey(id);
+    }
+
+    public Long countOf(Predicate<WebSocketInterface> predicate) {
+        return this.interfaces.values().stream().filter(predicate).count();
     }
 
     @SuppressWarnings("unchecked")

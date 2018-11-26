@@ -20,6 +20,7 @@ import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultC
 import exceptions.NotFoundException;
 import utilities.hardware.HardwareInterface;
 import utilities.hardware.HardwareService;
+import utilities.hardware.update.UpdateService;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.enums.*;
@@ -49,11 +50,13 @@ public class Controller_Hardware extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     private final HardwareService hardwareService;
+    private final UpdateService updateService;
 
     @javax.inject.Inject
-    public Controller_Hardware(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService, HardwareService hardwareService) {
+    public Controller_Hardware(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService, HardwareService hardwareService, UpdateService updateService) {
         super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
         this.hardwareService = hardwareService;
+        this.updateService = updateService;
     }
 
 ///###################################################################################################################*/
@@ -1271,11 +1274,8 @@ public class Controller_Hardware extends _BaseController {
                 new Thread(() -> {
                     try {
 
-
-                        Model_UpdateProcedure procedure = Model_Hardware.create_update_procedure(FirmwareType.BOOTLOADER, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, hardware_for_update);
-
-                        logger.warn("Thread: New Procedure {} ", procedure.id);
-                        procedure.execute_update_procedure();
+                        // TODO update Model_UpdateProcedure procedure = Model_Hardware.create_update_procedure(FirmwareType.BOOTLOADER, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, hardware_for_update);
+                        // TODO update procedure.execute_update_procedure();
                         logger.warn("Thread: New Procedure was Executed");
 
                     } catch (Exception e) {
@@ -1774,48 +1774,38 @@ public class Controller_Hardware extends _BaseController {
             // Get and Validate Object
             Swagger_DeployFirmware help = formFromRequestWithValidation(Swagger_DeployFirmware.class);
 
-
-            List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
-
             // Ověření objektu
-            Model_CProgramVersion c_program_version = Model_CProgramVersion.find.byId(help.c_program_version_id);
+            Model_CProgramVersion version = Model_CProgramVersion.find.byId(help.c_program_version_id);
 
+            this.checkReadPermission(version);
+
+            //Zkontroluji validitu Verze zda sedí k C_Programu
+            if (version.compilation == null) return badRequest("Version is not version of C_Program - Missing compilation File");
+
+            // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
+            if (version.compilation.status != CompilationStatus.SUCCESS) return badRequest("You cannot upload code in state:: " + version.compilation.status.name());
+
+            List<Model_Hardware> hardwareList = new ArrayList<>();
 
             for (UUID hardware_id : help.hardware_ids) {
-
-
-                //Zkontroluji validitu Verze zda sedí k C_Programu
-                if (c_program_version.compilation == null) return badRequest("Version is not version of C_Program - Missing compilation File");
-
-                // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
-                if (c_program_version.compilation.status != CompilationStatus.SUCCESS) return badRequest("You cannot upload code in state:: " + c_program_version.compilation.status.name());
-
-                //Zkontroluji zda byla verze už zkompilována
-                if (!c_program_version.compilation.status.name().equals(CompilationStatus.SUCCESS.name())) return badRequest("The program is not yet compiled & Restored");
 
                 // Kotrola objektu
                 Model_Hardware hardware = Model_Hardware.find.byId(hardware_id);
 
-                WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
-                b_pair.hardware = hardware;
-                b_pair.c_program_version = c_program_version;
+                this.checkUpdatePermission(hardware);
 
-                b_pairs.add(b_pair);
-
+                hardwareList.add(hardware);
             }
 
-            if (!b_pairs.isEmpty()) {
+            if (!hardwareList.isEmpty()) {
                 new Thread(() -> {
                     try {
-
-                        Model_Hardware.create_update_procedure(FirmwareType.FIRMWARE, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, b_pairs);
-
+                        this.updateService.bulkUpdate(hardwareList, version, FirmwareType.FIRMWARE);
                     } catch (Exception e) {
                         logger.internalServerError(e);
                     }
                 }).start();
             }
-
 
             // Vracím odpověď
             return ok();
@@ -1922,9 +1912,6 @@ public class Controller_Hardware extends _BaseController {
                     // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
                     if (c_program_version.compilation.status != CompilationStatus.SUCCESS) return badRequest("You cannot upload code in state:: " + c_program_version.compilation.status.name());
 
-                    //Zkontroluji zda byla verze už zkompilována
-                    if (!c_program_version.compilation.status.name().equals(CompilationStatus.SUCCESS.name())) return badRequest("The program is not yet compiled & Restored");
-
                     WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
                     b_pair.hardware = hardware;
                     b_pair.c_program_version = c_program_version;
@@ -1947,8 +1934,8 @@ public class Controller_Hardware extends _BaseController {
                 new Thread(() -> {
 
                     try {
-                        Model_UpdateProcedure procedure = Model_Hardware.create_update_procedure(FirmwareType.BACKUP, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, hardware_pairs);
-                        procedure.execute_update_procedure();
+                        // TODO update Model_UpdateProcedure procedure = Model_Hardware.create_update_procedure(FirmwareType.BACKUP, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, hardware_pairs);
+                        // TODO update procedure.execute_update_procedure();
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
@@ -2982,7 +2969,7 @@ public class Controller_Hardware extends _BaseController {
 
                 List<UUID> list_ids = new ArrayList<>();
                 for(UUID snapshost_ids : help.instance_snapshots) {
-                    list_ids.addAll( Model_InstanceSnapshot.find.byId(snapshost_ids).getHardwareGroupseIds());
+                    list_ids.addAll( Model_InstanceSnapshot.find.byId(snapshost_ids).getHardwareGroupIds());
                 }
 
                 query.where().in("id", list_ids);

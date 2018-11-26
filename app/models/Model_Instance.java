@@ -3,36 +3,24 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
-import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheFinder;
 import utilities.cache.InjectCache;
 import utilities.enums.*;
-import utilities.errors.ErrorCode;
 import exceptions.NotFoundException;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
+import utilities.network.JsonNetworkStatus;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
-import utilities.swagger.input.Swagger_InstanceSnapShotConfiguration;
-import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationFile;
-import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationProgram;
 import utilities.swagger.output.Swagger_Short_Reference;
-import websocket.interfaces.WS_Homer;
-import websocket.messages.homer_hardware_with_tyrion.*;
-import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Message_Homer_Hardware_ID_UUID_Pair;
-import websocket.messages.homer_instance_with_tyrion.verification.WS_Message_Grid_token_verification;
-import websocket.messages.homer_instance_with_tyrion.verification.WS_Message_WebView_token_verification;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
-import websocket.messages.homer_instance_with_tyrion.*;
 
 import javax.persistence.*;
 import java.util.*;
@@ -61,7 +49,10 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @Transient
+    @JsonNetworkStatus @Transient
+    public NetworkStatus online_state;
+
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public List<Swagger_Short_Reference> snapshots() {
         try {
 
@@ -102,24 +93,20 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
     public Model_InstanceSnapshot current_snapshot() {
         try {
             if (this.current_snapshot_id != null) {
-                Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(this.current_snapshot_id);
-                return snapshot;
+                return Model_InstanceSnapshot.find.byId(this.current_snapshot_id);
             }
-            return null;
-
         } catch (NotFoundException e){
             //nothing
-            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             this.current_snapshot_id = null;
             this.update();
-            return null;
+
         }
+        return null;
     }
 
-    @JsonProperty @ApiModelProperty(required = true)
-    public NetworkStatus online_state() {
+    /*public NetworkStatus online_state() {
 
         // Pokud Tyrion nezná server ID - to znamená deska se ještě nikdy nepřihlásila - chrání to proti stavu "během výroby"
         // i stavy při vývoji kdy se tvoří zběsile nové desky na dev serverech
@@ -171,7 +158,7 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
             // Záměrný Exception - Občas se nedosynchronizuje Cach - ale system stejnak po zvalidování dorovná stav
            return NetworkStatus.UNKNOWN_LOST_CONNECTION_WITH_SERVER;
         }
-    }
+    }*/
 
     @JsonProperty @ApiModelProperty(required = true)
     public String instance_remote_url() {
@@ -342,166 +329,6 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
 
     public static final String CHANNEL = "instance";
 
-    //-- Messenger - Parsarer of Incoming Messages -- //
-    @JsonIgnore
-    public static void Messages(WS_Homer homer, ObjectNode json) {
-        new Thread(() -> {
-            try {
-
-                switch (json.get("message_type").asText()) {
-
-                    case WS_Message_Grid_token_verification.message_type: {
-
-                        WS_Message_Grid_token_verification help = formFromJsonWithValidation(WS_Message_Grid_token_verification.class, json);
-                        help.get_instance().cloud_verification_token_GRID(homer, help);
-                        return;
-                    }
-
-                    case WS_Message_WebView_token_verification.messageType: {
-
-                        WS_Message_WebView_token_verification help = formFromJsonWithValidation(WS_Message_WebView_token_verification.class, json);
-                        help.get_instance().cloud_verification_token_WEBVIEW(homer, help);
-                        return;
-                    }
-
-                    // Ochrana proti zacyklení
-                    case WS_Message_Instance_set_hardware.message_type           : {logger.warn("WS_Message_Instance_device_set_snap: A message with a very high delay has arrived.");return;}
-                    case WS_Message_Instance_status.message_type                    : {logger.warn("WS_Message_Instance_status: A message with a very high delay has arrived.");return;}
-                    case WS_Message_Instance_set_terminals.message_type         : {logger.warn("WS_Message_Instance_terminal_set_snap: A message with a very high delay has arrived.");return;}
-                    case WS_Message_Instance_set_program.message_type     : {logger.warn("WS_Message_Instance_upload_blocko_program: A message with a very high delay has arrived.");return;}
-
-                    default: {
-
-                        logger.warn("Incoming Message not recognized::" + json.toString());
-
-                        // Zarážka proti nevadliní odpovědi a zacyklení
-                        if (json.has("status") && json.get("status").asText().equals("error")) {
-                            return;
-                        }
-
-                        homer.send(json.put("error_message", "message_type not recognized").put("error_code", 400));
-                    }
-                }
-
-            } catch (Exception e) {
-
-                if (!json.has("message_type")) {
-                    homer.send(json.put("error_message", "Your message not contains message_type").put("error_code", 400));
-                    return;
-                } else {
-                    logger.internalServerError(e);
-                }
-            }
-        }).start();
-    }
-
-    // Odesílání zprávy harwaru jde skrze serve, zde je metoda, která pokud to nejde odeslat naplní objekt a vrácí ho
-    @JsonIgnore
-    public ObjectNode write_with_confirmation(ObjectNode json, Integer time, Integer delay, Integer number_of_retries) {
-
-        // Response with Error Message
-        if (this.getServer_id() == null) {
-
-            ObjectNode request = Json.newObject();
-            request.put("message_type", json.get("message_type").asText());
-            request.put("status", "error");
-            request.put("message_channel", Model_Instance.CHANNEL);
-            request.put("error_code", ErrorCode.HOMER_SERVER_NOT_SET_FOR_INSTANCE.error_code());
-            request.put("error_message", ErrorCode.HOMER_SERVER_NOT_SET_FOR_INSTANCE.error_message());
-            request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
-            request.put("websocket_identificator", "00000000-0000-4000-A000-000000000000");
-
-            return request;
-        }
-
-        Model_HomerServer server = Model_HomerServer.find.byId(this.getServer_id());
-        if (server == null) {
-
-            logger.internalServerError(new Exception("write_with_confirmation:: Instance " + id + ". Server id " + this.getServer_id() + " not exist!"));
-
-            ObjectNode request = Json.newObject();
-            request.put("message_type", json.get("message_type").asText());
-            request.put("status", "error");
-            request.put("message_channel", Model_Instance.CHANNEL);
-            request.put("error_code", ErrorCode.HOMER_NOT_EXIST.error_code());
-            request.put("error_message", ErrorCode.HOMER_NOT_EXIST.error_message());
-            request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
-            request.put("websocket_identificator", "00000000-0000-4000-A000-000000000000");
-
-            return request;
-        }
-
-        json.put("instance_id", id.toString());
-        return server.write_with_confirmation(json, time, delay, number_of_retries);
-    }
-
-    //-- Instance Status -- //
-    @JsonIgnore
-    public WS_Message_Instance_status get_instance_status() {
-        try {
-
-            JsonNode json = write_with_confirmation(new WS_Message_Instance_status().make_request(Collections.singletonList(id.toString())), 1000 * 3, 0, 2);
-
-           return formFromJsonWithValidation(WS_Message_Instance_status.class, json);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new WS_Message_Instance_status();
-        }
-    }
-
-    //-- Device IO operations -- //
-    @JsonIgnore
-    public WS_Message_Instance_set_hardware set_device_to_instance(List<WS_Message_Homer_Hardware_ID_UUID_Pair> hardwares) {
-        try {
-
-            JsonNode json = this.write_with_confirmation(new WS_Message_Instance_set_hardware().make_request(hardwares), 1000*3, 0, 4);
-            return formFromJsonWithValidation(WS_Message_Instance_set_hardware.class, json);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new WS_Message_Instance_set_hardware();
-        }
-    }
-
-    //-- Terminal IO operations -- //
-    @JsonIgnore
-    public WS_Message_Instance_set_terminals setTerminals(List<UUID> terminalIds) {
-        try {
-
-            JsonNode json = this.write_with_confirmation(new WS_Message_Instance_set_terminals().make_request(terminalIds), 1000*3, 0, 4);
-
-            return formFromJsonWithValidation(WS_Message_Instance_set_terminals.class, json);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new WS_Message_Instance_set_terminals();
-        }
-    }
-
-    //-- Instance Summary Information --//
-    @JsonIgnore
-    public WS_Message_Hardware_overview get_hardware_overview() {
-        try {
-
-            ObjectNode json = this.write_with_confirmation( new WS_Message_Hardware_overview().make_request(this.getHardwareIds()), 1000*5, 0, 1);
-
-            return formFromJsonWithValidation(WS_Message_Hardware_overview.class, json);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new WS_Message_Hardware_overview();
-        }
-    }
-
-    //-- Helper Commands --//
-    @JsonIgnore
-    public void deploy() {
-        if(current_snapshot() != null) {
-            current_snapshot().deploy();
-        }
-    }
-
     @JsonIgnore
     public void stop() {
 
@@ -532,175 +359,6 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
         server.remove_instance(Collections.singletonList(id));
 
         // TODO notifikace??
-    }
-
-    //-- Verification --//
-    @JsonIgnore
-    public void cloud_verification_token_GRID(WS_Homer homer, WS_Message_Grid_token_verification help) {
-        try {
-
-            logger.debug("cloud_verification_token_GRID::  Checking Token");
-            logger.debug("cloud_verification_token_GRID::  Token:: {} ", help.token);
-            logger.debug("cloud_verification_token_GRID::  Instance ID:: {} ", help.instance_id);
-            logger.debug("cloud_verification_token_GRID::  App ID:: {}", help.grid_app_id);
-
-            Model_GridTerminal terminal = Model_GridTerminal.find.query().where().eq("terminal_token", help.token).findOne();
-
-            // Pokud je terminall null - nikdy se uživatel nepřihlásit a nevytvořil se o tom záznam - ale to stále neznamená že není možno povolit přístup
-            if (terminal == null) {
-
-                logger.trace("cloud_verification_token_GRID:: terminal == null");
-                // Najít c configuráku token
-
-                Swagger_InstanceSnapShotConfiguration settings = this.current_snapshot().settings();
-                Swagger_InstanceSnapShotConfigurationFile collection = null;
-                Swagger_InstanceSnapShotConfigurationProgram program = null;
-
-
-                if(settings == null){
-                    logger.error("SnapShotConfiguration is missing return null");
-                    throw new NotFoundException(Swagger_InstanceSnapShotConfiguration.class);
-                }
-
-                for(Swagger_InstanceSnapShotConfigurationFile grids_collection : settings.grids_collections){
-                    for(Swagger_InstanceSnapShotConfigurationProgram grids_program : grids_collection.grid_programs){
-                        if(grids_program.grid_program_id.equals( help.grid_app_id) || grids_program.grid_program_version_id.equals(help.grid_app_id)){
-                            logger.debug("cloud_verification_token_GRID:: set collection and program");
-                            collection = grids_collection;
-                            program = grids_program;
-                            break;
-                        }
-                    }
-                }
-
-                if(collection == null){
-                    logger.error("SnapShotConfigurationFile is missing return null");
-                    throw new NotFoundException(Swagger_InstanceSnapShotConfigurationFile.class);
-                }
-
-                logger.debug("Enum_MProgram_SnapShot_settings: {}", program.snapshot_settings);
-
-                switch (program.snapshot_settings) {
-
-                    case PUBLIC: {
-
-                        homer.send(help.get_result(true));
-                        return;
-                    }
-
-                    case PROJECT: {
-
-                        homer.send(help.get_result(false));
-                        return;
-                    }
-
-                    case TESTING:{
-
-                        homer.send(help.get_result(false));
-                        return;
-                    }
-
-                    default: {
-
-                        homer.send(help.get_result(false));
-                    }
-                }
-            } else {
-
-                logger.trace("cloud_verification_token_GRID::  terminal != null");
-                logger.debug("cloud_verification_token_GRID::  Person id:: {}", terminal.person.id);
-                logger.debug("cloud_verification_token_GRID::  Person mail:: {}", terminal.person.email);
-                logger.debug("cloud_verification_token_GRID::  Instance ID:: {} ", help.instance_id);
-                logger.debug("cloud_verification_token_GRID::  App ID:: {}", help.grid_app_id);
-
-
-                if (terminal.person == null) {
-                   logger.trace("cloud_verification_token_GRID:: Person is null");
-                   logger.debug("cloud_verification_token:: Grid_Terminal object has not own Person - its probably public - Trying to find Instance");
-
-                   if (Model_Instance.find.query().where().eq("id", help.instance_id).findCount() > 0) {
-                       logger.trace("cloud_verification_token_GRID:: Permission found");
-                       homer.send(help.get_result(true));
-                   } else {
-                       logger.trace("cloud_verification_token_GRID:: Permission not found");
-                       homer.send(help.get_result(false));
-                   }
-
-                } else {
-                    logger.trace("cloud_verification_token_GRID:: Person is not null!");
-                    logger.debug("cloud_verification_token:: Grid_Terminal object has  own Person - its probably private or it can be public - Trying to find Instance with user ID and public value");
-                    if (Model_Instance.find.query().where()
-                            .eq("id", help.instance_id)
-                            .eq("project.persons.id", terminal.person.id)
-                            // .or(Expr.eq("project.participants.person.id", terminal.person.id), Expr.eq("actual_instance.version.public_version", true)) TODO find grid access settings
-                            .findCount() > 0) {
-                        logger.trace("cloud_verification_token_GRID:: Permission found");
-                        homer.send(help.get_result(true));
-                    } else {
-                        logger.trace("cloud_verification_token_GRID:: Permission not found");
-                        homer.send(help.get_result(false));
-                    }
-                }
-            }
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    @JsonIgnore
-    public void cloud_verification_token_WEBVIEW(WS_Homer homer, WS_Message_WebView_token_verification help) {
-        try {
-
-            logger.debug("cloud_verification_token:: WebView  Checking Token");
-            logger.debug("cloud_verification_token:: Homer server: {}", homer.id);
-            logger.debug("cloud_verification_token:: WS_Message_WebView_token_verification: {}", Json.toJson(help));
-            logger.debug("cloud_verification_token:: WebView Token: {}", help.token);
-
-            Model_AuthorizationToken floatingPersonToken = Model_AuthorizationToken.find.query().where().eq("token", help.token).findOne();
-
-            if (floatingPersonToken == null) {
-                logger.warn("cloud_verification_token:: FloatingPersonToken not found!");
-                homer.send(help.get_result(false));
-                return;
-            }
-
-            logger.debug("Cloud_Homer_server:: cloud_verification_token:: WebView FloatingPersonToken Token found and user have permission");
-
-            // Kontola operávnění ke konkrétní instanci??
-            Model_HomerServer server = Model_HomerServer.find.byId(homer.id);
-
-            // Veřejný server
-            if (server.server_type == HomerType.PUBLIC || server.server_type == HomerType.MAIN || server.server_type == HomerType.BACKUP) {
-
-                logger.debug("cloud_verification_token:: Server is public - try to find participants.person.id");
-
-                if (Model_Instance.find.query().where().eq("id", help.instance_id).eq("b_program.project.persons.id", floatingPersonToken.get_person_id()).findCount() > 0) {
-                    logger.warn("cloud_verification_token:: Yes - participants id found!");
-                    homer.send(help.get_result(true));
-                } else {
-                    logger.warn("cloud_verification_token:: Nope - participants id not found!");
-                    homer.send(help.get_result(false));
-                }
-
-            // Provátní server
-            } else {
-
-                logger.warn("cloud_verification_token:: Its a private Server!");
-
-                if (Model_Project.find.query().nullable().where().eq("servers.id", server.id).eq("persons.id", floatingPersonToken.get_person_id()).select("id").findOne() != null) {
-                    logger.trace("validate_incoming_user_connection_to_hardware_logger:: Private Server Find fot this Person");
-                    homer.send(help.get_result(true));
-
-                } else {
-                    logger.warn("validate_incoming_user_connection_to_hardware_logger:: Private Server NOT Find fot this Person");
-                    homer.send(help.get_result(false));
-
-                }
-            }
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
     }
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/

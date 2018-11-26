@@ -104,6 +104,11 @@ public class CacheService {
                         .withExpiry(timeToIdle ? Expirations.timeToIdleExpiration(duration1) : Expirations.timeToLiveExpiration(duration1)).build());
     }
 
+    // TODO clear all caches
+    public void clear() {
+        logger.warn("clear - TODO");
+    }
+
     /**
      * Stops the cache
      */

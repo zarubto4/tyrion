@@ -50,6 +50,11 @@ public class NetworkStatusService {
         // TODO send it to Becki via WebSocket
     }
 
+    // TODO
+    public Long getLastOnline(Networkable networkable) {
+        return 0L;
+    }
+
     private void requestStatus(Networkable networkable) {
         CompletableFuture
                 .supplyAsync(() -> {

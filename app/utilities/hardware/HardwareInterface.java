@@ -14,6 +14,7 @@ import websocket.Message;
 import websocket.Request;
 import websocket.WebSocketInterface;
 import websocket.messages.homer_hardware_with_tyrion.*;
+import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Command;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -150,8 +151,6 @@ public class HardwareInterface {
         }
     }
 
-    public void setParameter
-
     // TODO rework to something better
     public void setAutoBackup() {
         // 1) změna registru v configur
@@ -165,10 +164,8 @@ public class HardwareInterface {
         //Zabít všechny procedury kde je nastaven backup a ještě nebyly provedeny - ty co jsou teprve v plánu budou provedeny standartně
         List<Model_HardwareUpdate> firmware_plans = Model_HardwareUpdate.find.query().where().eq("hardware.id", this.hardware.id)
                 .disjunction()
-                .add(Expr.eq("state", HardwareUpdateState.NOT_YET_STARTED))
-                .add(Expr.eq("state", HardwareUpdateState.IN_PROGRESS))
-                .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_IS_OFFLINE))
-                .add(Expr.eq("state", HardwareUpdateState.HOMER_SERVER_NEVER_CONNECTED))
+                .add(Expr.eq("state", HardwareUpdateState.PENDING))
+                .add(Expr.eq("state", HardwareUpdateState.RUNNING))
                 .endJunction()
                 .eq("firmware_type", FirmwareType.BACKUP.name())
                 .lt("actualization_procedure.date_of_planing", new Date())
@@ -213,7 +210,10 @@ public class HardwareInterface {
         }
     }
 
-    public void update() {
-
+    public void update(Model_HardwareUpdate update) {
+        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_UpdateProcedure_Command().make_request(Collections.singletonList(update.get_brief_for_update_homer_server()))));
+        if (response.isErroneous()) {
+            throw new FailedMessageException(response);
+        }
     }
 }

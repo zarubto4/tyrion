@@ -3,6 +3,7 @@ package controllers;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.swagger.annotations.*;
 import models.*;
@@ -27,6 +28,9 @@ import utilities.swagger.output.Swagger_ServerUpdates;
 import utilities.update_server.GitHub_Asset;
 import utilities.update_server.GitHub_Release;
 import utilities.update_server.ServerUpdate;
+import websocket.WebSocketService;
+import websocket.interfaces.Compiler;
+import websocket.interfaces.Homer;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,9 +48,12 @@ public class Controller_Admin extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    @javax.inject.Inject
-    public Controller_Admin(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
+    private final WebSocketService webSocketService;
+
+    @Inject
+    public Controller_Admin(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService, WebSocketService webSocketService) {
         super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+        this.webSocketService = webSocketService;
     }
 
 
@@ -85,11 +92,11 @@ public class Controller_Admin extends _BaseController {
             report.homer_server_public_created     = Model_HomerServer.find.query().findCount();
             report.homer_server_private_created    = 0;
 
-            report.homer_server_public_online      = Controller_WebSocket.homers.size();
+            report.homer_server_public_online      = this.webSocketService.countOf(i -> i instanceof Homer).intValue();
             report.homer_server_private_online     = 0;
 
             report.compilation_server_public_created = Model_CompilationServer.find.query().where().findCount();
-            report.compilation_server_public_online  = Controller_WebSocket.compilers.size();
+            report.compilation_server_public_online  = this.webSocketService.countOf(i -> i instanceof Compiler).intValue();
 
             report.bugs_reported = Model_ServerError.find.query().findCount();
 

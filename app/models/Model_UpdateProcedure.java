@@ -198,17 +198,6 @@ public class Model_UpdateProcedure extends BaseModel implements Permissible, Und
 
 /* EXECUTION METHODS ----------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient
-    public void execute_update_procedure() {
-        logger.warn("execute_update_procedure()");
-
-        if(this.getUpdates().size() > 2) {
-            notification_update_procedure_start();
-        }
-
-        Model_Hardware.execute_update_procedure(this);
-    }
-
     @JsonIgnore
     public void update_state() {
         try {

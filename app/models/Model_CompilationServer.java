@@ -18,6 +18,7 @@ import utilities.enums.NetworkStatus;
 import utilities.errors.ErrorCode;
 import utilities.model.BaseModel;
 import utilities.model.Publishable;
+import utilities.network.JsonNetworkStatus;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
 import utilities.permission.WithPermission;
@@ -51,16 +52,8 @@ public class Model_CompilationServer extends BaseModel implements Permissible, P
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(required = true, readOnly = true) @JsonProperty
-
-    public NetworkStatus online_state() {
-        try {
-            return Controller_WebSocket.compilers.containsKey(this.id) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
+    @JsonNetworkStatus @Transient
+    public NetworkStatus online_state;
 
     @WithPermission @ApiModelProperty(required = false, readOnly = true)
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)

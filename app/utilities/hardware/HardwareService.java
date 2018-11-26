@@ -5,16 +5,18 @@ import exceptions.NeverConnectedException;
 import exceptions.ServerOfflineException;
 import models.Model_Hardware;
 import models.Model_HomerServer;
+import utilities.synchronization.SynchronizationService;
 import websocket.WebSocketService;
 import websocket.interfaces.Homer;
 
 public class HardwareService {
-
+    private final SynchronizationService synchronizationService;
     private final WebSocketService webSocketService;
     private final DominanceService dominanceService;
 
     @Inject
-    public HardwareService(WebSocketService webSocketService, DominanceService dominanceService) {
+    public HardwareService(SynchronizationService synchronizationService, WebSocketService webSocketService, DominanceService dominanceService) {
+        this.synchronizationService = synchronizationService;
         this.webSocketService = webSocketService;
         this.dominanceService = dominanceService;
     }
@@ -33,13 +35,13 @@ public class HardwareService {
         }
     }
 
-    public void activateHardware(Model_Hardware hardware) {
+    public void activate(Model_Hardware hardware) {
         this.dominanceService.setDominant(hardware);
         // TODO send echo
         // TODO remove from network status service
     }
 
-    public void deactivateHardware(Model_Hardware hardware) {
+    public void deactivate(Model_Hardware hardware) {
         this.dominanceService.setNondominant(hardware);
 
         HardwareInterface hardwareInterface = this.getInterface(hardware);

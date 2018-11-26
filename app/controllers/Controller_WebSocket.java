@@ -57,16 +57,6 @@ public class Controller_WebSocket extends _BaseController {
 /* STATIC --------------------------------------------------------------------------------------------------------------*/
 
     /**
-     * Holds all connections of Homer servers
-     */
-    public static Map<UUID, WS_Homer> homers = new HashMap<>();
-
-    /**
-     * Holds all connections of Homer servers
-     */
-    public static Map<UUID, WS_Homer> homers_not_sync = new HashMap<>();
-
-    /**
      * Holds all connections of Compiler servers
      */
     public static Map<UUID, WS_Compiler> compilers = new HashMap<>();
@@ -107,19 +97,13 @@ public class Controller_WebSocket extends _BaseController {
     public Result get_Websocket_token() {
         try {
 
-                logger.trace("get_Websocket_token: request");
-                UUID token = UUID.randomUUID();
+            UUID token = UUID.randomUUID();
+            tokenCache.put(token, personId());
 
-                logger.trace("get_Websocket_token: token created:: {}", token);
+            Swagger_Websocket_Token swagger_websocket_token = new Swagger_Websocket_Token();
+            swagger_websocket_token.websocket_token = token;
 
-                tokenCache.put(token, personId());
-
-                logger.trace("get_Websocket_token: token assigned to person:: {}", personId());
-
-                Swagger_Websocket_Token swagger_websocket_token = new Swagger_Websocket_Token();
-                swagger_websocket_token.websocket_token = token;
-
-                return ok(swagger_websocket_token);
+            return ok(swagger_websocket_token);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -133,8 +117,7 @@ public class Controller_WebSocket extends _BaseController {
 
                 logger.trace("homer - incoming connection: " + token);
 
-                //Find object (only ID)
-                Model_HomerServer server = Model_HomerServer.find.query().where().eq("connection_identifier", token).select("id").findOne();
+                Model_HomerServer server = Model_HomerServer.find.query().where().eq("connection_identifier", token).findOne();
                 if (server != null) {
                     if (this.webSocketService.isRegistered(server.id)) {
                         logger.warn("homer - server is already connected, trying to ping previous connection");
@@ -225,36 +208,20 @@ public class Controller_WebSocket extends _BaseController {
                     return CompletableFuture.completedFuture(F.Either.Left(forbidden("Token not found!")));
                 }
 
-
                 Model_Person person = Model_Person.find.byId(user_token);
 
                 if (sameOriginCheck(request)) {
 
                     if (tokenCache.containsKey(token)) {
 
-                        Portal portal = this.webSocketService.getInterface(person.id);
-
-                        if (portal == null) {
-                            logger.trace("portal - User {} is already connected somewhere else", person.nick_name);
-                            portal = injector.getInstance(Portal.class);
-                            portal.setId(person.id);
-                            this.webSocketService.register(portal); // Intentionally ignore the result of register -> it is null
-                        }
+                        Portal portal = injector.getInstance(Portal.class);
+                        portal.setId(token);
+                        portal.setPersonId(person.id);
 
                         // Remove Token from Cache
                         tokenCache.remove(token);
 
-                        if (!portal.isRegistered(token)) {
-
-                            SinglePortal singlePortal = injector.getInstance(SinglePortal.class);
-                            singlePortal.setId(token);
-                            singlePortal.setParent(portal);
-
-                            return CompletableFuture.completedFuture(F.Either.Right(portal.register(singlePortal)));
-
-                        } else {
-                            logger.info("portal - rejecting connection: {}, already established", token);
-                        }
+                        return CompletableFuture.completedFuture(F.Either.Right(this.webSocketService.register(portal)));
                     } else {
                         logger.info("portal - rejecting connection: {}, token is expired or person not found", token);
                     }
