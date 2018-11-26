@@ -117,6 +117,10 @@ public class MongoCloudApi {
         return result;
     }
 
+    public void createCollection(String databaseId, String collectionName) {
+        Server.mongoClient.getDatabase(databaseId)
+                          .createCollection(collectionName);
+    }
 
     private void setRolesForUser(String username, SwaggerMongoCloudUserRole[] roles) throws Exception{
         SwaggerMongoCloudUser updatedUser = new SwaggerMongoCloudUser();

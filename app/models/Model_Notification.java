@@ -197,7 +197,7 @@ public class Model_Notification extends BaseModel implements Permissible, Person
                 element.name = class_name;
                 element.id = hardware.id;
                 element.text = hardware.name != null && hardware.name.length() > 2 ? hardware.name : hardware.full_id;
-                element.project_id = hardware.get_producerId();
+                element.project_id = hardware.get_project_id();
                 break;
             }
             case "CProgram" : {
@@ -213,7 +213,7 @@ public class Model_Notification extends BaseModel implements Permissible, Person
                 element.name = class_name;
                 element.id = bProgram.id;
                 element.text = bProgram.name;
-                element.project_id = bProgram.project != null ? bProgram.getProjectId() : null;
+                element.project_id =  bProgram.getProjectId();
                 break;
             }
             case "HomerServer" : {
@@ -221,7 +221,7 @@ public class Model_Notification extends BaseModel implements Permissible, Person
                 element.name = class_name;
                 element.id = server.id;
                 element.text = server.name;
-                element.project_id = server.project != null ? server.get_project_id() : null;
+                element.project_id = server.get_project_id();
                 break;
             }
             case "CProgramVersion" : {
@@ -255,7 +255,7 @@ public class Model_Notification extends BaseModel implements Permissible, Person
                 element.id = version.id;
                 element.text = version.name;
                 element.program_id = version.get_grid_program_id();
-                element.project_id = version.getGridProgram().get_grid_project_id();
+                element.project_id = version.getGridProgram().get_grid_project().get_project_id();   // Must by Model_Program_ID
                 break;
             }
 

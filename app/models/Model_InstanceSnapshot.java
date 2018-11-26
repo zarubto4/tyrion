@@ -122,7 +122,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
                 return formFactory.formFromJsonWithValidation(Swagger_InstanceSnapShotConfiguration.class, Json.parse(this.json_additional_parameter));
             } else {
 
-                Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.query().where().eq("instance.id", instance.id).ne("id", this.id).isNotNull("json_additional_parameter").orderBy("deployed").setMaxRows(1).findOne();
+                Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.query().nullable().where().eq("instance.id", instance.id).ne("id", this.id).isNotNull("json_additional_parameter").orderBy("deployed").setMaxRows(1).findOne();
 
                 if (snapshot != null) {
 
