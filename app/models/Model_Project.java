@@ -93,6 +93,7 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
     @JsonProperty @ApiModelProperty(required = true)
     public List<Swagger_ProjectParticipant> participants() {
         try {
+
             return getPersons().stream().map(person -> {
                 Swagger_ProjectParticipant participant = new Swagger_ProjectParticipant();
                 participant.id = person.id;
@@ -100,13 +101,32 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
                 participant.full_name = person.full_name();
                 return participant;
             }).collect(Collectors.toList());
+
+
         } catch (Exception e){
             logger.internalServerError(e);
             return new ArrayList<>();
         }
     }
 
-/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+    /**
+     * Making List of invitations!
+     * @return Model_ProjectParticipant[]
+     */
+    @JsonProperty @ApiModelProperty(required = true)
+    public List<Model_Invitation> invitations() {
+        try {
+
+            return getInvitations();
+
+        } catch (Exception e){
+            logger.internalServerError(e);
+            return new ArrayList<>();
+        }
+    }
+
+
+    /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* GET SQL PARAMETER - CACHE OBJECTS ------------------------------------------------------------------------------------*/
 
@@ -114,7 +134,7 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
     public List<UUID> getPersonsIds() {
 
         if (idCache().gets(Model_Person.class) == null) {
-            idCache().add(Model_Person.class, Model_Person.find.query().where().eq("projects.id", id).select("id").findSingleAttributeList());
+            idCache().add(Model_Person.class, Model_Person.find.query().where().eq("projects.id", id).ne("deleted", true).select("id").findSingleAttributeList());
         }
 
         return idCache().gets(Model_Person.class) != null ?  idCache().gets(Model_Person.class) : new ArrayList<>();
@@ -124,6 +144,26 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
     public List<Model_Person> getPersons() {
         try {
             return getPersonsIds().stream().map(Model_Person.find::byId).collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return new ArrayList<>();
+        }
+    }
+
+    @JsonIgnore
+    public List<UUID> getInvitationIds() {
+
+        if (idCache().gets(Model_Invitation.class) == null) {
+            idCache().add(Model_Invitation.class, Model_Invitation.find.query().where().eq("project.id", id).ne("deleted", true).select("id").findSingleAttributeList());
+        }
+
+        return idCache().gets(Model_Invitation.class) != null ?  idCache().gets(Model_Invitation.class) : new ArrayList<>();
+    }
+
+    @JsonIgnore
+    public List<Model_Invitation> getInvitations() {
+        try {
+            return getInvitationIds().stream().map(Model_Invitation.find::byId).collect(Collectors.toList());
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();

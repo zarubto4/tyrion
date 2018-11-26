@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static controllers._BaseController.person;
+
 @MappedSuperclass
 public abstract class TaggedModel extends NamedModel {
 
@@ -75,8 +77,13 @@ public abstract class TaggedModel extends NamedModel {
             }
         }
 
-        if (change) {
-            this.update();
+        // This object can be new!
+        if(this.id != null) {
+            if (change) {
+                // TODO - Lexa - Tady je to trochu nedomyšlené, protože update tagu nejde skrze kontrolu controlleru ani modelu
+                // checkUpdate(person(), this);
+                this.update();
+            }
         }
     }
 

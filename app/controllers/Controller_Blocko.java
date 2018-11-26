@@ -88,16 +88,11 @@ public class Controller_Blocko extends _BaseController {
             bProgram.description           = help.description;
             bProgram.name                  = help.name;
             bProgram.project               = project;
-
-            this.checkCreatePermission(bProgram);
-
-            // Uložení objektu
-            bProgram.save();
-
             bProgram.setTags(help.tags);
 
+
             // Vrácení objektu
-            return created(bProgram);
+            return create(bProgram);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -164,7 +159,10 @@ public class Controller_Blocko extends _BaseController {
             Query<Model_BProgram> query = Ebean.find(Model_BProgram.class);
             query.where().eq("deleted", false);
 
-
+            if (help.name != null && help.name.length() > 0) {
+                System.out.println("name vyplněno: " + help.name + " l: " + help.name.length());
+                query.where().icontains("name", help.name);
+            }
 
             ExpressionList<Model_BProgram> list = query.where();
             Junction<Model_BProgram> disjunction = list.disjunction();

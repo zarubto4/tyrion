@@ -97,7 +97,7 @@ public class Controller_Project extends _BaseController {
             project.product     = product;
 
             project.persons.addAll(product.owner.getEmployees().stream().map(Model_Employee::getPerson).collect(Collectors.toList()));
-
+            project.setTags(help.tags);
             this.checkCreatePermission(project);
 
             // Uložení objektu
@@ -184,6 +184,115 @@ public class Controller_Project extends _BaseController {
         }
     }
 
+    @ApiOperation(value = "valid Project Object Unique Name",
+            tags = {"Project"},
+            notes = "Valid unique name in Projects objects",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_Project_Valid_unique_name",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Object with this name is already register", response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result project_valid_name() {
+        try {
+
+            Swagger_Project_Valid_unique_name help = formFromRequestWithValidation(Swagger_Project_Valid_unique_name.class);
+
+            switch (help.object_type) {
+
+                case Project: {
+                    // Find Ids Where to check Project Name
+                    List<UUID> product_ids = Model_Product.find.query().nullable().where().eq("owner.employees.person.id", personId()).findIds();
+                    return  Model_Project.find.query().nullable().where().eq("name", help.name).in("product.id", product_ids).findCount() == 0 ? ok() : badRequest();
+                }
+
+                case BProgram: {
+                    return Model_BProgram.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                }
+                case BProgramVersion: {
+                    return Model_BProgramVersion.find.query().where().eq("b_program.id", help.object_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                }
+
+                case CProgram: {
+                    return Model_CProgram.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                }
+                case CProgramVersion: {
+                    return Model_CProgramVersion.find.query().where().eq("c_program.id", help.object_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                }
+
+                case GridProject: {
+                    return Model_GridProject.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                }
+                case GridProgram: {
+                    return Model_GridProgram.find.query().where().eq("grid_project.id", help.object_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                }
+                case GridProgramVersion: {
+                    return Model_GridProgramVersion.find.query().where().eq("grid_program.id", help.object_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                }
+
+                case Hardware: {
+                    return Model_Hardware.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                }
+
+                case GSM: {
+                    return Model_GSM.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                }
+
+                case Role: {
+                    return Model_Role.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                }
+
+                case Instance: {
+                    return Model_Instance.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                }
+
+                case Block: {
+                    return Model_Block.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                }
+
+                case Widget: {
+                    return Model_Widget.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                }
+
+                case Snapshot: {
+                    return Model_InstanceSnapshot.find.query().where().eq("instance.id", help.object_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                }
+
+
+
+                // TODO Alex
+                case Database: {
+                    return badRequest();
+                }
+
+
+            }
+
+
+            // Its is not possible response!
+            return badRequest("Case not found!");
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
     @ApiOperation(value = "delete Project",
             tags = {"Project"},
             notes = "delete Projects by project_id",
@@ -251,6 +360,7 @@ public class Controller_Project extends _BaseController {
             // Úprava objektu
             project.name = help.name;
             project.description = help.description;
+            project.setTags(help.tags);
 
             return update(project);
 
@@ -300,17 +410,17 @@ public class Controller_Project extends _BaseController {
 
             // Získání seznamu uživatelů, kteří jsou registrovaní(listIn) a kteří ne(listOut)
             List<Model_Person> listIn = new ArrayList<>();
-            List<String> toRemove = new ArrayList<>();
+            List<String> listOut = new ArrayList<>();
 
             // Roztřídění seznamů
             for (String mail : help.persons_mail) {
-                Model_Person person =  Model_Person.find.query().where().eq("email",mail).findOne();
+                Model_Person person =  Model_Person.find.query().nullable().where().eq("email",mail).findOne();
                 if (person != null) {
                     listIn.add(person);
-                    toRemove.add(person.email);
+                    listOut.add(person.email);
                 }
             }
-            help.persons_mail.removeAll(toRemove);
+            help.persons_mail.removeAll(listOut);
 
             logger.debug("project_invite - registered users {}", Json.toJson(listIn));
             logger.debug("project_invite - unregistered users {}", Json.toJson(help.persons_mail));
@@ -322,7 +432,7 @@ public class Controller_Project extends _BaseController {
 
                 logger.debug("project_invite - creating invitation for {}", mail);
 
-                Model_Invitation invitation = Model_Invitation.find.query().where().eq("email", mail).eq("project.id", project.id).findOne();
+                Model_Invitation invitation = Model_Invitation.find.query().nullable().where().eq("email", mail).eq("project.id", project.id).findOne();
                 if (invitation == null) {
                     invitation = new Model_Invitation();
                     invitation.email = mail;
@@ -354,7 +464,7 @@ public class Controller_Project extends _BaseController {
 
                 logger.debug("project_invite - creating invitation for {}", person.email);
 
-                Model_Invitation invitation = Model_Invitation.find.query().where().eq("email", person.email).eq("project.id", project.id).findOne();
+                Model_Invitation invitation = Model_Invitation.find.query().nullable().where().eq("email", person.email).eq("project.id", project.id).findOne();
                 if (invitation == null) {
                     invitation = new Model_Invitation();
                     invitation.email = person.email;
@@ -362,6 +472,8 @@ public class Controller_Project extends _BaseController {
                     invitation.project = project;
                     invitation.save();
                 }
+
+                project.idCache().add(Model_Invitation.class, invitation.id);
 
                 try {
 
@@ -427,37 +539,38 @@ public class Controller_Project extends _BaseController {
             // Kontrola oprávnění
             this.checkInvitePermission(project);
 
-            List<Model_Person> list = new ArrayList<>();
 
-            // Získání seznamu
-            for (String mail : help.persons_mail) {
+            // Remove All Persons
+            List<Model_Person> list =  Model_Person.find.query().nullable().where().in("email", help.persons_mail).eq("projects.id", project_id).findList();
 
-                Model_Person person = Model_Person.find.query().where().eq("email",mail).findOne();
-                if (person != null)
-                    list.add(person);
+            if(!list.isEmpty()) {
+                project.persons.removeAll(list);
+                project.update();
+
+                // Remove Persons from Roles
+                List<Model_Role> roles = Model_Role.find.query().nullable().where().eq("project.id", project.id).in("persons.id", list.stream().map(p -> p.id).collect(Collectors.toList())).findList();
+                roles.forEach(r -> {
+                    r.persons.removeAll(list);
+                    r.update();
+                });
             }
 
-            List<Model_Invitation> invitations = new ArrayList<>();
 
-            for (String mail : help.persons_mail) {
 
-                Model_Invitation invitation = Model_Invitation.find.query().where().eq("email",mail).eq("project.id", project_id).findOne();
-                if (invitation != null)
-                    invitations.add(invitation);
-            }
+            // Získání seznamu --- Remove invitations
 
-            project.persons.removeAll(list);
-            project.update();
+            List<Model_Invitation> invitations = Model_Invitation.find.query().nullable().where().in("email",help.persons_mail).eq("project.id", project_id).findList();
 
-            List<Model_Role> roles = Model_Role.find.query().where().eq("project.id", project.id).in("persons.id", list.stream().map(p -> p.id).collect(Collectors.toList())).findList();
-            roles.forEach(r -> {
-                r.persons.removeAll(list);
-                r.update();
-            });
+            if(!invitations.isEmpty()) {
 
-            for (Model_Invitation invitation : invitations) {
-                invitation.delete_notification();
-                invitation.delete();
+                // Remove individualy
+                for (Model_Invitation invitation : invitations) {
+                    invitation.delete_notification();
+                    invitation.delete();
+                }
+
+                project.invitations.removeAll(invitations);
+                project.update();
             }
 
             // Obnovení v DB

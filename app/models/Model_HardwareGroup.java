@@ -10,6 +10,7 @@ import utilities.cache.Cached;
 import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
+import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
@@ -24,7 +25,7 @@ import java.util.UUID;
 @Entity
 @ApiModel(value = "HardwareGroup", description = "Model of Hardware Group")
 @Table(name="HardwareGroup")
-public class Model_HardwareGroup extends NamedModel implements Permissible, UnderProject {
+public class Model_HardwareGroup extends TaggedModel implements Permissible, UnderProject {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 

@@ -219,7 +219,16 @@ public class Controller_Database extends _BaseController {
         try {
             Model_ProductExtension productExtension = Model_ProductExtension.find.byId(db_id);
             checkDeletePermission(productExtension);
-            mongoApi.removeRole(productExtension.product.id.toString(), productExtension.id.toString());
+
+            try {
+
+                mongoApi.removeRole(productExtension.product.id.toString(), productExtension.id.toString());
+
+            } catch (Exception e) {
+                logger.error("drop_db: Shit happens with remove DB from Our mongo account! - Maybe its removed directly on MongoDB platform");
+                logger.internalServerError(e);
+            }
+
             productExtension.setActive(false);
 
             return(ok());

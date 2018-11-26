@@ -93,13 +93,9 @@ public class Controller_Grid extends _BaseController {
             gridProject.name = help.name;
             gridProject.project = project;
 
-            this.checkCreatePermission(gridProject);
-
-            gridProject.save();
-
             gridProject.setTags(help.tags);
 
-            return created(gridProject);
+            return create(gridProject);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -441,6 +437,8 @@ public class Controller_Grid extends _BaseController {
             gridProgram.description         = help.description;
             gridProgram.name                = help.name;
             gridProgram.grid_project        = gridProject;
+
+
             gridProgram.setTags(help.tags);
 
             return create(gridProgram);

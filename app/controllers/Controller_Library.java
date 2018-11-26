@@ -98,15 +98,10 @@ public class Controller_Library extends _BaseController {
                 }
             }
 
-            this.checkCreatePermission(library);
-
-            // Ukládám objekt
-            library.save();
-
             library.setTags(help.tags);
 
             // Vracím objekt
-            return created(library);
+            return create(library);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -521,7 +516,6 @@ public class Controller_Library extends _BaseController {
             version.publish_type     = ProgramType.PRIVATE;
 
             this.checkCreatePermission(version);
-
             version.save();
 
             Swagger_Library_File_Load library_file_collection = new Swagger_Library_File_Load();
