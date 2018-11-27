@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import models.Model_Tag;
 import utilities.logger.Logger;
+import utilities.swagger.output.Swagger_Short_Reference;
 
 import javax.persistence.ManyToMany;
 import javax.persistence.MappedSuperclass;
@@ -103,6 +104,11 @@ public abstract class TaggedModel extends NamedModel {
         });
 
         this.update();
+    }
+
+    @JsonIgnore
+    public Swagger_Short_Reference ref() {
+        return new Swagger_Short_Reference(id, name, description, this.tags());
     }
 
     public void removeTags(List<String> tags) {

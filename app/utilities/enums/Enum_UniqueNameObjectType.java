@@ -18,13 +18,16 @@ public enum Enum_UniqueNameObjectType {
     GridProject,
 
     Hardware,
+    HardwareGroup,
 
     GSM,
     Role,
 
 
     Widget,
+    WidgetVersion,
     Block,
+    BlockVersion,
     Instance,
 
     Snapshot,

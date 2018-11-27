@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import utilities.enums.NetworkStatus;
 import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
+import java.util.List;
 import java.util.UUID;
 
 @ApiModel(value = "Short_Reference", description = "Model of Reference")
@@ -18,9 +19,17 @@ public class Swagger_Short_Reference extends _Swagger_Abstract_Default {
         this.description = description;
     }
 
+    public Swagger_Short_Reference(UUID id, String name, String description, List<String> tags){
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.tags = tags;
+    }
+
     @ApiModelProperty(required = true) @JsonProperty() public String name;
     @ApiModelProperty(required = true) @JsonProperty() public String description;
     @ApiModelProperty(required = true) @JsonProperty() public UUID id;
+    @ApiModelProperty(required = true) @JsonProperty() public List<String> tags;
 
     @ApiModelProperty(required = false, value = "Only for Special Object type like Server, Instance, HW")
     @JsonInclude(JsonInclude.Include.NON_NULL)

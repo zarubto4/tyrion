@@ -203,14 +203,16 @@ public class Model_HardwareType extends NamedModel implements Permissible, Publi
                     .order().desc("name")
                     .findList();
 
-            /*List<Model_BootLoader> list = new ArrayList<>();
+            /*
+            List<Model_BootLoader> list = new ArrayList<>();
 
             for (UUID id : get_bootloaders_id()) {
                 // System.out.println("get_bootloaders id: " + id);
                 list.add(Model_BootLoader.find.byId(id));
             }
 
-            return list;*/
+            return list;
+            */
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();

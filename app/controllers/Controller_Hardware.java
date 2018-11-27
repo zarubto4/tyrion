@@ -1174,27 +1174,34 @@ public class Controller_Hardware extends _BaseController {
 
             if (boot_loader.getMainHardwareType() != null) return badRequest("Bootloader is Already Main");
 
+
             Model_HardwareType hardware_type = boot_loader.getHardwareType();
 
-            Model_BootLoader old_main_not_cached = Model_BootLoader.find.query().where().eq("main_hardware_type.id", boot_loader.getHardwareTypeId()).select("id").findOne();
+            System.out.println("Hledám Old Bootloader");
+            Model_BootLoader old_bootloader = hardware_type.get_main_boot_loader();
 
-            if (old_main_not_cached != null) {
-                Model_BootLoader old_main = Model_BootLoader.find.byId(old_main_not_cached.id);
-                if (old_main != null) {
-                    old_main.main_hardware_type = null;
-                    old_main.idCache().removeAll(Model_HardwareType.Model_HardwareType_Main.class);
-                    old_main.update();
-                }
-            }
-
-            boot_loader.main_hardware_type = hardware_type;
-            boot_loader.update();
-
+            System.out.println("Nastavuji Nový bootloader");
             hardware_type.main_boot_loader = boot_loader;
+
+            System.out.println("Aktualizuji hardware");
             hardware_type.update();
 
-            hardware_type.idCache().removeAll(Model_HardwareType.Model_HardwareType_Main.class);
-            hardware_type.idCache().add(Model_HardwareType.Model_HardwareType_Main.class, boot_loader.id);
+            System.out.println("Refreshuji");
+            hardware_type.refresh();
+            boot_loader.refresh();
+            old_bootloader.refresh();
+
+
+            // TODO by nemělo fungovat!!!!!! TODO BECKI-527 - Lexa
+            Model_HardwareType hw_old = Model_HardwareType.find.query().where().eq("main_boot_loader.id", old_bootloader.id).findOne();
+            Model_HardwareType hw_new = Model_HardwareType.find.query().where().eq("main_boot_loader.id", boot_loader.id).findOne();
+
+            Model_HardwareType.find.getCache().clear();
+            Model_BootLoader.find.getCache().clear();
+
+
+            System.out.println("hw_old " + hw_old.name);
+            System.out.println("hw_new " + hw_new.name);
 
             // Vymažu Device Cache
             Model_Hardware.find.getCache().clear();

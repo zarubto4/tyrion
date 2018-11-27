@@ -1,6 +1,7 @@
 package controllers;
 
 import com.typesafe.config.Config;
+import exceptions.NotFoundException;
 import io.swagger.annotations.*;
 import models.*;
 import mongo.ModelMongo_Hardware_RegistrationEntity;
@@ -250,6 +251,10 @@ public class Controller_Project extends _BaseController {
                     return Model_Hardware.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 
+                case HardwareGroup: {
+                    return Model_HardwareGroup.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                }
+
                 case GSM: {
                     return Model_GSM.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
@@ -266,8 +271,16 @@ public class Controller_Project extends _BaseController {
                     return Model_Block.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 
+                case BlockVersion: {
+                    return Model_BlockVersion.find.query().where().eq("block.id", help.object_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                }
+
                 case Widget: {
                     return Model_Widget.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                }
+
+                case WidgetVersion: {
+                    return Model_WidgetVersion.find.query().where().eq("widget.id", help.object_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 
                 case Snapshot: {
@@ -892,7 +905,6 @@ public class Controller_Project extends _BaseController {
 
             Model_Hardware.cache_status.remove(hardware.id);
 
-
             return ok(hardware);
 
         } catch (Exception e) {
@@ -941,25 +953,32 @@ public class Controller_Project extends _BaseController {
                 logger.warn("project_activeHardware. Step 2 - Yes we have not dominant hardware record");
 
                 WS_Model_Hardware_Temporary_NotDominant_record record = Model_Hardware.cache_not_dominant_hardware.get(hardware.full_id);
-                Model_HomerServer server = Model_HomerServer.find.byId(record.homer_server_id); // TODO properly handle not found exception
 
-                // Remove if exist in not dominant record on public server
-                Model_Hardware.cache_not_dominant_hardware.remove(hardware.full_id);
+                try {
 
-                logger.warn("project_activeHardware. Step 2 - No we will try to change that on server");
-                // Send restart for reallocate hardware to new UUID
-                if(server != null && server.online_state() == NetworkStatus.ONLINE) {
+                    Model_HomerServer server = Model_HomerServer.find.byId(record.homer_server_id);
 
-                    logger.warn("project_activeHardware. Step 2 - Server is offline and know so we will do it");
+                    // Remove if exist in not dominant record on public server
+                    Model_Hardware.cache_not_dominant_hardware.remove(hardware.full_id);
 
-                    hardware.connected_server_id = record.homer_server_id;
-                    hardware.update();
+                    logger.warn("project_activeHardware. Step 2 - No we will try to change that on server");
+                    // Send restart for reallocate hardware to new UUID
+                    if (server.online_state() == NetworkStatus.ONLINE) {
 
-                    logger.warn("project_activeHardware. Step 2 - Command Send");
+                        logger.warn("project_activeHardware. Step 2 - Server is offline and know so we will do it");
 
-                    WS_Message_Hardware_uuid_converter_cleaner change = hardware.device_converted_id_clean_switch_on_server(record.random_temporary_hardware_id.toString());
-                    logger.warn("project_activeHardware:: Step 2 - Response: Change on Homer Server: ", Json.toJson(change).toString());
+                        hardware.connected_server_id = record.homer_server_id;
+                        hardware.update();
 
+                        logger.warn("project_activeHardware. Step 2 - Command Send");
+
+                        WS_Message_Hardware_uuid_converter_cleaner change = hardware.device_converted_id_clean_switch_on_server(record.random_temporary_hardware_id.toString());
+                        logger.warn("project_activeHardware:: Step 2 - Response: Change on Homer Server: ", Json.toJson(change).toString());
+
+                    }
+
+                } catch (NotFoundException e) {
+                   // Nothing
                 }
 
                 hardware.make_log_activated();
