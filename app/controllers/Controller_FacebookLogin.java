@@ -14,16 +14,13 @@ import io.swagger.annotations.*;
 import mongo.ModelMongo_FacebookLoginRelation;
 import mongo.ModelMongo_FacebookProfile;
 import models.Model_Person;
-import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.Swagger_Facebook_LoginRedirect;
 import utilities.swagger.output.Swagger_Facebook_Login;
 
@@ -61,8 +58,8 @@ public class Controller_FacebookLogin extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @Inject
-    public Controller_FacebookLogin(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    public Controller_FacebookLogin(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
+        super(ws, formFactory, config, permissionService);
     }
 
 

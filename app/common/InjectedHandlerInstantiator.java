@@ -10,18 +10,22 @@ import com.google.inject.Inject;
 import utilities.network.LastOnlineSerializer;
 import utilities.network.NetworkStatusSerializer;
 import utilities.permission.PermissionSerializer;
+import utilities.project.ProjectStatsSerializer;
 
 public class InjectedHandlerInstantiator extends HandlerInstantiator {
 
     private final PermissionSerializer permissionSerializer;
     private final NetworkStatusSerializer networkStatusSerializer;
     private final LastOnlineSerializer lastOnlineSerializer;
+    private final ProjectStatsSerializer projectStatsSerializer;
 
     @Inject
-    public InjectedHandlerInstantiator(PermissionSerializer permissionSerializer, NetworkStatusSerializer networkStatusSerializer, LastOnlineSerializer lastOnlineSerializer) {
+    public InjectedHandlerInstantiator(PermissionSerializer permissionSerializer, NetworkStatusSerializer networkStatusSerializer,
+                                       LastOnlineSerializer lastOnlineSerializer, ProjectStatsSerializer projectStatsSerializer) {
         this.permissionSerializer = permissionSerializer;
         this.networkStatusSerializer = networkStatusSerializer;
         this.lastOnlineSerializer = lastOnlineSerializer;
+        this.projectStatsSerializer = projectStatsSerializer;
     }
 
     @Override
@@ -47,6 +51,10 @@ public class InjectedHandlerInstantiator extends HandlerInstantiator {
 
         if (serClass == LastOnlineSerializer.class) {
             return this.lastOnlineSerializer;
+        }
+
+        if (serClass == ProjectStatsSerializer.class) {
+            return this.projectStatsSerializer;
         }
 
         return null;

@@ -1,11 +1,11 @@
 package controllers;
 
+import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import exceptions.BadRequestException;
 import io.swagger.annotations.*;
 import models.*;
 import mongo.ModelMongo_Hardware_RegistrationEntity;
-import play.Environment;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
@@ -15,20 +15,11 @@ import responses.*;
 import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.emails.Email;
-import utilities.enums.NetworkStatus;
-import utilities.enums.NotificationImportance;
-import utilities.enums.NotificationLevel;
 import utilities.enums.ParticipantStatus;
 import utilities.hardware.HardwareService;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
-import utilities.models_update_echo.EchoHandler;
-import utilities.notifications.helps_objects.Notification_Text;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.*;
-import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Model_Hardware_Temporary_NotDominant_record;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -48,9 +39,9 @@ public class Controller_Project extends _BaseController {
 
     private final HardwareService hardwareService;
 
-    @javax.inject.Inject
-    public Controller_Project(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService, HardwareService hardwareService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    @Inject
+    public Controller_Project(WSClient ws, _BaseFormFactory formFactory,Config config, PermissionService permissionService, HardwareService hardwareService) {
+        super(ws, formFactory, config, permissionService);
         this.hardwareService = hardwareService;
     }
 
@@ -210,7 +201,19 @@ public class Controller_Project extends _BaseController {
     })
     public Result project_delete(UUID project_id) {
         try {
-            return delete(Model_Project.find.byId(project_id));
+            Model_Project project = Model_Project.find.byId(project_id);
+
+            this.checkDeletePermission(project);
+
+            Model_Hardware.find.query().where()
+                    .eq("project.id", project.id)
+                    .eq("dominant_entity", true)
+                    .findList()
+                    .forEach(this.hardwareService::deactivate);
+
+            project.delete();
+
+            return ok();
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -638,68 +641,18 @@ public class Controller_Project extends _BaseController {
 
                     this.checkUpdatePermission(group);
 
-                    group.getHardware().add(hardware);
-
                     hardware.hardware_groups.add(group);
 
-                    if(hardware.idCache().get(Model_HardwareGroup.class) == null)  hardware.idCache().add(Model_HardwareGroup.class,  new ArrayList<>()) ;
-                    hardware.idCache().add(Model_HardwareGroup.class, (group.id));
+                    if (hardware.idCache().get(Model_HardwareGroup.class) == null) hardware.idCache().add(Model_HardwareGroup.class, new ArrayList<>());
+                    hardware.idCache().add(Model_HardwareGroup.class, group.id);
                 }
             }
 
-            if (this.dominanceService.setDominant(hardware)) {
-                List<Model_Hardware> hardware_for_cache_clean =  Model_Hardware.find.query().where().eq("full_id", hardware.full_id).select("id").findList();
-                for(Model_Hardware clean_hw: hardware_for_cache_clean) {
-                    EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, Model_Project.find.query().where().eq("hardware.id", clean_hw.id).select("id").findSingleAttribute(), clean_hw.id));
-                }
-            }
+            hardware.update();
 
             project.idCache().add(Model_Hardware.class, hardware.id);
 
-            logger.warn("project_addHardware. Step 1 - is_online_get_from_cache");
-
-            // Person - where we send notification
-            Model_Person person = person();
-
-            // Try to find hardware by full_id
-            logger.warn("project_addHardware. Step 2 - Try to find in cache of not dominant hardware");
-            if(Model_Hardware.cache_not_dominant_hardware.containsKey(hardware.full_id)) {
-
-                new Thread(() -> {
-
-                    logger.warn("project_addHardware. Step 2 - Yes we have not dominant hardware record");
-
-                    WS_Model_Hardware_Temporary_NotDominant_record record = Model_Hardware.cache_not_dominant_hardware.get(hardware.full_id);
-                    Model_HomerServer server = Model_HomerServer.find.byId(record.homer_server_id);
-
-                    // Remove if exist in not dominant record on public server
-                    Model_Hardware.cache_not_dominant_hardware.remove(hardware.full_id);
-
-                    logger.warn("project_addHardware. Step 2 - No we will try to change that on server");
-                    // Send restart for reallocate hardware to new UUID
-                    if (server != null && server.online_state() == NetworkStatus.ONLINE) {
-
-                        Model_Notification notification = new Model_Notification();
-                        notification.setImportance(NotificationImportance.LOW);
-                        notification.setLevel(NotificationLevel.INFO);
-                        notification.setText(new Notification_Text().setText("Thank you for Activation Hardware. Now, its time to make a magic. Give us a few seconds or restart the device"));
-                        notification.send(person);
-
-                        logger.warn("project_addHardware. Step 2 - Server is online and know so we will do it");
-
-                        hardware.connected_server_id = record.homer_server_id;
-                        hardware.update();
-
-                        logger.warn("project_addHardware. Step 2 - Command Send");
-
-                         // TODO WS_Message_Hardware_uuid_converter_cleaner change = hardware.device_converted_id_clean_switch_on_server(record.random_temporary_hardware_id.toString());
-                        logger.warn("project_addHardware:: Step 2 - Response: Change on Homer Server: ", Json.toJson(change).toString());
-
-                    }
-
-                }).start();
-            }
-
+            this.hardwareService.activate(hardware);
 
             return created(hardware);
 
@@ -734,7 +687,7 @@ public class Controller_Project extends _BaseController {
 
     @ApiOperation(value = "deactiveHW Project",
             tags = {"Project"},
-            notes = "freze HW from Project",
+            notes = "freeze HW from Project",
             produces = "application/json",
             protocols = "https"
     )
@@ -748,7 +701,7 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_deactiveHardware(UUID id) {
+    public Result project_deactivateHardware(UUID id) {
         try {
 
             Model_Hardware hardware = Model_Hardware.find.byId(id);
@@ -784,7 +737,7 @@ public class Controller_Project extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     @BodyParser.Of(BodyParser.Json.class)
-    public Result project_activeHardware(UUID id) {
+    public Result project_activateHardware(UUID id) {
         try {
 
             Model_Hardware hardware = Model_Hardware.find.byId(id);
@@ -800,41 +753,7 @@ public class Controller_Project extends _BaseController {
                 throw new BadRequestException("Hardware is already active in another project");
             }
 
-            hardware.dominant_entity = true;
-            hardware.update();
-
-            logger.warn("project_activeHardware. Step 1 - is_online_get_from_cache");
-
-            // Try to find hardware by full_id
-            logger.warn("project_activeHardware. Step 2 - Try to find in cache of not dominant hardware");
-            if(Model_Hardware.cache_not_dominant_hardware.containsKey(hardware.full_id)) {
-
-                logger.warn("project_activeHardware. Step 2 - Yes we have not dominant hardware record");
-
-                WS_Model_Hardware_Temporary_NotDominant_record record = Model_Hardware.cache_not_dominant_hardware.get(hardware.full_id);
-                Model_HomerServer server = Model_HomerServer.find.byId(record.homer_server_id); // TODO properly handle not found exception
-
-                // Remove if exist in not dominant record on public server
-                Model_Hardware.cache_not_dominant_hardware.remove(hardware.full_id);
-
-                logger.warn("project_activeHardware. Step 2 - No we will try to change that on server");
-                // Send restart for reallocate hardware to new UUID
-                if(server != null && server.online_state() == NetworkStatus.ONLINE) {
-
-                    logger.warn("project_activeHardware. Step 2 - Server is offline and know so we will do it");
-
-                    hardware.connected_server_id = record.homer_server_id;
-                    hardware.update();
-
-                    logger.warn("project_activeHardware. Step 2 - Command Send");
-
-                    // TODO WS_Message_Hardware_uuid_converter_cleaner change = hardware.device_converted_id_clean_switch_on_server(record.random_temporary_hardware_id.toString());
-                    logger.warn("project_activeHardware:: Step 2 - Response: Change on Homer Server: ", Json.toJson(change).toString());
-
-                }
-
-                hardware.make_log_activated();
-            }
+            this.hardwareService.activate(hardware);
 
             return ok(hardware);
 

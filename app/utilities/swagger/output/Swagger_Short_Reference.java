@@ -18,11 +18,11 @@ public class Swagger_Short_Reference extends _Swagger_Abstract_Default {
         this.description = description;
     }
 
-    @ApiModelProperty(required = true) @JsonProperty() public String name;
-    @ApiModelProperty(required = true) @JsonProperty() public String description;
-    @ApiModelProperty(required = true) @JsonProperty() public UUID id;
+    public UUID id;
+    public String name;
+    public String description;
 
-    @ApiModelProperty(required = false, value = "Only for Special Object type like Server, Instance, HW")
+    @ApiModelProperty(value = "Only for Special Object type like Server, Instance, HW")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty()
     public NetworkStatus online_state;

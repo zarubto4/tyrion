@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @ApiModel(value = "HardwareGroup", description = "Model of Hardware Group")
@@ -129,15 +130,7 @@ public class Model_HardwareGroup extends NamedModel implements Permissible, Unde
     @JsonIgnore
     public List<Model_Hardware> getHardware() {
         try {
-
-            List<Model_Hardware> hardwares = new ArrayList<>();
-
-            for (UUID types : getHardwareIds()) {
-                hardwares.add(Model_Hardware.find.byId(types));
-            }
-
-            return hardwares;
-
+            return getHardwareIds().stream().map(Model_Hardware.find::byId).collect(Collectors.toList());
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();

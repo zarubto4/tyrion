@@ -19,6 +19,7 @@ import utilities.errors.ErrorCode;
 import utilities.model.BaseModel;
 import utilities.model.Publishable;
 import utilities.network.JsonNetworkStatus;
+import utilities.network.Networkable;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
 import utilities.permission.WithPermission;
@@ -35,7 +36,7 @@ import java.util.*;
 @Table(name="CompilationServer")
 @ApiModel(description = "Model of CompilationServer",
           value = "Compilation_Server")
-public class Model_CompilationServer extends BaseModel implements Permissible, Publishable {
+public class Model_CompilationServer extends BaseModel implements Permissible, Publishable, Networkable {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 

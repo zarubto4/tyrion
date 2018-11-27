@@ -3,11 +3,8 @@ package utilities.notifications;
 import exceptions.NotFoundException;
 import models.*;
 import utilities.enums.NotificationAction;
-import utilities.enums.ParticipantStatus;
 import utilities.logger.Logger;
-import utilities.models_update_echo.RefreshTouch_echo_handler;
 import utilities.models_update_echo.EchoHandler;
-import websocket.messages.tyrion_with_becki.WS_Message_RefreshTouch;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import java.util.UUID;
@@ -82,7 +79,6 @@ public class NotificationActionHandler {
             person.idCache().add(Model_Project.class, project_not_cached.id);
             project.notification_project_invitation_accepted(person, invitation.owner);
 
-            new Thread(() -> RefreshTouch_echo_handler.addToQueue(new WS_Message_RefreshTouch("ProjectsRefreshAfterInvite", person.id))).start();
             new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, project_not_cached.id, project_not_cached.id))).start();
 
             invitation.delete();

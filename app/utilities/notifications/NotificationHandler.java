@@ -7,6 +7,7 @@ import models.Model_Person;
 import play.libs.Json;
 import utilities.enums.NotificationImportance;
 import utilities.logger.Logger;
+import websocket.interfaces.Portal;
 import websocket.interfaces.WS_Portal;
 
 import java.util.ArrayList;
@@ -107,7 +108,7 @@ public class NotificationHandler {
 
             ObjectNode message = Json.newObject();
             message.put("message_type", Model_Notification.message_type);
-            message.put("message_channel", WS_Portal.CHANNEL);
+            message.put("message_channel", Portal.CHANNEL);
             message.put("notification_type", notification.notification_type.name());
             message.put("notification_level", notification.notification_level.name());
             message.put("notification_importance", notification.notification_importance.name());

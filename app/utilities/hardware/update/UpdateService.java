@@ -17,6 +17,7 @@ import utilities.homer.HomerInterface;
 import utilities.homer.HomerService;
 import utilities.logger.Logger;
 import utilities.scheduler.SchedulerService;
+import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
 
 import java.util.*;
 
@@ -105,6 +106,10 @@ public class UpdateService {
 
     public void groupUpdate(Model_HardwareGroup group, Updatable updatable, FirmwareType type) {
         this.bulkUpdate(group.getHardware(), updatable, type);
+    }
+
+    public void onUpdateMessage(WS_Message_Hardware_UpdateProcedure_Progress message) {
+        // TODO update progress
     }
 
     public void cancel(UUID id) {

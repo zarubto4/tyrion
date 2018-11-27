@@ -16,11 +16,11 @@ import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
 import utilities.models_update_echo.EchoHandler;
 import utilities.network.JsonNetworkStatus;
+import utilities.network.Networkable;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
 import utilities.swagger.output.Swagger_Short_Reference;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
-import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
 
 import javax.persistence.*;
 import java.util.*;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @Entity
 @ApiModel(description = "Model of Instance", value = "Instance")
 @Table(name="Instance")
-public class Model_Instance extends TaggedModel implements Permissible, UnderProject {
+public class Model_Instance extends TaggedModel implements Permissible, UnderProject, Networkable {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -328,38 +328,6 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
 /* INSTANCE WEBSOCKET CONTROLLING ON HOMER SERVER-----------------------------------------------------------------------*/
 
     public static final String CHANNEL = "instance";
-
-    @JsonIgnore
-    public void stop() {
-
-        cache_status.put(this.id, false);
-        WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, this.id, false, getProjectId());
-
-        if (current_snapshot() != null) {
-
-            for(UUID hw_id : current_snapshot().getHardwareIds()) {
-                try {
-
-                    Model_Hardware hardware = Model_Hardware.find.byId(hw_id);
-                    hardware.connected_instance_id = null;
-                    hardware.update();
-
-                }catch (Exception e){}
-            }
-
-            this.current_snapshot_id = null;
-            this.update();
-        }
-
-        Model_HomerServer server = Model_HomerServer.find.byId(getServer_id());
-        if (server == null) {
-            return;
-        }
-
-        server.remove_instance(Collections.singletonList(id));
-
-        // TODO notifikace??
-    }
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 

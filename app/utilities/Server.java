@@ -29,7 +29,6 @@ import utilities.homer_auto_deploy.DigitalOceanThreadRegister;
 import utilities.logger.Logger;
 import utilities.model._Abstract_MongoModel;
 import utilities.models_update_echo.EchoHandler;
-import utilities.models_update_echo.RefreshTouch_echo_handler;
 import utilities.notifications.NotificationHandler;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
@@ -172,7 +171,6 @@ public class Server {
     public static void startThreads() {
         EchoHandler.startThread();
         NotificationHandler.startThread();
-        RefreshTouch_echo_handler.startThread();
        // GoPay_PaymentCheck.startThread();
        // Fakturoid_InvoiceCheck.startThread();
     }

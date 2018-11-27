@@ -5,11 +5,17 @@ import com.google.inject.Singleton;
 import exceptions.NeverConnectedException;
 import exceptions.NotSupportedException;
 import exceptions.ServerOfflineException;
+import models.Model_CompilationServer;
 import models.Model_Hardware;
+import models.Model_HomerServer;
+import models.Model_Instance;
 import org.ehcache.Cache;
 import utilities.cache.CacheService;
+import utilities.compiler.CompilerService;
 import utilities.enums.NetworkStatus;
 import utilities.hardware.HardwareService;
+import utilities.homer.HomerService;
+import utilities.instance.InstanceService;
 import utilities.logger.Logger;
 
 import java.util.UUID;
@@ -23,11 +29,17 @@ public class NetworkStatusService {
     private final Cache<UUID, NetworkStatus> cache;
 
     private final HardwareService hardwareService;
+    private final InstanceService instanceService;
+    private final CompilerService compilerService;
+    private final HomerService homerService;
 
     @Inject
-    public NetworkStatusService(CacheService cacheService, HardwareService hardwareService) {
+    public NetworkStatusService(CacheService cacheService, HardwareService hardwareService, InstanceService instanceService, CompilerService compilerService, HomerService homerService) {
         this.cache = cacheService.getCache("NetworkStatusCache", UUID.class, NetworkStatus.class, 1000, 3600, true);
         this.hardwareService = hardwareService;
+        this.instanceService = instanceService;
+        this.compilerService = compilerService;
+        this.homerService = homerService;
     }
 
     /**
@@ -62,6 +74,25 @@ public class NetworkStatusService {
                         switch (networkable.getEntityType()) {
                             case HARDWARE: {
                                 return this.hardwareService.getInterface((Model_Hardware) networkable).getNetworkStatus();
+                            }
+                            case INSTANCE: {
+                                return this.instanceService.getInterface((Model_Instance) networkable).getNetworkStatus();
+                            }
+                            case COMPILER: {
+                                try {
+                                    this.compilerService.getInterface((Model_CompilationServer) networkable);
+                                    return NetworkStatus.ONLINE;
+                                } catch (ServerOfflineException e) {
+                                    return NetworkStatus.OFFLINE;
+                                }
+                            }
+                            case HOMER: {
+                                try {
+                                    this.homerService.getInterface((Model_HomerServer) networkable);
+                                    return NetworkStatus.ONLINE;
+                                } catch (ServerOfflineException e) {
+                                    return NetworkStatus.OFFLINE;
+                                }
                             }
                             default: throw new NotSupportedException();
                         }

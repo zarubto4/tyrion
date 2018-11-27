@@ -19,6 +19,8 @@ public class Portal extends Interface {
 
     private static final Logger logger = new Logger(Portal.class);
 
+    public static final String CHANNEL = "becki";
+
     private UUID personId;
 
     private boolean notificationSubscribed;

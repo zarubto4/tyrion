@@ -1,19 +1,17 @@
 package controllers;
 
+import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.swagger.annotations.*;
 import models.Model_Person;
 import models.Model_Permission;
-import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.swagger.output.Swagger_System_Access;
 
 import java.util.UUID;
@@ -28,9 +26,9 @@ public class Controller_Permission extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    @javax.inject.Inject
-    public Controller_Permission(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    @Inject
+    public Controller_Permission(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
+        super(ws, formFactory, config, permissionService);
     }
 
 // #####################################################################################################################

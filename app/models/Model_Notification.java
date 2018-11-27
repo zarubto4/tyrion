@@ -19,7 +19,7 @@ import utilities.permission.Action;
 import utilities.permission.Permissible;
 import utilities.swagger.output.Swagger_Notification_Button;
 import utilities.swagger.output.Swagger_Notification_Element;
-import websocket.interfaces.WS_Portal;
+import websocket.interfaces.Portal;
 
 import javax.persistence.*;
 import java.util.*;
@@ -53,7 +53,7 @@ public class Model_Notification extends BaseModel implements Permissible, Person
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
     @ApiModelProperty(required = true, example = "notification")    @Transient @JsonProperty public static final String message_type = "notification";
-    @ApiModelProperty(required = true, example = WS_Portal.CHANNEL) @Transient @JsonProperty public static final String message_channel = WS_Portal.CHANNEL;
+    @ApiModelProperty(required = true, example = Portal.CHANNEL) @Transient @JsonProperty public static final String message_channel = Portal.CHANNEL;
 
     @JsonProperty @ApiModelProperty(required = true) public String message_type() {
         return message_type;

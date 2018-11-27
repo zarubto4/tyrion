@@ -8,7 +8,6 @@ import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.Model_Article;
 import models.Model_BProgram;
-import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -16,9 +15,7 @@ import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.Swagger_Article_CreateUpdate;
 import utilities.swagger.input.Swagger_Article_Filter;
 import utilities.swagger.output.filter_results.Swagger_Article_List;
@@ -37,8 +34,8 @@ public class Controller_Article extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public Controller_Article(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    public Controller_Article(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
+        super(ws, formFactory, config, permissionService);
     }
 
 // CONTROLLER CONTENT ##################################################################################################

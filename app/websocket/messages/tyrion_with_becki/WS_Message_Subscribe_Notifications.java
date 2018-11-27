@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import play.data.validation.Constraints;
 import play.libs.Json;
-import websocket.interfaces.WS_Portal;
+import websocket.interfaces.Portal;
 import websocket.messages.common.abstract_class.WS_AbstractMessage;
 
 import java.util.UUID;
@@ -26,7 +26,7 @@ public class WS_Message_Subscribe_Notifications extends WS_AbstractMessage {
 
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
-        request.put("message_channel", WS_Portal.CHANNEL);
+        request.put("message_channel", Portal.CHANNEL);
         request.put("status", "success");
         request.put("message_id", message_id);
         return request;

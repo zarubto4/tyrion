@@ -48,22 +48,16 @@ public abstract class _BaseController {
 
 // COMMON CONSTRUCTOR ###################################################################################################
 
-    protected final _BaseFormFactory baseFormFactory;
+    protected final _BaseFormFactory formFactory;
     protected final WSClient ws;
-    protected final Environment environment;
-    protected final YouTrack youTrack;
     protected final Config config;
-    protected final SchedulerService scheduler;
     protected final PermissionService permissionService;
 
     @Inject
-    public _BaseController(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
-        this.environment = environment;
+    public _BaseController(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
         this.ws = ws;
-        this.baseFormFactory = formFactory;
-        this.youTrack = youTrack;
+        this.formFactory = formFactory;
         this.config = config;
-        this.scheduler = scheduler;
         this.permissionService = permissionService;
     }
 
@@ -142,7 +136,7 @@ public abstract class _BaseController {
      * @throws InvalidBodyException
      */
     public <T> T formFromRequestWithValidation(Class<T> clazz) throws InvalidBodyException {
-        return baseFormFactory.formFromRequestWithValidation(clazz);
+        return formFactory.formFromRequestWithValidation(clazz);
     }
 
     /**
@@ -152,7 +146,7 @@ public abstract class _BaseController {
      * @return
      */
     public <T> T formFromJsonWithValidation(Class<T> clazz, JsonNode node) {
-        return this.baseFormFactory.formFromJsonWithValidation(clazz, node);
+        return this.formFactory.formFromJsonWithValidation(clazz, node);
     }
 
     /**

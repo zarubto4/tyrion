@@ -30,9 +30,6 @@ import utilities.swagger.output.Swagger_InstanceSnapshot_JsonFile;
 import utilities.swagger.output.Swagger_InstanceSnapshot_JsonFile_Interface;
 import utilities.swagger.output.Swagger_Mobile_Connection_Summary;
 import utilities.swagger.output.Swagger_Short_Reference;
-import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Message_Homer_Hardware_ID_UUID_Pair;
-import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_hardware;
-import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_terminals;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
@@ -419,111 +416,6 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
         return hardwareList;
     }
 
-/* Actions --------------------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Transient
-    public void create_and_start_actualization_hardware_request(){
-        try {
-
-            logger.trace("create_actualization_hardware_request");
-            Model_UpdateProcedure procedure = new Model_UpdateProcedure();
-            procedure.type_of_update = UpdateType.MANUALLY_BY_USER_BLOCKO_GROUP;
-            procedure.project_id = getInstance().getProjectId();
-            procedure.instance = this;
-
-            if (deployed != null) {
-                // Planed
-                procedure.date_of_planing = deployed;
-            } else {
-                // Immediately
-                procedure.date_of_planing = new Date();
-            }
-
-            logger.trace("create_actualization_hardware_request:: Check Interface: Size " + this.getProgram().interfaces.size());
-
-            if (this.getProgram().interfaces.size() == 0){
-                logger.trace("create_actualization_hardware_request:: Interface list is EMPTY!");
-            }
-
-            for (Swagger_InstanceSnapshot_JsonFile_Interface interface_hw : this.getProgram().interfaces) {
-
-                Model_CProgramVersion version = Model_CProgramVersion.find.byId(interface_hw.interface_id);
-
-                //IF Group
-                if(interface_hw.type.equals("group")) {
-
-                    logger.trace("create_actualization_hardware_request:: interface_hw type: group ");
-                    logger.trace("create_actualization_hardware_request:: interface_hw type: group:  " + interface_hw.target_id);
-                    Model_HardwareGroup group = Model_HardwareGroup.find.byId(interface_hw.target_id);
-
-                    List<UUID> uuid_ids = Model_Hardware.find.query().where().eq("hardware_groups.id", group.id).select("id").findIds();
-
-                    for (UUID uuid_id : uuid_ids) {
-                        Model_Hardware hardware = Model_Hardware.find.byId(uuid_id);
-                        hardware.connected_instance_id = this.get_instance_id();
-                        hardware.update();
-
-                        Model_HardwareUpdate plan = new Model_HardwareUpdate();
-                        plan.hardware = hardware;
-                        plan.firmware_type = FirmwareType.FIRMWARE;
-                        plan.state = HardwareUpdateState.NOT_YET_STARTED;
-
-                        if(!hardware.database_synchronize) {
-                            plan.state = HardwareUpdateState.PROHIBITED_BY_CONFIG;
-                        }
-
-                        plan.c_program_version_for_update = version;
-                        plan.actualization_procedure = procedure;
-
-
-                        logger.trace("create_actualization_hardware_request:: interface_hw type: group plan created:  " + plan.id);
-                        procedure.updates.add(plan);
-                    }
-
-                }
-
-                //If Independent Hardware
-                if (interface_hw.type.equals("hardware")) {
-
-                    logger.trace("create_actualization_hardware_request:: interface_hw type: hardware:  " + interface_hw.target_id);
-
-                    Model_Hardware hardware = Model_Hardware.find.byId(interface_hw.target_id);
-
-                    hardware.connected_instance_id = this.get_instance_id();
-                    hardware.update();
-
-                    Model_HardwareUpdate plan = new Model_HardwareUpdate();
-                    plan.hardware = hardware;
-                    plan.firmware_type = FirmwareType.FIRMWARE;
-                    plan.state = HardwareUpdateState.NOT_YET_STARTED;
-
-                    if(!hardware.database_synchronize) {
-                        plan.state = HardwareUpdateState.PROHIBITED_BY_CONFIG;
-                    }
-
-                    plan.c_program_version_for_update = version;
-                    plan.actualization_procedure = procedure;
-
-
-                    logger.trace("create_actualization_hardware_request:: interface_hw type: hardware plan created:  " + plan.id);
-                    procedure.updates.add(plan);
-
-                }
-            }
-
-            this.getUpdateProcedureIds();
-
-            // When Save - Do it immediately!
-            procedure.save();
-
-            // Add to cache
-            idCache().add(Model_UpdateProcedure.class, procedure.id);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -833,11 +725,6 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
     public boolean delete() {
 
         logger.debug("delete - deleting from database, id: {} ", this.id);
-
-
-        if(getInstance().current_snapshot_id != null && getInstance().current_snapshot_id.equals(this.id)) {
-            getInstance().stop();
-        }
 
         getInstance().idCache().remove(this.getClass(), this.id);
 

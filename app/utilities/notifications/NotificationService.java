@@ -2,6 +2,8 @@ package utilities.notifications;
 
 import com.google.inject.Singleton;
 import models.Model_Notification;
+import models.Model_Person;
+import utilities.enums.NotificationImportance;
 import websocket.interfaces.Portal;
 
 import java.util.*;
@@ -11,10 +13,22 @@ public class NotificationService {
 
     private final Map<UUID, List<Portal>> subscriptions = new HashMap<>();
 
-    public void send(Model_Notification notification) {
-        if (this.subscriptions.containsKey(UUID.randomUUID())) {
-            // TODO
-        }
+    public void send(Model_Person receiver, Model_Notification notification) {
+        this.send(Collections.singletonList(receiver), notification);
+    }
+
+    public void send(List<Model_Person> receivers, Model_Notification notification) {
+        receivers.forEach(receiver -> {
+
+            if (notification.notification_importance != NotificationImportance.LOW) {
+                notification.
+            }
+
+            if (this.subscriptions.containsKey(receiver.id)) {
+                this.subscriptions.get(receiver.id).forEach(portal -> portal.send());
+            }
+        });
+
     }
 
     public void subscribe(Portal portal) {

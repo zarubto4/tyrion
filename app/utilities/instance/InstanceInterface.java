@@ -2,6 +2,7 @@ package utilities.instance;
 
 import exceptions.FailedMessageException;
 import models.Model_Instance;
+import utilities.enums.NetworkStatus;
 import websocket.Message;
 import websocket.Request;
 import websocket.WebSocketInterface;
@@ -24,6 +25,18 @@ public class InstanceInterface {
     public InstanceInterface(Model_Instance instance, WebSocketInterface webSocketInterface) {
         this.instance = instance;
         this.webSocketInterface = webSocketInterface;
+    }
+
+    public NetworkStatus getNetworkStatus() {
+        try {
+            if (this.instance.current_snapshot_id == null) {
+                return NetworkStatus.SHUT_DOWN;
+            }
+
+            return this.getStatus().get_status(this.instance.id).status ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
+        } catch (FailedMessageException e) {
+            return NetworkStatus.OFFLINE;
+        }
     }
 
     public WS_Message_Instance_status getStatus() {

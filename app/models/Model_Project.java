@@ -2,6 +2,7 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -14,18 +15,16 @@ import exceptions.NotFoundException;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.model.UnderCustomer;
-import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.permission.Action;
 import utilities.permission.Permissions;
 import utilities.permission.Permissible;
+import utilities.project.ProjectStatsSerializer;
 import utilities.swagger.output.Swagger_ProjectParticipant;
 import utilities.swagger.output.Swagger_ProjectStats;
 import utilities.swagger.output.Swagger_Short_Reference;
-import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_online_status;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.*;
@@ -61,9 +60,12 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
     @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_HomerServer>           servers         = new ArrayList<>();
     @JsonIgnore @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)  public List<Model_GSM>                   gsm             = new ArrayList<>();
 
-    @JsonIgnore @Transient public Swagger_ProjectStats project_stats;
-
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
+
+    @JsonSerialize(using = ProjectStatsSerializer.class) @Transient
+    @ApiModelProperty(required = false, value = "Its Asynchronous Cached Value and it visible only, when system has cached everything. " +
+            "If not, the system automatically searches for all data in a special thread, and when it gets it, it sends them to the client via Websocket. ")
+    public Swagger_ProjectStats project_stats;
 
     @JsonProperty @ApiModelProperty(required = true)
     public Swagger_Short_Reference product(){
@@ -412,16 +414,6 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
     }
 
     @JsonIgnore
-    public UUID getProductId() {
-
-        if (idCache().get(Model_Product.class) == null) {
-            idCache().add(Model_Product.class, Model_Product.find.query().where().eq("projects.id", id).select("id").findSingleAttributeList());
-        }
-
-        return idCache().get(Model_Product.class);
-    }
-
-    @JsonIgnore
     public Model_Product getProduct() {
         return isLoaded("product") ? product : Model_Product.find.query().where().eq("projects.id", id).findOne();
     }
@@ -501,99 +493,6 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
-
-    @JsonProperty @ApiModelProperty(required = false, value = "Its Asynchronous Cached Value and it visible only, when system has cached everything. " +
-            "If not, the system automatically searches for all data in a special thread, and when it gets it, it sends them to the client via Websocket. ")
-    public Swagger_ProjectStats project_stats(){
-
-        if(!getProduct().active){
-            return null;
-        }
-
-        if(project_stats != null) {
-            return project_stats;
-        }
-
-        new Thread(() -> {
-            try {
-
-                Swagger_ProjectStats project_stats = new Swagger_ProjectStats();
-                project_stats.hardware = getHardware().size();
-                project_stats.b_programs = getBProgramsIds().size();
-                project_stats.c_programs = getCProgramsIds().size();
-                project_stats.libraries = getLibrariesIds().size();
-                project_stats.grid_projects = getGridProjectsIds().size();
-                project_stats.hardware_groups = getHardwareGroupsIds().size();
-                project_stats.widgets = getWidgetsIds().size();
-                project_stats.blocks = getBlocksIds().size();
-                project_stats.instances = getInstancesIds().size();
-                project_stats.servers = getHomerServerIds().size();
-
-                project_stats.hardware_online = 0;
-                project_stats.instance_online = 0;
-                project_stats.servers_online = 0;
-
-                List<UUID> homer_server_list = Model_Hardware.find.query().where().eq("project.id", id).select("connected_server_id").setDistinct(true).findSingleAttributeList();
-
-                for(UUID homer_id: homer_server_list) {
-
-                    if(homer_id == null) continue;
-
-                    try {
-                        Model_HomerServer server = Model_HomerServer.find.byId(homer_id);
-                        if (server.online_state() == NetworkStatus.ONLINE) {
-                            // TODO injection WS_Message_Hardware_online_status response = server.device_online_synchronization_ask(Model_Hardware.find.query().where().eq("project.id", id).eq("connected_server_id", homer_id).select("id").findSingleAttributeList());
-                            if (response.status.equals("success")) {
-
-                                for (WS_Message_Hardware_online_status.DeviceStatus status : response.hardware_list) {
-
-                                    if (status.online_status) {
-                                        ++project_stats.hardware_online;
-
-                                    }
-
-                                    try{
-                                        UUID uuid = UUID.fromString(status.uuid);
-                                        Model_Hardware.cache_status.put(uuid, status.online_status);
-                                    } catch (IllegalArgumentException exception){
-                                        System.err.println("project_stats invalid UUID" + exception.getMessage());
-                                    }
-                                }
-                            }
-
-                        }
-                    } catch (Exception e) {
-                        logger.error("project_stats: Homer Server ID: {} not found", homer_id);
-                        // Nothing
-                    }
-                }
-
-                for(Model_HomerServer server : getHomerServers()) {
-                    if(server.online_state() == NetworkStatus.ONLINE) {
-                        ++project_stats.servers_online;
-                    }
-                }
-
-                for(Model_Instance instance : getInstances()) {
-                    if(instance.online_state() == NetworkStatus.ONLINE) {
-                        ++project_stats.instance_online;
-                    }
-                }
-
-                this.project_stats = project_stats;
-                EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, this.id, this.id));
-
-            } catch (NotFoundException e) {
-                // Nothing
-
-            }
-        }).start();
-
-        return null;
-
-    }
-
-
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
@@ -605,46 +504,15 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
 
     @JsonIgnore @Override
     public void save() {
-
         super.save();
-
-        product.idCache().add(this.getClass(), id);
+        getProduct().idCache().add(this.getClass(), id);
     }
 
     @JsonIgnore @Override
     public boolean delete() {
         logger.debug("delete - deleting from database, id: {} ", this.id);
-
-        // TODO should not be here
-        List<UUID> hardware_list = Model_Hardware.find.query().where()
-                .eq("project.id", this.id)
-                .eq("dominant_entity", true)
-                .select("id").findSingleAttributeList();
-
-        for (UUID hardware_id : hardware_list) {
-            try {
-
-                Model_Hardware hardware = Model_Hardware.find.byId(hardware_id);
-
-                hardware.dominant_entity = false;
-                hardware.update();
-
-                // log Hard disconection
-                if (hardware.online_state() == NetworkStatus.ONLINE) {
-                    hardware.make_log_deactivated();
-                    // If device is online, restart it. So Device will connect immediately and it will find probably a new activated alternative of Device
-                    // TODO hardware.device_converted_id_clean_remove_from_server();
-                }
-
-            } catch (Exception e) {
-                logger.internalServerError(e);
-            }
-        }
-
-        super.delete();
         getProduct().idCache().remove(this.getClass(), id);
-
-        return true;
+        return super.delete();
     }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/

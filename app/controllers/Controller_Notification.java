@@ -1,10 +1,10 @@
 package controllers;
 
+import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.Model_Notification;
-import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -13,10 +13,8 @@ import utilities.authentication.Authentication;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationState;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
 import utilities.notifications.NotificationActionHandler;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.Swagger_Notification_Confirm;
 import utilities.swagger.input.Swagger_Notification_Read;
 import utilities.swagger.output.filter_results.Swagger_Notification_List;
@@ -33,9 +31,9 @@ public class Controller_Notification extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    @javax.inject.Inject
-    public Controller_Notification(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    @Inject
+    public Controller_Notification(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
+        super(ws, formFactory, config, permissionService);
     }
 
 // PUBLIC CONTROLLER METHODS ###########################################################################################

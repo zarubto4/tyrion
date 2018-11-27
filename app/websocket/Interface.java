@@ -10,6 +10,7 @@ import akka.stream.javadsl.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers._BaseFormFactory;
+import exceptions.FailedMessageException;
 import exceptions.InvalidBodyException;
 import org.reactivestreams.Publisher;
 import play.libs.Json;
@@ -195,6 +196,22 @@ public class Interface implements WebSocketInterface {
     @Override
     public boolean isOnline() {
         return !this.out.isTerminated();
+    }
+
+    public Long ping() {
+        long start = System.currentTimeMillis();
+        try {
+            Message response = this.sendWithResponse(
+                    new Request(Json.newObject()
+                            .put("message_id", UUID.randomUUID().toString())
+                            .put("message_channel", "unknown")
+                            .put("message_type", "ping")
+                    )
+            );
+        } catch (FailedMessageException e) {
+            logger.warn("ping - got error response for ping, but still the server responded");
+        }
+        return System.currentTimeMillis() - start;
     }
 
     @Override

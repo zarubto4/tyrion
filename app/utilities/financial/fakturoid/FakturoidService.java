@@ -62,7 +62,7 @@ public class FakturoidService extends _BaseController {
     public Result fakturoid_callback() {
         try {
             // Get and Validate Object
-            Swagger_Fakturoid_Callback help = baseFormFactory.formFromRequestWithValidation(Swagger_Fakturoid_Callback.class);
+            Swagger_Fakturoid_Callback help = formFactory.formFromRequestWithValidation(Swagger_Fakturoid_Callback.class);
 
             logger.info("fakturoid_callback: Body: {}", getBodyAsJson());
 
@@ -130,7 +130,7 @@ public class FakturoidService extends _BaseController {
         try {
             JsonNode result = makeRequest(RequestType.GET, "/invoices/" + id + ".json");
             if (result != null) {
-                return baseFormFactory.formFromJsonWithValidation(Fakturoid_Invoice.class, result);
+                return formFactory.formFromJsonWithValidation(Fakturoid_Invoice.class, result);
             }
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -174,7 +174,7 @@ public class FakturoidService extends _BaseController {
             JsonNode result = makeRequest(RequestType.POST, "/invoices.json", Json.toJson(fakturoid_invoice));
 
             if (result != null) {
-                return baseFormFactory.formFromJsonWithValidation(Fakturoid_Invoice.class, result);
+                return formFactory.formFromJsonWithValidation(Fakturoid_Invoice.class, result);
             }
 
 
@@ -251,7 +251,7 @@ public class FakturoidService extends _BaseController {
 
             JsonNode result = makeRequest(RequestType.POST, "/subjects.json", Json.toJson(subject));
             if (result != null) {
-                return baseFormFactory.formFromJsonWithValidation(Fakturoid_Subject.class, result);
+                return formFactory.formFromJsonWithValidation(Fakturoid_Subject.class, result);
             }
         } catch (Exception e) {
             logger.internalServerError(e);

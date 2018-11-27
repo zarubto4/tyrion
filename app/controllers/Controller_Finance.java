@@ -1,12 +1,12 @@
 package controllers;
 
+import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import exceptions.ForbiddenException;
 import exceptions.NotSupportedException;
 import io.ebean.Ebean;
 import io.swagger.annotations.*;
 import models.*;
-import play.Environment;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
@@ -21,9 +21,7 @@ import utilities.financial.extensions.configurations.Configuration;
 import utilities.financial.extensions.consumptions.ResourceConsumption;
 import utilities.financial.goPay.GoPay;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Invoice_FullDetails;
 import utilities.swagger.output.Swagger_Product_Active;
@@ -49,10 +47,10 @@ public class Controller_Finance extends _BaseController {
     private ProductService productService;
     private GoPay goPay;
 
-    @javax.inject.Inject
-    public Controller_Finance(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config,
-                              SchedulerService scheduler, FakturoidService fakturoid, ProductService productService, GoPay goPay, PermissionService permissionService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    @Inject
+    public Controller_Finance(WSClient ws, _BaseFormFactory formFactory, Config config, FakturoidService fakturoid,
+                              ProductService productService, GoPay goPay, PermissionService permissionService) {
+        super(ws, formFactory, config, permissionService);
         this.fakturoid = fakturoid;
         this.goPay = goPay;
         this.productService = productService;
@@ -118,7 +116,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tariff_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Tariff_New.class);
+            Swagger_Tariff_New help = formFactory.formFromRequestWithValidation(Swagger_Tariff_New.class);
             if(!help.owner_details_required && help.payment_details_required) {
                 badRequest("When payment details are required, we need owner's details as well!");
             }
@@ -179,7 +177,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Tariff_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Tariff_New.class);
+            Swagger_Tariff_New help = formFactory.formFromRequestWithValidation(Swagger_Tariff_New.class);
 
             Model_Tariff tariff = Model_Tariff.find.byId(tariff_id);
 
@@ -582,7 +580,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_TariffExtension_New help  = baseFormFactory.formFromRequestWithValidation(Swagger_TariffExtension_New.class);
+            Swagger_TariffExtension_New help  = formFactory.formFromRequestWithValidation(Swagger_TariffExtension_New.class);
 
             Model_TariffExtension extension = new Model_TariffExtension();
             extension.name = help.name;
@@ -658,7 +656,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_TariffExtension_Edit help  = baseFormFactory.formFromRequestWithValidation(Swagger_TariffExtension_Edit.class);
+            Swagger_TariffExtension_Edit help  = formFactory.formFromRequestWithValidation(Swagger_TariffExtension_Edit.class);
 
             // Kontrola objektu
             Model_TariffExtension extension = Model_TariffExtension.find.byId(extension_id);
@@ -919,7 +917,7 @@ public class Controller_Finance extends _BaseController {
             logger.debug("product_create: Creating new product");
 
             // Get and Validate Object
-            Swagger_Product_New help = baseFormFactory.formFromRequestWithValidation(Swagger_Product_New.class);
+            Swagger_Product_New help = formFactory.formFromRequestWithValidation(Swagger_Product_New.class);
             Model_Product product = productService.createAndActivateProduct(help);
 
             return created(product);
@@ -1006,7 +1004,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_NameAndDescription help = baseFormFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
+            Swagger_NameAndDescription help = formFactory.formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
             Model_Product product = Model_Product.find.byId(product_id);
             product.name = help.name;
@@ -1127,7 +1125,7 @@ public class Controller_Finance extends _BaseController {
 //        try {
 //
 //            // Get and Validate Object
-//            Swagger_Product_Credit help  = baseFormFactory.formFromRequestWithValidation(Swagger_Product_Credit.class);
+//            Swagger_Product_Credit help  = formFactory.formFromRequestWithValidation(Swagger_Product_Credit.class);
 //
 //            if (!(help.credit > 0)) return badRequest("Credit must be positive double number");
 //
@@ -1216,7 +1214,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Contact_Update help = baseFormFactory.formFromRequestWithValidation(Swagger_Contact_Update.class);
+            Swagger_Contact_Update help = formFactory.formFromRequestWithValidation(Swagger_Contact_Update.class);
 
             // Kontrola Objektu
             Model_Customer customer = Model_Customer.find.byId(customer_id);
@@ -1269,7 +1267,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Contact_Update help = baseFormFactory.formFromRequestWithValidation(Swagger_Contact_Update.class);
+            Swagger_Contact_Update help = formFactory.formFromRequestWithValidation(Swagger_Contact_Update.class);
 
             // Kontrola Objektu
             Model_Contact contact = Model_Contact.find.byId(contact_id);
@@ -1314,7 +1312,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_PaymentDetails_Update help  = baseFormFactory.formFromRequestWithValidation(Swagger_PaymentDetails_Update.class);
+            Swagger_PaymentDetails_Update help  = formFactory.formFromRequestWithValidation(Swagger_PaymentDetails_Update.class);
 
             // Kontrola Objektu
             Model_PaymentDetails paymentDetails = Model_PaymentDetails.find.byId(payment_details_id);
@@ -1503,7 +1501,7 @@ public class Controller_Finance extends _BaseController {
     @BodyParser.Of(BodyParser.Json.class)
     public Result productExtension_create(UUID product_id) {
         try {
-            Swagger_ProductExtension_New help = baseFormFactory.formFromRequestWithValidation(Swagger_ProductExtension_New.class);
+            Swagger_ProductExtension_New help = formFactory.formFromRequestWithValidation(Swagger_ProductExtension_New.class);
             Model_Product product = Model_Product.find.byId(product_id);
 
             this.checkUpdatePermission(product);
@@ -1689,7 +1687,7 @@ public class Controller_Finance extends _BaseController {
     public Result productExtensionFinancialEvents_get() {
         try {
 
-            Swagger_ExtensionFinancialEvent_Search help = baseFormFactory.formFromRequestWithValidation(Swagger_ExtensionFinancialEvent_Search.class);
+            Swagger_ExtensionFinancialEvent_Search help = formFactory.formFromRequestWithValidation(Swagger_ExtensionFinancialEvent_Search.class);
 
             List<Model_ExtensionFinancialEvent> events = Model_ExtensionFinancialEvent.getFinancialEvents(help.product_id, help.invoice_id, help.extension_id, help.from, help.to, false);
 
@@ -2051,7 +2049,7 @@ public class Controller_Finance extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_Contact_Update help = baseFormFactory.formFromRequestWithValidation(Swagger_Contact_Update.class);
+            Swagger_Contact_Update help = formFactory.formFromRequestWithValidation(Swagger_Contact_Update.class);
 
             Model_Customer customer = new Model_Customer();
 

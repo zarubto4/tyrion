@@ -5,7 +5,6 @@ import com.typesafe.config.Config;
 import io.ebean.*;
 import io.swagger.annotations.*;
 import models.*;
-import play.Environment;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
@@ -19,10 +18,8 @@ import utilities.enums.ProgramType;
 import exceptions.NotFoundException;
 import utilities.instance.InstanceService;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
 import utilities.permission.Action;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.*;
 import utilities.swagger.output.filter_results.Swagger_B_Program_List;
 import utilities.swagger.output.filter_results.Swagger_Block_List;
@@ -44,8 +41,8 @@ public class Controller_Blocko extends _BaseController {
     private final InstanceService instanceService;
 
     @Inject
-    public Controller_Blocko(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService, InstanceService instanceService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    public Controller_Blocko(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, InstanceService instanceService) {
+        super(ws, formFactory, config, permissionService);
         this.instanceService = instanceService;
     }
 
@@ -822,7 +819,7 @@ public class Controller_Blocko extends _BaseController {
 
             this.permissionService.check(person(), instance, Action.DEPLOY);
 
-            instance.stop();
+            this.instanceService.shutdown(instance);
 
             return ok();
 
@@ -1008,7 +1005,7 @@ public class Controller_Blocko extends _BaseController {
 
                 // Deployed is future
                 snapshot.deployed = future;
-                scheduler.scheduleInstanceDeployment(snapshot);
+                // TODO scheduler.scheduleInstanceDeployment(snapshot);
 
             } else {
 
@@ -1042,7 +1039,17 @@ public class Controller_Blocko extends _BaseController {
     })
     public Result instanceSnapshot_delete(UUID snapshot_id) {
         try {
-            return delete(Model_InstanceSnapshot.find.byId(snapshot_id));
+            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(snapshot_id);
+
+            this.checkDeletePermission(snapshot);
+
+            if (snapshot.id.equals(snapshot.getInstance().current_snapshot_id)) {
+                this.instanceService.shutdown(snapshot.getInstance());
+            }
+
+            snapshot.delete();
+
+            return ok();
         } catch (Exception e) {
             return controllerServerError(e);
         }

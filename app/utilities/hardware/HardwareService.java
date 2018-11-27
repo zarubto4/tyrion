@@ -1,24 +1,34 @@
 package utilities.hardware;
 
 import com.google.inject.Inject;
+import exceptions.FailedMessageException;
 import exceptions.NeverConnectedException;
 import exceptions.ServerOfflineException;
 import models.Model_Hardware;
 import models.Model_HomerServer;
+import utilities.hardware.update.UpdateService;
+import utilities.logger.Logger;
 import utilities.synchronization.SynchronizationService;
 import websocket.WebSocketService;
 import websocket.interfaces.Homer;
+import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Model_Hardware_Temporary_NotDominant_record;
 
 public class HardwareService {
+
+    private static final Logger logger = new Logger(HardwareService.class);
+
     private final SynchronizationService synchronizationService;
     private final WebSocketService webSocketService;
     private final DominanceService dominanceService;
+    private final UpdateService updateService;
 
     @Inject
-    public HardwareService(SynchronizationService synchronizationService, WebSocketService webSocketService, DominanceService dominanceService) {
+    public HardwareService(SynchronizationService synchronizationService, WebSocketService webSocketService,
+                           DominanceService dominanceService, UpdateService updateService) {
         this.synchronizationService = synchronizationService;
         this.webSocketService = webSocketService;
         this.dominanceService = dominanceService;
+        this.updateService = updateService;
     }
 
     public HardwareInterface getInterface(Model_Hardware hardware) {
@@ -36,9 +46,26 @@ public class HardwareService {
     }
 
     public void activate(Model_Hardware hardware) {
-        this.dominanceService.setDominant(hardware);
-        // TODO send echo
-        // TODO remove from network status service
+        WS_Model_Hardware_Temporary_NotDominant_record record = this.dominanceService.getNondominant(hardware.full_id);
+        if (this.dominanceService.setDominant(hardware)) {
+            if (record != null) {
+                try {
+                    HardwareInterface hardwareInterface = this.getInterface(hardware);
+                    hardwareInterface.changeUUIDOnServer(record.random_temporary_hardware_id);
+                } catch (NeverConnectedException|ServerOfflineException e) {
+                    // nothing
+                } catch (FailedMessageException e) {
+                    logger.warn("activate - server responded with error: {}", e.getFailedMessage().getErrorMessage());
+                }
+            }
+
+            this.synchronizationService.submit(new HardwareSynchronizationTask(this, this.updateService));
+            // TODO send echo
+
+            hardware.make_log_activated(); // TODO injection
+        } else {
+            // TODO notification - cannot be activated
+        }
     }
 
     public void deactivate(Model_Hardware hardware) {
@@ -47,5 +74,6 @@ public class HardwareService {
         HardwareInterface hardwareInterface = this.getInterface(hardware);
         hardwareInterface.removeUUIDOnServer();
         // TODO send echo
+        // TODO remove from network status service
     }
 }

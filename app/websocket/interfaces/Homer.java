@@ -4,6 +4,7 @@ import akka.stream.Materializer;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import controllers._BaseFormFactory;
+import exceptions.FailedMessageException;
 import exceptions.NotFoundException;
 import models.*;
 import mongo.ModelMongo_Hardware_RegistrationEntity;
@@ -11,9 +12,9 @@ import org.mindrot.jbcrypt.BCrypt;
 import play.libs.Json;
 import utilities.Server;
 import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
-import utilities.enums.HomerType;
 import utilities.enums.NetworkStatus;
 import utilities.enums.ServerMode;
+import utilities.hardware.DominanceService;
 import utilities.hardware.HardwareEvents;
 import utilities.hardware.HardwareService;
 import utilities.homer.HomerService;
@@ -27,8 +28,8 @@ import utilities.logger.Logger;
 import utilities.network.NetworkStatusService;
 import websocket.Interface;
 import websocket.Message;
+import websocket.Request;
 import websocket.messages.homer_hardware_with_tyrion.*;
-import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Model_Hardware_Temporary_NotDominant_record;
 import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
 import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_hardware;
 import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_program;
@@ -42,6 +43,7 @@ import websocket.messages.homer_with_tyrion.verification.WS_Message_Homer_Verifi
 import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 public class Homer extends Interface {
@@ -55,6 +57,7 @@ public class Homer extends Interface {
     private final HardwareService hardwareService;
     private final UpdateService updateService;
     private final HomerService homerService;
+    private final DominanceService dominanceService;
     private final Injector injector;
 
     private boolean authorized = false;
@@ -62,13 +65,14 @@ public class Homer extends Interface {
 
     @Inject
     public Homer(NetworkStatusService networkStatusService, Materializer materializer, _BaseFormFactory formFactory, Injector injector, HardwareEvents hardwareEvents,
-                 SynchronizationService synchronizationService, UpdateService updateService, HardwareService hardwareService, HomerService homerService) {
+                 SynchronizationService synchronizationService, UpdateService updateService, HardwareService hardwareService, HomerService homerService, DominanceService dominanceService) {
         super(networkStatusService, materializer, formFactory);
         this.hardwareEvents = hardwareEvents;
         this.synchronizationService = synchronizationService;
         this.hardwareService = hardwareService;
         this.updateService = updateService;
         this.homerService = homerService;
+        this.dominanceService = dominanceService;
         this.injector = injector;
     }
 
@@ -91,6 +95,24 @@ public class Homer extends Interface {
             case "instance": this.onMessageInstance(message); break;
             default: logger.warn("onMessage - cannot consume message with id: {}, unknown channel: {}", message.getId(), message.getChannel());
         }
+    }
+
+    @Override
+    public Long ping() {
+        long start = System.currentTimeMillis();
+        try {
+            Message response = this.sendWithResponse(
+                    new Request(Json.newObject()
+                            .put("message_id", UUID.randomUUID().toString())
+                            .put("message_channel", "homer_server")
+                            .put("message_type", "ping")
+                    )
+            );
+        } catch (FailedMessageException e) {
+            logger.warn("ping - got error response for ping, but still the server responded");
+        }
+
+        return System.currentTimeMillis() - start;
     }
 
     @Override
@@ -337,16 +359,12 @@ public class Homer extends Interface {
             case WS_Message_Hardware_online_status.message_type: this.device_online_synchronization_echo(message.as(WS_Message_Hardware_online_status.class)); break; // TODO probably not needed
             case WS_Message_Hardware_autobackup_made.message_type: this.device_auto_backup_done_echo(message.as(WS_Message_Hardware_autobackup_made.class)); break;
             case WS_Message_Hardware_autobackup_making.message_type: this.device_auto_backup_start_echo(message.as(WS_Message_Hardware_autobackup_making.class)); break;
-            case WS_Message_Hardware_UpdateProcedure_Progress.message_type: {
-
-                Model_HardwareUpdate.update_procedure_progress(formFromJsonWithValidation(homer, WS_Message_Hardware_UpdateProcedure_Progress.class, json));
-                return;
-            }
-
-            case WS_Message_Hardware_validation_request.message_type: this.check_mqtt_hardware_connection_validation(message.as(WS_Message_Hardware_validation_request.class)); break;
-            case WS_Message_Hardware_terminal_logger_validation_request.message_type: this.check_hardware_logger_access_terminal_validation(message.as(WS_Message_Hardware_terminal_logger_validation_request.class)); break;
-            case WS_Message_Hardware_uuid_converter.message_type: this.convert_hardware_full_id_uuid(message.as(WS_Message_Hardware_uuid_converter.class)); break;
+            case WS_Message_Hardware_validation_request.message_type: this.onHardwareMQTTAuthentication(message.as(WS_Message_Hardware_validation_request.class)); break;
+            case WS_Message_Hardware_terminal_logger_validation_request.message_type: this.onHardwareLoggerSubscriptionAuthentication(message.as(WS_Message_Hardware_terminal_logger_validation_request.class)); break;
+            case WS_Message_Hardware_uuid_converter.message_type: this.onConvertFullIdToUUID(message.as(WS_Message_Hardware_uuid_converter.class)); break;
             case WS_Message_Hardware_set_settings.message_type: this.device_settings_set(message.as(WS_Message_Hardware_set_settings.class)); break;
+
+            case WS_Message_Hardware_UpdateProcedure_Progress.message_type: this.updateService.onUpdateMessage(message.as(WS_Message_Hardware_UpdateProcedure_Progress.class));
 
             // Ignor messages - Jde pravděpodobně o zprávy - které přišly s velkým zpožděním - Tyrion je má ignorovat
             case WS_Message_Hardware_command_execute.message_type: {
@@ -387,7 +405,7 @@ public class Homer extends Interface {
             this.hardwareEvents.connected(hardware);
 
         } catch (NotFoundException e) {
-            logger.warn("Hardware not found. Message from Homer server: ID = " + help.websocket_identificator + ". Unregistered Hardware Id: " + help.uuid);
+            logger.warn("onHardwareConnected - hardware not found, probably unregistered, id: {}", help.uuid);
         } catch (Exception e) {
             logger.internalServerError(e);
         }
@@ -458,7 +476,7 @@ public class Homer extends Interface {
         try {
             for (WS_Message_Hardware_online_status.DeviceStatus status : report.hardware_list) {
 
-                try{
+                try {
                     UUID uuid = UUID.fromString(status.uuid);
                     //do something
 
@@ -475,288 +493,163 @@ public class Homer extends Interface {
         }
     }
 
-    public void check_mqtt_hardware_connection_validation(WS_Message_Hardware_validation_request request) {
+    public void onHardwareMQTTAuthentication(WS_Message_Hardware_validation_request request) {
         try {
 
-            logger.debug("check_mqtt_hardware_connection_validation: {} ", Json.toJson(request) );
+            Model_HomerServer server = Model_HomerServer.find.byId(this.id);
 
+            Model_Hardware hardware = this.dominanceService.getDominant(request.full_id);
 
-            Model_Hardware hardware = request.get_hardware();
-
-            if(hardware == null) {
-                logger.debug("check_mqtt_hardware_connection_validation: Device has not any active or dominant entity in local database");
-
+            if (hardware == null) {
+                logger.debug("onHardwareMQTTAuthentication - dominant hardware was not found");
 
                 // For public Homer server are all hardware allowed, but only if we find this Hardware in Central authority database!
-                if(this.getModelHomerServer().isPublic()) {
+                if (server.isPublic()) {
 
+                    logger.debug("onHardwareMQTTAuthentication - hardware is connected to a public server");
 
-                    // We will save last know server, where we have hardware, in case of registration under some project. SAVE is only if device has permission!!!!!
-                    WS_Model_Hardware_Temporary_NotDominant_record record = new WS_Model_Hardware_Temporary_NotDominant_record();
-                    record.homer_server_id = this.id;
-                    record.random_temporary_hardware_id = UUID.randomUUID();
+                    List<Model_Hardware> historical = Model_Hardware.find.query().nullable().where().eq("full_id", request.full_id).findList();
 
-                    logger.debug("check_mqtt_hardware_connection_validation: Device is on Public Server but wihtout dominant entity - so we will save it to cache");
+                    logger.debug("onHardwareMQTTAuthentication - found {} non-dominant hardware in DB", historical.size());
 
-                    logger.debug("check_mqtt_hardware_connection_validation: Before, we will try to know Mqtt PASS and Name - maybe from historical devices in local database?");
-                    hardware = Model_Hardware.find.query().where().eq("full_id", request.full_id).setMaxRows(1).select("id").findOne();
-                    if(hardware != null) {
-                        logger.debug("check_mqtt_hardware_connection_validation: Yes, we find historical device wiht same full_id, now we will check MQTT NAME and PASS");
+                    for (Model_Hardware hw : historical) {
+                        logger.debug("onHardwareMQTTAuthentication - checking request password: {} against: {}", request.password , hw.mqtt_password);
+                        logger.debug("onHardwareMQTTAuthentication - checking request name: {} against: {}", request.user_name , hw.mqtt_username);
 
-                        logger.debug("check_mqtt_hardware_connection_validation: Request PASS:: {}", request.password );
-                        logger.debug("check_mqtt_hardware_connection_validation: entity PASS:: {}", hardware.mqtt_password );
+                        if ((BCrypt.checkpw(request.password, hw.mqtt_password) && BCrypt.checkpw(request.user_name, hw.mqtt_username))
+                                || (BCrypt.checkpw(request.user_name, hw.mqtt_password) && BCrypt.checkpw(request.password, hw.mqtt_username))
+                                || (Server.mode == ServerMode.DEVELOPER && request.user_name.equals("user") && request.password.equals("pass"))) {
 
-                        logger.debug("check_mqtt_hardware_connection_validation: Request NAME:: {}", request.user_name );
-                        logger.debug("check_mqtt_hardware_connection_validation: entity NAME:: {}", hardware.mqtt_username );
-
-                        if (BCrypt.checkpw(request.password, hardware.mqtt_password) && BCrypt.checkpw(request.user_name, hardware.mqtt_username)) {
-
-                            // Save it - device has permission!
-                            cache_not_dominant_hardware.put(request.full_id, record);
-                            this.send(request.get_result(true,  record.random_temporary_hardware_id, null, false));
+                            logger.debug("onHardwareMQTTAuthentication - found hardware with same credentials, access allowed, id: {}", request.full_id);
+                            UUID randomId = this.dominanceService.rememberNondominant(request.full_id, this.id);
+                            this.send(request.get_result(true,  randomId, null, false));
                             return;
-
-                            // in the case of several HW, it was saved in reverse
-                        } else if (BCrypt.checkpw( request.user_name, hardware.mqtt_password) && BCrypt.checkpw(request.password, hardware.mqtt_username)) {
-
-                            // Save it - device has permission!
-                            cache_not_dominant_hardware.put(request.full_id, record);
-                            this.send(request.get_result(true, record.random_temporary_hardware_id, null, false));
-                            return;
-
-                        } else if( Server.mode == ServerMode.DEVELOPER && request.user_name.equals("user") && request.password.equals("pass")) {
-
-                            cache_not_dominant_hardware.put(request.full_id, record);
-                            this.send(request.get_result(true,  record.random_temporary_hardware_id, null, false));
-                            return;
-
-                        } else {
-
-                            logger.debug("check_mqtt_hardware_connection_validation: Device {} on public server has not right credentials Access Denied ",  hardware.full_id);
-                            this.send(request.get_result(false,  null, null, false));
-                            return;
-
                         }
                     }
 
+                    if (!historical.isEmpty()) {
+                        logger.debug("onHardwareMQTTAuthentication - did not find any hardware with same credentials, access denied, id: {}", request.full_id);
+                        this.send(request.get_result(false,  null, null, false));
+                        return;
+                    }
 
-                    logger.debug("check_mqtt_hardware_connection_validation: Before, we will try to know Mqtt PASS and Name - maybe from central authority?");
                     ModelMongo_Hardware_RegistrationEntity entity = ModelMongo_Hardware_RegistrationEntity.getbyFull_id(request.full_id);
-                    if(entity != null) {
-                        logger.debug("check_mqtt_hardware_connection_validation: Yes, we find HardwareRegistrationEntity  device with same full_id, now we will check MQTT NAME and PASS");
+                    if (entity != null) {
+                        logger.debug("onHardwareMQTTAuthentication - found hardware entity in central authority");
+                        logger.debug("onHardwareMQTTAuthentication - checking request password: {} against: {}", request.password , entity.mqtt_password);
+                        logger.debug("onHardwareMQTTAuthentication - checking request name: {} against: {}", request.user_name , entity.mqtt_username);
 
-                        logger.debug("check_mqtt_hardware_connection_validation: Request PASS:: {}", request.password );
-                        logger.debug("check_mqtt_hardware_connection_validation: entity PASS:: {}", entity.mqtt_password );
+                        if ((BCrypt.checkpw(request.password, entity.mqtt_password) && BCrypt.checkpw(request.user_name, entity.mqtt_username))
+                                || (BCrypt.checkpw( request.user_name, entity.mqtt_password) && BCrypt.checkpw(request.password, entity.mqtt_username))
+                                || (Server.mode == ServerMode.DEVELOPER && request.user_name.equals("user") && request.password.equals("pass"))) {
 
-                        logger.debug("check_mqtt_hardware_connection_validation: Request NAME:: {}", request.user_name );
-                        logger.debug("check_mqtt_hardware_connection_validation: entity NAME:: {}", entity.mqtt_username );
-
-
-                        logger.debug("check_mqtt_hardware_connection_validation: PASS valid: {}", BCrypt.checkpw(request.password, entity.mqtt_password));
-                        logger.debug("check_mqtt_hardware_connection_validation: USERNAME valid {}", BCrypt.checkpw(request.user_name, entity.mqtt_username));
-
-
-                        if ( BCrypt.checkpw(request.password, entity.mqtt_password) && BCrypt.checkpw(request.user_name, entity.mqtt_username)) {
-
-                            logger.debug("check_mqtt_hardware_connection_validation: Device {} on public server has  right credentials Access Allowed with ModelMongo_Hardware_RegistrationEntity Device check",  entity.full_id);
-
-                            // Save it - device has permission!
-                            cache_not_dominant_hardware.put(request.full_id, record);
-                            this.send(request.get_result(true, record.random_temporary_hardware_id, null, false));
+                            UUID randomId = this.dominanceService.rememberNondominant(request.full_id, this.id);
+                            this.send(request.get_result(true,  randomId, null, false));
                             return;
-
-                            // in the case of several HW, it was saved in reverse
-                        } else if ( BCrypt.checkpw( request.user_name, entity.mqtt_password) && BCrypt.checkpw(request.password, entity.mqtt_username)) {
-
-                            logger.debug("check_mqtt_hardware_connection_validation: Device {} on public server has  right credentials Access Allowed with ModelMongo_Hardware_RegistrationEntity Device check",  entity.full_id);
-
-                            // Save it - device has permission!
-                            cache_not_dominant_hardware.put(request.full_id, record);
-                            this.send(request.get_result(true, record.random_temporary_hardware_id, null, false));
-                            return;
-
-                            // Only for DEV server!
-                        } else if( Server.mode == ServerMode.DEVELOPER && request.user_name.equals("user") && request.password.equals("pass")) {
-
-                            cache_not_dominant_hardware.put(request.full_id, record);
-                            this.send(request.get_result(true,  record.random_temporary_hardware_id, null, false));
-                            return;
-
-                        } else {
-
-                            logger.debug("check_mqtt_hardware_connection_validation: Device {} on public server has not right credentials Access Denied with  HardwareRegistrationEntity check",  entity.full_id);
-                            this.send(request.get_result(false, null, null, false));
-                            return;
-
                         }
                     }
 
-                    logger.debug("check_mqtt_hardware_connection_validation: Device {} on public server we havent historical or HardwareRegistrationEntity, so Access Denied",  request.full_id);
+                    logger.debug("onHardwareMQTTAuthentication - did not find the hardware with same credentials anywhere, access denied, id: {}", request.full_id);
                     this.send(request.get_result(false,  null, null, false));
-                    return;
 
                 } else {
 
-                    logger.debug("check_mqtt_hardware_connection_validation: Device is on PRIVATE!!!! Server but without dominant entity. This is not ok! Wo we will redirect this device to another server");
-
-                    // Find public server and redirect Hardware:
+                    // TODO Find public server and redirect Hardware:
+                    logger.debug("onHardwareMQTTAuthentication - non-dominant hardware is on private server, redirecting to a public server - TODO!");
                     this.send(request.get_result(false, null, "redirect_url", false));
-                    return;
+                }
+                return;
+            } else {
+                logger.debug("onHardwareMQTTAuthentication - found dominant hardware entity");
+                logger.debug("onHardwareMQTTAuthentication - checking request password: {} against: {}", request.password , hardware.mqtt_password);
+                logger.debug("onHardwareMQTTAuthentication - checking request name: {} against: {}", request.user_name , hardware.mqtt_username);
 
+                if ((BCrypt.checkpw(request.password, hardware.mqtt_password) && BCrypt.checkpw(request.user_name, hardware.mqtt_username))
+                        || (BCrypt.checkpw( request.user_name, hardware.mqtt_password) && BCrypt.checkpw(request.password, hardware.mqtt_username))
+                        || (Server.mode == ServerMode.DEVELOPER && request.user_name.equals("user") && request.password.equals("pass"))) {
+
+                    this.send(request.get_result(true, hardware.id, null, true));
+                    return;
                 }
             }
 
-            logger.debug("check_mqtt_hardware_connection_validation: Request PASS:: {}", request.password );
-            logger.debug("check_mqtt_hardware_connection_validation: Hardware PASS:: {}", hardware.mqtt_password );
-
-            logger.debug("check_mqtt_hardware_connection_validation: Request NAME:: {}", request.user_name );
-            logger.debug("check_mqtt_hardware_connection_validation: Hardware NAME:: {}", hardware.mqtt_username );
-
-
-            if (BCrypt.checkpw(request.password, hardware.mqtt_password) && BCrypt.checkpw(request.user_name, hardware.mqtt_username)) {
-                logger.debug("check_mqtt_hardware_connection_validation: Device {}:: Access Approve", hardware.full_id);
-                this.send(request.get_result(true, hardware.id, null, true));
-            } else if (BCrypt.checkpw(request.user_name, hardware.mqtt_password) && BCrypt.checkpw(request.password, hardware.mqtt_username)) {
-                logger.debug("check_mqtt_hardware_connection_validation: Device {}:: Access Approve", hardware.full_id);
-                this.send(request.get_result(true, hardware.id, null, true));
-            }  else if( Server.mode == ServerMode.DEVELOPER && request.user_name.equals("user") && request.password.equals("pass")) {
-                logger.debug("check_mqtt_hardware_connection_validation: Device {}:: Access Approve - DEV server - user and pass", hardware.full_id);
-                this.send(request.get_result(true, hardware.id, null, true));
-            } else {
-                logger.debug("check_mqtt_hardware_connection_validation: Device {}:: Access Denied",  hardware.full_id);
-                this.send(request.get_result(false,  hardware.id, null, false));
-            }
+            logger.debug("onHardwareMQTTAuthentication - hardware was not found or it has bad credentials, access denied, id {}", hardware.full_id);
+            this.send(request.get_result(false,  hardware.id, null, false));
 
         } catch (Exception e) {
 
             logger.internalServerError(e);
 
-            if(Server.mode == ServerMode.DEVELOPER) {
-                logger.error("check_mqtt_hardware_connection_validation:: Device has not right permission to connect. But this is Dev version of Tyrion. So its allowed.");
+            if (Server.mode == ServerMode.DEVELOPER) {
+                logger.error("onHardwareMQTTAuthentication - hardware has not permission to connect, but it is allowed DEV mode");
                 this.send(request.get_result(true, null, null, true));
-                // Save it - device has permission!
-                return;
+            } else {
+                this.send(request.get_result(false, null, null, true));
             }
-
-            logger.internalServerError(e);
-            this.send(request.get_result(false, null, null, true));
         }
     }
 
-    public void convert_hardware_full_id_uuid(WS_Message_Hardware_uuid_converter request) {
-        try {
+    public void onConvertFullIdToUUID(WS_Message_Hardware_uuid_converter request) {
 
-            logger.debug("convert_hardware_full_id_to_uuid:: Incomimng Request for Transformation:: ", Json.toJson(request));
+        Model_Hardware hardware = this.dominanceService.getDominant(request.full_id);
 
-            // Přejlad na UUID
-            if(request.full_id != null) {
-                Model_Hardware board = Model_Hardware.getByFullId(request.full_id);
-
-                if (board == null) {
-                    logger.debug("convert_hardware_full_id_to_uuid:: {} Device Not Found with Dominant Entity - bus there is still hope! with Cache", request.full_id);
-
-                    System.err.println("Právě je čas zkontrolovat cache_not_dominant_hardware od kterého očekávám, že bude mít HW id v sobě: Kontrolované ID je  " + request.full_id);
-
-                    if(cache_not_dominant_hardware.containsKey(request.full_id)) {
-
-                        System.err.println("Ano - Cache obsahuje HW s Full ID:: " + request.full_id);
-
-                        logger.debug("convert_hardware_full_id_to_uuid:: Device Found in cache_not_dominant_hardware");
-                        this.send(request.get_result(cache_not_dominant_hardware.get(request.full_id).random_temporary_hardware_id, request.full_id));
-                        return;
-
+        if (request.full_id != null) {
+            if (hardware == null) {
+                if (this.dominanceService.hasNondominant(request.full_id)) {
+                    UUID randomId = this.dominanceService.rememberNondominant(request.full_id, this.id);
+                    this.send(request.get_result(randomId, request.full_id));
+                } else {
+                    ModelMongo_Hardware_RegistrationEntity entity = ModelMongo_Hardware_RegistrationEntity.getbyFull_id(request.full_id);
+                    if (entity != null) {
+                        UUID randomId = this.dominanceService.rememberNondominant(request.full_id, this.id);
+                        this.send(request.get_result(randomId, request.full_id));
                     } else {
-
-                        System.err.println("Ne Cache neobsahuje HW s Full ID:: " + request.full_id);
-
-                        ModelMongo_Hardware_RegistrationEntity entity = ModelMongo_Hardware_RegistrationEntity.getbyFull_id(request.full_id);
-                        if(entity != null) {
-
-                            System.err.println("Ne Cache neobsahuje HW s Full ID:: " + request.full_id + " ale našel jsem záznam z ModelMongo_Hardware_RegistrationEntity");
-
-                            // We will save last know server, where we have hardware, in case of registration under some project. SAVE is only if device has permission!!!!!
-                            WS_Model_Hardware_Temporary_NotDominant_record record = new WS_Model_Hardware_Temporary_NotDominant_record();
-                            record.homer_server_id = this.id;
-                            record.random_temporary_hardware_id = UUID.randomUUID();
-                            cache_not_dominant_hardware.put(request.full_id, record);
-
-                            this.send(request.get_result(cache_not_dominant_hardware.get(request.full_id).random_temporary_hardware_id, request.full_id));
-                            return;
-
-                        } else {
-
-                            logger.debug("convert_hardware_full_id_to_uuid:: Device Not Found and also not found in cache");
-                            this.send(request.get_result_error());
-                            return;
-                        }
+                        logger.debug("onConvertFullIdToUUID - hardware was not recognized");
+                        this.send(request.get_result_error());
                     }
                 }
-
-                logger.debug("convert_hardware_full_id_to_uuid:: Device found - Return Success");
-                this.send(request.get_result(board.id, board.full_id));
-                return;
+            } else {
+                logger.debug("onConvertFullIdToUUID - found dominant");
+                this.send(request.get_result(hardware.id, hardware.full_id));
             }
-
-            // Přejlad na FULL_ID
-            if(request.uuid != null) {
-                Model_Hardware board = Model_Hardware.find.byId(request.uuid);
-
-                if (board == null) {
-                    logger.debug("convert_hardware_full_id_to_uuid:: Device Not Found!");
-                    this.send(request.get_result_error());
-                    return;
-                }
-
-                logger.debug("convert_hardware_full_id_to_uuid:: Device found - Return Success");
-                this.send(request.get_result(board.id, board.full_id));
-                return;
-            }
-
-            logger.error("convert_hardware_full_id_to_uuid: Incoming message not contain full_id or uuid!!!!");
-
-        }catch (Exception e){
-            logger.internalServerError(e);
+            return;
         }
 
+        if (request.uuid != null) {
+            try {
+                Model_Hardware hardware1 = Model_Hardware.find.byId(request.uuid);
+                this.send(request.get_result(hardware1.id, hardware1.full_id));
+            } catch (NotFoundException e) {
+                // nothing
+            }
+        }
+
+        logger.debug("onConvertFullIdToUUID - hardware was not recognized");
+        this.send(request.get_result_error());
     }
 
-    public void check_hardware_logger_access_terminal_validation(WS_Message_Hardware_terminal_logger_validation_request request) {
+    public void onHardwareLoggerSubscriptionAuthentication(WS_Message_Hardware_terminal_logger_validation_request request) {
         try {
 
-            UUID project_id = null;
-
-            for (UUID id : request.uuid_ids) {
-
-                Model_Hardware board =  Model_Hardware.find.byId(id);
-                if (board == null) {
-                    this.send(request.get_result(false));
-                    return;
-                }
-
-                if (project_id != null  && project_id.equals(board.project().id)) continue;
-                if (project_id != null && !project_id.equals(board.project().id)) project_id = null;
-
-                // P5edpokládá se že project_id bude u všech desek stejné - tak se podle toho bude taky kontrolovat
-                if (project_id == null) {
-                    Model_Person person = Model_Person.getByAuthToken(request.token);
-                    if (person == null) {
+            Model_AuthorizationToken authorizationToken = Model_AuthorizationToken.getByToken(UUID.fromString(request.token));
+            if (authorizationToken.isValid()) {
+                Model_Person person = authorizationToken.getPerson();
+                for (UUID id : request.uuid_ids) {
+                    Model_Hardware hardware = Model_Hardware.find.byId(id);
+                    Model_Project project = hardware.getProject();
+                    if (project == null || !project.isParticipant(person)) {
                         this.send(request.get_result(false));
                         return;
                     }
-
-                    Model_Project project = Model_Project.find.query().where().eq("persons.id", person.id).eq("id", board.project().id).findOne();
-
-                    if (project == null) {
-                        this.send(request.get_result(false));
-                        return;
-                    }
-
-                    project_id = project.id;
                 }
+
+                this.send(request.get_result(true));
             }
 
-            this.send(request.get_result(true));
+            this.send(request.get_result(false));
 
+        } catch (NotFoundException e) {
+            this.send(request.get_result(false));
         } catch (Exception e) {
             logger.internalServerError(e);
         }

@@ -20,6 +20,7 @@ import utilities.model.Publishable;
 import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
 import utilities.network.JsonNetworkStatus;
+import utilities.network.Networkable;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
 import utilities.permission.WithPermission;
@@ -33,7 +34,7 @@ import java.util.List;
 @Entity
 @ApiModel(description = "Model of HomerServer", value = "HomerServer")
 @Table(name="HomerServer")
-public class Model_HomerServer extends TaggedModel implements Permissible, UnderProject, Publishable {
+public class Model_HomerServer extends TaggedModel implements Permissible, UnderProject, Publishable, Networkable {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 

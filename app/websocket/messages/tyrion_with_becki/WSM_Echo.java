@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import utilities.model.Echo;
 import utilities.model.BaseModel;
 import play.libs.Json;
-import websocket.interfaces.WS_Portal;
+import websocket.interfaces.Portal;
 import websocket.messages.common.abstract_class.WS_AbstractMessage;
 
 import java.util.UUID;
@@ -17,7 +17,7 @@ public class WSM_Echo extends WS_AbstractMessage {
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public static final String message_channel =  WS_Portal.CHANNEL;
+    @JsonProperty public static final String message_channel =  Portal.CHANNEL;
 
     //------------------------------------------------------------------
 

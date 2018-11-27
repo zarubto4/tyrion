@@ -234,8 +234,8 @@ PUT       /project/tags/add                                             controll
 PUT       /project/tags/remove                                          controllers.Controller_Project.project_removeTags
 PUT       /project/hardware/add                                         controllers.Controller_Project.project_addHardware
 PUT       /project/hardware/remove/:registration_id                     controllers.Controller_Project.project_removeHardware(registration_id: java.util.UUID)
-PUT       /project/hardware/deactive/:registration_id                   controllers.Controller_Project.project_deactiveHardware(registration_id: java.util.UUID)
-PUT       /project/hardware/activate/:registration_id                   controllers.Controller_Project.project_activeHardware(registration_id: java.util.UUID)
+PUT       /project/hardware/deactive/:registration_id                   controllers.Controller_Project.project_deactivateHardware(registration_id: java.util.UUID)
+PUT       /project/hardware/activate/:registration_id                   controllers.Controller_Project.project_activateHardware(registration_id: java.util.UUID)
 
 #Program
 POST      /b_program/version/:b_program_id                              controllers.Controller_Blocko.bProgramVersion_create(b_program_id: java.util.UUID)

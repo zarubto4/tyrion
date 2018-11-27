@@ -7,7 +7,6 @@ import io.ebean.Ebean;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
-import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -21,9 +20,7 @@ import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_GSM_thingsmobile_shield_label_Details;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.Swagger_DataConsumption_Filter;
 import utilities.swagger.input.Swagger_GSM_Edit;
 import utilities.swagger.input.Swagger_GSM_Filter;
@@ -45,8 +42,8 @@ public class Controller_GSM extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @Inject
-    public Controller_GSM(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    public Controller_GSM(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
+        super(ws, formFactory, config, permissionService);
     }
 
 ///###################################################################################################################*/

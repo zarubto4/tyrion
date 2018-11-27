@@ -48,12 +48,18 @@ public class Controller_Admin extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
+    private final Environment environment;
     private final WebSocketService webSocketService;
+    private final YouTrack youTrack;
+    private final SchedulerService schedulerService;
 
     @Inject
-    public Controller_Admin(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService, WebSocketService webSocketService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    public Controller_Admin(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService schedulerService, PermissionService permissionService, WebSocketService webSocketService) {
+        super(ws, formFactory, config, permissionService);
+        this.environment = environment;
         this.webSocketService = webSocketService;
+        this.youTrack = youTrack;
+        this.schedulerService = schedulerService;
     }
 
 
@@ -303,12 +309,12 @@ public class Controller_Admin extends _BaseController {
     })
     public Result server_scheduleUpdate_remove() {
         try {
-            List<Trigger> triggers = this.scheduler.get_Job("update-server");
+            List<Trigger> triggers = this.schedulerService.get_Job("update-server");
 
             for(Trigger trigger : triggers) {
 
-                scheduler.scheduler.unscheduleJob(trigger.getKey());
-                scheduler.scheduler.deleteJob(trigger.getJobKey());
+                schedulerService.scheduler.unscheduleJob(trigger.getKey());
+                schedulerService.scheduler.deleteJob(trigger.getJobKey());
             }
 
            return ok();
@@ -366,7 +372,7 @@ public class Controller_Admin extends _BaseController {
                     .get();
 
             // Get and Validate Object
-            GitHub_Release release = baseFormFactory.formFromJsonWithValidation(GitHub_Release.class, (releases.asJson()));
+            GitHub_Release release = formFactory.formFromJsonWithValidation(GitHub_Release.class, (releases.asJson()));
 
             logger.debug("server_scheduleUpdate - got release");
 
@@ -382,7 +388,7 @@ public class Controller_Admin extends _BaseController {
                 update.time = help.update_time;
                 update.url = asset.url;
 
-                scheduler.scheduleUpdateServer(update);
+                schedulerService.scheduleUpdateServer(update);
             } else {
                 return badRequest("Bad release, cannot find the asset file");
             }
@@ -447,8 +453,8 @@ public class Controller_Admin extends _BaseController {
 
             Swagger_ServerUpdates updates = new Swagger_ServerUpdates();
 
-            this.scheduler.show_all_jobs();
-            List<Trigger> triggers =this.scheduler.get_Job("update-server");
+            this.schedulerService.show_all_jobs();
+            List<Trigger> triggers =this.schedulerService.get_Job("update-server");
 
             for(Trigger trigger : triggers) {
                 updates.schedule_release = trigger.getDescription();

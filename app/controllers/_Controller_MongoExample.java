@@ -4,14 +4,11 @@ import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.swagger.annotations.*;
 import mongo._ModelMongo_Example;
-import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.Result;
 import responses.*;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.swagger.input._Swagger_Example_with_private_validation;
 
 /**
@@ -60,8 +57,8 @@ public class _Controller_MongoExample extends _BaseController {
 
 
     @Inject
-    public _Controller_MongoExample(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    public _Controller_MongoExample(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
+        super(ws, formFactory, config, permissionService);
     }
 
 // CONTROLLER CONTENT ##################################################################################################

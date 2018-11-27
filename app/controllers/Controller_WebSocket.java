@@ -10,7 +10,6 @@ import models.Model_CompilationServer;
 import models.Model_HomerServer;
 import models.Model_Person;
 import org.ehcache.Cache;
-import play.Environment;
 import play.libs.F;
 import play.libs.ws.WSClient;
 import play.mvc.*;
@@ -18,15 +17,12 @@ import responses.Result_InternalServerError;
 import responses.Result_Unauthorized;
 import utilities.authentication.Authentication;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.swagger.output.Swagger_Websocket_Token;
 import websocket.WebSocketService;
 import websocket.interfaces.*;
 import websocket.interfaces.Compiler;
 import websocket.messages.compilator_with_tyrion.WS_Message_Ping_compilation_server;
-import websocket.messages.homer_with_tyrion.WS_Message_Homer_ping;
 
 import javax.inject.Inject;
 import java.util.*;
@@ -48,8 +44,8 @@ public class Controller_WebSocket extends _BaseController {
     private final Injector injector;
 
     @Inject
-    public Controller_WebSocket(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService, WebSocketService webSocketService, Injector injector) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    public Controller_WebSocket(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, WebSocketService webSocketService, Injector injector) {
+        super(ws, formFactory, config, permissionService);
         this.webSocketService = webSocketService;
         this.injector = injector;
     }
@@ -120,15 +116,16 @@ public class Controller_WebSocket extends _BaseController {
                 Model_HomerServer server = Model_HomerServer.find.query().where().eq("connection_identifier", token).findOne();
                 if (server != null) {
                     if (this.webSocketService.isRegistered(server.id)) {
-                        logger.warn("homer - server is already connected, trying to ping previous connection");
 
-                        WS_Message_Homer_ping result = server.ping();
-                        if (!result.status.equals("success")) {
-                            logger.error("homer - ping failed, removing previous connection");
-                            this.webSocketService.getInterface(server.id).close();
-                        } else {
+                        Homer homer = this.webSocketService.getInterface(server.id);
+
+                        try {
+                            homer.ping();
                             logger.warn("homer - server is already connected, connection is working, cannot connect twice");
                             return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
+                        } catch (Exception e) {
+                            logger.error("homer - ping failed, removing previous connection");
+                            homer.close();
                         }
                     }
 
@@ -140,7 +137,7 @@ public class Controller_WebSocket extends _BaseController {
                     return CompletableFuture.completedFuture(F.Either.Right(this.webSocketService.register(homer)));
 
                 } else {
-                    logger.warn("homer - server with token: {} is not registered in the database, rejecting connection wtih token: {}", token);
+                    logger.warn("homer - server with token: {} is not registered in the database, rejecting connection with token: {}", token);
                 }
 
             } catch (Exception e) {

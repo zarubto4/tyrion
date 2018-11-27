@@ -1,5 +1,6 @@
 package controllers;
 
+import com.google.inject.Inject;
 import com.microsoft.azure.storage.blob.CloudAppendBlob;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
@@ -7,7 +8,6 @@ import com.typesafe.config.Config;
 import io.ebean.*;
 import io.swagger.annotations.*;
 import models.*;
-import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -23,9 +23,7 @@ import utilities.homer_auto_deploy.DigitalOceanTyrionService;
 import utilities.homer_auto_deploy.SelfDeployedThreadRegister;
 import utilities.homer_auto_deploy.models.common.Swagger_ServerRegistration_FormData;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.*;
 import utilities.swagger.output.filter_results.Swagger_HomerServer_List;
 
@@ -41,9 +39,9 @@ public class Controller_ExternalServer extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    @javax.inject.Inject
-    public Controller_ExternalServer(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    @Inject
+    public Controller_ExternalServer(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
+        super(ws, formFactory, config, permissionService);
     }
 
 

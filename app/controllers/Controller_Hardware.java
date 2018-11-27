@@ -1,5 +1,6 @@
 package controllers;
 
+import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import exceptions.FailedMessageException;
 import exceptions.ForbiddenException;
@@ -10,7 +11,6 @@ import models.*;
 import mongo.ModelMongo_Hardware_BatchCollection;
 import mongo.ModelMongo_Hardware_RegistrationEntity;
 import org.mindrot.jbcrypt.BCrypt;
-import play.Environment;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.*;
@@ -26,9 +26,7 @@ import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.enums.*;
 import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.swagger.Picture2Mb;
 import utilities.swagger.input.*;
 import utilities.swagger.output.*;
@@ -52,9 +50,9 @@ public class Controller_Hardware extends _BaseController {
     private final HardwareService hardwareService;
     private final UpdateService updateService;
 
-    @javax.inject.Inject
-    public Controller_Hardware(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService, HardwareService hardwareService, UpdateService updateService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    @Inject
+    public Controller_Hardware(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, HardwareService hardwareService, UpdateService updateService) {
+        super(ws, formFactory, config, permissionService);
         this.hardwareService = hardwareService;
         this.updateService = updateService;
     }

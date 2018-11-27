@@ -379,7 +379,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
             if (i != null){
                 Swagger_Short_Reference instance = i.ref();
-                instance.online_state = i.online_state();
+                // TODO instance.online_state = i.online_state();
                 return instance;
             } else {
                 return null;

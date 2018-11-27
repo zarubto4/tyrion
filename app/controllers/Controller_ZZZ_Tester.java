@@ -12,25 +12,22 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.*;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.bson.Document;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
-
-import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.Result;
-
-import play.mvc.WebSocket;
 import utilities.enums.Currency;
-import utilities.enums.ExtensionType;
-import utilities.enums.InvoiceStatus;
-import utilities.enums.PaymentMethod;
-import utilities.enums.ProductEventType;
+import utilities.enums.*;
 import utilities.financial.extensions.ExtensionInvoiceItem;
 import utilities.financial.fakturoid.FakturoidService;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_Status;
 import utilities.logger.Logger;
+import utilities.permission.PermissionService;
+import utilities.scheduler.jobs.Job_ThingsMobile_SimData_Synchronize;
+import websocket.WebSocketService;
 
 import java.io.FileOutputStream;
 import java.math.BigDecimal;
@@ -38,14 +35,6 @@ import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import utilities.logger.YouTrack;
-import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
-import utilities.scheduler.jobs.Job_ThingsMobile_SimData_Synchronize;
-import websocket.Interface;
-import websocket.WebSocketService;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_ZZZ_Tester extends _BaseController {
@@ -59,8 +48,8 @@ public class Controller_ZZZ_Tester extends _BaseController {
     protected final WebSocketService webSocketService;
 
     @Inject
-    public Controller_ZZZ_Tester(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService, WebSocketService webSocketService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    public Controller_ZZZ_Tester(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, WebSocketService webSocketService) {
+        super(ws, formFactory, config, permissionService);
         this.webSocketService = webSocketService;
     }
 
@@ -70,8 +59,8 @@ public class Controller_ZZZ_Tester extends _BaseController {
 // CONTROLLER CONTENT ##################################################################################################
 
     @ApiOperation(value = "Hidden test Method", hidden = true)
-    public WebSocket test1() {
-        return WebSocket.Json.accept(requestHeader -> this.webSocketService.register(new Interface(UUID.randomUUID())));
+    public Result test1() {
+        return ok();
     }
 
     @ApiOperation(value = "Hidden test Method", hidden = true)
@@ -458,7 +447,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
 
                 String string_json = cursor.next().toJson();
                 ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
-                Model_HardwareBatch batch = baseFormFactory.formFromJsonWithValidation(Model_HardwareBatch.class, json);
+                Model_HardwareBatch batch = formFactory.formFromJsonWithValidation(Model_HardwareBatch.class, json);
                 batches.add(batch);
             }
 
@@ -520,7 +509,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
 
                 String string_json = cursor_entity.next().toJson();
                 ObjectNode json = (ObjectNode) new ObjectMapper().readTree(string_json);
-                Model_HardwareRegistrationEntity batch = baseFormFactory.formFromJsonWithValidation(Model_HardwareRegistrationEntity.class, json);
+                Model_HardwareRegistrationEntity batch = formFactory.formFromJsonWithValidation(Model_HardwareRegistrationEntity.class, json);
                 entities.add(batch);
             }
 

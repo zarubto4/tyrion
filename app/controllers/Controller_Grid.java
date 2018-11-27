@@ -1,6 +1,7 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.ebean.Ebean;
 import io.ebean.ExpressionList;
@@ -8,7 +9,6 @@ import io.ebean.Junction;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
-import play.Environment;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.*;
@@ -19,9 +19,7 @@ import utilities.enums.Approval;
 import utilities.enums.ProgramType;
 import exceptions.NotFoundException;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_M_Program_Interface;
 import utilities.swagger.output.Swagger_M_Project_Interface;
@@ -42,9 +40,9 @@ public class Controller_Grid extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    @javax.inject.Inject
-    public Controller_Grid(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    @Inject
+    public Controller_Grid(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
+        super(ws, formFactory, config, permissionService);
     }
 
 ///###################################################################################################################*/

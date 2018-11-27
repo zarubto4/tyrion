@@ -1,10 +1,10 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.swagger.annotations.*;
 import models.*;
-import play.Environment;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import play.mvc.BodyParser;
@@ -16,10 +16,8 @@ import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.enums.NotificationAction;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
 import utilities.notifications.NotificationActionHandler;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Entity_Validation_Out;
 
@@ -38,9 +36,9 @@ public class Controller_Person extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    @javax.inject.Inject
-    public Controller_Person(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    @Inject
+    public Controller_Person(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
+        super(ws, formFactory, config, permissionService);
     }
 
 

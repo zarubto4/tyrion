@@ -1,5 +1,6 @@
 package controllers;
 
+import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import exceptions.ForbiddenException;
 import io.ebean.Ebean;
@@ -8,7 +9,6 @@ import io.ebean.Junction;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
-import play.Environment;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
@@ -20,9 +20,7 @@ import utilities.emails.Email;
 import utilities.enums.Approval;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.*;
 import utilities.swagger.output.filter_results.Swagger_Library_List;
 
@@ -38,9 +36,9 @@ public class Controller_Library extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    @javax.inject.Inject
-    public Controller_Library(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    @Inject
+    public Controller_Library(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
+        super(ws, formFactory, config, permissionService);
     }
 
 // LIBRARY #############################################################################################################

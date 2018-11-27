@@ -8,6 +8,7 @@ import models.Model_Project;
 import play.libs.Json;
 import utilities.enums.NetworkStatus;
 import utilities.logger.Logger;
+import websocket.interfaces.Portal;
 import websocket.interfaces.WS_Portal;
 
 import javax.persistence.Transient;
@@ -21,7 +22,7 @@ public class WS_Message_Online_Change_status {
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-    @JsonProperty public static final String message_channel =  WS_Portal.CHANNEL;
+    @JsonProperty public static final String message_channel =  Portal.CHANNEL;
 
     //------------------------------------------------------------------
 

@@ -1,6 +1,7 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.ebean.Ebean;
 import io.ebean.ExpressionList;
@@ -8,7 +9,6 @@ import io.ebean.Junction;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
-import play.Environment;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
@@ -19,9 +19,7 @@ import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.enums.*;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Compilation_Build_Error;
 import utilities.swagger.output.Swagger_Compilation_Ok;
@@ -40,9 +38,9 @@ public class Controller_Code extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    @javax.inject.Inject
-    public Controller_Code(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    @Inject
+    public Controller_Code(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
+        super(ws, formFactory, config, permissionService);
     }
 
 // CONTROLLER CONTENT ##################################################################################################
@@ -116,7 +114,7 @@ public class Controller_Code extends _BaseController {
         try {
 
             // Get and Validate Object
-            Swagger_C_Program_Version_Update help  = formFromRequestWithValidation(Swagger_C_Program_Version_Update.class);
+            Swagger_C_Program_Version_Update help = formFromRequestWithValidation(Swagger_C_Program_Version_Update.class);
 
             // Ověření objektu
             Model_HardwareType hardwareType = Model_HardwareType.find.byId(help.hardware_type_id);
@@ -133,7 +131,7 @@ public class Controller_Code extends _BaseController {
 
                     logger.trace("compile_C_Program_code:: Library contains files");
 
-                    Swagger_Library_File_Load lib_file = baseFormFactory.formFromJsonWithValidation(Swagger_Library_File_Load.class, Json.parse(lib_version.file.downloadString()));
+                    Swagger_Library_File_Load lib_file = formFactory.formFromJsonWithValidation(Swagger_Library_File_Load.class, Json.parse(lib_version.file.downloadString()));
                     library_files.addAll(lib_file.files);
 
                 }
@@ -150,10 +148,6 @@ public class Controller_Code extends _BaseController {
                 for (Swagger_Library_Record user_file : help.files) {
                     includes.put(user_file.file_name, user_file.content);
                 }
-            }
-
-            if (Controller_WebSocket.compilers.isEmpty()) {
-                return externalServerOffline("Compilation cloud_compilation_server is offline!");
             }
 
             WS_Message_Make_compilation compilation_result = Model_CompilationServer.make_Compilation(new WS_Message_Make_compilation().make_request( hardwareType , help.library_compilation_version, UUID.randomUUID(), help.main, includes ));

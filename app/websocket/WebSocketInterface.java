@@ -60,6 +60,12 @@ public interface WebSocketInterface {
     boolean isOnline();
 
     /**
+     * Ping the interface.
+     * @return number of milliseconds till the response was received.
+     */
+    Long ping();
+
+    /**
      * Closes the WebSocket connection.
      */
     void close();

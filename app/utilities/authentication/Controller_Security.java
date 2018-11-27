@@ -2,22 +2,18 @@ package utilities.authentication;
 
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
-import controllers.Controller_WebSocket;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
 import exceptions.NotFoundException;
 import io.swagger.annotations.*;
 import models.*;
-import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.*;
 import responses.*;
 import utilities.enums.TokenType;
 import utilities.enums.PlatformAccess;
 import utilities.financial.FinancialPermission;
-import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.Swagger_EmailAndPassword;
 import utilities.swagger.output.Swagger_Blocko_Token_validation_result;
 import utilities.swagger.output.Swagger_Login_Token;
@@ -25,7 +21,6 @@ import utilities.swagger.output.Swagger_Person_All_Details;
 import utilities.threads.Check_Online_Status_after_user_login;
 import utilities.logger.Logger;
 import utilities.swagger.input.Swagger_Blocko_Token_validation_request;
-import websocket.interfaces.WS_Portal;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -46,8 +41,8 @@ public class Controller_Security extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @Inject
-    public Controller_Security(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    public Controller_Security(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
+        super(ws, formFactory, config, permissionService);
     }
 
 // CLASIC LOGIN ########################################################################################################
@@ -277,10 +272,6 @@ public class Controller_Security extends _BaseController {
                 Model_Person.token_cache.remove(token);
 
                 Model_AuthorizationToken token_model = Model_AuthorizationToken.getByToken(token);
-
-                // Úklid přihlášených websocketů
-                WS_Portal portal = Controller_WebSocket.portals.get(personId());
-                if (portal != null) portal.close(token);
 
                 token_model.delete();
 

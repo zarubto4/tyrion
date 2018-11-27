@@ -2,10 +2,10 @@ package controllers;
 
 import akka.stream.javadsl.Source;
 import akka.util.ByteString;
+import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import play.Environment;
 import play.http.HttpEntity;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
@@ -13,9 +13,7 @@ import play.mvc.Controller;
 import play.mvc.ResponseHeader;
 import play.mvc.Result;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.Swagger_GitHubReleases;
 import utilities.swagger.input.Swagger_GitHubReleases_Asset;
 
@@ -24,7 +22,6 @@ import java.util.Collections;
 import java.util.Optional;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
-// @Security.Authenticated(Authentication.class)
 public class Controller_UploadFiles extends _BaseController {
 
 // LOGGER ##############################################################################################################
@@ -34,9 +31,9 @@ public class Controller_UploadFiles extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    @javax.inject.Inject
-    public Controller_UploadFiles(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    @Inject
+    public Controller_UploadFiles(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
+        super(ws, formFactory, config, permissionService);
     }
 
 // UPLOUD FILES ########################################################################################################
@@ -68,7 +65,7 @@ public class Controller_UploadFiles extends _BaseController {
             }
 
             // Get and Validate Object
-            Swagger_GitHubReleases help = baseFormFactory.formFromJsonWithValidation(Swagger_GitHubReleases.class, ws_response_get_all_releases.asJson());
+            Swagger_GitHubReleases help = formFactory.formFromJsonWithValidation(Swagger_GitHubReleases.class, ws_response_get_all_releases.asJson());
 
             System.out.println("Release Number: " +  help.name);
             System.out.println("Component Name: " +  component);
