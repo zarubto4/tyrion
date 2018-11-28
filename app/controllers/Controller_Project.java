@@ -15,10 +15,7 @@ import responses.*;
 import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.emails.Email;
-import utilities.enums.NetworkStatus;
-import utilities.enums.NotificationImportance;
-import utilities.enums.NotificationLevel;
-import utilities.enums.ParticipantStatus;
+import utilities.enums.*;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.models_update_echo.EchoHandler;
@@ -291,6 +288,10 @@ public class Controller_Project extends _BaseController {
 
                 // TODO Alex
                 case Database: {
+
+                    UUID productID = Model_Project.find.byId(help.project_id).getProductId();
+                    return Model_ProductExtension.find.query().where().eq("product.id", productID).eq("type", ExtensionType.DATABASE).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+
                     return badRequest();
                 }
 

@@ -1176,11 +1176,14 @@ public class Controller_Hardware extends _BaseController {
 
             Model_HardwareType hardware_type = boot_loader.getHardwareType();
 
-            System.out.println("Nastavuji Nový bootloader");
-            hardware_type.main_boot_loader = boot_loader;
+            Model_BootLoader old_main = Model_BootLoader.find.query().nullable().where().eq("main_hardware_type.id", boot_loader.getHardwareTypeId()).findOne();
+            if (old_main != null) {
+                old_main.main_hardware_type = null;
+                old_main.update();
+            }
 
-            System.out.println("Aktualizuji hardware");
-            hardware_type.update();
+            boot_loader.main_hardware_type = hardware_type;
+            boot_loader.update();
 
             hardware_type.refresh();
 

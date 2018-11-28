@@ -638,7 +638,7 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
 
     @JsonIgnore
     public String getPath() {
-        return product.get_path() + "/projects/" + this.id;
+        return getProduct().get_path() + "/projects/" + this.id;
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -647,7 +647,6 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
     public void save() {
 
         super.save();
-
         product.idCache().add(this.getClass(), id);
     }
 

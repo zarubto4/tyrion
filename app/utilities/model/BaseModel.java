@@ -187,9 +187,8 @@ public abstract class BaseModel extends Model implements JsonSerializable {
             }
         }
 
-        public JsonNode get_cached_json(){
-            this.cacheMap = new HashMap<>();
-            cached_json_object_for_rest = null;
+        public void clean() {
+            cacheMap = new HashMap<>();
         }
     }
 

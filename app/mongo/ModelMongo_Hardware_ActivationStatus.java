@@ -12,6 +12,7 @@ import org.mongodb.morphia.annotations.Indexes;
 import utilities.Server;
 import utilities.cache.CacheMongoFinder;
 import utilities.cache.InjectCache;
+import utilities.enums.ServerMode;
 import utilities.logger.Logger;
 import utilities.model._Abstract_MongoModel;
 
@@ -37,9 +38,12 @@ public class ModelMongo_Hardware_ActivationStatus extends _Abstract_MongoModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    public String server_version;
-    public UUID hardware_id;
+    public String hardware_id;
     public boolean activation;
+
+    // Common
+    public String server_version;
+    public ServerMode server_type;
 
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -47,6 +51,13 @@ public class ModelMongo_Hardware_ActivationStatus extends _Abstract_MongoModel {
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
+    @Override
+    public void save() {
+        server_version = Server.version;
+        server_type = Server.mode;
+        super.save();
+    }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -65,9 +76,8 @@ public class ModelMongo_Hardware_ActivationStatus extends _Abstract_MongoModel {
     public static ModelMongo_Hardware_ActivationStatus create_record(Model_Hardware hardware, boolean activation) {
 
         ModelMongo_Hardware_ActivationStatus status = new ModelMongo_Hardware_ActivationStatus();
-        status.hardware_id = hardware.id;
         status.activation = activation;
-        status.server_version = Server.version;
+        status.hardware_id = hardware.id.toString();
 
         status.save();
 
@@ -75,7 +85,6 @@ public class ModelMongo_Hardware_ActivationStatus extends _Abstract_MongoModel {
     }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 
