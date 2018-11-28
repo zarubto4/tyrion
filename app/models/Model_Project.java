@@ -580,6 +580,7 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
                     if(homer_id == null) continue;
 
                     try {
+
                         Model_HomerServer server = Model_HomerServer.find.byId(homer_id);
                         if (server.online_state() == NetworkStatus.ONLINE) {
                             WS_Message_Hardware_online_status response = server.device_online_synchronization_ask(Model_Hardware.find.query().where().eq("project.id", id).eq("connected_server_id", homer_id).select("id").findSingleAttributeList());
@@ -602,6 +603,7 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
                             }
 
                         }
+
                     } catch (Exception e) {
                         logger.error("project_stats: Homer Server ID: {} not found", homer_id);
                         // Nothing

@@ -562,11 +562,11 @@ DELETE    /admin/gsm/:sim_id                                            controll
 
 ### DATABASE
 
-PUT       /database                                                     controllers.Controller_Database.create_db()
+POST      /database                                                     controllers.Controller_Database.create_db()
 PUT       /database/:db_id                                              controllers.Controller_Database.edit_db(db_id: java.util.UUID)
 GET       /database/all/:product_id                                     controllers.Controller_Database.list_db(product_id: java.util.UUID)
 DELETE    /database/:db_id                                              controllers.Controller_Database.drop_db(db_id: java.util.UUID)
-GET       /database/:db_id                                              controllers.Controller_Database.get_colections(db_id: java.util.UUID)
+GET       /database/:db_id                                              controllers.Controller_Database.get_collections(db_id: java.util.UUID)
 PUT       /database/:db_id/:collection_name                             controllers.Controller_Database.create_collection(db_id: java.util.UUID, collection_name: java.lang.String)
 ### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################
 ################################################################################################################################################################################

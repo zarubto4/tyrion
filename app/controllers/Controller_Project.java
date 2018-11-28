@@ -216,8 +216,8 @@ public class Controller_Project extends _BaseController {
 
                 case Project: {
                     // Find Ids Where to check Project Name
-                    List<UUID> product_ids = Model_Product.find.query().nullable().where().eq("owner.employees.person.id", personId()).findIds();
-                    return  Model_Project.find.query().nullable().where().eq("name", help.name).in("product.id", product_ids).findCount() == 0 ? ok() : badRequest();
+                    List<UUID> product_ids = Model_Product.find.query().where().eq("owner.employees.person.id", personId()).findIds();
+                    return  Model_Project.find.query().where().eq("name", help.name).in("product.id", product_ids).findCount() == 0 ? ok() : badRequest();
                 }
 
                 case BProgram: {
