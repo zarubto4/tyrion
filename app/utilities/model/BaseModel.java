@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers._BaseController;
 import exceptions.InvalidBodyException;
 import io.ebean.Model;
+import io.ebean.ValuePair;
 import io.ebean.annotation.SoftDelete;
 import io.ebean.bean.EntityBean;
 import io.ebean.bean.EntityBeanIntercept;
@@ -76,7 +77,6 @@ public abstract class BaseModel extends Model implements JsonSerializable {
     public class IDCache {
 
         private HashMap<Class, List<UUID>> cacheMap = new HashMap<>();
-        private JsonNode cached_json_object_for_rest = null;
 
         public void add(Class c, List<UUID> ids){
             try {
@@ -187,19 +187,10 @@ public abstract class BaseModel extends Model implements JsonSerializable {
             }
         }
 
-        public void clean() {
-            cacheMap = new HashMap<>();
+        public JsonNode get_cached_json(){
+            this.cacheMap = new HashMap<>();
             cached_json_object_for_rest = null;
         }
-
-        public JsonNode get_cached_json(){
-           return this.cached_json_object_for_rest;
-        }
-
-        public void set_cached_json(JsonNode node){
-            this.cached_json_object_for_rest = node;
-        }
-
     }
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
@@ -315,7 +306,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
     @Override
     public void update() {
         logger.debug("update - updating {}, id: {}", this.getClass().getSimpleName(), this.id);
-
+        this.invalidate();
         this.updated = new Date();
         super.update();
 
@@ -325,7 +316,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
     @Override
     public boolean delete() {
         logger.debug("delete - soft deleting {}, id: {}", this.getClass().getSimpleName(), this.id);
-
+        this.invalidate();
         super.delete();
 
         new Thread(this::evict).start(); // Evict the object from cache
@@ -343,6 +334,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
     @Override
     public void refresh() {
         super.refresh();
+        this.idCache().clean();
         this.cache();
         this.idCache().clean();
     }
@@ -407,23 +399,49 @@ public abstract class BaseModel extends Model implements JsonSerializable {
     }
 
     /**
-     * This method should be called when object is no longer fresh
-     * and inner caches should be reloaded. It sets null all fields
-     * that are only cached. TODO measure performance impact LEVEL: HARD  TIME: LONGTERM
+     * This method check if there were some ORM changes on this object,
+     * if so, it invalidates both the old and the new value of the relation
+     * and it also invalidates the object itself, so the queries will return
+     * right values
      */
     public void invalidate() {
-        long start = System.currentTimeMillis();
-        Class<? extends BaseModel> cls = this.getClass();
-        for (Field field : cls.getDeclaredFields()) {
-            if (field.isAnnotationPresent(Cached.class)) {
-                try {
-                    field.set(this, null); // Set null
-                } catch (Exception e) {
-                    logger.internalServerError(e);
+        try {
+            if (this instanceof EntityBean) {
+                EntityBeanIntercept intercept = ((EntityBean) this)._ebean_intercept();
+                boolean ormChanged = false;
+                for (Map.Entry<String, ValuePair> entry : intercept.getDirtyValues().entrySet()) {
+                    String key = entry.getKey();
+                    ValuePair valuePair = entry.getValue();
+                    if (valuePair.getOldValue() instanceof BaseModel) {
+                        ormChanged = true;
+                        logger.trace("invalidate - invalidating changed property: {}", key);
+                        Class cls = valuePair.getOldValue().getClass();
+                        CacheFinder finder = findCacheFinder(cls);
+                        if (finder != null) {
+                            finder.invalidate(((BaseModel) valuePair.getOldValue()).id);
+                        }
+                    }
+                    if (valuePair.getNewValue() instanceof BaseModel) {
+                        Class cls = valuePair.getNewValue().getClass();
+                        CacheFinder finder = findCacheFinder(cls);
+                        if (finder != null) {
+                            finder.invalidate(((BaseModel) valuePair.getNewValue()).id);
+                        }
+                    }
+                }
+
+                if (ormChanged) {
+                    logger.trace("invalidate - orm changed, invalidating itself");
+                    this.idCache().clean();
+                    CacheFinder finder = findCacheFinder(this.getClass());
+                    if (finder != null) {
+                        finder.invalidate(this.id);
+                    }
                 }
             }
+        } catch (Exception e) {
+            logger.internalServerError(e);
         }
-        logger.trace("invalidate - operation took {} ms", System.currentTimeMillis() - start);
     }
 
     /**
@@ -494,6 +512,20 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         } catch (Exception e) {
             logger.internalServerError(e);
         }
+    }
+
+    private static CacheFinder findCacheFinder(Class cls) {
+        for (Field field : cls.getDeclaredFields()) {
+            if (field.isAnnotationPresent(InjectCache.class) && field.getType().equals(CacheFinder.class)) {
+                try {
+                    logger.debug("findCacheFinder - found cache finder field");
+                    return (CacheFinder<?>) field.get(null);
+                } catch (Exception e) {
+                    logger.internalServerError(e);
+                }
+            }
+        }
+        return null;
     }
 
     public static List<Field> getAllFields(List<Field> fields, Class<?> type, int iteration) {

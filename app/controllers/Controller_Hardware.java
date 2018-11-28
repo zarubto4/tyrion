@@ -1174,11 +1174,7 @@ public class Controller_Hardware extends _BaseController {
 
             if (boot_loader.getMainHardwareType() != null) return badRequest("Bootloader is Already Main");
 
-
             Model_HardwareType hardware_type = boot_loader.getHardwareType();
-
-            System.out.println("Hledám Old Bootloader");
-            Model_BootLoader old_bootloader = hardware_type.get_main_boot_loader();
 
             System.out.println("Nastavuji Nový bootloader");
             hardware_type.main_boot_loader = boot_loader;
@@ -1186,22 +1182,7 @@ public class Controller_Hardware extends _BaseController {
             System.out.println("Aktualizuji hardware");
             hardware_type.update();
 
-            System.out.println("Refreshuji");
             hardware_type.refresh();
-            boot_loader.refresh();
-            old_bootloader.refresh();
-
-
-            // TODO by nemělo fungovat!!!!!! TODO BECKI-527 - Lexa
-            Model_HardwareType hw_old = Model_HardwareType.find.query().where().eq("main_boot_loader.id", old_bootloader.id).findOne();
-            Model_HardwareType hw_new = Model_HardwareType.find.query().where().eq("main_boot_loader.id", boot_loader.id).findOne();
-
-            Model_HardwareType.find.getCache().clear();
-            Model_BootLoader.find.getCache().clear();
-
-
-            System.out.println("hw_old " + hw_old.name);
-            System.out.println("hw_new " + hw_new.name);
 
             // Vymažu Device Cache
             Model_Hardware.find.getCache().clear();
