@@ -3,6 +3,7 @@ package utilities.cache;
 import io.ebean.Finder;
 import io.ebeaninternal.api.SpiEbeanServer;
 import io.ebeaninternal.server.querydefn.DefaultOrmQuery;
+import models.Model_Person;
 import org.ehcache.Cache;
 import exceptions.NotFoundException;
 import utilities.logger.Logger;
@@ -10,7 +11,7 @@ import utilities.model.BaseModel;
 
 import javax.annotation.Nonnull;
 import javax.validation.constraints.NotNull;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * This is an extension of normal Ebean Finder. It has its own caching system inside.
@@ -32,6 +33,13 @@ public class CacheFinder<T extends BaseModel> extends Finder<UUID, T> implements
 
         this.entityType = cls;
     }
+
+
+    @Nonnull
+    public T byId(String id) {
+        return byId( UUID.fromString(id));
+    }
+
 
     @Override
     @Nonnull
@@ -89,5 +97,17 @@ public class CacheFinder<T extends BaseModel> extends Finder<UUID, T> implements
     public void evict(UUID key) {
         logger.trace("evict - ({}) removing by key: {}", this.entityType.getSimpleName(), key);
         cache.remove(key);
+    }
+
+    public void invalidate(UUID key) {
+        logger.trace("invalidate - ({}) invalidating query cache for key: {}", this.entityType.getSimpleName(), key);
+        Set<Integer> toRemove = new HashSet<>();
+        this.queryCache.forEach((entry) -> {
+            if (entry.getValue().equals(key)) {
+                toRemove.add(entry.getKey());
+            }
+        });
+        this.queryCache.removeAll(toRemove);
+        logger.trace("invalidate - removed {} record(s)", toRemove.size());
     }
 }

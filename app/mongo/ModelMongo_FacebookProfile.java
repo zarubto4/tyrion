@@ -17,7 +17,7 @@ import java.util.UUID;
         value = "FacebookProfile",
         description = "Facebook profile collection"
 )
-@Entity("FACEBOOK_PROFILE")
+@Entity("Facebook_Profile")
 public class ModelMongo_FacebookProfile extends _Abstract_MongoModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -34,7 +34,7 @@ public class ModelMongo_FacebookProfile extends _Abstract_MongoModel {
     public String last_name;
     public String email;
     public Date created;
-    public UUID person_id;
+    public String person_id;
 
     @JsonIgnore
     public ObjectId user_id;        // Model User_id!

@@ -24,6 +24,7 @@ import websocket.interfaces.WS_Homer;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.time.Instant;
 import java.util.*;
 
 @Indexes({
@@ -51,16 +52,16 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
     @Constraints.Required
     @Property("created")
     @ApiModelProperty(required = true, value = "unixTime", readOnly = true, dataType = "integer", example = "1536424319")
-    public Long created;
+    public long created;
 
     @Constraints.Required
     @Property("updated")
     @ApiModelProperty(required = true, value = "unixTime", readOnly = true, dataType = "integer", example = "1536424319")
-    public Long updated;
+    public long updated;
 
     @JsonIgnore
     @ApiModelProperty(required = true, value = "unixTime", readOnly = true, dataType = "integer", example = "1536424319")
-    public Long removed;
+    public long removed;
 
     @JsonIgnore
     public boolean deleted; // Default value is false in save()
@@ -171,11 +172,11 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
         this.id = new ObjectId();
 
         // Set Time
-        if (this.created == null) {
-            this.created = new Date().getTime();
+        if (this.created == 0) {
+            this.created = Instant.now().getEpochSecond();
         }
-        if (this.updated == null) {
-            this.updated = new Date().getTime();
+        if (this.updated == 0) {
+            this.updated = Instant.now().getEpochSecond();
         }
         // new Thread(this::cache).start(); // Caches the object
 
@@ -190,7 +191,7 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
     @JsonIgnore public void update() {
 
         // Set Time
-        this.updated = new Date().getTime();
+        this.updated = Instant.now().getEpochSecond();
 
         // Save Document do Mongo Database
         getFinder().save(this);
@@ -205,7 +206,7 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
     @JsonIgnore public void delete() {
 
         // Set Time
-        this.removed = new Date().getTime();
+        this.removed = Instant.now().getEpochSecond();
         this.deleted = true;
 
         // Not Remove, but update!

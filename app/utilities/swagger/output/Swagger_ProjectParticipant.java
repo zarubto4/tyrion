@@ -11,4 +11,6 @@ public class Swagger_ProjectParticipant extends _Swagger_Abstract_Default {
     public UUID id;
     public String email;
     public String full_name;
+
+    public Swagger_ProjectParticipant role;
 }
