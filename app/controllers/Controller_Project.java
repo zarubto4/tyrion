@@ -274,11 +274,9 @@ public class Controller_Project extends _BaseController {
                     return Model_InstanceSnapshot.find.query().where().eq("instance.id", help.object_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 
-
-
-                // TODO Alex
                 case Database: {
-                    return badRequest();
+                    UUID productID = Model_Project.find.byId(help.project_id).product.id;
+                    return Model_ProductExtension.find.query().where().eq("product.id", productID).eq("type", ExtensionType.DATABASE).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 
 
