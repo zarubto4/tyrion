@@ -1176,25 +1176,16 @@ public class Controller_Hardware extends _BaseController {
 
             Model_HardwareType hardware_type = boot_loader.getHardwareType();
 
-            Model_BootLoader old_main_not_cached = Model_BootLoader.find.query().where().eq("main_hardware_type.id", boot_loader.getHardwareTypeId()).select("id").findOne();
-
-            if (old_main_not_cached != null) {
-                Model_BootLoader old_main = Model_BootLoader.find.byId(old_main_not_cached.id);
-                if (old_main != null) {
-                    old_main.main_hardware_type = null;
-                    old_main.idCache().removeAll(Model_HardwareType.Model_HardwareType_Main.class);
-                    old_main.update();
-                }
+            Model_BootLoader old_main = Model_BootLoader.find.query().nullable().where().eq("main_hardware_type.id", boot_loader.getHardwareTypeId()).findOne();
+            if (old_main != null) {
+                old_main.main_hardware_type = null;
+                old_main.update();
             }
 
             boot_loader.main_hardware_type = hardware_type;
             boot_loader.update();
 
-            hardware_type.main_boot_loader = boot_loader;
-            hardware_type.update();
-
-            hardware_type.idCache().removeAll(Model_HardwareType.Model_HardwareType_Main.class);
-            hardware_type.idCache().add(Model_HardwareType.Model_HardwareType_Main.class, boot_loader.id);
+            hardware_type.refresh();
 
             // Vymažu Device Cache
             Model_Hardware.find.getCache().clear();
