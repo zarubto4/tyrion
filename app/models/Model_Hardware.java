@@ -517,7 +517,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
             return -1;
 
         } catch (Exception e) {
-            logger.internalServerError(e);
+            // logger.internalServerError(e);
             return -1;
         }
     }
@@ -2807,6 +2807,10 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
 /* UPDATE --------------------------------------------------------------------------------------------------------------*/
 
+    public static Model_UpdateProcedure create_update_procedure(FirmwareType firmware_type, UpdateType type_of_update, WS_Help_Hardware_Pair board_for_update) {
+        return create_update_procedure(firmware_type, type_of_update, Collections.singletonList(board_for_update));
+    }
+
     public static Model_UpdateProcedure create_update_procedure(FirmwareType firmware_type, UpdateType type_of_update, List<WS_Help_Hardware_Pair> board_for_update) {
 
         if (board_for_update == null || board_for_update.isEmpty()) {
@@ -2885,7 +2889,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
         return procedure;
     }
 
-/* ONLINE STATUS SYNCHRONIZATION ---------------------------------------------------------------------------------------*/
+    /* ONLINE STATUS SYNCHRONIZATION ---------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 

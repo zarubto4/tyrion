@@ -25,6 +25,7 @@ import utilities.swagger.output.filter_results.Swagger_ActualizationProcedureTas
 import utilities.swagger.output.filter_results.Swagger_ActualizationProcedure_List;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -313,7 +314,7 @@ public class Controller_Update extends _BaseController {
             // Get and Validate Object
             Swagger_Upload_BIN_to_HW_BASE64_FILE help = formFromRequestWithValidation(Swagger_Upload_BIN_to_HW_BASE64_FILE.class);
 
-            final byte[] utf8Bytes = help.file.getBytes("UTF-8");
+            final byte[] utf8Bytes = help.file.getBytes(StandardCharsets.UTF_8);
             System.out.println("hardwareType_uploadBin - update bin: size in bits: " + utf8Bytes.length); // prints "11"
 
             String file_name =   "manual_upload_file_cron_remove.bin";
@@ -321,9 +322,10 @@ public class Controller_Update extends _BaseController {
 
             logger.debug("hardwareType_uploadBin- File Name:: " + file_name );
 
-
             // Create File - its not owned by any other model object - and there is a Cron Job witch remove this file after 24 hours.
             Model_Blob file = Model_Blob.upload(help.file, "bin", file_name , Model_Blob.get_path_for_bin());
+
+            String build_id = "dasfsdfsdfsd TODO";
 
 
             List<WS_Help_Hardware_Pair> b_pairs = new ArrayList<>();
@@ -358,7 +360,6 @@ public class Controller_Update extends _BaseController {
             return controllerServerError(e);
         }
     }
-
 
 
 // C PROGRAM ACTUALIZATION PLAN ########################################################################################

@@ -232,9 +232,9 @@ GET       /project                                                      controll
 DELETE    /project/:project_id                                          controllers.Controller_Project.project_delete(project_id: java.util.UUID)
 PUT       /project/invite/:project_id                                   controllers.Controller_Project.project_invite(project_id: java.util.UUID)
 PUT       /project/remove_participant/:project_id                       controllers.Controller_Project.project_removeParticipant(project_id: java.util.UUID)
-PUT       /project/tags/add                                             controllers.Controller_Project.project_addTags
-PUT       /project/tags/remove                                          controllers.Controller_Project.project_removeTags
-PUT       /project/hardware/add                                         controllers.Controller_Project.project_addHardware
+PUT       /project/tags/add                                             controllers.Controller_Project.project_addTags()
+PUT       /project/tags/remove                                          controllers.Controller_Project.project_removeTags()
+PUT       /project/hardware/add                                         controllers.Controller_Project.project_addHardware()
 PUT       /project/hardware/remove/:registration_id                     controllers.Controller_Project.project_removeHardware(registration_id: java.util.UUID)
 PUT       /project/hardware/deactive/:registration_id                   controllers.Controller_Project.project_deactiveHardware(registration_id: java.util.UUID)
 PUT       /project/hardware/activate/:registration_id                   controllers.Controller_Project.project_activeHardware(registration_id: java.util.UUID)
@@ -250,17 +250,17 @@ GET       /b_program/:b_program_id                                      controll
 PUT       /b_program/:b_program_id                                      controllers.Controller_Blocko.bProgram_update(b_program_id: java.util.UUID)
 DELETE    /b_program/:b_program_id                                      controllers.Controller_Blocko.bProgram_delete(b_program_id: java.util.UUID)
 PUT       /b_program/list/:page_number                                  controllers.Controller_Blocko.bProgram_getByFilter(page_number:Int)
-PUT       /b_program/tags/add                                           controllers.Controller_Blocko.bProgram_addTags
-PUT       /b_program/tags/remove                                        controllers.Controller_Blocko.bProgram_removeTags
+PUT       /b_program/tags/add                                           controllers.Controller_Blocko.bProgram_addTags()
+PUT       /b_program/tags/remove                                        controllers.Controller_Blocko.bProgram_removeTags()
 
 #Instance
-POST      /instance                                                     controllers.Controller_Blocko.instance_create
+POST      /instance                                                     controllers.Controller_Blocko.instance_create()
 DELETE    /instance/:instance_id                                        controllers.Controller_Blocko.instance_delete(instance_id: java.util.UUID)
 GET       /instance/:instance_id                                        controllers.Controller_Blocko.instance_get(instance_id: java.util.UUID)
 PUT       /instance/:instance_id                                        controllers.Controller_Blocko.instance_update(instance_id: java.util.UUID)
 PUT       /instance/shutdown/:instance_id                               controllers.Controller_Blocko.instance_shutdown(instance_id: java.util.UUID)
-PUT       /instance/tags/add                                            controllers.Controller_Blocko.instance_addTags
-PUT       /instance/tags/remove                                         controllers.Controller_Blocko.instance_removeTags
+PUT       /instance/tags/add                                            controllers.Controller_Blocko.instance_addTags()
+PUT       /instance/tags/remove                                         controllers.Controller_Blocko.instance_removeTags()
 
 POST       /instance/api_key/:instance_id                               controllers.Controller_Blocko.instance_create_api_key(instance_id: java.util.UUID)
 PUT        /instance/api_key/:instance_id/:token                        controllers.Controller_Blocko.instance_edit_api_key(instance_id: java.util.UUID, token: java.util.UUID)
