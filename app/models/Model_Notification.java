@@ -263,6 +263,7 @@ public class Model_Notification extends BaseModel implements Permissible, Person
                 Model_Instance homerInstance = (Model_Instance) object;
                 element.name = class_name;
                 element.id = homerInstance.id;
+                element.text = homerInstance.name != null && homerInstance.name.length() > 2 ? homerInstance.name : homerInstance.id.toString();
                 element.project_id = homerInstance.getProjectId();
 
                 break;

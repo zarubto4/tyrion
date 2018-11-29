@@ -2635,13 +2635,6 @@ public class Controller_Hardware extends _BaseController {
             // Kontrola objektu
             Model_Project project = Model_Project.find.byId(help.project_id);
 
-            try {
-                Model_HardwareGroup.find.query().where().eq("name", help.name).eq("project.id", project.id).findOne();
-                return badRequest("Group name must be a unique!");
-            } catch (NotFoundException e) {
-                // nothing
-            }
-
             Model_HardwareGroup group = new Model_HardwareGroup();
             group.name = help.name;
             group.description = help.description;
@@ -2689,13 +2682,6 @@ public class Controller_Hardware extends _BaseController {
 
             // Kontrola objektu
             Model_HardwareGroup group = Model_HardwareGroup.find.byId(hardware_group_id);
-
-            try {
-                Model_HardwareGroup.find.query().where().eq("name", help.name).eq("project.id", group.getProject().id).findOne();
-                return badRequest("Group name must be a unique!");
-            } catch (NotFoundException e) {
-                // nothing
-            }
 
             group.name = help.name;
             group.description = help.description;

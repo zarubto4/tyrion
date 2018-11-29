@@ -2903,7 +2903,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
                 new Model_Notification()
                         .setImportance(NotificationImportance.LOW)
                         .setLevel(NotificationLevel.SUCCESS)
-                        .setText(new Notification_Text().setText("Device " + this.id))
+                        .setText(new Notification_Text().setText("Device"))
                         .setObject(this)
                         .setText(new Notification_Text().setText(" has just connected"))
                         .send_under_project(project().id);
@@ -2923,7 +2923,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
                 new Model_Notification()
                     .setImportance( NotificationImportance.LOW )
                     .setLevel( NotificationLevel.WARNING)
-                    .setText(  new Notification_Text().setText("Device" + this.id ))
+                    .setText(  new Notification_Text().setText("Device " + this.id ))
                     .setObject(this)
                     .setText( new Notification_Text().setText(" has disconnected."))
                     .send_under_project(project().id);

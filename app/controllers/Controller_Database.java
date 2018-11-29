@@ -50,8 +50,10 @@ import java.util.stream.Collectors;
 @Security.Authenticated(Authentication.class)
 @Api(value = "Database")
 public class Controller_Database extends _BaseController {
+
     private MongoCloudApi mongoApi;
     private ProductService productService;
+
 // LOGGER ##############################################################################################################
 
     private static final Logger logger = new Logger(Controller_Database.class);
@@ -63,7 +65,6 @@ public class Controller_Database extends _BaseController {
         super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
         this.productService = productService;
         this.mongoApi = mongoApi;
-
     }
 
 

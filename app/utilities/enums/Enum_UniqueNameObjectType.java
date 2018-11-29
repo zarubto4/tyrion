@@ -32,6 +32,7 @@ public enum Enum_UniqueNameObjectType {
 
     Snapshot,
 
-    Database
+    Database,
+    DatabaseCollection
 
 }

@@ -1,5 +1,6 @@
 package controllers;
 
+import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import exceptions.NotFoundException;
 import io.swagger.annotations.*;
@@ -16,9 +17,12 @@ import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.enums.*;
+import utilities.financial.products.ConfigurationProduct;
+import utilities.financial.services.ProductService;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
 import utilities.models_update_echo.EchoHandler;
+import utilities.mongo_cloud_api.MongoCloudApi;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
@@ -28,6 +32,7 @@ import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Model_Hard
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import java.net.URLEncoder;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,10 +49,16 @@ public class Controller_Project extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    @javax.inject.Inject
-    public Controller_Project(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService) {
+    private MongoCloudApi mongoApi;
+    private ProductService productService;
+
+    @Inject
+    public Controller_Project(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService, ProductService productService, MongoCloudApi mongoApi) {
         super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+        this.productService = productService;
+        this.mongoApi = mongoApi;
     }
+
 
 // GENERAL PROJECT #######-##############################################################################################
 
@@ -288,6 +299,11 @@ public class Controller_Project extends _BaseController {
                 case Database: {
                     UUID productID = Model_Project.find.byId(help.project_id).getProductId();
                     return Model_ProductExtension.find.query().where().eq("product.id", productID).eq("type", ExtensionType.DATABASE).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                }
+
+                case DatabaseCollection: {
+                    Model_ProductExtension extension = Model_ProductExtension.find.query().where().eq("id", help.object_id).eq("type", ExtensionType.DATABASE).findOne();
+                    return !mongoApi.getCollections(extension.id.toString()).contains(help.name) ? ok() : badRequest();
                 }
 
             }

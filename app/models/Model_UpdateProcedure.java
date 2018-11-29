@@ -444,7 +444,7 @@ public class Model_UpdateProcedure extends BaseModel implements Permissible, Und
             } else if (type_of_update == UpdateType.MANUALLY_BY_USER_BLOCKO_GROUP || type_of_update == UpdateType.MANUALLY_BY_USER_BLOCKO_GROUP_ON_TIME ) {
 
 
-                notification.setText(new Notification_Text().setText("Update under Instance "))
+                 notification.setText(new Notification_Text().setText("Update under Instance "))
                 .setObject(Model_InstanceSnapshot.find.byId(getInstanceSnapshotId()).getInstance()); // TODO objekt notifikace
 
                 if (getUpdates().size() == 1) {
