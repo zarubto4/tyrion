@@ -68,7 +68,7 @@ public class Controller_Database extends _BaseController {
 
 
     @ApiOperation(
-            value = "create database",
+            value = "create Database",
             tags = {"Database"},
             notes = "Create database with collection",
             code = 201
@@ -158,7 +158,7 @@ public class Controller_Database extends _BaseController {
     }
 
     @ApiOperation(
-            value = "get databases",
+            value = "get Databases",
             tags = {"Database"},
             notes = "List all databases by product_id"
     )
@@ -179,7 +179,6 @@ public class Controller_Database extends _BaseController {
                                                                                             .eq("active", true)
                                                                                             .eq("type", ExtensionType.DATABASE)
                                                                                             .findList();
-
 
             if (product.configuration != null && !product.configuration.isEmpty()) {
                 String password = this.formFactory
@@ -219,7 +218,16 @@ public class Controller_Database extends _BaseController {
         try {
             Model_ProductExtension productExtension = Model_ProductExtension.find.byId(db_id);
             checkDeletePermission(productExtension);
-            mongoApi.removeRole(productExtension.product.id.toString(), productExtension.id.toString());
+
+            try {
+
+                mongoApi.removeRole(productExtension.product.id.toString(), productExtension.id.toString());
+
+            } catch (Exception e) {
+                logger.error("drop_db: Shit happens with remove DB from Our mongo account! - Maybe its removed directly on MongoDB platform");
+                logger.internalServerError(e);
+            }
+
             productExtension.setActive(false);
 
             return(ok());
@@ -254,39 +262,84 @@ public class Controller_Database extends _BaseController {
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
     public Result edit_db(UUID db_id){
-        Swagger_NameAndDescription updated = formFromRequestWithValidation(Swagger_NameAndDescription.class);
+        try {
+            Swagger_NameAndDescription updated = formFromRequestWithValidation(Swagger_NameAndDescription.class);
 
-        Model_ProductExtension productExtension = Model_ProductExtension.find.byId(db_id);
-        checkUpdatePermission(productExtension);
+            Model_ProductExtension productExtension = Model_ProductExtension.find.byId(db_id);
+            checkUpdatePermission(productExtension);
 
-        productExtension.name        = updated.name;
-        productExtension.description = updated.description;
+            productExtension.name        = updated.name;
+            productExtension.description = updated.description;
 
-        productExtension.update();
-        return ok();
+            productExtension.update();
+            return ok();
+        } catch ( Exception e ) {
+            return controllerServerError(e);
+        }
     }
 
 
     @ApiOperation(
-            value = "get collections",
+            value = "get Database_Collection",
             tags = {"Database"},
             notes = "List all collections by database id"
+
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_DatabaseCollectionList.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Database.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result get_colections(UUID db_id){
-        Swagger_DatabaseCollectionList collectionList = new Swagger_DatabaseCollectionList();
+    public Result get_collections(UUID db_id){
         try {
+
+            Swagger_DatabaseCollectionList collectionList = new Swagger_DatabaseCollectionList();
+            Model_ProductExtension database = Model_ProductExtension.find.byId(db_id);
+            checkReadPermission(database);
+
             collectionList.names = mongoApi.getCollections(db_id.toString());
-            return ok(collectionList);
+            String password = this.formFactory
+                    .formFromJsonWithValidation(ConfigurationProduct.class, Json.parse(database.getProduct().configuration))
+                    .mongoDatabaseUserPassword;
+            String baseConnectionString = MessageFormat.format(config.getString("mongoCloudAPI.connectionStringTemplate"),
+                    database.getProduct().id.toString(),  //login
+                    password);
+            //
+            Swagger_Database db_response = this.extensionToSwaggerDatabase(database, baseConnectionString);
+
+
+            return ok(db_response);
+
+        } catch ( Exception e ) {
+            return controllerServerError(e);
         }
-        catch (Exception e) {
-            return  externalServerError();
+    }
+
+    @ApiOperation(
+            value = "create Database_Collection",
+            tags = {"Database"},
+            notes = "Create collection in database"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_ProductExtension.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result create_collection(UUID db_id, String collection_name){
+        try {
+
+            Model_ProductExtension database = Model_ProductExtension.find.byId(db_id);
+            checkReadPermission(database);
+            mongoApi.createCollection(db_id.toString(), collection_name);
+
+            return ok(database);
+
+        } catch ( Exception e ) {
+            return controllerServerError(e);
         }
     }
 

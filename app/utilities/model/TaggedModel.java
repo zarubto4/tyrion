@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import models.Model_Tag;
 import utilities.logger.Logger;
+import utilities.swagger.output.Swagger_Short_Reference;
 
 import javax.persistence.ManyToMany;
 import javax.persistence.MappedSuperclass;
@@ -11,6 +12,8 @@ import javax.persistence.Transient;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static controllers._BaseController.person;
 
 @MappedSuperclass
 public abstract class TaggedModel extends NamedModel {
@@ -75,8 +78,13 @@ public abstract class TaggedModel extends NamedModel {
             }
         }
 
-        if (change) {
-            this.update();
+        // This object can be new!
+        if(this.id != null) {
+            if (change) {
+                // TODO - Lexa - Tady je to trochu nedomyšlené, protože update tagu nejde skrze kontrolu controlleru ani modelu
+                // checkUpdate(person(), this);
+                this.update();
+            }
         }
     }
 
@@ -96,6 +104,11 @@ public abstract class TaggedModel extends NamedModel {
         });
 
         this.update();
+    }
+
+    @JsonIgnore
+    public Swagger_Short_Reference ref() {
+        return new Swagger_Short_Reference(id, name, description, this.tags());
     }
 
     public void removeTags(List<String> tags) {

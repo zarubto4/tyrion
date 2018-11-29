@@ -12,7 +12,7 @@ import utilities.cache.InjectCache;
 import utilities.logger.Logger;
 import utilities.model._Abstract_MongoModel;
 
-@Entity("THINGSMOBILE_Daily_Overview")
+@Entity("ThingsMobile_Daily_Overview")
 @Indexes({
         @Index(
                 fields = {

@@ -31,11 +31,8 @@ import play.libs.ws.WSClient;
 import play.mvc.Result;
 
 import utilities.Server;
+import utilities.enums.*;
 import utilities.enums.Currency;
-import utilities.enums.ExtensionType;
-import utilities.enums.InvoiceStatus;
-import utilities.enums.PaymentMethod;
-import utilities.enums.ProductEventType;
 import utilities.financial.extensions.ExtensionInvoiceItem;
 import utilities.financial.fakturoid.FakturoidService;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
@@ -51,6 +48,7 @@ import java.util.*;
 
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import utilities.logger.YouTrack;
+import utilities.notifications.helps_objects.Notification_Text;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerController;
 import utilities.scheduler.jobs.Job_CheckCompilationLibraries;
@@ -497,7 +495,65 @@ public class Controller_ZZZ_Tester extends _BaseController {
     public Result test8() {
         try {
 
-            new Job_CheckCompilationLibraries(this.ws, this.config, this.formFactory).execute(null);
+            Model_Project project = Model_Project.find.byId( UUID.fromString("a3f142a3-91a4-4a6d-b8c1-6771641854ad"));
+            Model_UpdateProcedure procedure = Model_UpdateProcedure.find.byId( UUID.fromString("82c48887-ed6b-4a51-9ca4-959923e40998"));
+
+
+
+            Model_HardwareUpdate plan = Model_HardwareUpdate.find.byId( UUID.fromString("8b2669c9-7cea-4c80-b596-19a386d6f9e2"));
+
+
+            Model_Notification notification = new Model_Notification();
+            notification
+                    .setChainType(NotificationType.CHAIN_START)
+                    .setNotificationId(plan.getActualizationProcedureId())
+                    .setImportance(NotificationImportance.LOW)
+                    .setLevel(NotificationLevel.INFO);
+            notification.setText(new Notification_Text().setText("sdfasdfsdfsdfasdf sdfsadfasdfasdf"))
+                    .setObject(plan.getActualizationProcedure())
+                    .setText(new Notification_Text().setText(". Transfer firmware to "))
+                    .setObject(plan.getHardware())
+                    .setText(new Notification_Text().setText("dsafsdfsdfsdfsd "))
+                    .send_under_project(plan.getActualizationProcedure().get_project_id());
+
+
+            sleep(2000);
+
+            Model_Notification notification_X = new Model_Notification();
+            notification_X
+                    .setChainType(NotificationType.CHAIN_END)
+                    .setNotificationId(plan.getActualizationProcedureId())
+                    .setImportance(NotificationImportance.LOW)
+                    .setLevel(NotificationLevel.INFO);
+            notification_X.setText(new Notification_Text().setText("Update of Procedure "))
+                    .setObject(plan.getActualizationProcedure())
+                    .setText(new Notification_Text().setText(". Transfer firmware to "))
+                    .setObject(plan.getHardware())
+                    .setText(new Notification_Text().setText(" successfully done."))
+                    .send_under_project(plan.getActualizationProcedure().get_project_id());
+
+
+
+            sleep(1000);
+
+            Model_Notification notification_ = new Model_Notification();
+            notification_
+                    .setChainType(NotificationType.CHAIN_END)
+                    .setNotificationId(UUID.randomUUID())
+                    .setImportance(NotificationImportance.LOW)
+                    .setLevel(NotificationLevel.INFO);
+            notification_.setText(new Notification_Text().setText("Upasdasdc ffff"))
+                    .setObject(plan.getActualizationProcedure())
+                    .setText(new Notification_Text().setText("aasdasdasdasd "))
+                    .setObject(plan.getHardware())
+                    .setText(new Notification_Text().setText(" 987654567898765"))
+                    .send_under_project(plan.getActualizationProcedure().get_project_id());
+
+
+            //notification.send_under_project(project.id);
+
+
+            // new Job_CheckCompilationLibraries(this.ws, this.config, this.formFactory).execute(null);
 
             // new Job_ThingsMobile_SimData_Synchronize().execute(null);
 

@@ -176,7 +176,7 @@ public class Controller_FacebookLogin extends _BaseController {
                 facebook_profile = new ModelMongo_FacebookProfile();
             }
 
-            facebook_profile.person_id = person.id;
+            facebook_profile.person_id = person.id.toString();
             facebook_profile.access_token = accessToken.getAccessToken();
             facebook_profile.first_name = fbUser.getFirstName();
             facebook_profile.last_name = fbUser.getLastName();
@@ -321,7 +321,7 @@ public class Controller_FacebookLogin extends _BaseController {
                     return badRequest("User not found");
                 }
 
-                facebook_profile.person_id = person.id;
+                facebook_profile.person_id = person.id.toString();
                 facebook_profile.update();
 
                 // TODO person.facebook_profile = facebook_profile;
@@ -337,7 +337,7 @@ public class Controller_FacebookLogin extends _BaseController {
                 person.frozen = false;
                 person.save();
 
-                facebook_profile.person_id = person.id;
+                facebook_profile.person_id = person.id.toString();
                 facebook_profile.update();;
 
                 // TODO person.facebook_profile = facebook_profile;

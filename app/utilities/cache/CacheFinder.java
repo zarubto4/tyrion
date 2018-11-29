@@ -3,6 +3,7 @@ package utilities.cache;
 import io.ebean.Finder;
 import io.ebeaninternal.api.SpiEbeanServer;
 import io.ebeaninternal.server.querydefn.DefaultOrmQuery;
+import models.Model_Person;
 import org.ehcache.Cache;
 import exceptions.NotFoundException;
 import utilities.logger.Logger;
@@ -32,6 +33,13 @@ public class CacheFinder<T extends BaseModel> extends Finder<UUID, T> implements
 
         this.entityType = cls;
     }
+
+
+    @Nonnull
+    public T byId(String id) {
+        return byId( UUID.fromString(id));
+    }
+
 
     @Override
     @Nonnull

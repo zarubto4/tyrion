@@ -2,6 +2,7 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import exceptions.NotFoundException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
@@ -25,10 +26,10 @@ public class Model_Invitation extends BaseModel {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
 
-    @JsonIgnore                        @ManyToOne public Model_Person owner;
-    @JsonIgnore                        @ManyToOne public Model_Project project;
-    @JsonIgnore @Constraints.Email                public String email;
-    @JsonIgnore                                   public UUID notification_id;
+    @JsonIgnore       @ManyToOne                         public Model_Person owner;
+    @JsonIgnore       @ManyToOne(fetch = FetchType.LAZY) public Model_Project project;
+    @Constraints.Email                                   public String email;
+    @JsonIgnore                                          public UUID notification_id;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -42,17 +43,19 @@ public class Model_Invitation extends BaseModel {
         }
     }
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+
+    /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @Transient
     public void delete_notification() {
         try {
 
-            if (notification_id != null) {
+            Model_Notification notification = Model_Notification.find.byId(notification_id);
+            notification.delete();
 
-                Model_Notification notification = Model_Notification.find.byId(notification_id);
-                if (notification != null) notification.delete();
-            }
+        } catch (NotFoundException|NullPointerException e) {
+            // Nothing
         } catch (Exception e) {
             logger.internalServerError(e);
         }

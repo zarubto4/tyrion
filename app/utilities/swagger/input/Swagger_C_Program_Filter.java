@@ -23,4 +23,7 @@ public class Swagger_C_Program_Filter extends _Swagger_filter_parameter{
     @ApiModelProperty(required = false, value = "Designed for Administrators for publishing decisions of Community Codes - Without permission, the value is ignored. ")
     public boolean pending_programs;
 
+    @ApiModelProperty(value = "Name - substring supported", required = false)
+    public String name;
+
 }

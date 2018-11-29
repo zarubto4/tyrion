@@ -10,6 +10,7 @@ import org.mongodb.morphia.annotations.Transient;
 import utilities.Server;
 import utilities.cache.CacheMongoFinder;
 import utilities.cache.InjectCache;
+import utilities.enums.ServerMode;
 import utilities.logger.Logger;
 import utilities.model._Abstract_MongoModel;
 
@@ -29,18 +30,31 @@ public class ModelMongo_Hardware_OnlineStatus extends _Abstract_MongoModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    public String server_version;
-    public UUID hardware_id;
+
+    public String hardware_id;
     public boolean online_status;
 
+    // Common
+    public String server_version;
+    public ServerMode server_type;
 
-/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
+
+
+    /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-/* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
+    @Override
+    public void save() {
+        server_version = Server.version;
+        server_type = Server.mode;
+        super.save();
+    }
+
+
+    /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
@@ -57,9 +71,8 @@ public class ModelMongo_Hardware_OnlineStatus extends _Abstract_MongoModel {
     public static ModelMongo_Hardware_OnlineStatus create_record(Model_Hardware hardware, boolean online) {
 
         ModelMongo_Hardware_OnlineStatus status = new ModelMongo_Hardware_OnlineStatus();
-        status.hardware_id = hardware.id;
+        status.hardware_id = hardware.id.toString();
         status.online_status = online;
-        status.server_version = Server.version;
 
         status.save();
 

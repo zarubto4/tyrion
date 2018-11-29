@@ -188,7 +188,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         }
 
         public void clean() {
-            this.cacheMap = new HashMap<>();
+            cacheMap = new HashMap<>();
         }
     }
 
@@ -308,6 +308,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         this.invalidate();
         this.updated = new Date();
         super.update();
+
         new Thread(this::cache).start();
     }
 
@@ -334,6 +335,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         super.refresh();
         this.idCache().clean();
         this.cache();
+        this.idCache().clean();
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/

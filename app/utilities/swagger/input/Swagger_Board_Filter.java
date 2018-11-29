@@ -28,7 +28,7 @@ public class Swagger_Board_Filter extends _Swagger_filter_parameter{
     public List<UUID> processors;
 
     @ApiModelProperty(value = "List of instance_snapshot.id", required = false)
-    public List<UUID> instance_snapshots;
+    public UUID instance_snapshot;
 
     @ApiModelProperty(value = "List of hardware_group.id", required = false)
     public List<UUID>  hardware_groups_id;

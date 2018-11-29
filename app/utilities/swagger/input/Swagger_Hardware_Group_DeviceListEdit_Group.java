@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,7 +16,7 @@ public class Swagger_Hardware_Group_DeviceListEdit_Group {
     public Swagger_Hardware_Group_DeviceListEdit_Group() {}
 
     public UUID group_id;
-    public List<UUID> hardware_ids;
+    public List<UUID> hardware_ids = new ArrayList<>();
 
 }
 

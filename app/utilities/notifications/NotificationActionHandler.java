@@ -63,7 +63,7 @@ public class NotificationActionHandler {
 
             Model_Project project = Model_Project.find.byId(project_not_cached.id);
 
-            if (!project.persons.contains(person)) {
+            if (!project.getPersons().contains(person)) {
                 project.persons.add(person);
                 project.update();
 

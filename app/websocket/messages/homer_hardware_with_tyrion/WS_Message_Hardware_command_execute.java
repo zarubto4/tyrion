@@ -29,7 +29,7 @@ public class WS_Message_Hardware_command_execute extends WS_AbstractMessage_Inst
         request.put("message_type", message_type);
         request.put("message_channel", Model_Hardware.CHANNEL);
         request.put("command", command.name());
-        request.put("uuid_ids", Json.toJson(device_ids));
+        request.set("uuid_ids", Json.toJson(device_ids));
         request.put("priority", priority);
 
         return request;
