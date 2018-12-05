@@ -7,20 +7,17 @@ import controllers._BaseFormFactory;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.*;
-import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.Result;
 import play.mvc.Security;
 import utilities.authentication.Authentication;
 import utilities.enums.*;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Link;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.Swagger_Notification_Test;
 
 import java.util.Date;
@@ -35,14 +32,11 @@ public class NotificationTester extends _BaseController {
 
     private static final Logger terminal_logger = new Logger(NotificationTester.class);
 
-    @Inject
-    public static _BaseFormFactory baseFormFactory;
-
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    @javax.inject.Inject
-    public NotificationTester(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    @Inject
+    public NotificationTester(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
+        super(ws, formFactory, config, permissionService, notificationService);
     }
 
 /*  VALUES -------------------------------------------------------------------------------------------------------------*/

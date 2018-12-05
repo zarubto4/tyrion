@@ -17,6 +17,8 @@ import utilities.hardware.HardwareService;
 import utilities.homer.HomerService;
 import utilities.instance.InstanceService;
 import utilities.logger.Logger;
+import utilities.model.UnderProject;
+import utilities.notifications.NotificationService;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -28,14 +30,17 @@ public class NetworkStatusService {
 
     private final Cache<UUID, NetworkStatus> cache;
 
+    private final NotificationService notificationService;
     private final HardwareService hardwareService;
     private final InstanceService instanceService;
     private final CompilerService compilerService;
     private final HomerService homerService;
 
     @Inject
-    public NetworkStatusService(CacheService cacheService, HardwareService hardwareService, InstanceService instanceService, CompilerService compilerService, HomerService homerService) {
+    public NetworkStatusService(CacheService cacheService, HardwareService hardwareService, InstanceService instanceService,
+                                CompilerService compilerService, HomerService homerService, NotificationService notificationService) {
         this.cache = cacheService.getCache("NetworkStatusCache", UUID.class, NetworkStatus.class, 1000, 3600, true);
+        this.notificationService = notificationService;
         this.hardwareService = hardwareService;
         this.instanceService = instanceService;
         this.compilerService = compilerService;
@@ -59,7 +64,14 @@ public class NetworkStatusService {
 
     public void setStatus(Networkable networkable, NetworkStatus networkStatus) {
         this.cache.put(networkable.getId(), networkStatus);
-        // TODO send it to Becki via WebSocket
+
+        UUID projectId = null;
+
+        if (networkable instanceof UnderProject) {
+            projectId = ((UnderProject) networkable).getProject() != null ? ((UnderProject) networkable).getProject().id : null;
+        }
+
+        this.notificationService.networkStatusChanged(networkable.getClass(), networkable.getId(), networkStatus, projectId);
     }
 
     // TODO

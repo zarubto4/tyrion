@@ -86,23 +86,6 @@ public class Model_BootLoader extends NamedModel implements Permissible {
     }
 
     @JsonIgnore
-    public UUID getMainHardwareTypeId() {
-
-        if (idCache().get(Model_HardwareType.Model_HardwareType_Main.class) == null) { // Záměrně random! Protože potřebuji uložit stejný typ objektu do paměti dvakrát a rozpoznání je jen podle typu třídy
-
-            UUID main = (UUID) Model_HardwareType.find.query().where().eq("main_boot_loader.id", id).select("id").findSingleAttribute();
-            if (main != null) {
-                logger.warn("getMainHardwareTypeId for bootloader {} is not null Model_HardwareType main ", main);
-                idCache().add(Model_HardwareType.Model_HardwareType_Main.class, main);
-            } else {
-                logger.warn("getMainHardwareTypeId for bootloader {} is null - but its probably ok", this.name);
-            }
-        }
-
-        return idCache().get(Model_HardwareType.Model_HardwareType_Main.class);
-    }
-
-    @JsonIgnore
     public Model_HardwareType getMainHardwareType() {
         return isLoaded("main_hardware_type") ? main_hardware_type : Model_HardwareType.find.query().nullable().where().eq("main_boot_loader.id", id).findOne();
     }
@@ -180,7 +163,7 @@ public class Model_BootLoader extends NamedModel implements Permissible {
                         .setImportance(NotificationImportance.LOW)
                         .setLevel(NotificationLevel.WARNING)
                         .setChainType(NotificationType.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
-                        .setNotificationId(plans.get(0).getActualizationProcedureId())
+                        .setNotificationId(plans.get(0).getId())
                         .setText(new Notification_Text().setText("Attention. I have entered the bootloader update command for Bootloader version "))
                         .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plans.get(0).getBootloader().version_identifier + " "))
                         .setText(new Notification_Text().setText("for " + plans.size() + " devices. "))
@@ -251,8 +234,6 @@ public class Model_BootLoader extends NamedModel implements Permissible {
 
         return azure_product_link;
     }
-
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

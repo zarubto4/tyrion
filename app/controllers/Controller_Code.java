@@ -16,17 +16,22 @@ import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
+import utilities.compiler.CompilationService;
+import utilities.compiler.CompilerService;
 import utilities.emails.Email;
 import utilities.enums.*;
+import utilities.hardware.update.UpdateService;
 import utilities.logger.Logger;
+import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Compilation_Build_Error;
-import utilities.swagger.output.Swagger_Compilation_Ok;
 import utilities.swagger.output.filter_results.Swagger_C_Program_List;
+import websocket.Request;
 import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Security.Authenticated(Authentication.class)
 @Api(value = "Not Documented API - InProgress or Stuck")
@@ -38,48 +43,20 @@ public class Controller_Code extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
+    private final UpdateService updateService;
+    private final CompilationService compilationService;
+    private final CompilerService compilerService;
+
     @Inject
-    public Controller_Code(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
-        super(ws, formFactory, config, permissionService);
+    public Controller_Code(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
+                           NotificationService notificationService, UpdateService updateService, CompilationService compilationService, CompilerService compilerService) {
+        super(ws, formFactory, config, permissionService, notificationService);
+        this.updateService = updateService;
+        this.compilationService = compilationService;
+        this.compilerService = compilerService;
     }
 
 // CONTROLLER CONTENT ##################################################################################################
-
-    @ApiOperation(value = "compile C_Program_Version",
-            hidden = true,
-            tags = {"Admin-C_Program"},
-            notes = "Compile specific version of C_Program - before compilation - you have to update (save) version code" +
-                    "This appi is udes by Tyrion Calling on own API",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https"
-    )
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Compilation successful",    response = Swagger_Compilation_Ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 422, message = "Compilation unsuccessful",  response = Swagger_Compilation_Build_Error.class, responseContainer = "List"),
-            @ApiResponse(code = 477, message = "External server is offline",response = Result_ServerOffline.class),
-            @ApiResponse(code = 478, message = "External server side Error",response = Result_ExternalServerSideError.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result compile_c_program_version( @ApiParam(value = "version_id String query", required = true) UUID version_id ) {
-        try {
-
-            // Ověření objektu
-            Model_CProgramVersion version = Model_CProgramVersion.find.byId(version_id);
-
-            // Odpovím předchozí kompilací
-            if (version.compilation != null) return ok(new Swagger_Compilation_Ok());
-
-            return version.compile_program_procedure();
-
-        } catch (Exception e) {
-            return controllerServerError(e);
-        }
-
-    }
 
     @ApiOperation(value = "compile C_Program",
             tags = {"C_Program"},
@@ -119,8 +96,6 @@ public class Controller_Code extends _BaseController {
             // Ověření objektu
             Model_HardwareType hardwareType = Model_HardwareType.find.byId(help.hardware_type_id);
 
-            if (!Model_CompilationServer.is_online()) return externalServerOffline("Compilation server is offline");
-
             List<Swagger_Library_Record> library_files = new ArrayList<>();
 
             for (UUID lib_id : help.imported_libraries) {
@@ -133,7 +108,6 @@ public class Controller_Code extends _BaseController {
 
                     Swagger_Library_File_Load lib_file = formFactory.formFromJsonWithValidation(Swagger_Library_File_Load.class, Json.parse(lib_version.file.downloadString()));
                     library_files.addAll(lib_file.files);
-
                 }
             }
 
@@ -150,7 +124,7 @@ public class Controller_Code extends _BaseController {
                 }
             }
 
-            WS_Message_Make_compilation compilation_result = Model_CompilationServer.make_Compilation(new WS_Message_Make_compilation().make_request( hardwareType , help.library_compilation_version, UUID.randomUUID(), help.main, includes ));
+            WS_Message_Make_compilation compilation_result = this.compilerService.compile(new Request(new WS_Message_Make_compilation().make_request( hardwareType , help.library_compilation_version, UUID.randomUUID(), help.main, includes)));
 
             // V případě úspěšného buildu obsahuje příchozí JsonNode build_url
             if (compilation_result.build_url != null && compilation_result.status.equals("success")) {
@@ -158,31 +132,11 @@ public class Controller_Code extends _BaseController {
                 Swagger_Compilation_Server_CompilationResult result = new Swagger_Compilation_Server_CompilationResult();
                 result.interface_code = compilation_result.interface_code;
 
-                if(help.immediately_hardware_update && !help.hardware_ids.isEmpty()) {
+                if (help.immediately_hardware_update && !help.hardware_ids.isEmpty()) {
                     Model_Compilation compilation = Model_Compilation.make_a_individual_compilation(compilation_result, help.library_compilation_version);
                     System.out.println("Success -  we have compilation file!");
 
-                    Model_UpdateProcedure procedure = new Model_UpdateProcedure();
-                    procedure.type_of_update = UpdateType.MANUALLY_RELEASE_MANAGER;
-
-                    procedure.date_of_planing = new Date();
-
-
-                    for(UUID hardware_id : help.hardware_ids) {
-
-                        Model_Hardware hardware = Model_Hardware.find.byId(hardware_id);
-                        procedure.project_id = hardware.get_project_id();
-
-                        Model_HardwareUpdate plan = new Model_HardwareUpdate();
-                        plan.hardware = hardware;
-                        plan.firmware_type = FirmwareType.FIRMWARE;
-                        plan.state = HardwareUpdateState.NOT_YET_STARTED;
-                        plan.binary_file = compilation.blob;
-                        procedure.updates.add(plan);
-
-                    }
-
-                    procedure.save();
+                    this.updateService.bulkUpdate(help.hardware_ids.stream().map(Model_Hardware.find::byId).collect(Collectors.toList()), compilation, FirmwareType.FIRMWARE);
                 }
 
                 return ok(result);
@@ -281,11 +235,10 @@ public class Controller_Code extends _BaseController {
                 version.file = Model_Blob.upload(hardwareType.get_main_c_program().default_main_version.file.downloadString(), "code.json", c_program.get_path());
                 version.update();
 
-
-                version.compile_program_thread(hardwareType.get_main_c_program().default_main_version.compilation.firmware_version_lib);
+                this.compilationService.compileAsync(version, hardwareType.get_main_c_program().default_main_version.compilation.firmware_version_lib);
             }
 
-            return created(Model_CProgram.find.byId(c_program.id));
+            return created(c_program);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -326,6 +279,7 @@ public class Controller_Code extends _BaseController {
 
             // Vyhledám Objekt
             Model_CProgram c_program_old = Model_CProgram.find.byId(help.c_program_id);
+            this.checkReadPermission(c_program_old);
 
             // Vyhledám Objekt
             Model_Project project = Model_Project.find.byId(help.project_id);
@@ -358,7 +312,7 @@ public class Controller_Code extends _BaseController {
                 copy_object.file = Model_Blob.upload(fileRecord.downloadString(), "code.json" , c_program_new.get_path());
                 copy_object.update();
 
-                copy_object.compile_program_thread(version.compilation.firmware_version_lib);
+                this.compilationService.compileAsync(copy_object, version.compilation.firmware_version_lib);
             }
 
             c_program_new.refresh();
@@ -722,11 +676,11 @@ public class Controller_Code extends _BaseController {
             version.save();
 
             // Content se nahraje na Azure
-            version.file =  Model_Blob.upload(Json.toJson(help).toString(), "code.json" , c_program.get_path());
+            version.file = Model_Blob.upload(Json.toJson(help).toString(), "code.json" , c_program.get_path());
             version.update();
 
             // Start with asynchronous ccompilation
-            version.compile_program_thread(help.library_compilation_version);
+            this.compilationService.compileAsync(version, help.library_compilation_version);
 
             // Vracím vytvořený objekt
             return created(version);
@@ -805,7 +759,7 @@ public class Controller_Code extends _BaseController {
             version.update();
 
             // Start with asynchronous ccompilation
-            version.compile_program_thread(help.library_compilation_version);
+            this.compilationService.compileAsync(version, help.library_compilation_version);
 
             // Vracím vytvořený objekt
             return created(version);
@@ -1036,7 +990,7 @@ public class Controller_Code extends _BaseController {
                 version.file = Model_Blob.upload(fileRecord.downloadString(), "code.json" , c_program.get_path());
                 version.update();
 
-                version.compile_program_thread(version_old.compilation.firmware_version_lib);
+                this.compilationService.compileAsync(version, version_old.compilation.firmware_version_lib);
 
                 // Admin to schválil bez dalších keců
                 if ((help.reason == null || help.reason.length() < 4) ) {

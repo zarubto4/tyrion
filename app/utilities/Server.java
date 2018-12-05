@@ -29,7 +29,6 @@ import utilities.homer_auto_deploy.DigitalOceanThreadRegister;
 import utilities.logger.Logger;
 import utilities.model._Abstract_MongoModel;
 import utilities.models_update_echo.EchoHandler;
-import utilities.notifications.NotificationHandler;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
 
@@ -154,7 +153,6 @@ public class Server {
         }
 
         setBaseForm();
-        startThreads();
     }
 
     /**
@@ -162,17 +160,6 @@ public class Server {
      */
     public static void stop() {
         Controller_WebSocket.close();
-    }
-
-
-    /**
-     * Some Threads are required to start on beginin. Thay have implemented sleep and wake up mode
-     */
-    public static void startThreads() {
-        EchoHandler.startThread();
-        NotificationHandler.startThread();
-       // GoPay_PaymentCheck.startThread();
-       // Fakturoid_InvoiceCheck.startThread();
     }
 
     /**

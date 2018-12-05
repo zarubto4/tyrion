@@ -151,16 +151,6 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
     }
 
     @JsonIgnore
-    public UUID get_producerId() {
-
-        if (idCache().get(Model_Producer.class) == null) {
-            idCache().add(Model_Producer.class, Model_Producer.find.query().where().eq("blocks.id", id).select("id").findSingleAttributeList());
-        }
-
-        return idCache().get(Model_Producer.class);
-    }
-
-    @JsonIgnore
     public Model_Producer getProducer() {
         return isLoaded("producer") ? producer : Model_Producer.find.query().nullable().where().eq("blocks.id", id).findOne();
     }

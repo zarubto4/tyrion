@@ -1,7 +1,5 @@
 package utilities.scheduler.jobs;
 
-import controllers.Controller_WebSocket;
-
 import models.Model_CProgramVersion;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -41,43 +39,38 @@ public class Job_StuckCompilationCheck implements Job {
                 logger.debug("compilation_check_thread: concurrent thread started on {}", new Date());
 
                 Date created = new Date(new Date().getTime() - (5 * 60 * 1000)); // before 5 minutes
+                while (true) {
+                    // Vyhledání všech, které je nutné projit
+                    List<Model_CProgramVersion> versions = Model_CProgramVersion.find.query()
+                            .where()
+                            .disjunction()
+                            .eq("compilation.status", CompilationStatus.SERVER_OFFLINE.name())
+                            .eq("compilation.status", CompilationStatus.SERVER_ERROR.name())
+                            .endJunction()
+                            .lt("created", created).order().desc("created").setMaxRows(100).findList();
 
-                // Zarážka pro
-                if (!Controller_WebSocket.compilers.isEmpty()) {
+                    if (versions.isEmpty()) {
 
-                    while (true) {
-                        // Vyhledání všech, které je nutné projit
-                        List<Model_CProgramVersion> versions = Model_CProgramVersion.find.query()
-                                .where()
-                                .disjunction()
-                                .eq("compilation.status", CompilationStatus.SERVER_OFFLINE.name())
-                                .eq("compilation.status", CompilationStatus.SERVER_ERROR.name())
-                                .endJunction()
-                                .lt("created", created).order().desc("created").setMaxRows(100).findList();
+                        logger.debug("compilation_check_thread:: no versions to compile");
+                        break;
+                    }
 
-                        if (versions.isEmpty()) {
+                    logger.debug("compilation_check_thread:: compiling versions (100 per cycle)");
 
-                            logger.debug("compilation_check_thread:: no versions to compile");
-                            break;
+                    // Postupná procházení a kompilování
+                    for (Model_CProgramVersion version : versions) {
+
+                        // Pokud neobsahuje verzi - je to špatně, ale zde neřešitelné - proto se to přeskočí.
+                        if (version == null) {
+                            continue;
                         }
 
-                        logger.debug("compilation_check_thread:: compiling versions (100 per cycle)");
+                        logger.debug("compilation_check_thread?: starting compilation of version {} with ID: {}", version.name, version.id);
+                        version.compilation.status = CompilationStatus.IN_PROGRESS;
+                        version.compilation.update();
 
-                        // Postupná procházení a kompilování
-                        for (Model_CProgramVersion version : versions) {
-
-                            // Pokud neobsahuje verzi - je to špatně, ale zde neřešitelné - proto se to přeskočí.
-                            if (version == null) {
-                                continue;
-                            }
-
-                            logger.debug("compilation_check_thread?: starting compilation of version {} with ID: {}", version.name, version.id);
-                            version.compilation.status = CompilationStatus.IN_PROGRESS;
-                            version.compilation.update();
-
-                            // Výsledek se kterým se dále nic neděje
-                            version.compile_program_procedure();
-                        }
+                        // Výsledek se kterým se dále nic neděje
+                        // TODO version.compile_program_procedure();
                     }
                 }
 

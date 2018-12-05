@@ -14,6 +14,7 @@ import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.Server;
+import utilities.compiler.CompilationService;
 import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
 import utilities.logger.Logger;
@@ -39,8 +40,10 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
 
 //**********************************************************************************************************************
 
+    private CompilationService compilationService;
+
     @Inject
-    public Job_CheckCompilationLibraries(WSClient ws, Config config, _BaseFormFactory formFactory) {
+    public Job_CheckCompilationLibraries(WSClient ws, Config config, _BaseFormFactory formFactory, CompilationService compilationService) {
         super(ws, config, formFactory);
     }
 
@@ -407,7 +410,7 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
                     version.update();
 
                     // Start with asynchronous ccompilation
-                    version.compile_program_thread(release.tag_name);
+                    this.compilationService.compileAsync(version, release.tag_name);
                 }
             }
 

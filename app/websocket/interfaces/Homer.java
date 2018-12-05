@@ -12,12 +12,11 @@ import org.mindrot.jbcrypt.BCrypt;
 import play.libs.Json;
 import utilities.Server;
 import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
-import utilities.enums.NetworkStatus;
 import utilities.enums.ServerMode;
 import utilities.hardware.DominanceService;
 import utilities.hardware.HardwareEvents;
 import utilities.hardware.HardwareService;
-import utilities.homer.HomerService;
+import utilities.homer.HomerEvents;
 import utilities.homer.HomerSynchronizationTask;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfiguration;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationFile;
@@ -25,7 +24,6 @@ import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationProgram;
 import utilities.synchronization.SynchronizationService;
 import utilities.hardware.update.UpdateService;
 import utilities.logger.Logger;
-import utilities.network.NetworkStatusService;
 import websocket.Interface;
 import websocket.Message;
 import websocket.Request;
@@ -40,7 +38,6 @@ import websocket.messages.homer_instance_with_tyrion.verification.WS_Message_Web
 import websocket.messages.homer_with_tyrion.WS_Message_Homer_Token_validation_request;
 import websocket.messages.homer_with_tyrion.verification.WS_Message_Check_homer_server_permission;
 import websocket.messages.homer_with_tyrion.verification.WS_Message_Homer_Verification_result;
-import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
 
 import java.util.HashMap;
 import java.util.List;
@@ -56,7 +53,7 @@ public class Homer extends Interface {
     private final SynchronizationService synchronizationService;
     private final HardwareService hardwareService;
     private final UpdateService updateService;
-    private final HomerService homerService;
+    private final HomerEvents homerEvents;
     private final DominanceService dominanceService;
     private final Injector injector;
 
@@ -64,14 +61,14 @@ public class Homer extends Interface {
     private UUID apiKey;
 
     @Inject
-    public Homer(NetworkStatusService networkStatusService, Materializer materializer, _BaseFormFactory formFactory, Injector injector, HardwareEvents hardwareEvents,
-                 SynchronizationService synchronizationService, UpdateService updateService, HardwareService hardwareService, HomerService homerService, DominanceService dominanceService) {
-        super(networkStatusService, materializer, formFactory);
+    public Homer(Materializer materializer, _BaseFormFactory formFactory, Injector injector, HardwareEvents hardwareEvents, SynchronizationService synchronizationService,
+                 UpdateService updateService, HardwareService hardwareService, HomerEvents homerEvents, DominanceService dominanceService) {
+        super(materializer, formFactory);
         this.hardwareEvents = hardwareEvents;
         this.synchronizationService = synchronizationService;
         this.hardwareService = hardwareService;
         this.updateService = updateService;
-        this.homerService = homerService;
+        this.homerEvents = homerEvents;
         this.dominanceService = dominanceService;
         this.injector = injector;
     }
@@ -119,6 +116,7 @@ public class Homer extends Interface {
     protected void onClose() {
         super.onClose();
         apiKeys.remove(this.apiKey);
+        this.homerEvents.disconnected(Model_HomerServer.find.byId(this.getId()));
     }
 
 /* HOMER MESSAGES ------------------------------------------------------------------------------------------------------*/
@@ -139,8 +137,6 @@ public class Homer extends Interface {
 
             if (message.hash_token.equals(server.hash_certificate)) {
 
-                server.make_log_connect(); // TODO injection
-
                 this.apiKey = UUID.randomUUID();
 
                 apiKeys.put(this.apiKey, this);
@@ -148,15 +144,9 @@ public class Homer extends Interface {
                 this.authorized = true;
 
                 this.send(new WS_Message_Homer_Verification_result().make_request(true, this.apiKey.toString()).put("message_id", message.message_id));
-
-                // TODO injection rework
-                // Send echo to all connected users (its public servers)
-                if (server.isPublic()) {
-                    WS_Message_Online_Change_status.synchronize_online_state_with_becki_public_objects(Model_HomerServer.class, server.id, true);
-                } else {
-                    WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_HomerServer.class, server.id, true, server.get_project_id());
-                }
-
+                
+                this.homerEvents.connected(server);
+                
                 HomerSynchronizationTask task = this.injector.getInstance(HomerSynchronizationTask.class);
                 task.setServer(server);
 
@@ -211,6 +201,7 @@ public class Homer extends Interface {
         }
     }
 
+    // TODO improve
     public void onTerminalVerify(WS_Message_Grid_token_verification message) {
         try {
 
@@ -218,26 +209,27 @@ public class Homer extends Interface {
 
             Model_GridTerminal terminal = Model_GridTerminal.find.query().nullable().where().eq("terminal_token", message.token).findOne();
 
+            Model_Instance instance = Model_Instance.find.byId(message.instance_id);
+
             // Pokud je terminall null - nikdy se uživatel nepřihlásit a nevytvořil se o tom záznam - ale to stále neznamená že není možno povolit přístup
             if (terminal == null) {
 
                 logger.trace("cloud_verification_token_GRID:: terminal == null");
                 // Najít c configuráku token
 
-                Swagger_InstanceSnapShotConfiguration settings = this.current_snapshot().settings();
+                Swagger_InstanceSnapShotConfiguration settings = instance.current_snapshot().settings();
                 Swagger_InstanceSnapShotConfigurationFile collection = null;
                 Swagger_InstanceSnapShotConfigurationProgram program = null;
 
-
-                if(settings == null){
+                if (settings == null) {
                     logger.error("SnapShotConfiguration is missing return null");
                     throw new NotFoundException(Swagger_InstanceSnapShotConfiguration.class);
                 }
 
-                for(Swagger_InstanceSnapShotConfigurationFile grids_collection : settings.grids_collections){
-                    for(Swagger_InstanceSnapShotConfigurationProgram grids_program : grids_collection.grid_programs){
-                        if(grids_program.grid_program_id.equals(message.grid_app_id) || grids_program.grid_program_version_id.equals(message.grid_app_id)){
-                            logger.debug("cloud_verification_token_GRID:: set collection and program");
+                for (Swagger_InstanceSnapShotConfigurationFile grids_collection : settings.grids_collections) {
+                    for (Swagger_InstanceSnapShotConfigurationProgram grids_program : grids_collection.grid_programs) {
+                        if (grids_program.grid_program_id.equals(message.grid_app_id) || grids_program.grid_program_version_id.equals(message.grid_app_id)) {
+                            logger.debug("onTerminalVerify - set collection and program");
                             collection = grids_collection;
                             program = grids_program;
                             break;
@@ -245,7 +237,7 @@ public class Homer extends Interface {
                     }
                 }
 
-                if(collection == null){
+                if (collection == null) {
                     logger.error("SnapShotConfigurationFile is missing return null");
                     throw new NotFoundException(Swagger_InstanceSnapShotConfigurationFile.class);
                 }
@@ -475,16 +467,9 @@ public class Homer extends Interface {
     public void device_online_synchronization_echo(WS_Message_Hardware_online_status report) {
         try {
             for (WS_Message_Hardware_online_status.DeviceStatus status : report.hardware_list) {
-
                 try {
-                    UUID uuid = UUID.fromString(status.uuid);
-                    //do something
-
-                    Model_Hardware hardware = Model_Hardware.find.byId(uuid);
-
-                    this.networkStatusService.setStatus(hardware, status.online_status ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE);
-
-                } catch (IllegalArgumentException exception){
+                    this.hardwareEvents.connected(Model_Hardware.find.byId(UUID.fromString(status.uuid)));
+                } catch (IllegalArgumentException exception) {
                     //handle the case where string is not valid UUID
                 }
             }

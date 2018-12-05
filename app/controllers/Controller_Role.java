@@ -15,6 +15,7 @@ import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
 import utilities.logger.Logger;
+import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.input.*;
 import utilities.swagger.output.filter_results.Swagger_Role_List;
@@ -31,8 +32,8 @@ public class Controller_Role extends _BaseController {
     private static final Logger logger = new Logger(Controller_Role.class);
 
     @Inject
-    public Controller_Role(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
-        super(ws, formFactory, config, permissionService);
+    public Controller_Role(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
+        super(ws, formFactory, config, permissionService, notificationService);
     }
 
 // API #################################################################################################################

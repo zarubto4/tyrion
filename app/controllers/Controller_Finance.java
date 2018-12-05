@@ -21,6 +21,7 @@ import utilities.financial.extensions.configurations.Configuration;
 import utilities.financial.extensions.consumptions.ResourceConsumption;
 import utilities.financial.goPay.GoPay;
 import utilities.logger.Logger;
+import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Invoice_FullDetails;
@@ -49,8 +50,8 @@ public class Controller_Finance extends _BaseController {
 
     @Inject
     public Controller_Finance(WSClient ws, _BaseFormFactory formFactory, Config config, FakturoidService fakturoid,
-                              ProductService productService, GoPay goPay, PermissionService permissionService) {
-        super(ws, formFactory, config, permissionService);
+                              ProductService productService, GoPay goPay, PermissionService permissionService, NotificationService notificationService) {
+        super(ws, formFactory, config, permissionService, notificationService);
         this.fakturoid = fakturoid;
         this.goPay = goPay;
         this.productService = productService;

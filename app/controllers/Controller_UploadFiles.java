@@ -13,6 +13,7 @@ import play.mvc.Controller;
 import play.mvc.ResponseHeader;
 import play.mvc.Result;
 import utilities.logger.Logger;
+import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.input.Swagger_GitHubReleases;
 import utilities.swagger.input.Swagger_GitHubReleases_Asset;
@@ -32,8 +33,8 @@ public class Controller_UploadFiles extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @Inject
-    public Controller_UploadFiles(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
-        super(ws, formFactory, config, permissionService);
+    public Controller_UploadFiles(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
+        super(ws, formFactory, config, permissionService, notificationService);
     }
 
 // UPLOUD FILES ########################################################################################################

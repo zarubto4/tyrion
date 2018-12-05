@@ -1,6 +1,5 @@
 package utilities.threads.compilator_server;
 
-import controllers.Controller_WebSocket;
 import models.Model_CProgramVersion;
 import models.Model_CompilationServer;
 import utilities.enums.CompilationStatus;
@@ -71,13 +70,6 @@ public class Compilation_After_BlackOut {
 
                     while (true) {
 
-
-
-                        if (Controller_WebSocket.compilers.isEmpty()) {
-                            terminal_logger.warn("Compilation_After_BlackOut:: run:: server is offline again");
-                            break;
-                        }
-
                         Model_CProgramVersion version = Model_CProgramVersion.find.query().where().eq("c_compilation.status", CompilationStatus.SERVER_OFFLINE.name()).order().desc("created").setMaxRows(1).findOne();
                         if (version == null) {
                             break;
@@ -87,7 +79,7 @@ public class Compilation_After_BlackOut {
                         version.compilation.update();
 
                         // Výsledek se kterým se dále nic neděje
-                        version.compile_program_procedure();
+                        // TODO version.compile_program_procedure();
                     }
                 } catch (Exception e) {
                     terminal_logger.internalServerError(e);

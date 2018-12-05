@@ -1,12 +1,12 @@
 package utilities.hardware;
 
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import exceptions.FailedMessageException;
 import exceptions.NeverConnectedException;
 import exceptions.ServerOfflineException;
 import models.Model_Hardware;
 import models.Model_HomerServer;
-import utilities.hardware.update.UpdateService;
 import utilities.logger.Logger;
 import utilities.synchronization.SynchronizationService;
 import websocket.WebSocketService;
@@ -20,15 +20,14 @@ public class HardwareService {
     private final SynchronizationService synchronizationService;
     private final WebSocketService webSocketService;
     private final DominanceService dominanceService;
-    private final UpdateService updateService;
+    private final Injector injector;
 
     @Inject
-    public HardwareService(SynchronizationService synchronizationService, WebSocketService webSocketService,
-                           DominanceService dominanceService, UpdateService updateService) {
+    public HardwareService(Injector injector, SynchronizationService synchronizationService, WebSocketService webSocketService, DominanceService dominanceService) {
         this.synchronizationService = synchronizationService;
         this.webSocketService = webSocketService;
         this.dominanceService = dominanceService;
-        this.updateService = updateService;
+        this.injector = injector;
     }
 
     public HardwareInterface getInterface(Model_Hardware hardware) {
@@ -59,7 +58,10 @@ public class HardwareService {
                 }
             }
 
-            this.synchronizationService.submit(new HardwareSynchronizationTask(this, this.updateService));
+            HardwareSynchronizationTask task = this.injector.getInstance(HardwareSynchronizationTask.class);
+            task.setHardware(hardware);
+
+            this.synchronizationService.submit(task);
             // TODO send echo
 
             hardware.make_log_activated(); // TODO injection

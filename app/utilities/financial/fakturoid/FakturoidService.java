@@ -2,12 +2,12 @@ package utilities.financial.fakturoid;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
 import models.*;
-import play.Environment;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
@@ -24,9 +24,8 @@ import utilities.financial.fakturoid.helps_objects.Fakturoid_Invoice;
 import utilities.financial.fakturoid.helps_objects.Fakturoid_InvoiceItem;
 import utilities.financial.fakturoid.helps_objects.Fakturoid_Subject;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
+import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.Swagger_Fakturoid_Callback;
 
 import java.time.Duration;
@@ -44,9 +43,9 @@ public class FakturoidService extends _BaseController {
     // Logger
     private static final Logger logger = new Logger(FakturoidService.class);
 
-    @javax.inject.Inject
-    public FakturoidService(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    @Inject
+    public FakturoidService(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
+        super(ws, formFactory, config, permissionService, notificationService);
     }
 
 // PUBLIC CONTROLLERS METHODS ##########################################################################################

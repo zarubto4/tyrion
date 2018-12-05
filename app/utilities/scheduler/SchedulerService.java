@@ -2,7 +2,6 @@ package utilities.scheduler;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import models.Model_UpdateProcedure;
 import models.Model_InstanceSnapshot;
 import org.quartz.*;
 import org.quartz.impl.matchers.GroupMatcher;
@@ -208,10 +207,9 @@ public class SchedulerService {
 
     /**
      * Schedules a new job to be executed on the given date. Job will be executed only once and start update procedure on all hardware.
-     * @param procedure
      */
-    public void scheduleUpdateProcedure(Model_UpdateProcedure procedure) {
-        try {
+    public void scheduleUpdateProcedure() {
+        /*try {
 
             String name = "actualization-procedure-update-" + procedure.id.toString();
 
@@ -222,7 +220,7 @@ public class SchedulerService {
 
         } catch (Exception e) {
             logger.internalServerError(e);
-        }
+        }*/
     }
 
     public void scheduleUpdateServer(ServerUpdate update) {

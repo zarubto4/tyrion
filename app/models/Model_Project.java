@@ -6,10 +6,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
 import utilities.cache.CacheFinder;
 import utilities.cache.InjectCache;
-import utilities.cache.IdsList;
 import utilities.enums.*;
 import exceptions.NotFoundException;
 import utilities.logger.Logger;
@@ -527,83 +525,7 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.ACTIVATE, Action.INVITE);
     }
 
-/* NOTIFICATION ---------------------------------------------------------------------------------------------------------------*/
-
-    public static void becki_person_id_subscribe(UUID person_id) {
-
-        List<Model_Project> list_of_projects = Model_Project.find.query().where().eq("persons.id", person_id).findList();
-
-        for (Model_Project project : list_of_projects) {
-
-            IdsList idlist = token_cache.get(project.id);
-
-            if (idlist == null) idlist = new IdsList();
-
-            if (!idlist.list.contains(person_id)) idlist.list.add(person_id);
-
-            token_cache.put(project.id, idlist);
-        }
-    }
-
-    public static void becki_person_id_unsubscribe(UUID person_id) {
-
-        List<Model_Project> list_of_projects = Model_Project.find.query().where().eq("persons.id", person_id).findList();
-
-        for (Model_Project project : list_of_projects ) {
-
-            IdsList idlist = token_cache.get(project.id);
-
-            if (idlist != null) {
-                if (idlist.list.contains(person_id)) {
-                    idlist.list.remove(person_id);
-                }
-            }
-        }
-    }
-
-    public static List<UUID> get_project_becki_person_ids_list(UUID project_id) {
-
-        if (token_cache == null) {
-            logger.error("get_project_becki_person_ids_list - token_cache is null");
-            return new ArrayList<>();
-        }
-
-        if (project_id == null) {
-            logger.trace("get_project_becki_person_ids_list - project_id is null");
-            return new ArrayList<>();
-        }
-
-        IdsList idlist = token_cache.get(project_id);
-
-        try {
-            if (idlist == null) {
-
-                idlist = new IdsList();
-
-                Model_Project project = find.byId(project_id);
-
-                /* TODO for (Model_ProjectParticipant participant : project.participants) {
-
-                    if (participant.state == ParticipantStatus.INVITED) continue;
-
-                    if (!idlist.list.contains(participant.person.id)) idlist.list.add(participant.person.id);
-                }*/
-
-                token_cache.put(project_id, idlist);
-            }
-        } catch (NotFoundException exception){
-            // Its Legal Operation
-        } catch (Exception exception){
-            logger.internalServerError(exception);
-        } finally {
-            return idlist.list;
-        }
-    }
-
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-    @InjectCache(value = IdsList.class, name = "Model_Project_Person_Ids")
-    public static Cache<UUID, IdsList> token_cache;
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

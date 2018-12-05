@@ -61,7 +61,7 @@ public class Request {
         confirmationThread.stop();
     }
 
-    public void setSender(WS_Interface sender) {
+    public void setSender(Interface sender) {
         logger.trace("setSender - sender ID: {} ", sender.id);
         this.confirmationThread.setSender(sender);
     }

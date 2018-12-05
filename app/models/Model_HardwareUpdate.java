@@ -5,32 +5,22 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import play.libs.Json;
 import utilities.cache.CacheFinder;
 import utilities.cache.InjectCache;
 import utilities.enums.*;
-import utilities.errors.ErrorCode;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.model.UnderProject;
-import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
 import utilities.swagger.output.*;
-import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-
-/**
- * Objekt slouží k aktualizačnímu plánu jednotlivých zařízení!
- *
- */
 
 @Entity
 @ApiModel(description = "Model of HardwareUpdate",
@@ -43,8 +33,6 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
     private static final Logger logger = new Logger(Model_HardwareUpdate.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
-
-                                 @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_UpdateProcedure actualization_procedure;
 
                                             @ApiModelProperty(required = true,
                                                     value = "UNIX time in ms",
@@ -69,17 +57,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
     @JsonProperty @ApiModelProperty(required = false, readOnly = true)
     public UpdateType type_of_update () {
         try {
-            return getActualizationProcedure().type_of_update;
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    @JsonProperty  @ApiModelProperty(readOnly = true, required = false)
-    public UUID actualization_procedure_id(){
-        try {
-            return getActualizationProcedureId();
+            return null; // TODO getActualizationProcedure().type_of_update;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -89,18 +67,8 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
     @JsonProperty
     public Date date_of_planing() {
         try {
-            return getActualizationProcedure().date_of_planing;
+            return null; // TODO getActualizationProcedure().date_of_planing;
         } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    @JsonProperty
-    public Date created() {
-        try {
-            return getActualizationProcedure().created;
-        } catch(Exception e) {
             logger.internalServerError(e);
             return null;
         }
@@ -132,18 +100,18 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
     public Swagger_Bootloader_Update_program bootloader_detail() {
         try {
 
-            Model_BootLoader cached_bootLoader = getBootloader();
+            Model_BootLoader bootloader = getBootloader();
 
-            if (cached_bootLoader == null) return null;
+            if (bootloader == null) return null;
 
-            Swagger_Bootloader_Update_program bootloader_update_detail = new Swagger_Bootloader_Update_program();
-            bootloader_update_detail.bootloader_id = cached_bootLoader.id;
-            bootloader_update_detail.bootloader_name = cached_bootLoader.name;
-            bootloader_update_detail.version_identificator = cached_bootLoader.version_identifier;
-            bootloader_update_detail.hardware_type_name = cached_bootLoader.getHardwareType().name;
-            bootloader_update_detail.hardware_type_id = cached_bootLoader.getHardwareTypeId();
+            Swagger_Bootloader_Update_program bootloaderUpdate = new Swagger_Bootloader_Update_program();
+            bootloaderUpdate.bootloader_id = bootloader.id;
+            bootloaderUpdate.bootloader_name = bootloader.name;
+            bootloaderUpdate.version_identificator = bootloader.version_identifier;
+            bootloaderUpdate.hardware_type_name = bootloader.getHardwareType().name;
+            bootloaderUpdate.hardware_type_id = bootloader.getHardwareType().id;
 
-            return bootloader_update_detail;
+            return bootloaderUpdate;
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -191,22 +159,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
     @JsonIgnore
     public Model_Hardware getHardware() {
-        return isLoaded("hardware") ? hardware : Model_Hardware.find.query().nullable().where().eq("updates.id", id).findOne();
-    }
-
-    @JsonIgnore
-    public UUID getActualizationProcedureId() {
-
-        if (idCache().get(Model_UpdateProcedure.class) == null) {
-            idCache().add(Model_UpdateProcedure.class, (UUID) Model_UpdateProcedure.find.query().where().eq("updates.id", id).ne("deleted", true).select("id").findSingleAttribute());
-        }
-
-        return idCache().get(Model_UpdateProcedure.class);
-    }
-
-    @JsonIgnore
-    public Model_UpdateProcedure getActualizationProcedure() {
-        return isLoaded("actualization_procedure") ? actualization_procedure : Model_UpdateProcedure.find.query().where().eq("updates.id", id).findOne();
+        return isLoaded("hardware") ? hardware : Model_Hardware.find.query().where().eq("updates.id", id).findOne();
     }
 
     @JsonIgnore
@@ -227,7 +180,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
         try {
 
             Swagger_UpdatePlan_brief_for_homer brief_for_homer = new Swagger_UpdatePlan_brief_for_homer();
-            brief_for_homer.update_procedure_id = getActualizationProcedureId().toString();
+            brief_for_homer.update_procedure_id = null; // TODO getActualizationProcedureId().toString();
             brief_for_homer.hardware_update_id = id.toString();
             brief_for_homer.uuid_ids.add(getHardware().id);
 
@@ -236,16 +189,12 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
             brief_for_homer.binary = binary;
 
-            logger.debug("get_brief_for_update_homer_server:: getActualizationProcedure: ID:  {} ", getActualizationProcedureId());
-            logger.debug("get_brief_for_update_homer_server:: getActualizationProcedure: Type Of Update:  {} ", getActualizationProcedure().type_of_update );
-
-            if (getActualizationProcedure().type_of_update == UpdateType.MANUALLY_BY_USER_INDIVIDUAL) {
-                brief_for_homer.progress_subscribe = true;
-            }
+            // TODO only if developer analytics
+            brief_for_homer.progress_subscribe = true;
 
             if (firmware_type == FirmwareType.FIRMWARE || firmware_type == FirmwareType.BACKUP) {
 
-                if(c_program_version_for_update != null) {
+                if (c_program_version_for_update != null) {
 
                     binary.download_id              = c_program_version_for_update.compilation.id;
                     binary.build_id                 = c_program_version_for_update.compilation.firmware_build_id;
@@ -255,7 +204,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
                     binary.time_stamp               = c_program_version_for_update.compilation.firmware_build_datetime;
 
                     // Update přímo z kompilace souboru bez archivace verze
-                } else if(binary_file  != null && binary_file.c_compilations_binary_file != null) {
+                } else if (binary_file  != null && binary_file.c_compilations_binary_file != null) {
 
                     binary.download_id              = binary_file.c_compilations_binary_file.id;
                     binary.build_id                 = binary_file.c_compilations_binary_file.firmware_build_id;
@@ -266,7 +215,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
                     // Update manuálně nahraným souborem bez jakkékoliv vazby
                     // nutné vyseparovat id z binárky
-                } else if(binary_file  != null) {
+                } else if (binary_file  != null) {
 
                     throw new IllegalAccessException("get_brief_for_update_homer_server:: ¨Firmware is FIRMWARE or BACKUP but there is no binary_file or file!");
                     /*
@@ -322,32 +271,6 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
     }
 
     @JsonIgnore @Override
-    public void update() {
-
-        super.update();
-
-        Model_UpdateProcedure procedure = getActualizationProcedure();
-        if (procedure != null) {
-            if (procedure.state == Enum_Update_group_procedure_state.NOT_START_YET || procedure.state == Enum_Update_group_procedure_state.IN_PROGRESS) {
-
-                if (this.state == HardwareUpdateState.OBSOLETE
-                        || this.state == HardwareUpdateState.COMPLETE
-                        || this.state == HardwareUpdateState.FAILED
-                        ) {
-
-                    logger.trace("update :: call in new thread actualization_procedure.update_state()");
-                    new Thread(() -> procedure.update_state()).start();
-                }
-            }
-
-            // Call notification about model update
-            if (procedure.get_project_id() != null) {
-                new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_HardwareUpdate.class, procedure.get_project_id() , this.id))).start();
-            }
-        }
-    }
-
-    @JsonIgnore @Override
     public boolean delete() {
         this.state = HardwareUpdateState.CANCELED;
         this.date_of_finish = new Date();
@@ -360,475 +283,137 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
-/* SERVER WEBSOCKET CONTROLLING OF HOMER SERVER--------------------------------------------------------------------------*/
-
-    private class Model_CProgramFakeBackup {}
-    private class Model_CProgramVersionFakeBackup {}
-
-    @JsonIgnore @Transient
-    public static void update_procedure_progress(WS_Message_Hardware_UpdateProcedure_Progress report) {
-        try {
-
-            Enum_HardwareHomerUpdate_state phase = report.get_phase();
-            if (phase == null) {
-                logger.error("update_procedure_progress " + report.phase + " is not recognize in Json!");
-                return;
-            }
-
-            Model_HardwareUpdate plan = Model_HardwareUpdate.find.byId(report.tracking_id);
-            if (plan == null) {
-                logger.error("update_procedure_progress :: Plan is null Return null NullPointerException");
-                throw new NullPointerException("Plan id" + report.tracking_id + " not found!");
-            }
-
-            logger.debug("update_procedure_progress :: {} Progress: {}", plan.id, report.percentage_progress);
-
-
-            // Pokud se vrátí fáze špatně - ukončuji celý update
-            if (report.error_message != null || report.error_code != null) {
-                logger.warn("update_procedure_progress  Update Fail! Device ID: {}, update procedure: {}", plan.getHardware().id, plan.id);
-
-                plan.date_of_finish = new Date();
-                plan.state = HardwareUpdateState.FAILED;
-                plan.error_code = report.error_code;
-                plan.error = report.error + report.error_message;
-                plan.update();
-                Model_UpdateProcedure.find.byId(report.tracking_group_id).change_state(plan, plan.state);
-
-                Model_Notification notification = new Model_Notification();
-
-                notification
-                        .setChainType(NotificationType.CHAIN_END)
-                        .setNotificationId(plan.getActualizationProcedureId())
-                        .setImportance(NotificationImportance.LOW)
-                        .setLevel(NotificationLevel.ERROR);
-
-                notification.setText(new Notification_Text().setText("Update of Procedure "))
-                        .setObject(plan.getActualizationProcedure())
-                        .setText(new Notification_Text().setText(". Transfer firmware to device "))
-                        .setObject(plan.getHardware())
-                        .setText(new Notification_Text().setText(" failed. Error Code " + report.error_code + "."))
-                        .send_under_project(plan.getActualizationProcedure().get_project_id());
-
-
-                return;
-            }
-
-            logger.debug("update_procedure_progress :: Checking phase: Phase {} ", phase);
-            // Fáze jsou volány jen tehdá, když má homer instrukce je zasílat
-            switch (phase) {
-
-                case PHASE_UPLOAD_START: {
-                    try {
-                        logger.debug("update_procedure_progress - procedure {} is PHASE_UPLOAD_START", plan.id);
-
-                        Model_Notification notification = new Model_Notification();
-
-                        notification
-                                .setChainType(NotificationType.CHAIN_START)
-                                .setNotificationId(plan.getActualizationProcedureId())
-                                .setImportance(NotificationImportance.LOW)
-                                .setLevel(NotificationLevel.INFO);
-
-                        notification.setText(new Notification_Text().setText("Update of Procedure "))
-                                .setObject(plan.getActualizationProcedure())
-                                .setText(new Notification_Text().setText(". Transfer firmware to device "))
-                                .setObject(plan.getHardware())
-                                .setText(new Notification_Text().setText(" start."))
-                                .send_under_project(plan.getActualizationProcedure().get_project_id());
-
-                        return;
-                    } catch (Exception e) {
-                        logger.internalServerError(e);
-                    }
-                }
-
-                case PHASE_UPLOAD_DONE: {
-                    try {
-                        logger.debug("update_procedure_progress - procedure {} is PHASE_UPLOAD_DONE", plan.id);
-
-                        Model_Notification notification = new Model_Notification();
-
-                        notification
-                                .setChainType(NotificationType.CHAIN_UPDATE)
-                                .setNotificationId(plan.getActualizationProcedureId())
-                                .setImportance(NotificationImportance.LOW)
-                                .setLevel(NotificationLevel.INFO);
-
-                        notification.setText(new Notification_Text().setText("Update of Procedure "))
-                                .setObject(plan.getActualizationProcedure())
-                                .setText(new Notification_Text().setText(". Transfer firmware to "))
-                                .setObject(plan.getHardware())
-                                .setText(new Notification_Text().setText(" firmware file  was transferred and stored in memory."))
-                                .send_under_project(plan.getActualizationProcedure().get_project_id());
-
-                        return;
-                    } catch (Exception e) {
-                        logger.internalServerError(e);
-                    }
-                }
-
-                // Je nejčastěji proto je nahoře
-                case PHASE_UPLOADING: {
-                    try {
-
-                        logger.debug("update_procedure_progress - procedure {} is PHASE_UPLOADING", plan.id);
-
-                        Model_Notification notification = new Model_Notification();
-
-                        notification
-                                .setChainType(NotificationType.CHAIN_UPDATE)
-                                .setNotificationId(plan.getActualizationProcedureId())
-                                .setImportance(NotificationImportance.LOW)
-                                .setLevel(NotificationLevel.INFO);
-
-                        notification.setText(new Notification_Text().setText("Update of Procedure "))
-                                .setObject(plan.getActualizationProcedure())
-                                .setText(new Notification_Text().setText(". Transfer firmware to "))
-                                .setObject(plan.getHardware())
-                                .setText(new Notification_Text().setText(" progress:: " + report.percentage_progress + "%"))
-                                .send_under_project(plan.getActualizationProcedure().get_project_id());
-
-                        return;
-
-                    } catch (Exception e) {
-                        logger.internalServerError(e);
-                    }
-                }
-
-                case PHASE_FLASH_ERASING: {
-                    try {
-
-                        logger.debug("update_procedure_progress - procedure {} is PHASE_FLASH_ERASING", plan.id);
-
-                        Model_Notification notification = new Model_Notification();
-
-                        notification
-                                .setChainType(NotificationType.CHAIN_UPDATE)
-                                .setNotificationId(plan.getActualizationProcedureId())
-                                .setImportance(NotificationImportance.LOW)
-                                .setLevel(NotificationLevel.INFO);
-
-                        notification.setText(new Notification_Text().setText("Update of Procedure "))
-                                .setObject(plan.getActualizationProcedure())
-                                .setText(new Notification_Text().setText(". We are making backup on hardware "))
-                                .setObject(plan.getHardware())
-                                .setText(new Notification_Text().setText("finished:: " + report.percentage_progress + "%"))
-                                .setText(new Notification_Text().setText("Flash Memory Erasing..."))
-                                .send_under_project(plan.getActualizationProcedure().get_project_id());
-
-                        return;
-
-                    } catch (Exception e) {
-                        logger.internalServerError(e);
-                    }
-                }
-
-                case PHASE_FLASH_ERASED: {
-                    try {
-
-                        logger.debug("update_procedure_progress - procedure {} is PHASE_FLASH_ERASED", plan.id);
-
-                        Model_Notification notification = new Model_Notification();
-
-                        notification
-                                .setChainType(NotificationType.CHAIN_UPDATE)
-                                .setNotificationId(plan.getActualizationProcedureId())
-                                .setImportance(NotificationImportance.LOW)
-                                .setLevel(NotificationLevel.INFO);
-
-                        notification.setText(new Notification_Text().setText("Update of Procedure "))
-                                .setObject(plan.getActualizationProcedure())
-                                .setText(new Notification_Text().setText(". We are making backup on hardware "))
-                                .setObject(plan.getHardware())
-                                .setText(new Notification_Text().setText("finished:: " + report.percentage_progress + "%"))
-                                .setText(new Notification_Text().setText("Flash Memory Erased"))
-                                .send_under_project(plan.getActualizationProcedure().get_project_id());
-
-                        return;
-
-                    } catch (Exception e) {
-                        logger.internalServerError(e);
-                    }
-                }
-
-                case PHASE_RESTARTING: {
-
-                    logger.debug("update_procedure_progress - procedure {} is PHASE_RESTARTING", plan.id);
-
-                    Model_Notification notification = new Model_Notification();
-
-                    notification
-                            .setChainType(NotificationType.CHAIN_UPDATE)
-                            .setNotificationId(plan.getActualizationProcedureId())
-                            .setImportance(NotificationImportance.LOW)
-                            .setLevel(NotificationLevel.INFO);
-
-                    notification.setText(new Notification_Text().setText("Update of Procedure "))
-                            .setObject(plan.getActualizationProcedure())
-                            .setText(new Notification_Text().setText(". Transfer firmware to "))
-                            .setObject(plan.getHardware())
-                            .setText(new Notification_Text().setText(" finished:: " + report.percentage_progress + "%"))
-                            .setText(new Notification_Text().setText("The device is just rebooting."))
-                            .send_under_project(plan.getActualizationProcedure().get_project_id());
-
-                    return;
-                }
-
-                case PHASE_CONNECTED_AFTER_RESTART: {
-
-                    logger.debug("update_procedure_progress - procedure {} is PHASE_CONNECTED_AFTER_RESTART", plan.id);
-
-                    Model_Notification notification = new Model_Notification();
-
-                    notification
-                            .setChainType(NotificationType.CHAIN_UPDATE)
-                            .setNotificationId(plan.getActualizationProcedureId())
-                            .setImportance(NotificationImportance.LOW)
-                            .setLevel(NotificationLevel.INFO);
-
-                    notification.setText(new Notification_Text().setText("Update of Procedure "))
-                            .setObject(plan.getActualizationProcedure())
-                            .setText(new Notification_Text().setText(". Transfer firmware to "))
-                            .setObject(plan.getHardware())
-                            .setText(new Notification_Text().setText(" finished:: " + report.percentage_progress + "%"))
-                            .setText(new Notification_Text().setText("Device Restarted successfully - system check all registers"))
-                            .send_under_project(plan.getActualizationProcedure().get_project_id());
-
-                    return;
-                }
-
-
-                case PHASE_UPDATE_DONE: {
-                    try {
-
-                        logger.debug("update_procedure_progress :: UPDATE DONE :: for Hardware: {} ", plan.getHardware().name);
-
-                        Model_Notification notification = new Model_Notification();
-
-                        notification
-                                .setChainType(NotificationType.CHAIN_END)
-                                .setNotificationId(plan.getActualizationProcedureId())
-                                .setImportance(NotificationImportance.LOW)
-                                .setLevel(NotificationLevel.INFO);
-                        notification.setText(new Notification_Text().setText("Update of Procedure "))
-                                .setObject(plan.getActualizationProcedure())
-                                .setText(new Notification_Text().setText(". Transfer firmware to "))
-                                .setObject(plan.getHardware())
-                                .setText(new Notification_Text().setText(" successfully done."))
-                                .send_under_project(plan.getActualizationProcedure().get_project_id());
-
-
-                        logger.debug("update_procedure_progress - procedure {} is UPDATE_DONE", plan.id);
-
-
-                        Model_Hardware hardware = plan.getHardware();
-
-                        logger.warn("update_procedure_progress :: UPDATE DONE :: plan.firmware_type {} ", plan.firmware_type);
-
-                        if (plan.firmware_type == FirmwareType.FIRMWARE) {
-
-                            logger.debug("update_procedure_progress: firmware:: on HW id: {} now:: {} ", hardware.id,  hardware.getCurrentFirmware() == null ? " nothing by DB" : hardware.getCurrentFirmware().compilation.firmware_build_id);
-
-                            if(plan.c_program_version_for_update != null ) {
-
-                                logger.debug("update_procedure_progress: required by update: {} ", plan.c_program_version_for_update.compilation.firmware_build_id);
-
-                                logger.debug("update_procedure_progress: Na Hardwaru je teď CProgram " + hardware.get_actual_c_program().name);
-                                logger.debug("update_procedure_progress: Na Hardwaru je teď CProgram Verze " + hardware.getCurrentFirmware().name + " id: " + hardware.getCurrentFirmware().id);
-
-
-                                logger.debug("update_procedure_progress: Co by tam ale mělo za chvíli být je CProgram " + plan.c_program_version_for_update.get_c_program().name);
-                                logger.debug("update_procedure_progress: Co by tam ale mělo za chvíli být je CProgram Verze " + plan.c_program_version_for_update.name + " id: " + plan.c_program_version_for_update.id);
-
-                                hardware.actual_c_program_version = plan.c_program_version_for_update;
-
-                                logger.debug("update_procedure_progress: Na Hardwar jsem nastavil " + hardware.actual_c_program_version.name);
-
-                                hardware.idCache().removeAll(Model_CProgram.class);
-                                hardware.idCache().removeAll(Model_CProgramVersion.class);
-                                logger.debug("update_procedure_progress: Udělal jsem clean ");
-                                logger.debug("update_procedure_progress: zkontroluji clean: " + hardware.idCache().get(Model_CProgram.class));
-                                logger.debug("update_procedure_progress: zkontroluji clean: " + hardware.idCache().get(Model_CProgramVersion.class));
-
-
-                                hardware.idCache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
-                                hardware.idCache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
-
-                                logger.debug("update_procedure_progress: Před updatem Na Hardwaru je teď CProgram " + hardware.get_actual_c_program().name);
-                                logger.debug("update_procedure_progress: Před updatem Na Hardwaru je teď CProgram Verze " + hardware.getCurrentFirmware().name + " id: " + hardware.getCurrentFirmware().id);
-
-                                hardware.update();
-
-                                logger.debug("update_procedure_progress: ještě blbý check: " + hardware.actual_c_program_version.name);
-
-                                hardware.idCache().add(Model_CProgram.class, hardware.actual_c_program_version.get_c_program().id);
-                                hardware.idCache().add(Model_CProgramVersion.class, hardware.actual_c_program_version.id);
-
-                                logger.debug("update_procedure_progress: PO updatu Na Hardwaru je teď CProgram " + hardware.get_actual_c_program().name);
-                                logger.debug("update_procedure_progress: PO updatu Na Hardwaru je teď CProgram Verze " + hardware.getCurrentFirmware().name + " id: " + hardware.getCurrentFirmware().id);
-
-                            } else {
-
-                                logger.debug("update_procedure_progress: required by update: {} ", plan.binary_file.c_compilations_binary_file.firmware_build_id);
-                                hardware.idCache().removeAll(Model_CProgram.class);
-                                hardware.idCache().removeAll(Model_CProgramVersion.class);
-
-                                // TODO nějak poznamenat na Hardwaru
-                            }
-
-                        } else if (plan.firmware_type == FirmwareType.BOOTLOADER) {
-
-                            hardware.idCache().removeAll(Model_Hardware.Model_hardware_update_update_in_progress_bootloader.class);
-                            hardware.idCache().removeAll(Model_BootLoader.class);
-
-                            hardware.actual_boot_loader = plan.getBootloader();
-                            hardware.update();
-
-                            hardware.idCache().add(Model_BootLoader.class, plan.getBootloaderId());
-
-
-                        } else if (plan.firmware_type == FirmwareType.BACKUP) {
-
-                            hardware.actual_backup_c_program_version = plan.c_program_version_for_update;
-
-                            hardware.idCache().removeAll(Model_CProgramFakeBackup.class);
-                            hardware.idCache().removeAll(Model_CProgramVersionFakeBackup.class);
-
-                            hardware.idCache().add(Model_CProgramFakeBackup.class, plan.c_program_version_for_update.get_c_program().id);
-                            hardware.idCache().add(Model_CProgramVersionFakeBackup.class, plan.c_program_version_for_update.id);
-                            hardware.update();
-
-                            hardware.make_log_backup_arrise_change();
-                        }
-
-                        plan.state = HardwareUpdateState.COMPLETE;
-                        plan.date_of_finish = new Date();
-                        plan.update();
-
-                        EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, hardware.get_project_id(), hardware.id));
-
-                        return;
-                    } catch (Exception e) {
-                        logger.internalServerError(e);
-                    }
-                }
-
-                case NEW_VERSION_DOESNT_MATCH: {
-                    try {
-
-                        logger.error("update_procedure_progress - procedure {} is NEW_VERSION_DOESNT_MATCH", plan.id);
-
-                        plan.state = HardwareUpdateState.FAILED;
-                        plan.error_code = ErrorCode.NEW_VERSION_DOESNT_MATCH.error_code();
-                        plan.error = ErrorCode.NEW_VERSION_DOESNT_MATCH.error_message();
-                        plan.date_of_finish = new Date();
-                        plan.update();
-                        Model_UpdateProcedure.find.byId(report.tracking_group_id).change_state(plan, plan.state);
-
-                        return;
-                    } catch (Exception e) {
-                        logger.internalServerError(e);
-                    }
-                }
-
-                case ALREADY_SAME: {
-                    try {
-
-                        logger.trace("update_procedure_progress - procedure {} is ALREADY_SAME", plan.id);
-
-                        if ( plan.getActualizationProcedure().type_of_update == UpdateType.MANUALLY_BY_USER_INDIVIDUAL) {
-                            Model_Notification notification = new Model_Notification();
-
-                            notification
-                                    .setChainType(NotificationType.INDIVIDUAL)
-                                    .setNotificationId(plan.getActualizationProcedureId())
-                                    .setImportance(NotificationImportance.LOW)
-                                    .setLevel(NotificationLevel.INFO);
-
-                            notification.setText(new Notification_Text().setText("Update of Procedure "))
-                                    .setObject(plan.getActualizationProcedure())
-                                    .setText(new Notification_Text().setText(" to Hardware "))
-                                    .setObject(plan.getHardware())
-                                    .setText(new Notification_Text().setText(" is done. The required firmware on the device is already running."))
-                                    .send_under_project(plan.getActualizationProcedure().get_project_id());
-
-                        }
-
-                        plan.state = HardwareUpdateState.COMPLETE;
-                        plan.date_of_finish = new Date();
-                        plan.update();
-
-                        Model_Hardware hardware = plan.getHardware();
-
-                        if (plan.firmware_type == FirmwareType.FIRMWARE) {
-
-                            if(hardware.getCurrentFirmware().id == null || !hardware.get_actual_c_program_version_id().equals(plan.c_program_version_for_update.id)) {
-                                hardware.actual_c_program_version = plan.c_program_version_for_update;
-                                hardware.idCache().removeAll(Model_CProgram.class);
-                                hardware.idCache().removeAll(Model_CProgramVersion.class);
-
-                                if(plan.c_program_version_for_update != null) {
-                                    hardware.idCache().add(Model_CProgram.class, plan.c_program_version_for_update.get_c_program().id);
-                                    hardware.idCache().add(Model_CProgramVersion.class, plan.c_program_version_for_update.id);
-                                } else if(plan.binary_file != null) {
-                                    // TODO for file
-                                }
-
-                                hardware.update();
-                            }
-
-                        } else if (plan.firmware_type == FirmwareType.BOOTLOADER) {
-
-                            hardware.actual_boot_loader = plan.getBootloader();
-                            hardware.idCache().removeAll(Model_Hardware.Model_hardware_update_update_in_progress_bootloader.class);
-                            hardware.idCache().removeAll(Model_BootLoader.class);
-                            hardware.idCache().add(Model_BootLoader.class, plan.getBootloader().id);
-                            hardware.update();
-
-                        } else if (plan.firmware_type == FirmwareType.BACKUP) {
-
-                            if (hardware.getCurrentBackup().id == null || !hardware.getCurrentBackup().id.equals(plan.c_program_version_for_update.id)) {
-
-                                hardware.idCache().removeAll(Model_CProgramFakeBackup.class);
-                                hardware.idCache().removeAll(Model_CProgramVersionFakeBackup.class);
-
-                                if(plan.c_program_version_for_update != null) {
-                                    hardware.idCache().add(Model_CProgramFakeBackup.class, plan.c_program_version_for_update.get_c_program().id);
-                                    hardware.idCache().add(Model_CProgramVersionFakeBackup.class, plan.c_program_version_for_update.id);
-                                } else if(plan.binary_file != null) {
-                                    // TODO for file
-                                }
-
-                                hardware.update();
-
-                                hardware.make_log_backup_arrise_change();
-                            }
-
-                        } else {
-                            logger.debug("update_procedure_progress: nebylo třeba vůbec nic měnit.");
-                        }
-
-                        EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, hardware.get_project_id(), hardware.id));
-
-                        return;
-                    } catch (Exception e) {
-                        logger.internalServerError(e);
-                    }
-                }
-
-                default: {
-                    throw new UnsupportedOperationException("Unknown update phase. Report: " + Json.toJson(report));
-                }
-            }
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
+    public Model_Notification notificationUpdateStart() {
+        return new Model_Notification()
+                .setChainType(NotificationType.CHAIN_START)
+                .setNotificationId(this.getId())
+                .setImportance(NotificationImportance.LOW)
+                .setLevel(NotificationLevel.INFO)
+                .setText(new Notification_Text().setText("Update "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" of hardware "))
+                .setObject(this.getHardware())
+                .setText(new Notification_Text().setText(" has started."));
+    }
+
+    public Model_Notification notificationUpdateEnd() {
+        return new Model_Notification()
+                .setChainType(NotificationType.CHAIN_END)
+                .setNotificationId(this.getId())
+                .setImportance(NotificationImportance.LOW)
+                .setLevel(NotificationLevel.INFO)
+                .setText(new Notification_Text().setText("Update "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" of hardware "))
+                .setObject(this.getHardware())
+                .setText(new Notification_Text().setText(" was successful."));
+    }
+
+    public Model_Notification notificationUploading(Integer percents) {
+        return new Model_Notification()
+                .setChainType(NotificationType.CHAIN_UPDATE)
+                .setNotificationId(this.getId())
+                .setImportance(NotificationImportance.LOW)
+                .setLevel(NotificationLevel.INFO)
+                .setText(new Notification_Text().setText("Update "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" of hardware "))
+                .setObject(this.getHardware())
+                .setText(new Notification_Text().setText(" - progress: " + percents + "%."));
+    }
+
+    public Model_Notification notificationUploadDone() {
+        return new Model_Notification()
+                .setChainType(NotificationType.CHAIN_UPDATE)
+                .setNotificationId(this.getId())
+                .setImportance(NotificationImportance.LOW)
+                .setLevel(NotificationLevel.INFO)
+                .setText(new Notification_Text().setText("Update "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" of hardware "))
+                .setObject(this.getHardware())
+                .setText(new Notification_Text().setText(" was uploaded into hardware."));
+    }
+
+    public Model_Notification notificationBufferErasing() {
+        return new Model_Notification()
+                .setChainType(NotificationType.CHAIN_UPDATE)
+                .setNotificationId(this.getId())
+                .setImportance(NotificationImportance.LOW)
+                .setLevel(NotificationLevel.INFO)
+                .setText(new Notification_Text().setText("Update "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" of hardware "))
+                .setObject(this.getHardware())
+                .setText(new Notification_Text().setText(" - buffer is erasing."));
+    }
+
+    public Model_Notification notificationBufferErased() {
+        return new Model_Notification()
+                .setChainType(NotificationType.CHAIN_UPDATE)
+                .setNotificationId(this.getId())
+                .setImportance(NotificationImportance.LOW)
+                .setLevel(NotificationLevel.INFO)
+                .setText(new Notification_Text().setText("Update "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" of hardware "))
+                .setObject(this.getHardware())
+                .setText(new Notification_Text().setText(" - buffer is erased, transfer will start."));
+    }
+
+    public Model_Notification notificationRestarting() {
+        return new Model_Notification()
+                .setChainType(NotificationType.CHAIN_UPDATE)
+                .setNotificationId(this.getId())
+                .setImportance(NotificationImportance.LOW)
+                .setLevel(NotificationLevel.INFO)
+                .setText(new Notification_Text().setText("Update "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" of hardware "))
+                .setObject(this.getHardware())
+                .setText(new Notification_Text().setText(" - hardware is restarting."));
+    }
+
+    public Model_Notification notificationAfterRestart() {
+        return new Model_Notification()
+                .setChainType(NotificationType.CHAIN_UPDATE)
+                .setNotificationId(this.getId())
+                .setImportance(NotificationImportance.LOW)
+                .setLevel(NotificationLevel.INFO)
+                .setText(new Notification_Text().setText("Update "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" of hardware "))
+                .setObject(this.getHardware())
+                .setText(new Notification_Text().setText(" - hardware has reconnected after restart."));
+    }
+
+    public Model_Notification notificationUpdateFailed(Integer errorCode) {
+        return new Model_Notification()
+                .setChainType(NotificationType.CHAIN_END)
+                .setNotificationId(this.getId())
+                .setImportance(NotificationImportance.LOW)
+                .setLevel(NotificationLevel.ERROR)
+                .setText(new Notification_Text().setText("Update "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" of hardware "))
+                .setObject(this.getHardware())
+                .setText(new Notification_Text().setText(" failed" + (errorCode != null ? " with code: " + errorCode + "." : ".")));
+    }
+
+    public Model_Notification notificationAlreadySame() {
+        return new Model_Notification()
+                .setChainType(NotificationType.INDIVIDUAL)
+                .setNotificationId(this.getId())
+                .setImportance(NotificationImportance.LOW)
+                .setLevel(NotificationLevel.INFO)
+                .setText(new Notification_Text().setText("Update "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" of hardware "))
+                .setObject(this.getHardware())
+                .setText(new Notification_Text().setText(" - " + (this.firmware_type.equals(FirmwareType.FIRMWARE) ? "firmware" : this.firmware_type.equals(FirmwareType.BOOTLOADER) ? "bootloader" : "backup") + " is already on the hardware."));
     }
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
-
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 

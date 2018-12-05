@@ -19,6 +19,7 @@ import utilities.enums.Approval;
 import utilities.enums.ProgramType;
 import exceptions.NotFoundException;
 import utilities.logger.Logger;
+import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_M_Program_Interface;
@@ -41,8 +42,8 @@ public class Controller_Grid extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @Inject
-    public Controller_Grid(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
-        super(ws, formFactory, config, permissionService);
+    public Controller_Grid(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
+        super(ws, formFactory, config, permissionService, notificationService);
     }
 
 ///###################################################################################################################*/

@@ -14,6 +14,7 @@ import utilities.cache.InjectCache;
 import utilities.enums.CompilationStatus;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
+import utilities.hardware.update.Updatable;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.models_update_echo.EchoHandler;
@@ -29,7 +30,7 @@ import java.util.concurrent.CompletionStage;
 @Entity
 @ApiModel(value = "Compilation", description = "Model of Compilation")
 @Table(name="Compilation")
-public class Model_Compilation extends BaseModel {
+public class Model_Compilation extends BaseModel implements Updatable {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -105,7 +106,7 @@ public class Model_Compilation extends BaseModel {
         logger.trace("compile_program_procedure:: Body is ok - uploading to Azure was successful");
         compilation.status = CompilationStatus.SUCCESS;
         compilation.build_url = compilation_Result.build_url;
-        compilation.firmware_build_id = compilation_Result.build_id;
+        compilation.firmware_build_id = compilation_Result.build_id.toString();
         compilation.virtual_input_output = compilation_Result.interface_code;
         compilation.firmware_build_datetime = new Date();
         compilation.update();

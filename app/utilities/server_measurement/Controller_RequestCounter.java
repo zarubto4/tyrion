@@ -1,20 +1,18 @@
 package utilities.server_measurement;
 
+import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import controllers.Controller_Blocko;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
-import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.Result;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
+import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 
 import java.util.HashMap;
 import java.util.Map;
-
 
 public class Controller_RequestCounter extends _BaseController {
 
@@ -27,9 +25,9 @@ public class Controller_RequestCounter extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    @javax.inject.Inject
-    public Controller_RequestCounter(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    @Inject
+    public Controller_RequestCounter(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
+        super(ws, formFactory, config, permissionService, notificationService);
     }
 
 

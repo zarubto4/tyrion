@@ -18,6 +18,7 @@ import utilities.emails.Email;
 import utilities.enums.ParticipantStatus;
 import utilities.hardware.HardwareService;
 import utilities.logger.Logger;
+import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.input.*;
 
@@ -40,8 +41,9 @@ public class Controller_Project extends _BaseController {
     private final HardwareService hardwareService;
 
     @Inject
-    public Controller_Project(WSClient ws, _BaseFormFactory formFactory,Config config, PermissionService permissionService, HardwareService hardwareService) {
-        super(ws, formFactory, config, permissionService);
+    public Controller_Project(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
+                              NotificationService notificationService, HardwareService hardwareService) {
+        super(ws, formFactory, config, permissionService, notificationService);
         this.hardwareService = hardwareService;
     }
 

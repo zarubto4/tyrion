@@ -343,10 +343,6 @@ DELETE    /compilation_server/:server_id                                controll
 ################################################################################################################################################################################
 
 #Actualization Procedure
-PUT       /update_procedure/filter/:page_number                         controllers.Controller_Update.get_Actualization_Procedures_by_filter(page_number: Int)
-GET       /update_procedure/object/:procedure_id                        controllers.Controller_Update.get_Actualization_Procedure(procedure_id: java.util.UUID)
-POST      /update_procedure/make                                        controllers.Controller_Update.make_actualization_procedure()
-PUT       /update_procedure/cancel/:procedure_id                        controllers.Controller_Update.canceled_procedure(procedure_id: java.util.UUID)
 PUT       /update_procedure/bin/uploud                                  controllers.Controller_Update.uploadBinaryFileToBoard()
 
 #Task
@@ -373,7 +369,6 @@ PUT       /c_program/version/edit/:version_id                           controll
 DELETE    /c_program/version/delete/:version_id                         controllers.Controller_Code.c_program_version_delete(version_id: java.util.UUID)
 
 POST      /c_program/version/compile                                    controllers.Controller_Code.compile_c_program_code()
-PUT       /c_program/version/compile/:version_id                        controllers.Controller_Code.compile_c_program_version(version_id: java.util.UUID)
 
 PUT       /c_program/default/mark/:version_id                           controllers.Controller_Code.c_program_markScheme(version_id: java.util.UUID)
 

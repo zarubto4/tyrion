@@ -25,6 +25,7 @@ import utilities.financial.fakturoid.FakturoidService;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_Status;
 import utilities.logger.Logger;
+import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.scheduler.jobs.Job_ThingsMobile_SimData_Synchronize;
 import websocket.WebSocketService;
@@ -48,8 +49,9 @@ public class Controller_ZZZ_Tester extends _BaseController {
     protected final WebSocketService webSocketService;
 
     @Inject
-    public Controller_ZZZ_Tester(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, WebSocketService webSocketService) {
-        super(ws, formFactory, config, permissionService);
+    public Controller_ZZZ_Tester(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
+                                 NotificationService notificationService, WebSocketService webSocketService) {
+        super(ws, formFactory, config, permissionService, notificationService);
         this.webSocketService = webSocketService;
     }
 

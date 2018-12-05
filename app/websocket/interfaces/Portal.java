@@ -28,8 +28,8 @@ public class Portal extends Interface {
     private final NotificationService notificationService;
 
     @Inject
-    public Portal(NetworkStatusService networkStatusService, Materializer materializer, _BaseFormFactory formFactory, NotificationService notificationService) {
-        super(networkStatusService, materializer, formFactory);
+    public Portal(Materializer materializer, _BaseFormFactory formFactory, NotificationService notificationService) {
+        super(materializer, formFactory);
         this.notificationService = notificationService;
     }
 
@@ -61,39 +61,29 @@ public class Portal extends Interface {
         }
     }
 
-    public void onSubscribeNotification(Message message) {
-        try {
-
-            logger.trace("onSubscribeNotification - id: {}", this.id);
-
-            this.notificationService.subscribe(this);
-
-            this.notificationSubscribed = true;
-
-            Model_Project.becki_person_id_subscribe(this.personId); // TODO ugly -> rework
-
-            this.send(WS_Message_Subscribe_Notifications.approve_result(message.getId().toString()));
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
+    @Override
+    protected void onClose() {
+        super.onClose();
+        this.notificationService.unsubscribe(this);
     }
 
-    public void onUnsubscribeNotification(Message message) {
-        try {
+    private void onSubscribeNotification(Message message) {
+        logger.trace("onSubscribeNotification - id: {}", this.id);
 
-            logger.trace("onUnsubscribeNotification - id: {}", this.id);
+        this.notificationService.subscribe(this);
 
-            this.notificationService.unsubscribe(this);
+        this.notificationSubscribed = true;
 
-            this.notificationSubscribed = false;
+        this.send(WS_Message_Subscribe_Notifications.approve_result(message.getId().toString()));
+    }
 
-            Model_Project.becki_person_id_unsubscribe(this.personId); // TODO ugly -> rework
+    private void onUnsubscribeNotification(Message message) {
+        logger.trace("onUnsubscribeNotification - id: {}", this.id);
 
-            this.send(WS_Message_UnSubscribe_Notifications.approve_result(message.getId().toString()));
+        this.notificationService.unsubscribe(this);
 
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
+        this.notificationSubscribed = false;
+
+        this.send(WS_Message_UnSubscribe_Notifications.approve_result(message.getId().toString()));
     }
 }

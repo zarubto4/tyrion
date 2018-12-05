@@ -20,6 +20,7 @@ import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.logger.Logger;
 import utilities.logger.YouTrack;
+import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.*;
@@ -54,8 +55,10 @@ public class Controller_Admin extends _BaseController {
     private final SchedulerService schedulerService;
 
     @Inject
-    public Controller_Admin(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService schedulerService, PermissionService permissionService, WebSocketService webSocketService) {
-        super(ws, formFactory, config, permissionService);
+    public Controller_Admin(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config,
+                            SchedulerService schedulerService, PermissionService permissionService, WebSocketService webSocketService,
+                            NotificationService notificationService) {
+        super(ws, formFactory, config, permissionService, notificationService);
         this.environment = environment;
         this.webSocketService = webSocketService;
         this.youTrack = youTrack;

@@ -12,7 +12,6 @@ import mongo.ModelMongo_Hardware_ActivationStatus;
 import mongo.ModelMongo_Hardware_BackupIncident;
 import mongo.ModelMongo_Hardware_OnlineStatus;
 import org.ehcache.Cache;
-import org.mongodb.morphia.query.FindOptions;
 import play.libs.Json;
 import utilities.cache.CacheFinder;
 import utilities.cache.InjectCache;
@@ -746,43 +745,23 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
     // Online Offline Notification
     @JsonIgnore
-    public void notification_board_connect() {
-        new Thread(() -> {
-            if (project().id == null) return;
-
-            try {
-                new Model_Notification()
-                        .setImportance(NotificationImportance.LOW)
-                        .setLevel(NotificationLevel.SUCCESS)
-                        .setText(new Notification_Text().setText("Device " + this.id))
-                        .setObject(this)
-                        .setText(new Notification_Text().setText(" has just connected"))
-                        .send_under_project(project().id);
-
-            } catch (Exception e) {
-                logger.internalServerError(e);
-            }
-        }).start();
+    public Model_Notification notificationOnline() {
+        return new Model_Notification()
+                .setImportance(NotificationImportance.LOW)
+                .setLevel(NotificationLevel.SUCCESS)
+                .setText(new Notification_Text().setText("Hardware "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" is online."));
     }
 
     @JsonIgnore
-    public void notification_board_disconnect() {
-        new Thread(() -> {
-            if (project().id == null) return;
-            try {
-
-                new Model_Notification()
-                    .setImportance( NotificationImportance.LOW )
-                    .setLevel( NotificationLevel.WARNING)
-                    .setText(  new Notification_Text().setText("Device" + this.id ))
-                    .setObject(this)
-                    .setText( new Notification_Text().setText(" has disconnected."))
-                    .send_under_project(project().id);
-
-            } catch (Exception e) {
-                logger.internalServerError(e);
-            }
-        }).start();
+    public Model_Notification notificationOffline() {
+        return new Model_Notification()
+                .setImportance( NotificationImportance.LOW)
+                .setLevel(NotificationLevel.WARNING)
+                .setText(new Notification_Text().setText("Hardware "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" is offline."));
     }
 
     @JsonIgnore

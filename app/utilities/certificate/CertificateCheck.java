@@ -1,14 +1,14 @@
 package utilities.certificate;
 
+import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
 import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.Result;
-import utilities.logger.YouTrack;
+import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 
 /**
  * Used to verify the ownership of the domain, so application can get a certificate.
@@ -19,9 +19,10 @@ public class CertificateCheck extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    @javax.inject.Inject
-    public CertificateCheck(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    @Inject
+    public CertificateCheck(Environment environment, WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
+        super(ws, formFactory, config, permissionService, notificationService);
+        this.environment = environment;
     }
 
 // CONTROLLER CONTENT ##################################################################################################

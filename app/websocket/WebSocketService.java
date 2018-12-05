@@ -7,11 +7,9 @@ import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import play.libs.Json;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Singleton
 public class WebSocketService {
@@ -43,6 +41,10 @@ public class WebSocketService {
 
     public Long countOf(Predicate<WebSocketInterface> predicate) {
         return this.interfaces.values().stream().filter(predicate).count();
+    }
+
+    public List<UUID> getIdsOf(Predicate<WebSocketInterface> predicate) {
+        return this.interfaces.entrySet().stream().filter(entry -> predicate.test(entry.getValue())).map(Map.Entry::getKey).collect(Collectors.toList());
     }
 
     @SuppressWarnings("unchecked")

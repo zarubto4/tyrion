@@ -8,6 +8,7 @@ import play.libs.ws.WSClient;
 import play.mvc.Result;
 import responses.*;
 import utilities.logger.Logger;
+import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.input._Swagger_Example_with_private_validation;
 
@@ -57,8 +58,8 @@ public class _Controller_MongoExample extends _BaseController {
 
 
     @Inject
-    public _Controller_MongoExample(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
-        super(ws, formFactory, config, permissionService);
+    public _Controller_MongoExample(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
+        super(ws, formFactory, config, permissionService, notificationService);
     }
 
 // CONTROLLER CONTENT ##################################################################################################

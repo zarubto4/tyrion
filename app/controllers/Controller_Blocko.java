@@ -18,6 +18,7 @@ import utilities.enums.ProgramType;
 import exceptions.NotFoundException;
 import utilities.instance.InstanceService;
 import utilities.logger.Logger;
+import utilities.notifications.NotificationService;
 import utilities.permission.Action;
 import utilities.permission.PermissionService;
 import utilities.swagger.input.*;
@@ -41,8 +42,9 @@ public class Controller_Blocko extends _BaseController {
     private final InstanceService instanceService;
 
     @Inject
-    public Controller_Blocko(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, InstanceService instanceService) {
-        super(ws, formFactory, config, permissionService);
+    public Controller_Blocko(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
+                             NotificationService notificationService, InstanceService instanceService) {
+        super(ws, formFactory, config, permissionService, notificationService);
         this.instanceService = instanceService;
     }
 

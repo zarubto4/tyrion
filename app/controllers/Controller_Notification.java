@@ -13,7 +13,7 @@ import utilities.authentication.Authentication;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationState;
 import utilities.logger.Logger;
-import utilities.notifications.NotificationActionHandler;
+import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.input.Swagger_Notification_Confirm;
 import utilities.swagger.input.Swagger_Notification_Read;
@@ -32,8 +32,8 @@ public class Controller_Notification extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @Inject
-    public Controller_Notification(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
-        super(ws, formFactory, config, permissionService);
+    public Controller_Notification(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
+        super(ws, formFactory, config, permissionService, notificationService);
     }
 
 // PUBLIC CONTROLLER METHODS ###########################################################################################
@@ -209,19 +209,7 @@ public class Controller_Notification extends _BaseController {
 
           this.checkUpdatePermission(notification);
 
-          if (notification.confirmed) return badRequest("Notification is already confirmed");
-
-          try {
-
-              NotificationActionHandler.perform(help.action, help.payload);
-
-          } catch (IllegalArgumentException e) {
-              _BaseController.person().notification_error(e.getMessage());
-          } catch (Exception e) {
-              logger.internalServerError(e);
-          }
-
-          notification.confirm();
+          this.notificationService.confirm(notification, help.action, help.payload);
 
           return ok();
       } catch (Exception e) {

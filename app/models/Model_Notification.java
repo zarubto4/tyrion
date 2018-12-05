@@ -13,7 +13,6 @@ import utilities.enums.*;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 import utilities.model.Personal;
-import utilities.notifications.NotificationHandler;
 import utilities.notifications.helps_objects.*;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
@@ -268,21 +267,12 @@ public class Model_Notification extends BaseModel implements Permissible, Person
                 break;
             }
 
-            case "UpdateProcedure" : {
-                Model_UpdateProcedure actualizationProcedure = (Model_UpdateProcedure) object;
-                element.name = class_name;
-                element.text = actualizationProcedure.id.toString().substring(0,12);
-                element.id = actualizationProcedure.id;
-                element.project_id = actualizationProcedure.get_project_id();
-                break;
-            }
-
             case "HardwareUpdate" : {
                 Model_HardwareUpdate hardwareUpdate = (Model_HardwareUpdate) object;
                 element.name = class_name;
                 element.text = hardwareUpdate.id.toString().substring(0,12);
                 element.id = hardwareUpdate.id;
-                element.project_id = hardwareUpdate.getActualizationProcedure().get_project_id();
+                element.project_id = hardwareUpdate.getProject().getId();
                 break;
             }
 
@@ -345,6 +335,19 @@ public class Model_Notification extends BaseModel implements Permissible, Person
     }
 
     @JsonIgnore
+    public Model_Notification copy() {
+        Model_Notification notification = new Model_Notification();
+        notification.array = this.array;
+        notification.buttons = this.buttons;
+        notification.notification_level = this.notification_level;
+        notification.notification_type = this.notification_type;
+        notification.notification_importance = this.notification_importance;
+        notification.state = this.state;
+        notification.confirmation_required = this.confirmation_required;
+        return notification;
+    }
+
+    @JsonIgnore
     public void set_read() {
         this.was_read = true;
         this.update();
@@ -355,8 +358,6 @@ public class Model_Notification extends BaseModel implements Permissible, Person
         this.confirmed = true;
         this.was_read = true;
         this.update();
-        this.state = NotificationState.UPDATED;
-        this.send();
     }
 
     @JsonIgnore @Transient public List<UUID> list_of_ids_receivers = new ArrayList<>();
@@ -364,7 +365,6 @@ public class Model_Notification extends BaseModel implements Permissible, Person
     @JsonIgnore
     public void send(List<Model_Person> receivers) {
         for (Model_Person person : receivers) this.list_of_ids_receivers.add(person.id);
-        NotificationHandler.addToQueue(this);
     }
 
     @JsonIgnore
@@ -374,24 +374,16 @@ public class Model_Notification extends BaseModel implements Permissible, Person
             return;
         }
 
-        this.list_of_ids_receivers.addAll(Model_Project.get_project_becki_person_ids_list(project_id)); // Přidám z Cashe všechny ID osob, které odebírjí konkrétní projekt
-        NotificationHandler.addToQueue(this);
     }
 
     @JsonIgnore
     public void send(Model_Person person) {
         this.list_of_ids_receivers.add(person.id);
-        NotificationHandler.addToQueue(this);
     }
 
     // Pro opětovné odeslání, když už notifikace obsahuje person
     @JsonIgnore
     public void send() {
-        try {
-            NotificationHandler.addToQueue(this);
-        } catch (NullPointerException npe) {
-            logger.internalServerError(new Exception("Method probably misused, use this method only when you resend notifications. If notification contains person."));
-        }
     }
 
     @Override

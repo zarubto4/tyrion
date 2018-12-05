@@ -24,11 +24,10 @@ public class Model_Invitation extends BaseModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-
-    @JsonIgnore                        @ManyToOne public Model_Person owner;
-    @JsonIgnore                        @ManyToOne public Model_Project project;
-    @JsonIgnore @Constraints.Email                public String email;
-    @JsonIgnore                                   public UUID notification_id;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_Person owner;
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_Project project;
+    @JsonIgnore @Constraints.Email                  public String email;
+    @JsonIgnore                                     public UUID notification_id;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
@@ -44,14 +43,24 @@ public class Model_Invitation extends BaseModel {
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
-    @Transient
+    @JsonIgnore
+    public Model_Person getOwner() {
+        return isLoaded("owner") ? owner : Model_Person.find.query().where().eq("invitations.id", id).findOne();
+    }
+
+    @JsonIgnore
+    public Model_Project getProject() {
+        return isLoaded("project") ? project : Model_Project.find.query().where().eq("invitations.id", id).findOne();
+    }
+
+    @JsonIgnore
     public void delete_notification() {
         try {
 
             if (notification_id != null) {
 
                 Model_Notification notification = Model_Notification.find.byId(notification_id);
-                if (notification != null) notification.delete();
+                notification.delete();
             }
         } catch (Exception e) {
             logger.internalServerError(e);

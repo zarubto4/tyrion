@@ -7,6 +7,8 @@ import java.util.UUID;
  */
 public interface Echo {
 
+    UUID getId();
+
     /**
      * Get ID of parent project.
      * @return UUID id of project

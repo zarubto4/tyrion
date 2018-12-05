@@ -3,19 +3,14 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import mongo.ModelMongo_CompilationServer_OnlineStatus;
-import play.libs.Json;
 import utilities.cache.CacheFinder;
 import utilities.cache.InjectCache;
 import utilities.enums.CompilationStatus;
 import utilities.enums.EntityType;
 import utilities.enums.NetworkStatus;
-import utilities.errors.ErrorCode;
 import utilities.model.BaseModel;
 import utilities.model.Publishable;
 import utilities.network.JsonNetworkStatus;
@@ -25,9 +20,6 @@ import utilities.permission.Permissible;
 import utilities.permission.WithPermission;
 import utilities.threads.compilator_server.Compilation_After_BlackOut;
 import utilities.logger.Logger;
-import websocket.Request;
-import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
-import websocket.messages.compilator_with_tyrion.WS_Message_Ping_compilation_server;
 
 import javax.persistence.*;
 import java.util.*;
@@ -90,87 +82,6 @@ public class Model_CompilationServer extends BaseModel implements Permissible, P
 /* SERVER WEBSOCKET  --------------------------------------------------------------------------------------------------*/
 
     public static String CHANNEL = "compilation_server";
-
-    @JsonIgnore
-    public ObjectNode write_with_confirmation(ObjectNode json,  Integer time, Integer delay, Integer number_of_retries) {
-
-        try {
-
-            if (!Controller_WebSocket.compilers.containsKey(this.id)) {
-
-                ObjectNode request = Json.newObject();
-                request.put("message_type", json.get("message_type").asText());
-                request.put("status", "error");
-                request.put("message_channel", Model_CompilationServer.CHANNEL);
-                request.put("error_code", ErrorCode.HOMER_IS_OFFLINE.error_code());
-                request.put("error_message", ErrorCode.HOMER_IS_OFFLINE.error_message());
-                request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
-                request.put("websocket_identificator", this.id.toString());
-
-                return request;
-            }
-
-            return Controller_WebSocket.compilers.get(this.id).sendWithResponse(new Request(json, delay, time, number_of_retries));
-
-        } catch (Exception e) {
-            logger.error("write_with_confirmation - exception", e);
-
-            ObjectNode request = Json.newObject();
-            request.put("message_type", json.get("message_type").asText());
-            request.put("status", "error");
-            request.put("message_channel", Model_CompilationServer.CHANNEL);
-            request.put("error_code", ErrorCode.COMPILATION_SERVER_IS_OFFLINE.error_code());
-            request.put("error_message", ErrorCode.COMPILATION_SERVER_IS_OFFLINE.error_message());
-            request.put("message_id", json.has("message_id") ? json.get("message_id").asText() : "unknown");
-            request.put("websocket_identificator", this.id.toString());
-
-            return request;
-        }
-    }
-
-    @JsonIgnore
-    public static boolean is_online() {
-        return !Controller_WebSocket.compilers.isEmpty();
-    }
-
-    @JsonIgnore
-    public static WS_Message_Make_compilation make_Compilation(ObjectNode request) {
-        try {
-
-            // Vyberu náhodný kompilační server
-            List<UUID> keys = new ArrayList<>(Controller_WebSocket.compilers.keySet());
-            Model_CompilationServer server = Model_CompilationServer.find.byId(Controller_WebSocket.compilers.get(keys.get(new Random().nextInt(keys.size()))).id);
-
-            ObjectNode compilation_request = server.write_with_confirmation(request, 5*1000, 0, 3);
-            WS_Message_Make_compilation compilation = formFromJsonWithValidation(WS_Message_Make_compilation.class, compilation_request);
-
-            if (compilation.build_url != null) {
-                logger.trace("make_Compilation:: Build URL is not null: {} ", compilation.build_url);
-                compilation.status = "success";
-            }
-
-            logger.trace("make_Compilation:: TOTAL RESPONSE {}",  Json.toJson(compilation).toString());
-            return compilation;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new WS_Message_Make_compilation();
-        }
-    }
-
-    @JsonIgnore
-    public WS_Message_Ping_compilation_server ping() {
-        try {
-
-            JsonNode json = write_with_confirmation(new WS_Message_Ping_compilation_server().make_request(),  1000 * 30, 0, 3);
-
-            return formFromJsonWithValidation(WS_Message_Ping_compilation_server.class, json);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new WS_Message_Ping_compilation_server();
-        }
-    }
 
     @JsonIgnore
     public void compiler_server_is_disconnect() {

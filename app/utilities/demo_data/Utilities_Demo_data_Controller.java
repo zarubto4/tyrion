@@ -1,11 +1,11 @@
 package utilities.demo_data;
 
+import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
 import io.swagger.annotations.Api;
 import models.*;
-import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.Result;
 import utilities.enums.BusinessModel;
@@ -14,9 +14,8 @@ import utilities.enums.HomerType;
 import utilities.enums.ProgramType;
 import exceptions.NotFoundException;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
+import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -28,15 +27,13 @@ public class Utilities_Demo_data_Controller extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
-    private static final Logger terminal_logger = new Logger(Utilities_Demo_data_Controller.class);
-
-
+    private static final Logger logger = new Logger(Utilities_Demo_data_Controller.class);
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    @javax.inject.Inject
-    public Utilities_Demo_data_Controller(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, PermissionService permissionService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    @Inject
+    public Utilities_Demo_data_Controller(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
+        super(ws, formFactory, config, permissionService, notificationService);
     }
 
 // CONTROLLER CONTENT ##################################################################################################
@@ -44,7 +41,7 @@ public class Utilities_Demo_data_Controller extends _BaseController {
     public Result test() {
         try {
 
-            terminal_logger.trace("test:: Demo_Data_Controller :: test :: start");
+            logger.trace("test:: Demo_Data_Controller :: test :: start");
 
             return ok();
 
@@ -76,7 +73,7 @@ public class Utilities_Demo_data_Controller extends _BaseController {
     public Result garfield() {
         try {
 
-            terminal_logger.trace("garfield:: garfield()");
+            logger.trace("garfield:: garfield()");
 
             try {
                 Model_Garfield.find.query().where().eq("name", "Garfield").findOne();

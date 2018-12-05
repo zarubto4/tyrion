@@ -6,7 +6,6 @@ import controllers._BaseController;
 import controllers._BaseFormFactory;
 import models.Model_Product;
 import models.Model_Invoice;
-import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -15,10 +14,8 @@ import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.financial.fakturoid.FakturoidService;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
+import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
-
 
 import java.util.Date;
 import java.util.UUID;
@@ -49,8 +46,8 @@ public class GoPay extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public GoPay(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerService scheduler, FakturoidService fakturoid, PermissionService permissionService) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    public GoPay(WSClient ws, _BaseFormFactory formFactory, Config config, FakturoidService fakturoid, PermissionService permissionService, NotificationService notificationService) {
+        super(ws, formFactory, config, permissionService, notificationService);
         this.fakturoid = fakturoid;
     }
 

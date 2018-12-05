@@ -6,6 +6,7 @@ import com.typesafe.config.Config;
 import exceptions.*;
 import io.swagger.annotations.ApiModel;
 import models.Model_Person;
+import models.Model_Project;
 import play.Environment;
 import play.libs.Json;
 import play.libs.ws.WSClient;
@@ -19,7 +20,10 @@ import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
 import utilities.logger.YouTrack;
 import utilities.model.BaseModel;
+import utilities.model.Echo;
 import utilities.model.JsonSerializable;
+import utilities.model.UnderProject;
+import utilities.notifications.NotificationService;
 import utilities.permission.Action;
 import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerService;
@@ -52,13 +56,15 @@ public abstract class _BaseController {
     protected final WSClient ws;
     protected final Config config;
     protected final PermissionService permissionService;
+    protected final NotificationService notificationService;
 
     @Inject
-    public _BaseController(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
+    public _BaseController(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
         this.ws = ws;
         this.formFactory = formFactory;
         this.config = config;
         this.permissionService = permissionService;
+        this.notificationService = notificationService;
     }
 
     public Result create(BaseModel model) throws ForbiddenException, NotSupportedException {
@@ -115,6 +121,19 @@ public abstract class _BaseController {
 
     public void checkInvitePermission(BaseModel model) throws ForbiddenException, NotSupportedException {
         this.permissionService.check(person(), model, Action.INVITE);
+    }
+
+    public void sendModelUpdate(Echo model) {
+        try {
+            Model_Project project = ((UnderProject) model).getProject();
+            if (project != null) {
+                this.notificationService.modelUpdated(model.getClass(), model.getId(), project.getId());
+            }
+        } catch (NotFoundException e) {
+            // nothing
+        } catch (Exception e) {
+            logger.internalServerError(e);
+        }
     }
 
     /**
@@ -584,6 +603,14 @@ public abstract class _BaseController {
             } else if (error instanceof NotSupportedException) {
 
                 return badRequest(Json.toJson(new Result_UnsupportedException()));
+
+            } else if (error instanceof ServerOfflineException) {
+
+                return externalServerOffline(error.getMessage());
+
+            } else if (error instanceof ExternalErrorException) {
+
+                return externalServerError();
             }
 
             return internalServerError(error);

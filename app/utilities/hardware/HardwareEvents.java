@@ -37,27 +37,19 @@ public class HardwareEvents {
 
         this.synchronizationService.submit(task);
 
-        // Notifikce
-        if (hardware.developer_kit) {
-            hardware.notification_board_connect(); // TODO injection this.notificationService.send();
+        if (hardware.getProject() != null) {
+            this.notificationService.send(hardware.getProject(), hardware.notificationOnline());
         }
     }
 
     public void disconnected(Model_Hardware hardware) {
 
-        // Záznam do DM databáze
         hardware.make_log_disconnect(); // TODO injection
 
         this.networkStatusService.setStatus(hardware, NetworkStatus.OFFLINE);
 
-        // Standartní synchronizace
-        if (hardware.project().id != null) {
-            // TODO injection WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, hardware.id, false, hardware.project().id);
-        }
-
-        if (hardware.developer_kit) {
-            // Notifikace
-            hardware.notification_board_disconnect(); // TODO injection this.notificationService.send();
+        if (hardware.getProject() != null) {
+            this.notificationService.send(hardware.getProject(), hardware.notificationOffline());
         }
     }
 

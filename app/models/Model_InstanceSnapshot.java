@@ -62,7 +62,6 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Instance instance;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_BProgramVersion b_program_version;
     @JsonIgnore @OneToOne(fetch  = FetchType.LAZY) public Model_Blob program;
-    @JsonIgnore @OneToMany(mappedBy = "instance", fetch = FetchType.LAZY) public List<Model_UpdateProcedure> procedures = new ArrayList<>(); // Reálně zde je uložena jen jedna, pokud byla instance nasazena víckrát, vždy se tvoří nový aktualizační plán! Pak jich tu je víc než jedna
 
     /**
      * Here we collect everything additional settings for Snapshot.
@@ -263,16 +262,6 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
         return null;
     }
 
-    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(value = "only if snapshot is main")
-    public List<Model_UpdateProcedure>  updates() {
-        try {
-            return getUpdateProcedure();
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore
@@ -338,34 +327,6 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
     public Model_Product getProduct() {
         return this.getInstance().getProject().getProduct();
 
-    }
-
-    @JsonIgnore
-    public List<UUID> getUpdateProcedureIds() {
-
-        if (idCache().gets(Model_UpdateProcedure.class) == null) {
-            idCache().add(Model_UpdateProcedure.class, Model_UpdateProcedure.find.query().where().eq("instance.id", id).orderBy("created desc").select("id").findSingleAttributeList());
-        }
-
-        return idCache().gets(Model_UpdateProcedure.class) != null ?  idCache().gets(Model_UpdateProcedure.class) : new ArrayList<>();
-    }
-
-    @JsonIgnore
-    public List<Model_UpdateProcedure> getUpdateProcedure() {
-        try {
-
-            List<Model_UpdateProcedure> list = new ArrayList<>();
-
-            for (UUID id : getUpdateProcedureIds()) {
-                list.add(Model_UpdateProcedure.find.byId(id));
-            }
-
-            return list;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new ArrayList<>();
-        }
     }
 
     @JsonIgnore

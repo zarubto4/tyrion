@@ -130,7 +130,7 @@ public class DigitalOceanThreadRegister extends Thread {
 
                                             logger.trace("crate_server:: Online DigitalOcean Checker Attempt {}", attems);
 
-                                            if (server.online_state() == NetworkStatus.ONLINE) {
+                                            if (server.online_state == NetworkStatus.ONLINE) { // TODO injection
                                                 logger.debug("crate_server::  Amazing -server deployed and running!");
                                                 server.idCache().removeAll(DigitalOceanThreadRegister.class);
                                                 break thr1;

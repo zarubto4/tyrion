@@ -9,15 +9,19 @@ import exceptions.ServerOfflineException;
 import io.ebean.Expr;
 import io.ebean.ExpressionList;
 import models.*;
-import utilities.enums.FirmwareType;
-import utilities.enums.HardwareUpdateState;
+import play.libs.Json;
+import utilities.enums.*;
+import utilities.errors.ErrorCode;
 import utilities.hardware.HardwareInterface;
 import utilities.hardware.HardwareService;
 import utilities.homer.HomerInterface;
 import utilities.homer.HomerService;
 import utilities.logger.Logger;
+import utilities.models_update_echo.EchoHandler;
+import utilities.notifications.NotificationService;
 import utilities.scheduler.SchedulerService;
 import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
+import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import java.util.*;
 
@@ -29,14 +33,16 @@ public class UpdateService {
     private final HomerService homerService;
     private final HardwareService hardwareService;
     private final SchedulerService schedulerService;
+    private final NotificationService notificationService;
 
     private Map<UUID, UpdateTask> tasks = new HashMap<>();
 
     @Inject
-    public UpdateService(HomerService homerService, HardwareService hardwareService, SchedulerService schedulerService) {
+    public UpdateService(HomerService homerService, HardwareService hardwareService, SchedulerService schedulerService, NotificationService notificationService) {
         this.homerService = homerService;
         this.hardwareService = hardwareService;
         this.schedulerService = schedulerService;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -108,8 +114,152 @@ public class UpdateService {
         this.bulkUpdate(group.getHardware(), updatable, type);
     }
 
+    // TODO refactor
     public void onUpdateMessage(WS_Message_Hardware_UpdateProcedure_Progress message) {
-        // TODO update progress
+        try {
+
+            Enum_HardwareHomerUpdate_state phase = message.get_phase();
+
+            Model_HardwareUpdate update = Model_HardwareUpdate.find.byId(message.tracking_id);
+
+            Model_Project project = update.getProject();
+
+            logger.debug("onUpdateMessage - update id: {}, progress: {}%", update.id, message.percentage_progress);
+
+            // Pokud se vrátí fáze špatně - ukončuji celý update
+            if (message.error_message != null || message.error_code != null) {
+                logger.warn("update_procedure_progress  Update Fail! Device ID: {}, update procedure: {}", update.getHardware().id, update.id);
+
+                update.date_of_finish = new Date();
+                update.state = HardwareUpdateState.FAILED;
+                update.error_code = message.error_code;
+                update.error = message.error + message.error_message;
+                update.update();
+
+                if (project != null) {
+                    this.notificationService.send(project, update.notificationUpdateFailed(message.error_code));
+                }
+                return;
+            }
+
+            logger.debug("update_procedure_progress :: Checking phase: Phase {} ", phase);
+            // Fáze jsou volány jen tehdá, když má homer instrukce je zasílat
+            switch (phase) {
+                case PHASE_UPLOAD_START: if (project != null) this.notificationService.send(project, update.notificationUpdateStart()); break;
+                case PHASE_UPLOADING: if (project != null) this.notificationService.send(project, update.notificationUploading(message.percentage_progress)); break;
+                case PHASE_UPLOAD_DONE: if (project != null) this.notificationService.send(project, update.notificationUploadDone()); break;
+                case PHASE_FLASH_ERASING: if (project != null) this.notificationService.send(project, update.notificationBufferErasing()); break;
+                case PHASE_FLASH_ERASED: if (project != null) this.notificationService.send(project, update.notificationBufferErased()); break;
+                case PHASE_RESTARTING: if (project != null) this.notificationService.send(project, update.notificationRestarting()); break;
+                case PHASE_CONNECTED_AFTER_RESTART: if (project != null) this.notificationService.send(project, update.notificationAfterRestart()); break;
+                case PHASE_UPDATE_DONE: {
+
+                    if (project != null) {
+                        this.notificationService.send(project, update.notificationUpdateEnd());
+                    }
+
+                    logger.debug("update_procedure_progress - procedure {} is UPDATE_DONE", update.id);
+
+                    Model_Hardware hardware = update.getHardware();
+
+                    logger.warn("update_procedure_progress :: UPDATE DONE :: update.firmware_type {} ", update.firmware_type);
+
+                    if (update.firmware_type == FirmwareType.FIRMWARE) {
+
+                        hardware.actual_c_program_version = update.c_program_version_for_update;
+                        hardware.update();
+
+                    } else if (update.firmware_type == FirmwareType.BOOTLOADER) {
+
+                        hardware.actual_boot_loader = update.getBootloader();
+                        hardware.update();
+
+                    } else if (update.firmware_type == FirmwareType.BACKUP) {
+
+                        hardware.actual_backup_c_program_version = update.c_program_version_for_update;
+                        hardware.update();
+                        hardware.make_log_backup_arrise_change();
+                    }
+
+                    update.state = HardwareUpdateState.COMPLETE;
+                    update.date_of_finish = new Date();
+                    update.update();
+
+                    EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, hardware.get_project_id(), hardware.id));
+
+                    return;
+                }
+
+                case NEW_VERSION_DOESNT_MATCH: {
+
+                    update.state = HardwareUpdateState.FAILED;
+                    update.error_code = ErrorCode.NEW_VERSION_DOESNT_MATCH.error_code();
+                    update.error = ErrorCode.NEW_VERSION_DOESNT_MATCH.error_message();
+                    update.date_of_finish = new Date();
+                    update.update();
+
+                    if (project != null)  {
+                        this.notificationService.send(project, update.notificationUpdateFailed(message.error_code));
+                    }
+
+                    break;
+                }
+
+                case ALREADY_SAME: {
+                    try {
+
+                        if (project != null) {
+                            this.notificationService.send(project, update.notificationAlreadySame());
+                        }
+
+                        update.state = HardwareUpdateState.COMPLETE;
+                        update.date_of_finish = new Date();
+                        update.update();
+
+                        Model_Hardware hardware = update.getHardware();
+
+                        if (update.firmware_type == FirmwareType.FIRMWARE) {
+
+                            if (hardware.getCurrentFirmware().id == null || !hardware.get_actual_c_program_version_id().equals(update.c_program_version_for_update.id)) {
+                                hardware.actual_c_program_version = update.c_program_version_for_update;
+                                hardware.update();
+                            }
+
+                        } else if (update.firmware_type == FirmwareType.BOOTLOADER) {
+
+                            hardware.actual_boot_loader = update.getBootloader();
+                            hardware.idCache().removeAll(Model_Hardware.Model_hardware_update_update_in_progress_bootloader.class);
+                            hardware.update();
+
+                        } else if (update.firmware_type == FirmwareType.BACKUP) {
+
+                            if (hardware.getCurrentBackup().id == null || !hardware.getCurrentBackup().id.equals(update.c_program_version_for_update.id)) {
+
+                                hardware.actual_backup_c_program_version = update.c_program_version_for_update;
+                                hardware.update();
+
+                                hardware.make_log_backup_arrise_change();
+                            }
+
+                        } else {
+                            logger.debug("update_procedure_progress: nebylo třeba vůbec nic měnit.");
+                        }
+
+                        EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, hardware.get_project_id(), hardware.id));
+
+                        return;
+                    } catch (Exception e) {
+                        logger.internalServerError(e);
+                    }
+                }
+
+                default: {
+                    throw new UnsupportedOperationException("Unknown update phase. Report: " + Json.toJson(message));
+                }
+            }
+        } catch (Exception e) {
+            logger.internalServerError(e);
+        }
     }
 
     public void cancel(UUID id) {
@@ -166,6 +316,7 @@ public class UpdateService {
         }
 
         Model_HardwareUpdate update = new Model_HardwareUpdate();
+        update.hardware = hardware;
         update.state = HardwareUpdateState.PENDING;
         update.firmware_type = type;
         update.count_of_tries = 0;
@@ -174,8 +325,10 @@ public class UpdateService {
             update.c_program_version_for_update = (Model_CProgramVersion) updatable;
         } else if (updatable instanceof Model_BootLoader) {
             update.bootloader = (Model_BootLoader) updatable;
+        } else if (updatable instanceof Model_Compilation) {
+            update.binary_file = ((Model_Compilation) updatable).getBlob();
         } else {
-            throw new RuntimeException("updatable must be Model_CProgramVersion or Model_BootLoader");
+            throw new RuntimeException("updatable must be Model_CProgramVersion, Model_BootLoader or Model_Compilation");
         }
 
         update.save();

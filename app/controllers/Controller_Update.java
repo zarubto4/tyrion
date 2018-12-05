@@ -12,19 +12,14 @@ import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
-import utilities.enums.CompilationStatus;
-import utilities.enums.HardwareUpdateState;
-import utilities.enums.FirmwareType;
-import utilities.enums.UpdateType;
 import utilities.logger.Logger;
+import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.input.*;
 import utilities.swagger.output.filter_results.Swagger_ActualizationProcedureTask_List;
-import utilities.swagger.output.filter_results.Swagger_ActualizationProcedure_List;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,122 +35,13 @@ public class Controller_Update extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @Inject
-    public Controller_Update(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService) {
-        super(ws, formFactory, config, permissionService);
+    public Controller_Update(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
+        super(ws, formFactory, config, permissionService, notificationService);
     }
 
 // ACTUALIZATION PROCEDURE #############################################################################################
 
-    @ApiOperation(value = "get ActualizationProcedure",
-            tags = {"Actualization"},
-            notes = "get Actualization Procedure by ID",
-            produces = "application/json",
-            protocols = "https"
-    )
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_UpdateProcedure.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
-    })
-    public Result get_Actualization_Procedure(@ApiParam(required = true) UUID actualization_procedure_id) {
-        try {
-            return read(Model_UpdateProcedure.find.byId(actualization_procedure_id));
-        } catch (Exception e) {
-            return controllerServerError(e);
-        }
-    }
-
-    @ApiOperation(value = "get ActualizationProcedure by Filter",
-            tags = {"Actualization"},
-            notes = "get actualization Procedure by query",
-            produces = "application/json",
-            protocols = "https"
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.input.Swagger_ActualizationProcedure_Filter",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_ActualizationProcedure_List.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result get_Actualization_Procedures_by_filter(int page_number) {
-        try {
-
-            // Get and Validate Object
-            Swagger_ActualizationProcedure_Filter help  = formFromRequestWithValidation(Swagger_ActualizationProcedure_Filter.class);
-
-            // Získání všech objektů a následné filtrování podle vlastníka
-            Query<Model_UpdateProcedure> query = Ebean.find(Model_UpdateProcedure.class);
-            query.order().desc("created");
-
-            if (help.project_id != null) {
-
-                Model_Project.find.byId(help.project_id);
-                query.where().eq("project_id", help.project_id);
-
-            }
-            if (help.project_id == null) {
-                query.where().isNull("project.id");
-            }
-
-            // Vyvoření odchozího JSON
-            Swagger_ActualizationProcedure_List result = new Swagger_ActualizationProcedure_List(query,page_number, help);
-
-            // TODO permissions
-
-            // Vrácení objektu
-            return ok(result);
-
-        } catch (Exception e) {
-            return controllerServerError(e);
-        }
-    }
-
-    @ApiOperation(value = "cancel ActualizationProcedure",
-            tags = {"Actualization"},
-            notes = "cancel (terminate) procedure",
-            produces = "application/json",
-            protocols = "https",
-            code = 200
-    )
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",               response = Model_UpdateProcedure.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
-    })
-    public Result canceled_procedure(@ApiParam(required = true) UUID procedure_id) {
-        try {
-
-            // Kontrola objektu
-            Model_UpdateProcedure procedure = Model_UpdateProcedure.find.byId(procedure_id);
-
-            this.checkUpdatePermission(procedure);
-
-            procedure.cancel_procedure();
-
-            return ok(procedure);
-        } catch (Exception e) {
-            return controllerServerError(e);
-        }
-    }
-
-    @ApiOperation(value = "make ActualizationProcedure",
+    /*@ApiOperation(value = "make ActualizationProcedure",
             tags = {"Actualization"},
             notes = "make procedure",
             produces = "application/json",
@@ -270,7 +156,7 @@ public class Controller_Update extends _BaseController {
         } catch (Exception e) {
             return controllerServerError(e);
         }
-    }
+    }*/
 
 
     @ApiOperation(value = "upload C_Program Bin File",
@@ -460,7 +346,7 @@ public class Controller_Update extends _BaseController {
             if (!help.actualization_procedure_ids.isEmpty()) {
 
                 for (UUID procedure_id : help.actualization_procedure_ids) {
-                    Model_UpdateProcedure.find.byId(procedure_id);
+                    // TODO Model_UpdateProcedure.find.byId(procedure_id);
                 }
 
                 query.where().in("actualization_procedure.id", help.actualization_procedure_ids);

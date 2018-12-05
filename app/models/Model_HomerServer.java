@@ -3,7 +3,6 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import controllers.Controller_WebSocket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import mongo.ModelMongo_HomerServer_OnlineStatus;
@@ -24,8 +23,6 @@ import utilities.network.Networkable;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
 import utilities.permission.WithPermission;
-import utilities.slack.Slack;
-import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
 
 import javax.persistence.*;
 import java.util.*;
@@ -263,30 +260,6 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
 /* SERVER WEBSOCKET CONTROLLING OF HOMER SERVER--------------------------------------------------------------------------*/
 
     public static final String CHANNEL = "homer_server";
-
-    @JsonIgnore
-    @Transient
-    public void is_disconnect() {
-        try {
-            logger.warn("is_disconnect:: Tyrion lost connection with Homer server: " + id);
-            make_log_disconnect();
-
-            // Send echo to all connected users (its public servers)
-            if (server_type == HomerType.PUBLIC || server_type == HomerType.MAIN || server_type == HomerType.BACKUP) {
-                WS_Message_Online_Change_status.synchronize_online_state_with_becki_public_objects(Model_HomerServer.class, this.id, false);
-            }
-
-            if (server_type == HomerType.PRIVATE) {
-                WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_HomerServer.class, this.id, false, get_project_id());
-            }
-
-            if (Server.mode == ServerMode.STAGE) {
-                Slack.homer_server_offline(this);
-            }
-        } catch (Exception e) {
-
-        }
-    }
 
 /* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
 

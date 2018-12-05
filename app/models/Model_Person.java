@@ -253,10 +253,6 @@ public class Model_Person extends BaseModel implements Permissible {
         return find.query().where().eq("email", email).findOne();
     }
 
-    public static Model_Person getByAuthToken(String token) throws NotFoundException {
-        return getByAuthToken(UUID.fromString(token));
-    }
-
     public static Model_Person getByAuthToken(UUID token) throws NotFoundException {
 
         UUID id = token_cache.get(token);

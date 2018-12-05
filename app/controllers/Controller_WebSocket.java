@@ -17,12 +17,12 @@ import responses.Result_InternalServerError;
 import responses.Result_Unauthorized;
 import utilities.authentication.Authentication;
 import utilities.logger.Logger;
+import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.output.Swagger_Websocket_Token;
 import websocket.WebSocketService;
 import websocket.interfaces.*;
 import websocket.interfaces.Compiler;
-import websocket.messages.compilator_with_tyrion.WS_Message_Ping_compilation_server;
 
 import javax.inject.Inject;
 import java.util.*;
@@ -44,23 +44,14 @@ public class Controller_WebSocket extends _BaseController {
     private final Injector injector;
 
     @Inject
-    public Controller_WebSocket(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, WebSocketService webSocketService, Injector injector) {
-        super(ws, formFactory, config, permissionService);
+    public Controller_WebSocket(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
+                                NotificationService notificationService, WebSocketService webSocketService, Injector injector) {
+        super(ws, formFactory, config, permissionService, notificationService);
         this.webSocketService = webSocketService;
         this.injector = injector;
     }
 
 /* STATIC --------------------------------------------------------------------------------------------------------------*/
-
-    /**
-     * Holds all connections of Compiler servers
-     */
-    public static Map<UUID, WS_Compiler> compilers = new HashMap<>();
-
-    /**
-     * Holds all connections of Becki portals
-     */
-    public static Map<UUID, WS_Portal> portals = new HashMap<>();
 
     /**
      * Holds person connection tokens and ids
@@ -162,15 +153,15 @@ public class Controller_WebSocket extends _BaseController {
                     if (this.webSocketService.isRegistered(server.id)) {
                         logger.error("compiler - server is already connected, trying to ping previous connection");
 
-                        WS_Message_Ping_compilation_server result = server.ping();
+                        Compiler compiler = this.webSocketService.getInterface(server.id);
 
-                        logger.trace("compiler:: Error::{} {}" , result.error , result.error_message);
-                        if(!result.status.equals("success") && !result.error.equals("Missing field code.")){
-                            logger.error("compiler - ping failed, removing previous connection");
-                            this.webSocketService.getInterface(server.id).close();
-                        } else {
+                        try {
+                            compiler.ping();
                             logger.warn("compiler - server is already connected, connection is working, cannot connect twice");
                             return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
+                        } catch (Exception e) {
+                            logger.error("compiler - ping failed, removing previous connection");
+                            compiler.close();
                         }
                     }
 

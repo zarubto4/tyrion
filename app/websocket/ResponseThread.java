@@ -17,7 +17,7 @@ public class ResponseThread implements Supplier<Message> {
 
     private static final Logger logger = new Logger(ResponseThread.class);
 
-    private WS_Interface sender;
+    private Interface sender;
     private ObjectNode message;
     private UUID id;
     private int delay;
@@ -73,7 +73,7 @@ public class ResponseThread implements Supplier<Message> {
         }
     }
 
-    public void setSender(WS_Interface sender) {
+    public void setSender(Interface sender) {
         this.sender = sender;
     }
 

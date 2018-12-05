@@ -16,7 +16,6 @@ import org.reactivestreams.Publisher;
 import play.libs.Json;
 import scala.concurrent.duration.FiniteDuration;
 import utilities.logger.Logger;
-import utilities.network.NetworkStatusService;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -54,12 +53,10 @@ public class Interface implements WebSocketInterface {
      */
     private Map<UUID, Request> messageBuffer = new HashMap<>();
 
-    protected final NetworkStatusService networkStatusService;
     protected final Materializer materializer;
     protected final _BaseFormFactory formFactory;
 
-    public Interface(NetworkStatusService networkStatusService, Materializer materializer, _BaseFormFactory formFactory) {
-        this.networkStatusService = networkStatusService;
+    public Interface(Materializer materializer, _BaseFormFactory formFactory) {
         this.materializer = materializer;
         this.formFactory = formFactory;
     }
@@ -186,6 +183,10 @@ public class Interface implements WebSocketInterface {
         // message.setSender(this);
         messageBuffer.put(request.getId(), request);
         request.sendAsync(consumer);
+    }
+
+    public void removeMessage(UUID id) {
+        this.messageBuffer.remove(id);
     }
 
     @Override

@@ -26,6 +26,7 @@ import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.enums.*;
 import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.logger.Logger;
+import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.Picture2Mb;
 import utilities.swagger.input.*;
@@ -51,8 +52,9 @@ public class Controller_Hardware extends _BaseController {
     private final UpdateService updateService;
 
     @Inject
-    public Controller_Hardware(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, HardwareService hardwareService, UpdateService updateService) {
-        super(ws, formFactory, config, permissionService);
+    public Controller_Hardware(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
+                               NotificationService notificationService, HardwareService hardwareService, UpdateService updateService) {
+        super(ws, formFactory, config, permissionService, notificationService);
         this.hardwareService = hardwareService;
         this.updateService = updateService;
     }
@@ -1882,16 +1884,7 @@ public class Controller_Hardware extends _BaseController {
 
                         logger.debug("hardware_updateBackup - To TRUE:: Board Id: {} has already sat as a dynamic Backup", hardware_backup_pair.hardware_id);
 
-                        // TODO WS_Message_Hardware_set_settings result = hardware.set_auto_backup();
-                        if (result.status.equals("success")) {
-                            logger.debug("hardware_updateBackup - To TRUE:: Board Id: {} Success of setting of dynamic backup", hardware_backup_pair.hardware_id);
-
-                            // Toto je pro výjmečné případy - kdy při průběhu updatu padne tyrion a transakce není komplentí
-                            if ( hardware.actual_backup_c_program_version != null) {
-                                hardware.actual_backup_c_program_version = null;
-                                hardware.update();
-                            }
-                        }
+                        hardwareInterface.setAutoBackup();
                     }
 
                 // Autobacku je statický
@@ -1929,16 +1922,7 @@ public class Controller_Hardware extends _BaseController {
             }
 
             if (!hardware_pairs.isEmpty()) {
-                new Thread(() -> {
-
-                    try {
-                        // TODO update Model_UpdateProcedure procedure = Model_Hardware.create_update_procedure(FirmwareType.BACKUP, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, hardware_pairs);
-                        // TODO update procedure.execute_update_procedure();
-
-                    } catch (Exception e) {
-                        logger.internalServerError(e);
-                    }
-                }).start();
+                // TODO udpate this.updateService.bulkUpdate();
             }
 
             // Vrácení potvrzení
