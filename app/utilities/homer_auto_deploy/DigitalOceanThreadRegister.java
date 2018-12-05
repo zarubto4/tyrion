@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutionException;
 public class DigitalOceanThreadRegister extends Thread {
 
     @Inject
-    public static _BaseFormFactory baseFormFactory;
+    public static _BaseFormFactory formFactory;
 
     /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 

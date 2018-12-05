@@ -46,4 +46,8 @@ public interface Configuration{
             default: throw new IllegalStateException("Extension type is unknown.");
         }
     }
+
+    default String toJsonString() {
+        return Json.toJson(this).toString();
+    }
 }

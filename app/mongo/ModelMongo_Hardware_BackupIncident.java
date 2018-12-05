@@ -12,6 +12,7 @@ import utilities.Server;
 import utilities.cache.CacheMongoFinder;
 import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
+import utilities.enums.ServerMode;
 import utilities.logger.Logger;
 import utilities.model.Publishable;
 import utilities.model._Abstract_MongoModel;
@@ -39,10 +40,13 @@ public class ModelMongo_Hardware_BackupIncident extends _Abstract_MongoModel {
     private static final Logger logger = new Logger(ModelMongo_Hardware_OnlineStatus.class);
 
     /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
-    @AlsoLoad("serverVersion") // handle old componentName field
-    public String server_version;
+
     @Indexed
-    public UUID hardware_id;
+    public String hardware_id;
+
+    // Common
+    public String server_version;
+    public ServerMode server_type;
 
 
     /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -50,6 +54,13 @@ public class ModelMongo_Hardware_BackupIncident extends _Abstract_MongoModel {
     /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
+    @Override
+    public void save() {
+        server_version = Server.version;
+        server_type = Server.mode;
+        super.save();
+    }
 
     /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -68,15 +79,15 @@ public class ModelMongo_Hardware_BackupIncident extends _Abstract_MongoModel {
     public static ModelMongo_Hardware_BackupIncident create_record(Model_Hardware hardware) {
 
         ModelMongo_Hardware_BackupIncident status = new ModelMongo_Hardware_BackupIncident();
-        status.hardware_id = hardware.id;
-        status.server_version = Server.version;
+        status.hardware_id = hardware.id.toString();
 
         status.save();
-
         return status;
     }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
+
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

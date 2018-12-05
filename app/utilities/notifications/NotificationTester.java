@@ -219,8 +219,8 @@ public class NotificationTester extends _BaseController {
                 if (project != null) {
                     notification.setObject(project);
 
-                    if (!project.hardware.isEmpty()) {
-                        Model_Hardware board = project.hardware.get(0);
+                    if (!project.getHardware().isEmpty()) {
+                        Model_Hardware board = project.getHardware().get(0);
                         notification.setObject(board);
                     }
 

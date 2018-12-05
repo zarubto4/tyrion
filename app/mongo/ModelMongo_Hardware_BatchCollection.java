@@ -9,9 +9,11 @@ import org.mongodb.morphia.annotations.*;
 import org.mongodb.morphia.query.Query;
 import play.data.validation.Constraints;
 import play.libs.Json;
+import utilities.Server;
 import utilities.cache.CacheMongoFinder;
 import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
+import utilities.enums.ServerMode;
 import utilities.logger.Logger;
 import utilities.model.Publishable;
 import utilities.model._Abstract_MongoModel;
@@ -61,7 +63,11 @@ public class ModelMongo_Hardware_BatchCollection extends _Abstract_MongoModel im
     @ApiModelProperty(required = true)                       public String description;
     @ApiModelProperty(required = true) @Constraints.Required public String compiler_target_name;
 
-/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
+    // Common
+    public String server_version;
+    public ServerMode server_type;
+
+    /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
@@ -164,6 +170,9 @@ public class ModelMongo_Hardware_BatchCollection extends _Abstract_MongoModel im
             // Set latest latest_used_mac_address if its empty
             if (latest_used_mac_address == null) latest_used_mac_address = mac_address_start;
 
+            server_version = Server.version;
+            server_type = Server.mode;
+
             // Try To make a Json and check validation properties of object  formFactory.formFromJsonWithValidation
             super.save();
 
@@ -196,6 +205,7 @@ public class ModelMongo_Hardware_BatchCollection extends _Abstract_MongoModel im
 /* SPECIAL QUERY -------------------------------------------------------------------------------------------------------*/
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
+
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

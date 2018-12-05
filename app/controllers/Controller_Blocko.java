@@ -92,16 +92,11 @@ public class Controller_Blocko extends _BaseController {
             bProgram.description           = help.description;
             bProgram.name                  = help.name;
             bProgram.project               = project;
-
-            this.checkCreatePermission(bProgram);
-
-            // Uložení objektu
-            bProgram.save();
-
             bProgram.setTags(help.tags);
 
+
             // Vrácení objektu
-            return created(bProgram);
+            return create(bProgram);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -168,7 +163,10 @@ public class Controller_Blocko extends _BaseController {
             Query<Model_BProgram> query = Ebean.find(Model_BProgram.class);
             query.where().eq("deleted", false);
 
-
+            if (help.name != null && help.name.length() > 0) {
+                System.out.println("name vyplněno: " + help.name + " l: " + help.name.length());
+                query.where().icontains("name", help.name);
+            }
 
             ExpressionList<Model_BProgram> list = query.where();
             Junction<Model_BProgram> disjunction = list.disjunction();
@@ -606,11 +604,12 @@ public class Controller_Blocko extends _BaseController {
             instance.server_backup = backup_server;
             instance.b_program = b_program;
 
+            instance.setTags(help.tags);
             this.checkCreatePermission(instance);
 
             instance.save();
 
-            instance.setTags(help.tags);
+
 
             return created(instance);
 
@@ -678,6 +677,8 @@ public class Controller_Blocko extends _BaseController {
 
             instance.name = help.name;
             instance.description = help.description;
+
+            instance.setTags(help.tags);
 
             return update(instance);
 
@@ -874,6 +875,7 @@ public class Controller_Blocko extends _BaseController {
             snapshot.description = help.description;
             snapshot.b_program_version = version;
             snapshot.instance = instance;
+            snapshot.setTags(help.tags);
 
             this.checkCreatePermission(snapshot);
 
@@ -881,6 +883,7 @@ public class Controller_Blocko extends _BaseController {
 
             snapshot.program = Model_Blob.upload(help.json().toString(), "snapshot.json", snapshot.get_path());
 
+            snapshot.setTags(help.tags);
             snapshot.update();
 
             return created(snapshot);
@@ -929,6 +932,8 @@ public class Controller_Blocko extends _BaseController {
             snapshot.name = help.name;
             snapshot.description = help.description;
 
+            snapshot.setTags(help.tags);
+
             return update(snapshot);
 
         } catch (Exception e) {
@@ -951,7 +956,9 @@ public class Controller_Blocko extends _BaseController {
     })
     public Result instanceSnapshot_get(UUID snapshot_id) {
         try {
+
             return read(Model_InstanceSnapshot.find.byId(snapshot_id));
+
         } catch (Exception e) {
             return controllerServerError(e);
         }

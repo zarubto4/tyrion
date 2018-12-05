@@ -20,6 +20,7 @@ import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
+import play.libs.ws.WSClient;
 import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
@@ -31,6 +32,7 @@ import utilities.model._Abstract_MongoModel;
 import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
+import utilities.scheduler.jobs.Job_GetCompilationLibraries;
 
 import java.math.RoundingMode;
 import java.net.InetAddress;
@@ -47,8 +49,9 @@ public class Server {
 
     private static final Logger logger = new Logger(Server.class);
 
-    public static _BaseFormFactory baseFormFactory;
+    public static _BaseFormFactory formFactory;
     public static Config configuration;
+    public static WSClient ws;
     public static Injector injector;
 
     public static ServerMode mode;
@@ -133,9 +136,10 @@ public class Server {
      * @param injector default application injector
      * @throws Exception if error occurs when starting the server
      */
-    public static void start(Injector injector) throws Exception {
+    public static void start(Injector injector,  WSClient ws, _BaseFormFactory formFactory) throws Exception {
         Server.injector = injector;
-        Server.baseFormFactory = Server.injector.getInstance(_BaseFormFactory.class);
+        Server.formFactory = formFactory;
+        Server.ws = ws;
 
         setConstants();
 
@@ -153,6 +157,9 @@ public class Server {
         }
 
         setBaseForm();
+
+        // Set Libraries
+        new Job_GetCompilationLibraries(ws, configuration, formFactory).execute(null);
     }
 
     /**
@@ -272,6 +279,9 @@ public class Server {
 
         // Set token to InterCom
         Intercom.setToken(configuration.getString("Intercom.token"));
+
+
+
     }
 
     /**
@@ -461,7 +471,8 @@ public class Server {
         String mode = Server.mode.name().toLowerCase();
 
         // Připojení na MongoClient v Azure
-        logger.info("init_mongo_database:: URL {}", configuration.getString("MongoDB." + mode + ".url"));
+        logger.info("init_mongo_database:");
+        logger.trace("init_mongo_database:: URL {}", configuration.getString("MongoDB." + mode + ".url"));
 
 
         MongoClientOptions.Builder options_builder = new MongoClientOptions.Builder();
@@ -533,7 +544,7 @@ public class Server {
 
     public static Datastore getMainMongoDatabase() {
         if(Server.main_data_store == null) {
-            logger.error("getMainMongoDatabase:: {} Required to init main_data_store ");
+            logger.error("getMainMongoDatabase:: Required to init main_data_store.");
             init_mongo_database();
         }
 

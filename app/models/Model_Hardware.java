@@ -3,6 +3,7 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import exceptions.NotFoundException;
 import io.ebean.Expr;
@@ -34,6 +35,7 @@ import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import javax.persistence.Transient;
+import java.time.Instant;
 import java.util.*;
 
 @Entity
@@ -124,7 +126,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     // For Faster reload
-    @JsonIgnore @Transient @Cached public Long cache_latest_online;
+    @JsonIgnore @Transient @Cached public long cache_latest_online;
     @JsonIgnore @Transient @Cached public String cache_latest_know_ip_address;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
@@ -163,6 +165,16 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
             return this.getProject().ref();
         } catch (Exception e) {
             logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonProperty
+    public Swagger_Short_Reference cellular() {
+        try {
+            return this.getGSM().ref();
+        } catch (Exception e) {
+            // Can be null!
             return null;
         }
     }
@@ -453,11 +465,11 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
    /* @JsonProperty
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @ApiModelProperty(value = "Value is missing, if device status is online")
-    public Long latest_online() {
-        if (online_state == NetworkStatus.ONLINE) return null;
+    public long latest_online() {
+        if (online_state() == NetworkStatus.ONLINE) return 0;
         try {
 
-            if (cache_latest_online != null) {
+            if (cache_latest_online != 0) {
                 return cache_latest_online;
             }
 
@@ -467,14 +479,17 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
                     logger.warn("Need latest_online for device ID: {}", this.id);
 
 
-                    ModelMongo_Hardware_OnlineStatus status = ModelMongo_Hardware_OnlineStatus.find.query().order("created").get(new FindOptions().batchSize(1));
+                    ModelMongo_Hardware_OnlineStatus status = ModelMongo_Hardware_OnlineStatus.find.query()
+                            .field("hardware_id").equal(this.id.toString())
+                            .field("server_version").equal(Server.mode.name())
+                            .order("created").get(new FindOptions().batchSize(1));
 
                     if (status != null) {
                         logger.debug("last_online: more than 1 record, finding latest record");
-                        cache_latest_online = new Date(status.created).getTime();
+                        cache_latest_online =  Instant.now().getEpochSecond();
                         EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, getProject().id, this.id));
                     } else  {
-                        cache_latest_online = 0L;
+                        cache_latest_online = -1;
                     }
 
                 } catch (Exception e) {
@@ -482,11 +497,11 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
                 }
             }).start();
 
-            return Long.MIN_VALUE;
+            return -1;
 
         } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
+            // logger.internalServerError(e);
+            return -1;
         }
     }*/
 
@@ -690,6 +705,38 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     @JsonIgnore @Override
     public Model_Project getProject() {
         return isLoaded("project") ? project : Model_Project.find.query().nullable().where().eq("hardware.id", id).findOne();
+    }
+
+    @JsonIgnore
+    public UUID getGSM_id() {
+        try {
+            if (idCache().get(Model_GSM.class) == null) {
+
+                if (bootloader_core_configuration().iccid != null) {
+
+                    Model_GSM gsm = Model_GSM.find.query().nullable().where().icontains("iccid", bootloader_core_configuration().iccid).findOne();
+                    if (gsm != null) {
+                        idCache().add(Model_CProgramVersion.class, gsm.id);
+                    }
+                }
+
+            }
+
+            return idCache().get(Model_GSM.class);
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonIgnore
+    public Model_GSM getGSM() {
+        try {
+            return Model_GSM.find.byId(getGSM_id());
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @JsonIgnore

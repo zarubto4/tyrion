@@ -119,17 +119,11 @@ public class Controller_ExternalServer extends _BaseController {
                 server.project =  Model_Project.find.byId(help.project_id);
             }
 
-            this.checkCreatePermission(server);
-
-            server.save();
-
             server.setTags(help.tags);
-
-
             DigitalOceanTyrionService.create_server(server, help.size_slug, help.region_slug);
 
             // Vrácení objektu
-            return created(server);
+            return create(server);
 
         } catch (Exception e) {
             return controllerServerError(e);

@@ -213,12 +213,12 @@ public class Controller_Code extends _BaseController {
             }
 
             this.checkCreatePermission(c_program);
+            // Set Tags
+            c_program.setTags(help.tags);
 
             // Uložení C++ Programu
             c_program.save();
 
-            // Set Tags
-            c_program.setTags(help.tags);
 
             // Přiřadím první verzi!
             if (hardwareType.get_main_c_program() != null && hardwareType.get_main_c_program().default_main_version != null) {
@@ -417,6 +417,11 @@ public class Controller_Code extends _BaseController {
                         .endJunction();
             }
 
+            if (help.name != null && help.name.length() > 0) {
+                System.out.println("name vyplněno: " + help.name + " l: " + help.name.length());
+                query.where().icontains("name", help.name);
+            }
+
             if (help.public_programs) {
                 disjunction
                         .conjunction()
@@ -489,11 +494,13 @@ public class Controller_Code extends _BaseController {
             c_program.name = help.name;
             c_program.description = help.description;
 
+            // Set Tags
+            c_program.setTags(help.tags);
+
             // Uložení změn
             c_program.update();
 
-            // Set Tags
-            c_program.setTags(help.tags);
+
 
             // Vrácení objektu
             return ok(c_program);

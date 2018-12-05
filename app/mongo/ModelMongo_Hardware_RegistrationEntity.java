@@ -7,15 +7,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBObject;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import jdk.nashorn.internal.ir.annotations.Ignore;
 import models.Model_Hardware;
 import models.Model_HardwareType;
 import org.bson.Document;
 import org.bson.types.ObjectId;
-import org.mongodb.morphia.annotations.Entity;
-import org.mongodb.morphia.annotations.Field;
-import org.mongodb.morphia.annotations.Index;
-import org.mongodb.morphia.annotations.Indexes;
+import org.mongodb.morphia.annotations.*;
 import play.data.validation.Constraints;
 import play.libs.Json;
 import utilities.cache.CacheMongoFinder;
@@ -82,7 +78,7 @@ public class ModelMongo_Hardware_RegistrationEntity extends _Abstract_MongoModel
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-    @Ignore
+    @JsonIgnore
     public static String generate_hash() {
         String hash = "HW" + UUID.randomUUID().toString().replaceAll("[-]","").substring(0, 24);
         if (getbyFull_hash(hash) != null) {

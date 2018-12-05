@@ -18,6 +18,7 @@ import utilities.compiler.CompilationService;
 import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
 import utilities.logger.Logger;
+import utilities.scheduler.Restrict;
 import utilities.scheduler.Scheduled;
 import utilities.slack.Slack;
 import utilities.swagger.input.*;
@@ -28,10 +29,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static utilities.enums.ServerMode.PRODUCTION;
+import static utilities.enums.ServerMode.STAGE;
+
 /**
  * This job synchronizes compilation libraries from GitHub releases.
  */
 @Scheduled("0 0/5 * 1/1 * ? *")
+@Restrict(value = { STAGE }) // Do it only on stage
 public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements Job {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
@@ -80,10 +85,6 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
                     // Aktuální podporované knihovny
                     List<Swagger_CompilationLibrary> library_list = hardwareType.supported_libraries();
 
-                    // List který budu doplnovat
-                    List<Swagger_CompilationLibrary> library_list_for_add = new ArrayList<>();
-
-
                     // Pokud knihovnu
                     synchro_libraries:
                     for (Swagger_GitHubReleases release : releases) {
@@ -95,20 +96,21 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
                             }
                         }
 
-                        if(release.assets.size() == 0) {
+
+                        if (release.assets.size() == 0) {
                             logger.debug("check_version_thread: Tag version  {} not contains any assets", release.tag_name);
                             continue;
                         }
 
                         List<String> obsolete_versions = config.getStringList("compilation_settings.obsolete_lib_version");
 
-                        if(obsolete_versions.contains(release.tag_name)) {
+                        if (obsolete_versions.contains(release.tag_name)) {
                             logger.debug("check_version_thread: Tag version  {} is mark as obsolete", release.tag_name);
                             continue;
                         }
 
 
-                        if(release.tag_name == null) {
+                        if (release.tag_name == null) {
                             logger.error("check_version_thread:: Release is Damaged: {} ", Json.toJson(release).toString());
                             continue;
                         }
@@ -158,35 +160,22 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
                             continue;
                         }
 
-                        Swagger_CompilationLibrary new_library = new Swagger_CompilationLibrary();
-                        new_library.tag_name = release.tag_name;
-                        new_library.name = release.name;
-                        new_library.body = release.body;
-                        new_library.draft = release.draft;
-                        new_library.prerelease = release.prerelease;
-                        new_library.created_at = release.created_at;
-                        new_library.published_at = release.published_at;
-                        library_list_for_add.add(new_library);
 
                         logger.trace("check_version_thread:: setAndCompileNewPublicPrograms: release {}", release.prettyPrint());
                         try {
                             setAndCompileNewPublicPrograms(release);
-                        } catch (Exception e){
+                        } catch (Exception e) {
                             e.printStackTrace();
 
                         }
                     }
 
-                    hardwareType.cache_library_list.addAll(library_list_for_add);
-
-                    // Sorting List
-                    hardwareType.cache_library_list = hardwareType.cache_library_list.stream().sorted((element1, element2) -> element2.name.compareTo(element1.name)).collect(Collectors.toList());
                 }
 
-                logger.trace("check_version_thread:: all Library type of Board synchronized");
+                logger.trace("thread:check_version_thread:: all Library type of Board synchronized");
 
             } catch (F.PromiseTimeoutException e ) {
-                logger.error("Job_CheckCompilationLibraries:: PromiseTimeoutException! - Probably Network is unreachable", new Date());
+                logger.error("thread:: PromiseTimeoutException! - Probably Network is unreachable", new Date());
             } catch (Exception e) {
                 logger.internalServerError(e);
             }
@@ -197,20 +186,18 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
 
 
 
-
-
     public void setAndCompileNewPublicPrograms(Swagger_GitHubReleases release) {
         try {
 
-            System.out.println("setAndCompileNewPublicPrograms release: " + release.name + " Asset size:" + release.assets.size());
+            logger.trace("setAndCompileNewPublicPrograms release: " + release.name + " Asset size:" + release.assets.size());
 
 
             if(release.assets.isEmpty()) {
-                System.out.println("setAndCompileNewPublicPrograms release: " + release.name + " not contains any assets!");
+                logger.trace("setAndCompileNewPublicPrograms release: " + release.name + " not contains any assets!");
                 return;
             }
 
-            System.out.println("setAndCompileNewPublicPrograms release: asset url: " + release.assets.get(0).url);
+            logger.trace("setAndCompileNewPublicPrograms release: asset url: " + release.assets.get(0).url);
 
 
             File directory = new File(System.getProperty("user.dir") + "/files/" );
@@ -247,7 +234,7 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
 
             // Remove before if exist
             if(!new File(file_path).exists()) {
-                System.out.println("setAndCompileNewPublicPrograms file_path: " + file_path + " there is a file - it will be removed before");
+                logger.trace("setAndCompileNewPublicPrograms file_path: " + file_path + " there is a file - it will be removed before");
                 this.remove_file(file_path);
                 this.remove_file(file_name);
             }
@@ -255,35 +242,35 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
 
             try (OutputStream outputStream = new FileOutputStream(file_name)) {
                 baos.writeTo(outputStream);
-                System.out.println("setAndCompileNewPublicPrograms release: " + release.name + " successfully saved on local storage");
+                logger.trace("setAndCompileNewPublicPrograms release: " + release.name + " successfully saved on local storage");
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
 
-            System.out.println("setAndCompileNewPublicPrograms release: " + release.name + " try to unzip");
+            logger.trace("setAndCompileNewPublicPrograms release: " + release.name + " try to unzip");
 
             this.unzip(file_name, file_path);
 
 
 
-            System.out.println("setAndCompileNewPublicPrograms release: try to find file examples" );
+            logger.trace("setAndCompileNewPublicPrograms release: try to find file examples" );
 
             if(!new File(file_path + "/examples").exists()) {
                 // Slack.post_invalid_release(release);
-                System.err.println("setAndCompileNewPublicPrograms example missing");
+                logger.debug("setAndCompileNewPublicPrograms example missing");
 
-                System.err.println("setAndCompileNewPublicPrograms Mažu:" + file_path);
+                logger.debug("setAndCompileNewPublicPrograms Mažu:" + file_path);
                 this.remove_file(file_path + "/");
 
-                System.err.println("setAndCompileNewPublicPrograms Mažu:" + file_name);
+                logger.debug("setAndCompileNewPublicPrograms Mažu:" + file_name);
                 this.remove_file(file_name);
 
             }
 
-            System.out.println("setAndCompileNewPublicPrograms soubor obsahuje složku examples");
-            System.out.println("setAndCompileNewPublicPrograms path to: " + file_path + "/examples");
-            System.out.println("setAndCompileNewPublicPrograms kde to najdu: : " + file_path + "/examples");
+            logger.trace("setAndCompileNewPublicPrograms soubor obsahuje složku examples");
+            logger.trace("setAndCompileNewPublicPrograms path to: " + file_path + "/examples");
+            logger.trace("setAndCompileNewPublicPrograms kde to najdu: : " + file_path + "/examples");
 
             File[] directories = new File(file_path + "/examples").listFiles(File::isDirectory);
 
@@ -292,7 +279,7 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
 
             if(directories == null) {
 
-                System.out.println("setAndCompileNewPublicPrograms: directories is null!");
+                logger.trace("setAndCompileNewPublicPrograms: directories is null!");
                 error_for_slack += "\n Example: *" + release.tag_name + "* not contains folder example";
 
             } else {
@@ -318,7 +305,7 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
                     if (maincpp == null || readme == null) {
                         error_for_slack += "\n Example: *" + directory_with_example.getName() + "* not contains main.cpp or readme.json file! Fix it!";
                     } else {
-                        System.out.println("Example: " + directory_with_example.getName() + "is ok!");
+                        logger.trace("Example: " + directory_with_example.getName() + "is ok!");
                     }
 
                     Scanner scanner = new Scanner(readme, "UTF-8");
@@ -358,7 +345,7 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
                             .findOne();
 
                     if (c_program == null) {
-                        System.out.println("Example: " + directory_with_example.getName() + " c_program s těmito parametry neexistuje - je nutné ho vytvořit");
+                        logger.trace("Example: " + directory_with_example.getName() + " c_program s těmito parametry neexistuje - je nutné ho vytvořit");
 
                         c_program = new Model_CProgram();
                         c_program.name = json.name;
@@ -368,7 +355,7 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
                         Model_HardwareType hardwareType = Model_HardwareType.find.query().nullable().where().eq("compiler_target_name", json.targets.get(0)).eq("deleted", false).findOne();
 
                         if (hardwareType == null) {
-                            System.err.println("HW Libs Example: ERROR " + directory_with_example.getName() + " not found Model_HardwareType!");
+                            logger.debug("HW Libs Example: ERROR " + directory_with_example.getName() + " not found Model_HardwareType!");
                             error_for_slack += "\n Example: *" + directory_with_example.getName() + "* - target " + json.targets + " is not valid.";
                             continue;
                         }
@@ -385,12 +372,12 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
 
 
                     // Create First version
-                    System.out.println("Example: " + directory_with_example.getName() + " its time to create version");
+                    logger.trace("Example: " + directory_with_example.getName() + " its time to create version");
 
                     Model_CProgramVersion version = Model_CProgramVersion.find.query().nullable().where().eq("c_program.id", c_program.id).eq("name", release.tag_name).findOne();
 
                     if (version != null) {
-                        System.out.println("Example: " + directory_with_example.getName() + " version " + release.tag_name + " is already created");
+                        logger.trace("Example: " + directory_with_example.getName() + " version " + release.tag_name + " is already created");
                         continue;
                     }
 
@@ -415,10 +402,11 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
             }
 
 
-            if(error_for_slack.length() > 0 && Server.mode != ServerMode.DEVELOPER) {
-                error_for_slack = "Toto je automatická zpráva kterou vygeneroval všemocný Tyrion Server. \n Podle GitHubu *" + release.author.login + "* vytvořil firmware release *" + release.tag_name + "* s následujícíma chybama:." + error_for_slack;
+            if(Server.mode == STAGE && error_for_slack.length() > 0) {
 
-                // TODO Slack.post_error(error_for_slack, Server.slack_webhook_url_channel_hardware);
+                error_for_slack = "Toto je automatická zpráva kterou vygeneroval všemocný Tyrion Server. \n Podle GitHubu *" + release.author.login + "* vytvořil firmware release *" + release.tag_name + "* s následujícíma chybama:." + error_for_slack;
+                Slack.post_error(error_for_slack, Server.slack_webhook_url_channel_hardware);
+
                 return;
             }
 

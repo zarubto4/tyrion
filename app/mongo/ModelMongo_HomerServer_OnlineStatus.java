@@ -13,6 +13,7 @@ import utilities.Server;
 import utilities.cache.CacheMongoFinder;
 import utilities.cache.InjectCache;
 import utilities.enums.HomerType;
+import utilities.enums.ServerMode;
 import utilities.logger.Logger;
 import utilities.model._Abstract_MongoModel;
 
@@ -39,17 +40,26 @@ public class ModelMongo_HomerServer_OnlineStatus extends _Abstract_MongoModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    public String server_version;
-    public UUID homer_id;
+    public String homer_id;
     public boolean online_status;
-    public HomerType server_type;
+    public HomerType homer_server_type;
 
+    // Common
+    public String server_version;
+    public ServerMode server_type;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
+    @Override
+    public void save() {
+        server_version = Server.version;
+        server_type = Server.mode;
+        super.save();
+    }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -68,11 +78,9 @@ public class ModelMongo_HomerServer_OnlineStatus extends _Abstract_MongoModel {
     public static ModelMongo_HomerServer_OnlineStatus create_record(Model_HomerServer homer, boolean online) {
 
         ModelMongo_HomerServer_OnlineStatus status = new ModelMongo_HomerServer_OnlineStatus();
-        status.homer_id = homer.id;
-        status.server_type = homer.server_type;
+        status.homer_id = homer.id.toString();
+        status.homer_server_type = homer.server_type;
         status.online_status = online;
-        status.server_version = Server.version;
-
         status.save();
 
         return status;

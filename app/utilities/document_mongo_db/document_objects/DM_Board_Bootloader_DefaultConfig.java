@@ -23,6 +23,12 @@ public class DM_Board_Bootloader_DefaultConfig {
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Boolean lowpanbr;     // Default  0         // user configurable
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Integer autojump;     // Default  0         // user configurable
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Integer wdtime;       // Default 30         // user configurable
+    @ApiModelProperty(required = true, readOnly = true) public String  lowpan_credentials;       // Default 30         // user configurable
+
+
+    @JsonIgnore @ApiModelProperty(required = false, readOnly = true, value = "Not possible to change!", hidden = true) public String imsi;  // Null if its ton directly set form _Hardware
+    @JsonIgnore @ApiModelProperty(required = false, readOnly = true, value = "Not possible to change!", hidden = true) public String iccid; // Null if its ton directly set form _Hardware
+
 
     public List<String> pending = new ArrayList<>();
 
@@ -41,6 +47,7 @@ public class DM_Board_Bootloader_DefaultConfig {
         configuration.timesync = true;          // command: timesync=1             (1/0)                         Zapnutí synchronizace času s Homerem - Homer čas přidělí - Hardware to buď ignoruje - nebo to uloží
         configuration.lowpanbr = false;         // command: lowpanbr=1             (1/0)                         Zap nebo vyp funkce [[feature:lowpanbr|lowpan border router]]
         configuration.autojump = 300;           // command: autojump=300           (počet sekund od 0 do 32b)
+        configuration.lowpan_credentials = null;
 
         return configuration;
     }

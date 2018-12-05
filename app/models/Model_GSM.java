@@ -39,25 +39,14 @@ public class Model_GSM extends TaggedModel implements Permissible, UnderProject 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Project project;
 
     public Long msi_number;
+    public String imsi;
+    public String iccid;
 
     @JsonIgnore public String provider; // Sem ukládáme kdo dodává simakrty, ThingsMobile, T-Mobile, Vodafone etc.. (Ano, zatím máme integraci jen na ThingsMobile)
     @JsonIgnore public UUID registration_hash; // Sem ukládáme kro dodává simakrty, ThingsMobile, T-Mobile, Vodafone etc.. (Ano, zatím máme integraci jen na ThingsMobile)
 
     @JsonIgnore  public boolean blocked;
 
-    /* Konfigurace SIMkarty - je nutné vždy spárovat se službou ThingsMobile
-    public Long    daily_traffic_threshold;                     // Přípustná hodnota v KB
-    public boolean daily_traffic_threshold_exceeded_limit;      // Umožnit překročit limit
-    public boolean daily_traffic_threshold_notify_type;         // Zákazník bude informován o překročení
-
-    public Long    monthly_traffic_threshold;                   // Přípustná hodnota v KB
-    public boolean monthly_traffic_threshold_exceeded_limit;    // Umožnit překročit limit
-    public boolean monthly_traffic_threshold_notify_type;       // Zákazník bude informován o překročení
-
-    public Long    total_traffic_threshold;                     // Přípustná hodnota v KB
-    public boolean total_traffic_threshold_exceeded_limit;      // Umožnit překročit limit
-    public boolean total_traffic_threshold_notify_type;         // Zákazník bude informován o překročení
-    */
 
     /* Konfigurace SIMkarty - je nutné vždy spárovat se službou ThingsMobile  */
     public boolean daily_traffic_threshold_notify_type;         // Zákazník bude informován o překročení

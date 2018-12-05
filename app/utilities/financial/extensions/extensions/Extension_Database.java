@@ -58,4 +58,6 @@ public class Extension_Database implements Extension {
     public void deactivate(Model_ProductExtension extension) {
 
     }
-}
+
+    public static String defaultColour = "green";
+ }

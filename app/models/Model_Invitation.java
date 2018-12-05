@@ -2,6 +2,7 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import exceptions.NotFoundException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
@@ -41,7 +42,9 @@ public class Model_Invitation extends BaseModel {
         }
     }
 
-/* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
+
+
+    /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public Model_Person getOwner() {
@@ -57,11 +60,11 @@ public class Model_Invitation extends BaseModel {
     public void delete_notification() {
         try {
 
-            if (notification_id != null) {
+            Model_Notification notification = Model_Notification.find.byId(notification_id);
+            notification.delete();
 
-                Model_Notification notification = Model_Notification.find.byId(notification_id);
-                notification.delete();
-            }
+        } catch (NotFoundException|NullPointerException e) {
+            // Nothing
         } catch (Exception e) {
             logger.internalServerError(e);
         }

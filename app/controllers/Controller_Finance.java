@@ -1502,6 +1502,7 @@ public class Controller_Finance extends _BaseController {
     @BodyParser.Of(BodyParser.Json.class)
     public Result productExtension_create(UUID product_id) {
         try {
+
             Swagger_ProductExtension_New help = formFactory.formFromRequestWithValidation(Swagger_ProductExtension_New.class);
             Model_Product product = Model_Product.find.byId(product_id);
 

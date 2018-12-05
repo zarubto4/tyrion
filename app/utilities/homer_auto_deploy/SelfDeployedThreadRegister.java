@@ -25,7 +25,7 @@ import java.util.concurrent.TimeoutException;
 public class SelfDeployedThreadRegister extends Thread {
 
     @Inject
-    public static _BaseFormFactory baseFormFactory;
+    public static _BaseFormFactory formFactory;
 
     /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 

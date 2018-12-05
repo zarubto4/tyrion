@@ -63,6 +63,8 @@ public class Job_ThingsMobile_SimListOnly_Synchronize implements Job {
 
                         Model_GSM gsm = new Model_GSM();
                         gsm.msi_number = sim.msisdn;
+                        gsm.iccid = sim.iccid;
+                        gsm.imsi = sim.imsi;
                         gsm.provider = "ThingsMobile";
                         gsm.registration_hash = UUID.randomUUID();
                         gsm.save();

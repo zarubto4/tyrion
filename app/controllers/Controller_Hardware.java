@@ -1183,25 +1183,16 @@ public class Controller_Hardware extends _BaseController {
 
             Model_HardwareType hardware_type = boot_loader.getHardwareType();
 
-            Model_BootLoader old_main_not_cached = Model_BootLoader.find.query().where().eq("main_hardware_type.id", boot_loader.getHardwareTypeId()).select("id").findOne();
-
-            if (old_main_not_cached != null) {
-                Model_BootLoader old_main = Model_BootLoader.find.byId(old_main_not_cached.id);
-                if (old_main != null) {
-                    old_main.main_hardware_type = null;
-                    old_main.idCache().removeAll(Model_HardwareType.Model_HardwareType_Main.class);
-                    old_main.update();
-                }
+            Model_BootLoader old_main = Model_BootLoader.find.query().nullable().where().eq("main_hardware_type.id", boot_loader.getHardwareTypeId()).findOne();
+            if (old_main != null) {
+                old_main.main_hardware_type = null;
+                old_main.update();
             }
 
             boot_loader.main_hardware_type = hardware_type;
             boot_loader.update();
 
-            hardware_type.main_boot_loader = boot_loader;
-            hardware_type.update();
-
-            hardware_type.idCache().removeAll(Model_HardwareType.Model_HardwareType_Main.class);
-            hardware_type.idCache().add(Model_HardwareType.Model_HardwareType_Main.class, boot_loader.id);
+            hardware_type.refresh();
 
             // Vymažu Device Cache
             Model_Hardware.find.getCache().clear();
@@ -1704,6 +1695,14 @@ public class Controller_Hardware extends _BaseController {
                     break;
                 }
 
+                case "imsi": {
+                    return badRequest("imsi IS NOT possible to change!");
+                }
+
+                case "iccid": {
+                    return badRequest("iccid IS NOT possible to change!");
+                }
+
                 case "netsource": {
 
                     if (help.string_value  == null) {
@@ -2018,8 +2017,6 @@ public class Controller_Hardware extends _BaseController {
                 query.where().icontains("description", help.description);
             }
 
-
-
             if (help.hardware_type_ids != null && !help.hardware_type_ids.isEmpty()) {
                 query.where().in("hardware_type.id", help.hardware_type_ids);
             }
@@ -2030,12 +2027,6 @@ public class Controller_Hardware extends _BaseController {
             }
 
             if (help.projects != null && !help.projects.isEmpty()) {
-
-                // Permissin check
-                for(UUID uuid_project: help.projects) {
-                    Model_Project.find.byId(uuid_project);
-                }
-
                 query.where().in("project.id", help.projects);
             }
 
@@ -2047,17 +2038,11 @@ public class Controller_Hardware extends _BaseController {
                 query.where().in("hardware_type.processor.id", help.processors);
             }
 
-            if (help.instance_snapshots != null) {
-                for(UUID uuid_snapshot : help.instance_snapshots) {
-                    Model_InstanceSnapshot snaphshot = Model_InstanceSnapshot.find.byId(uuid_snapshot);
-                    query.where().in("id", snaphshot.getHardwareIds());
-                }
+            if (help.instance_snapshot != null) {
+                query.where().in("id",  Model_InstanceSnapshot.find.byId(help.instance_snapshot).getHardwareIds());
             }
 
             if (help.hardware_groups_id != null) {
-                for(UUID uuid_snapshot : help.hardware_groups_id) {
-                    Model_HardwareGroup.find.byId(uuid_snapshot);
-                }
                 query.where().in("hardware_groups.id", help.hardware_groups_id);
             }
 
@@ -2426,7 +2411,7 @@ public class Controller_Hardware extends _BaseController {
                 return ok(status);
             }
 
-            if(Model_Hardware.find.query().where().eq("full_id", hardware.full_id).eq("project.id", project_id).findCount() < 1) {
+            if(Model_Hardware.find.query().nullable().where().eq("full_id", hardware.full_id).eq("project.id", project_id).findCount() < 1) {
                 status.status = BoardRegistrationStatus.CAN_REGISTER;
                 return ok(status);
             }else {
@@ -2630,13 +2615,6 @@ public class Controller_Hardware extends _BaseController {
             // Kontrola objektu
             Model_Project project = Model_Project.find.byId(help.project_id);
 
-            try {
-                Model_HardwareGroup.find.query().where().eq("name", help.name).eq("project.id", project.id).findOne();
-                return badRequest("Group name must be a unique!");
-            } catch (NotFoundException e) {
-                // nothing
-            }
-
             Model_HardwareGroup group = new Model_HardwareGroup();
             group.name = help.name;
             group.description = help.description;
@@ -2684,13 +2662,6 @@ public class Controller_Hardware extends _BaseController {
 
             // Kontrola objektu
             Model_HardwareGroup group = Model_HardwareGroup.find.byId(hardware_group_id);
-
-            try {
-                Model_HardwareGroup.find.query().where().eq("name", help.name).eq("project.id", group.getProject().id).findOne();
-                return badRequest("Group name must be a unique!");
-            } catch (NotFoundException e) {
-                // nothing
-            }
 
             group.name = help.name;
             group.description = help.description;
@@ -2947,21 +2918,18 @@ public class Controller_Hardware extends _BaseController {
                 query.where().isNull("project.id");
             }
 
-            if (help.instance_snapshots != null && !help.instance_snapshots.isEmpty()){
+            if (help.instance_snapshots != null && !help.instance_snapshots.isEmpty()) {
 
                 List<UUID> list_ids = new ArrayList<>();
-                for(UUID snapshost_ids : help.instance_snapshots) {
+                for (UUID snapshost_ids : help.instance_snapshots) {
                     list_ids.addAll( Model_InstanceSnapshot.find.byId(snapshost_ids).getHardwareGroupIds());
                 }
 
                 query.where().in("id", list_ids);
             }
 
-
             // Vyvoření odchozího JSON
             Swagger_HardwareGroup_List result = new Swagger_HardwareGroup_List(query, page_number, help);
-
-             // TODO permissions
 
             // Vrácení výsledku
             return ok(result);

@@ -2,6 +2,7 @@ package controllers;
 
 import com.google.inject.Injector;
 import com.typesafe.config.Config;
+import exceptions.NotFoundException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -25,6 +26,7 @@ import websocket.interfaces.*;
 import websocket.interfaces.Compiler;
 
 import javax.inject.Inject;
+import java.awt.geom.NoninvertibleTransformException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -104,7 +106,7 @@ public class Controller_WebSocket extends _BaseController {
 
                 logger.trace("homer - incoming connection: " + token);
 
-                Model_HomerServer server = Model_HomerServer.find.query().where().eq("connection_identifier", token).findOne();
+                Model_HomerServer server = Model_HomerServer.find.query().nullable().where().eq("connection_identifier", token).findOne();
                 if (server != null) {
                     if (this.webSocketService.isRegistered(server.id)) {
 
@@ -147,7 +149,7 @@ public class Controller_WebSocket extends _BaseController {
                 logger.debug("compiler - incoming connection: {}", token);
 
                 //Find object (only ID)
-                Model_CompilationServer server = Model_CompilationServer.find.query().where().eq("connection_identifier", token).select("id").findOne();
+                Model_CompilationServer server = Model_CompilationServer.find.query().nullable().where().eq("connection_identifier", token).select("id").findOne();
                 if(server != null){
 
                     if (this.webSocketService.isRegistered(server.id)) {

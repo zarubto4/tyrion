@@ -63,7 +63,8 @@ public class Model_HardwareType extends NamedModel implements Permissible, Publi
     @JsonIgnore @ManyToMany(mappedBy = "hardware_types", fetch = FetchType.LAZY)  public List<Model_HardwareFeature> features = new ArrayList<>();
     @JsonIgnore @ManyToMany(mappedBy = "hardware_types", fetch = FetchType.LAZY)  public List<Model_Library> libraries = new ArrayList<>();
 
-/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
+
+    /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient @Cached public String cache_picture_link; // Není klasický Cache objekt!!!
     @JsonIgnore @Transient @Cached public List<Swagger_CompilationLibrary> cache_library_list; // Není klasický Cache objekt nejde standartně cachovat!!!
@@ -202,14 +203,16 @@ public class Model_HardwareType extends NamedModel implements Permissible, Publi
                     .order().desc("name")
                     .findList();
 
-            /*List<Model_BootLoader> list = new ArrayList<>();
+            /*
+            List<Model_BootLoader> list = new ArrayList<>();
 
             for (UUID id : get_bootloaders_id()) {
                 // System.out.println("get_bootloaders id: " + id);
                 list.add(Model_BootLoader.find.byId(id));
             }
 
-            return list;*/
+            return list;
+            */
         } catch (Exception e) {
             logger.internalServerError(e);
             return new ArrayList<>();

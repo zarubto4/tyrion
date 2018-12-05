@@ -41,11 +41,11 @@ public class DigitalOceanTyrionService {
      */
     public static Cache<String, Swagger_ServerRegistration_FormData> tokenCache;
 
-    private static _BaseFormFactory baseFormFactory;
+    private static _BaseFormFactory formFactory;
 
     @Inject
     public DigitalOceanTyrionService(_BaseFormFactory formFactory) {
-        DigitalOceanTyrionService.baseFormFactory = formFactory;
+        DigitalOceanTyrionService.formFactory = formFactory;
     }
 
     public static void create_server(Model_HomerServer homer_server, String server_size_slug, String region_slug) throws RequestUnsuccessfulException, DigitalOceanException {
@@ -189,7 +189,7 @@ public class DigitalOceanTyrionService {
 
     public static void check_status(Model_HomerServer homerServer) throws RequestUnsuccessfulException, DigitalOceanException {
 
-        Swagger_ExternalService help = baseFormFactory.formFromJsonWithValidation(Swagger_ExternalService.class, Json.parse(homerServer.json_additional_parameter));
+        Swagger_ExternalService help = formFactory.formFromJsonWithValidation(Swagger_ExternalService.class, Json.parse(homerServer.json_additional_parameter));
         if(help.type == Enum_ServiceType.BLUE_OCEAN) {
             Droplet droplet = apiClient.getDropletInfo(help.blue_ocean_config.id);
             logger.trace("check_status::    Server Id:      " + droplet.getId());

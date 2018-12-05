@@ -14,6 +14,7 @@ GET       /test5/:product_id                                            controll
 GET       /test6/:product_id                                            controllers.Controller_ZZZ_Tester.test6(product_id: java.util.UUID)
 GET       /test7                                                        controllers.Controller_ZZZ_Tester.test7()
 GET       /test8                                                        controllers.Controller_ZZZ_Tester.test8()
+GET       /test9                                                        controllers.Controller_ZZZ_Tester.test9()
 
                                                                         #Allowed only in Developer Mode!
 GET       /demodata                                                     utilities.demo_data.Utilities_Demo_data_Controller.all_for_becki()
@@ -224,15 +225,16 @@ DELETE    /admin/tariff_extension/:extension_id                         controll
 
 #Project
 POST      /project                                                      controllers.Controller_Project.project_create()
+POST      /project_valid_name                                           controllers.Controller_Project.project_valid_name()
 PUT       /project/:project_id                                          controllers.Controller_Project.project_update(project_id: java.util.UUID)
 GET       /project/:project_id                                          controllers.Controller_Project.project_get(project_id: java.util.UUID)
 GET       /project                                                      controllers.Controller_Project.project_getByUser
 DELETE    /project/:project_id                                          controllers.Controller_Project.project_delete(project_id: java.util.UUID)
 PUT       /project/invite/:project_id                                   controllers.Controller_Project.project_invite(project_id: java.util.UUID)
 PUT       /project/remove_participant/:project_id                       controllers.Controller_Project.project_removeParticipant(project_id: java.util.UUID)
-PUT       /project/tags/add                                             controllers.Controller_Project.project_addTags
-PUT       /project/tags/remove                                          controllers.Controller_Project.project_removeTags
-PUT       /project/hardware/add                                         controllers.Controller_Project.project_addHardware
+PUT       /project/tags/add                                             controllers.Controller_Project.project_addTags()
+PUT       /project/tags/remove                                          controllers.Controller_Project.project_removeTags()
+PUT       /project/hardware/add                                         controllers.Controller_Project.project_addHardware()
 PUT       /project/hardware/remove/:registration_id                     controllers.Controller_Project.project_removeHardware(registration_id: java.util.UUID)
 PUT       /project/hardware/deactive/:registration_id                   controllers.Controller_Project.project_deactivateHardware(registration_id: java.util.UUID)
 PUT       /project/hardware/activate/:registration_id                   controllers.Controller_Project.project_activateHardware(registration_id: java.util.UUID)
@@ -248,17 +250,17 @@ GET       /b_program/:b_program_id                                      controll
 PUT       /b_program/:b_program_id                                      controllers.Controller_Blocko.bProgram_update(b_program_id: java.util.UUID)
 DELETE    /b_program/:b_program_id                                      controllers.Controller_Blocko.bProgram_delete(b_program_id: java.util.UUID)
 PUT       /b_program/list/:page_number                                  controllers.Controller_Blocko.bProgram_getByFilter(page_number:Int)
-PUT       /b_program/tags/add                                           controllers.Controller_Blocko.bProgram_addTags
-PUT       /b_program/tags/remove                                        controllers.Controller_Blocko.bProgram_removeTags
+PUT       /b_program/tags/add                                           controllers.Controller_Blocko.bProgram_addTags()
+PUT       /b_program/tags/remove                                        controllers.Controller_Blocko.bProgram_removeTags()
 
 #Instance
-POST      /instance                                                     controllers.Controller_Blocko.instance_create
+POST      /instance                                                     controllers.Controller_Blocko.instance_create()
 DELETE    /instance/:instance_id                                        controllers.Controller_Blocko.instance_delete(instance_id: java.util.UUID)
 GET       /instance/:instance_id                                        controllers.Controller_Blocko.instance_get(instance_id: java.util.UUID)
 PUT       /instance/:instance_id                                        controllers.Controller_Blocko.instance_update(instance_id: java.util.UUID)
 PUT       /instance/shutdown/:instance_id                               controllers.Controller_Blocko.instance_shutdown(instance_id: java.util.UUID)
-PUT       /instance/tags/add                                            controllers.Controller_Blocko.instance_addTags
-PUT       /instance/tags/remove                                         controllers.Controller_Blocko.instance_removeTags
+PUT       /instance/tags/add                                            controllers.Controller_Blocko.instance_addTags()
+PUT       /instance/tags/remove                                         controllers.Controller_Blocko.instance_removeTags()
 
 POST       /instance/api_key/:instance_id                               controllers.Controller_Blocko.instance_create_api_key(instance_id: java.util.UUID)
 PUT        /instance/api_key/:instance_id/:token                        controllers.Controller_Blocko.instance_edit_api_key(instance_id: java.util.UUID, token: java.util.UUID)
@@ -553,7 +555,14 @@ GET       /gsm/check/:registration_hash/:project_id                     controll
 
 DELETE    /admin/gsm/:sim_id                                            controllers.Controller_GSM.delete_sim(sim_id: java.util.UUID)
 
+### DATABASE
 
+POST      /database                                                     controllers.Controller_Database.create_db()
+PUT       /database/:db_id                                              controllers.Controller_Database.edit_db(db_id: java.util.UUID)
+GET       /database/all/:product_id                                     controllers.Controller_Database.list_db(product_id: java.util.UUID)
+DELETE    /database/:db_id                                              controllers.Controller_Database.drop_db(db_id: java.util.UUID)
+GET       /database/:db_id                                              controllers.Controller_Database.get_collections(db_id: java.util.UUID)
+PUT       /database/:db_id/:collection_name                             controllers.Controller_Database.create_collection(db_id: java.util.UUID, collection_name: java.lang.String)
 ### TOOLS ############ TOOLS ############### TOOLS ################ TOOLS ######################################################################################################
 ################################################################################################################################################################################
 
