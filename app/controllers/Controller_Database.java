@@ -1,21 +1,14 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.typesafe.config.Config;
-import io.ebeaninternal.server.core.Message;
 import io.swagger.annotations.*;
 import models.Model_Product;
 import models.Model_ProductExtension;
-import play.Environment;
-import play.api.Configuration;
-import play.api.libs.ws.WSRequest;
-import play.libs.ws.WSAuthScheme;
 import play.libs.Json;
 import play.libs.ws.WSClient;
-import play.libs.ws.WSResponse;
 import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
@@ -27,23 +20,19 @@ import utilities.financial.extensions.extensions.Extension_Database;
 import utilities.financial.products.ConfigurationProduct;
 import utilities.financial.services.ProductService;
 import utilities.logger.Logger;
-import utilities.logger.YouTrack;
 import utilities.mongo_cloud_api.MongoCloudApi;
 import utilities.mongo_cloud_api.SwaggerMongoCloudUser;
+import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerController;
 import utilities.swagger.input.Swagger_Database_New;
 import utilities.swagger.input.Swagger_NameAndDescription;
 import utilities.swagger.input.Swagger_ProductExtension_New;
 import utilities.swagger.output.Swagger_Database;
 import utilities.swagger.output.Swagger_DatabaseCollectionList;
-import utilities.swagger.output.Swagger_Database_Collections;
-import utilities.swagger.output.Swagger_Database_List;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -61,8 +50,9 @@ public class Controller_Database extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @Inject
-    public Controller_Database(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config, SchedulerController scheduler, PermissionService permissionService, ProductService productService, MongoCloudApi mongoApi) {
-        super(environment, ws, formFactory, youTrack, config, scheduler, permissionService);
+    public Controller_Database(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
+                               NotificationService notificationService, ProductService productService, MongoCloudApi mongoApi) {
+        super(ws, formFactory, config, permissionService, notificationService);
         this.productService = productService;
         this.mongoApi = mongoApi;
     }

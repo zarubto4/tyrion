@@ -15,15 +15,17 @@ import responses.*;
 import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.emails.Email;
+import utilities.enums.ExtensionType;
 import utilities.enums.ParticipantStatus;
+import utilities.financial.services.ProductService;
 import utilities.hardware.HardwareService;
 import utilities.logger.Logger;
+import utilities.mongo_cloud_api.MongoCloudApi;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.input.*;
 
 import java.net.URLEncoder;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -290,7 +292,7 @@ public class Controller_Project extends _BaseController {
 
 
                 case Database: {
-                    UUID productID = Model_Project.find.byId(help.project_id).getProductId();
+                    UUID productID = Model_Project.find.byId(help.project_id).getProduct().id;
                     return Model_ProductExtension.find.query().where().eq("product.id", productID).eq("type", ExtensionType.DATABASE).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 

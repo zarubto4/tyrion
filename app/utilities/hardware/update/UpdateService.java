@@ -130,7 +130,7 @@ public class UpdateService {
             if (message.error_message != null || message.error_code != null) {
                 logger.warn("update_procedure_progress  Update Fail! Device ID: {}, update procedure: {}", update.getHardware().id, update.id);
 
-                update.date_of_finish = new Date();
+                update.finished = new Date();
                 update.state = HardwareUpdateState.FAILED;
                 update.error_code = message.error_code;
                 update.error = message.error + message.error_message;
@@ -182,7 +182,7 @@ public class UpdateService {
                     }
 
                     update.state = HardwareUpdateState.COMPLETE;
-                    update.date_of_finish = new Date();
+                    update.finished = new Date();
                     update.update();
 
                     EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, hardware.get_project_id(), hardware.id));
@@ -195,7 +195,7 @@ public class UpdateService {
                     update.state = HardwareUpdateState.FAILED;
                     update.error_code = ErrorCode.NEW_VERSION_DOESNT_MATCH.error_code();
                     update.error = ErrorCode.NEW_VERSION_DOESNT_MATCH.error_message();
-                    update.date_of_finish = new Date();
+                    update.finished = new Date();
                     update.update();
 
                     if (project != null)  {
@@ -213,7 +213,7 @@ public class UpdateService {
                         }
 
                         update.state = HardwareUpdateState.COMPLETE;
-                        update.date_of_finish = new Date();
+                        update.finished = new Date();
                         update.update();
 
                         Model_Hardware hardware = update.getHardware();

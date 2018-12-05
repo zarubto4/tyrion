@@ -36,18 +36,23 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
                                             @ApiModelProperty(required = true,
                                                     value = "UNIX time in ms",
-                                                    example = "1466163478925")  public Date date_of_finish;
+                                                    example = "1466163478925")  public Date finished;
 
-              @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                    public Model_Hardware hardware; // Deska k aktualizaci
-                                            @ApiModelProperty(required = true)  public FirmwareType firmware_type;          // Typ Firmwaru
+                                            @ApiModelProperty(required = true,
+                                                    value = "UNIX time in ms",
+                                                    example = "1466163478925")  public Date planned;
+
+              @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                    public Model_Hardware hardware;     // Deska k aktualizaci
+                                            @ApiModelProperty(required = true)  public FirmwareType firmware_type;  // Typ Firmwaru
 
                                                                                 // Aktualizace je vázána buď na verzi C++ kodu nebo na soubor, nahraný uživatelem
-    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                 public Model_CProgramVersion c_program_version_for_update; // C_program k aktualizaci
-    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_BootLoader bootloader;                      // Když nahrávám Firmware
-    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_Blob binary_file;                     // Soubor, když firmware nahrává uživatel sám mimo flow
+    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.EAGER)                 public Model_CProgramVersion c_program_version_for_update;  // C_program k aktualizaci
+    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_BootLoader bootloader;                         // Když nahrávám Firmware
+    /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_Blob binary_file;                              // Soubor, když firmware nahrává uživatel sám mimo flow
 
                                                                                 public HardwareUpdateState state;
-                                                                    @JsonIgnore public Integer count_of_tries;                         // Počet celkovbých pokusu doručit update (změny z wait to progres atd..
+                                                                    @JsonIgnore public Integer count_of_tries;                              // Počet celkovbých pokusu doručit update (změny z wait to progres atd...
+                                                                                public UUID tracking_id;
 
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Only if state is critical_error or Homer record some error")  public String error;
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Only if state is critical_error or Homer record some error")  public Integer error_code;
@@ -58,16 +63,6 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
     public UpdateType type_of_update () {
         try {
             return null; // TODO getActualizationProcedure().type_of_update;
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    @JsonProperty
-    public Date date_of_planing() {
-        try {
-            return null; // TODO getActualizationProcedure().date_of_planing;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -262,8 +257,6 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
     @JsonIgnore @Override
     public void save() {
-
-        logger.debug("save :: Creating new Object");
         count_of_tries = 0;
 
         if (this.state == null) this.state = HardwareUpdateState.PENDING;
@@ -273,7 +266,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
     @JsonIgnore @Override
     public boolean delete() {
         this.state = HardwareUpdateState.CANCELED;
-        this.date_of_finish = new Date();
+        this.finished = new Date();
         super.update();
 
         return true;

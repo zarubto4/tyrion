@@ -20,7 +20,6 @@ import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
-import play.libs.ws.WSClient;
 import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
@@ -29,7 +28,6 @@ import utilities.grid_support.utils.IP_Founder;
 import utilities.homer_auto_deploy.DigitalOceanThreadRegister;
 import utilities.logger.Logger;
 import utilities.model._Abstract_MongoModel;
-import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
 import utilities.scheduler.jobs.Job_GetCompilationLibraries;
@@ -51,7 +49,6 @@ public class Server {
 
     public static _BaseFormFactory formFactory;
     public static Config configuration;
-    public static WSClient ws;
     public static Injector injector;
 
     public static ServerMode mode;
@@ -136,10 +133,9 @@ public class Server {
      * @param injector default application injector
      * @throws Exception if error occurs when starting the server
      */
-    public static void start(Injector injector,  WSClient ws, _BaseFormFactory formFactory) throws Exception {
+    public static void start(Injector injector) throws Exception {
         Server.injector = injector;
-        Server.formFactory = formFactory;
-        Server.ws = ws;
+        Server.formFactory = injector.getInstance(_BaseFormFactory.class);
 
         setConstants();
 
@@ -159,7 +155,7 @@ public class Server {
         setBaseForm();
 
         // Set Libraries
-        new Job_GetCompilationLibraries(ws, configuration, formFactory).execute(null);
+        injector.getInstance(Job_GetCompilationLibraries.class).execute(null);
     }
 
     /**
@@ -456,8 +452,8 @@ public class Server {
      * Set BaseForm for Json Control
      */
     private static void setBaseForm() {
-        DigitalOceanThreadRegister.baseFormFactory              = Server.injector.getInstance(_BaseFormFactory.class);
-        Model_InstanceSnapshot.baseFormFactory                  = Server.injector.getInstance(_BaseFormFactory.class);
+        DigitalOceanThreadRegister.formFactory              = Server.injector.getInstance(_BaseFormFactory.class);
+        Model_InstanceSnapshot.formFactory                  = Server.injector.getInstance(_BaseFormFactory.class);
     }
 
 

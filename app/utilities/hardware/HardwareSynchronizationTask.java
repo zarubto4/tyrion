@@ -328,7 +328,7 @@ public class HardwareSynchronizationTask implements Task {
 
                     logger.debug("check_bootloader - up to date, procedure is done");
                     plan.state = HardwareUpdateState.COMPLETE;
-                    plan.date_of_finish = new Date();
+                    plan.finished = new Date();
                     plan.update();
 
                     this.actual_boot_loader = plan.getBootloader();

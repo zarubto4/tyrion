@@ -14,7 +14,6 @@ GET       /test5/:product_id                                            controll
 GET       /test6/:product_id                                            controllers.Controller_ZZZ_Tester.test6(product_id: java.util.UUID)
 GET       /test7                                                        controllers.Controller_ZZZ_Tester.test7()
 GET       /test8                                                        controllers.Controller_ZZZ_Tester.test8()
-GET       /test9                                                        controllers.Controller_ZZZ_Tester.test9()
 
                                                                         #Allowed only in Developer Mode!
 GET       /demodata                                                     utilities.demo_data.Utilities_Demo_data_Controller.all_for_becki()
