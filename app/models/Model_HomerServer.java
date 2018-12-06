@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import mongo.ModelMongo_HomerServer_OnlineStatus;
 import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheFinder;
@@ -255,33 +254,6 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
     @JsonIgnore
     public String get_WebView_APP_URL() {
         return server_url + ":" + web_view_port + "/";
-    }
-
-/* SERVER WEBSOCKET CONTROLLING OF HOMER SERVER--------------------------------------------------------------------------*/
-
-    public static final String CHANNEL = "homer_server";
-
-/* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
-
-    // only with successfully connection
-    public void make_log_connect() {
-        new Thread(() -> {
-            try {
-                ModelMongo_HomerServer_OnlineStatus.create_record(this, true);
-            } catch (Exception e) {
-                logger.internalServerError(e);
-            }
-        }).start();
-    }
-
-    public void make_log_disconnect() {
-        new Thread(() -> {
-            try {
-                ModelMongo_HomerServer_OnlineStatus.create_record(this, true);
-            } catch (Exception e) {
-                logger.internalServerError(e);
-            }
-        }).start();
     }
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/

@@ -9,7 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @JacksonAnnotationsInside
-@JsonSerialize(using = NetworkStatusSerializer.class)
+@JsonSerialize(using = NetworkStatusSerializer.class, nullsUsing = NetworkStatusSerializer.class)
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface JsonNetworkStatus {

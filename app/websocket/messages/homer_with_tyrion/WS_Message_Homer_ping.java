@@ -2,8 +2,8 @@ package websocket.messages.homer_with_tyrion;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.Model_HomerServer;
 import play.libs.Json;
+import websocket.interfaces.Homer;
 import websocket.messages.common.abstract_class.WS_AbstractMessage_Instance;
 
 public class WS_Message_Homer_ping extends WS_AbstractMessage_Instance {
@@ -21,7 +21,7 @@ public class WS_Message_Homer_ping extends WS_AbstractMessage_Instance {
 
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
-        request.put("message_channel", Model_HomerServer.CHANNEL);
+        request.put("message_channel", Homer.CHANNEL);
 
         return request;
     }

@@ -1261,18 +1261,7 @@ public class Controller_Hardware extends _BaseController {
             }
 
             if (!hardware_for_update.isEmpty()) {
-                logger.trace("bootLoader_manualUpdate hardware_for_update is not Empty");
-                new Thread(() -> {
-                    try {
-
-                        // TODO update Model_UpdateProcedure procedure = Model_Hardware.create_update_procedure(FirmwareType.BOOTLOADER, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, hardware_for_update);
-                        // TODO update procedure.execute_update_procedure();
-                        logger.warn("Thread: New Procedure was Executed");
-
-                    } catch (Exception e) {
-                        logger.internalServerError(e);
-                    }
-                }).start();
+                this.updateService.bulkUpdate(boards, Model_BootLoader.find.byId(help.bootloader_id), FirmwareType.BOOTLOADER);
             }else {
                 logger.error("bootLoader_manualUpdate hardware_for_update is Empty");
             }

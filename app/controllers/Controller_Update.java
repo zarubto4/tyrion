@@ -12,6 +12,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
+import utilities.hardware.update.UpdateService;
 import utilities.logger.Logger;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
@@ -35,9 +36,12 @@ public class Controller_Update extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
+    private final UpdateService updateService;
+
     @Inject
-    public Controller_Update(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
+    public Controller_Update(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService, UpdateService updateService) {
         super(ws, formFactory, config, permissionService, notificationService);
+        this.updateService = updateService;
     }
 
 // ACTUALIZATION PROCEDURE #############################################################################################
@@ -305,16 +309,16 @@ public class Controller_Update extends _BaseController {
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_HardwareUpdate> query = Ebean.find(Model_HardwareUpdate.class);
-            query.order().desc("actualization_procedure.created");
+            query.order().desc("created");
 
 
             if (help.update_states != null && !help.update_states.isEmpty()) {
                 query.where().in("state", help.update_states);
             }
 
-            if (help.type_of_updates != null && !help.type_of_updates.isEmpty()) {
-                query.where().in("actualization_procedure.type_of_update", help.type_of_updates);
-            }
+            /*if (help.type_of_updates != null && !help.type_of_updates.isEmpty()) {
+                // TODO query.where().in("actualization_procedure.type_of_update", help.type_of_updates);
+            }*/
 
 
             if (!help.hardware_ids.isEmpty()) {
@@ -332,7 +336,7 @@ public class Controller_Update extends _BaseController {
                     Model_Instance.find.byId(instance_id);
                 }
 
-                query.where().in("actualization_procedure.instance.instance.id", help.instance_ids);
+                // TODO query.where().in("actualization_procedure.instance.instance.id", help.instance_ids);
             }
 
             if (!help.instance_snapshot_ids.isEmpty()) {
@@ -341,7 +345,7 @@ public class Controller_Update extends _BaseController {
                     Model_InstanceSnapshot.find.byId(instance_id);
                 }
 
-                query.where().in("actualization_procedure.instance.id", help.instance_ids);
+                // TODO query.where().in("actualization_procedure.instance.id", help.instance_ids);
             }
 
             if (!help.actualization_procedure_ids.isEmpty()) {
@@ -350,7 +354,7 @@ public class Controller_Update extends _BaseController {
                     // TODO Model_UpdateProcedure.find.byId(procedure_id);
                 }
 
-                query.where().in("actualization_procedure.id", help.actualization_procedure_ids);
+                // TODO query.where().in("actualization_procedure.id", help.actualization_procedure_ids);
             }
 
             // Vyvoření odchozího JSON

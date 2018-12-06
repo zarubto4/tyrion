@@ -4,14 +4,13 @@ import com.google.inject.Inject;
 import exceptions.FailedMessageException;
 import exceptions.NotFoundException;
 import exceptions.ServerOfflineException;
-import models.Model_Hardware;
-import models.Model_HomerServer;
-import models.Model_Instance;
-import models.Model_Project;
+import models.*;
 import utilities.enums.NetworkStatus;
 import utilities.homer.HomerInterface;
 import utilities.homer.HomerService;
+import utilities.logger.Logger;
 import utilities.network.NetworkStatusService;
+import utilities.notifications.NotificationService;
 import utilities.swagger.output.Swagger_ProjectStats;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_online_status;
 
@@ -20,12 +19,16 @@ import java.util.UUID;
 
 public class ProjectService {
 
+    private static final Logger logger = new Logger(ProjectService.class);
+
     private final NetworkStatusService networkStatusService;
+    private final NotificationService notificationService;
     private final HomerService homerService;
 
     @Inject
-    public ProjectService(NetworkStatusService networkStatusService, HomerService homerService) {
+    public ProjectService(NetworkStatusService networkStatusService, NotificationService notificationService, HomerService homerService) {
         this.networkStatusService = networkStatusService;
+        this.notificationService = notificationService;
         this.homerService = homerService;
     }
 
@@ -98,4 +101,48 @@ public class ProjectService {
     public void activate(Model_Project project) {}
 
     public void deactivate(Model_Project project) {}
+
+    public void invite(Model_Person person) {
+
+    }
+
+    public void acceptInvitation(Model_Invitation invitation) {
+        Model_Person person = Model_Person.find.query().where().eq("email", invitation.email).findOne();
+
+        Model_Project project = invitation.getProject();
+
+        if (!project.persons.contains(person)) {
+            project.persons.add(person);
+            project.update();
+
+            try {
+                Model_Role role = Model_Role.find.query().where().eq("project.id", project.id).eq("default_role", true).findOne();
+                if (!role.persons.contains(person)) {
+                    role.persons.add(person);
+                    role.update();
+                }
+            } catch (NotFoundException e) {
+                logger.warn("onProjectInvitationAccepted - unable to find default role for project, id {}", project.id);
+            }
+        }
+
+        person.idCache().add(Model_Project.class, project.id);
+
+        this.notificationService.send(invitation.owner, project.notificationInvitationAccepted(person));
+
+        // TODO new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, project_not_cached.id, project_not_cached.id))).start();
+
+        invitation.delete();
+        project.refresh();
+    }
+
+    public void rejectInvitation(Model_Invitation invitation) {
+        Model_Person person = Model_Person.find.query().where().eq("email", invitation.email).findOne();
+
+        Model_Project project = invitation.getProject();
+
+        this.notificationService.send(invitation.owner, project.notificationInvitationRejected(person));
+
+        invitation.delete();
+    }
 }

@@ -60,7 +60,7 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @JsonSerialize(using = ProjectStatsSerializer.class) @Transient
+    @JsonSerialize(using = ProjectStatsSerializer.class, nullsUsing = ProjectStatsSerializer.class) @Transient
     @ApiModelProperty(required = false, value = "Its Asynchronous Cached Value and it visible only, when system has cached everything. " +
             "If not, the system automatically searches for all data in a special thread, and when it gets it, it sends them to the client via Websocket. ")
     public Swagger_ProjectStats project_stats;
@@ -124,9 +124,6 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
             return new ArrayList<>();
         }
     }
-
-
-    /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* GET SQL PARAMETER - CACHE OBJECTS ------------------------------------------------------------------------------------*/
 
@@ -461,12 +458,10 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
         return getProduct().getCustomer();
     }
 
-/* JSON IGNORE METHOD && VALUES --------------------------------------------------------------------------------------*/
-
+/* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public boolean isParticipant(Model_Person person) {
-
         return getPersons().stream().anyMatch(p -> p.id.equals(person.id));
     }
 
@@ -495,38 +490,28 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
         }
     }
 
-    @JsonIgnore @Transient
-    public void notification_project_invitation_rejected(Model_Person owner) {
-        try {
-
-            Model_Person person = _BaseController.person();
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.NORMAL)
-                    .setLevel(NotificationLevel.INFO)
-                    .setText(new Notification_Text().setText("User "))
-                    .setObject(person)
-                    .setText(new Notification_Text().setText(" did not accept your invitation to the project "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText("."))
-                    .send(owner);
-        } catch (Exception e){
-            logger.internalServerError(e);
-        }
-    }
-
-    @JsonIgnore @Transient
-    public void notification_project_invitation_accepted(Model_Person invitee, Model_Person owner) {
-
-        new Model_Notification()
+    @JsonIgnore
+    public Model_Notification notificationInvitationRejected(Model_Person person) {
+        return new Model_Notification()
                 .setImportance(NotificationImportance.NORMAL)
                 .setLevel(NotificationLevel.INFO)
                 .setText(new Notification_Text().setText("User "))
-                .setObject(invitee)
+                .setObject(person)
+                .setText(new Notification_Text().setText(" did not accept your invitation to the project "))
+                .setObject(this)
+                .setText(new Notification_Text().setText("."));
+    }
+
+    @JsonIgnore
+    public Model_Notification notificationInvitationAccepted(Model_Person person) {
+        return new Model_Notification()
+                .setImportance(NotificationImportance.NORMAL)
+                .setLevel(NotificationLevel.INFO)
+                .setText(new Notification_Text().setText("User "))
+                .setObject(person)
                 .setText(new Notification_Text().setText(" accepted your invitation to the project "))
                 .setObject(this)
-                .setText(new Notification_Text().setText("."))
-                .send(owner);
+                .setText(new Notification_Text().setText("."));
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -548,7 +533,6 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
 
     @JsonIgnore @Override
     public boolean delete() {
-        logger.debug("delete - deleting from database, id: {} ", this.id);
         getProduct().idCache().remove(this.getClass(), id);
         return super.delete();
     }

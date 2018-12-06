@@ -2,9 +2,9 @@ package websocket.messages.homer_with_tyrion.configuration;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.Model_HomerServer;
 import play.data.validation.Constraints;
 import play.libs.Json;
+import websocket.interfaces.Homer;
 import websocket.messages.common.abstract_class.WS_AbstractMessage;
 
 import java.util.Date;
@@ -36,7 +36,7 @@ public class WS_Message_Homer_Get_homer_server_configuration extends WS_Abstract
 
         ObjectNode request_conf = Json.newObject();
         request_conf.put("message_type", message_type);
-        request_conf.put("message_channel", Model_HomerServer.CHANNEL);
+        request_conf.put("message_channel", Homer.CHANNEL);
 
         return request_conf;
     }

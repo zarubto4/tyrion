@@ -168,8 +168,8 @@ public class HardwareInterface {
                 .add(Expr.eq("state", HardwareUpdateState.RUNNING))
                 .endJunction()
                 .eq("firmware_type", FirmwareType.BACKUP.name())
-                .lt("actualization_procedure.date_of_planing", new Date())
-                .order().desc("actualization_procedure.date_of_planing")
+                // TODO .lt("actualization_procedure.date_of_planing", new Date())
+                // TODO .order().desc("actualization_procedure.date_of_planing")
                 .select("id")
                 .findList();
 

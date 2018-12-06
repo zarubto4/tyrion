@@ -9,7 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @JacksonAnnotationsInside
-@JsonSerialize(using = LastOnlineSerializer.class)
+@JsonSerialize(using = LastOnlineSerializer.class, nullsUsing = LastOnlineSerializer.class)
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface JsonLastOnline {

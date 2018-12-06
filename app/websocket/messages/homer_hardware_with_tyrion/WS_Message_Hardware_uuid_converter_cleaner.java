@@ -2,9 +2,8 @@ package websocket.messages.homer_hardware_with_tyrion;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.Model_HomerServer;
-import play.data.validation.Constraints;
 import play.libs.Json;
+import websocket.interfaces.Homer;
 import websocket.messages.common.abstract_class.WS_AbstractMessage;
 
 import java.util.UUID;
@@ -20,7 +19,7 @@ public class WS_Message_Hardware_uuid_converter_cleaner extends WS_AbstractMessa
 
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
-        request.put("message_channel", Model_HomerServer.CHANNEL);
+        request.put("message_channel", Homer.CHANNEL);
         request.put("old_uuid_id", old_uuid.toString());
         request.put("new_uuid_id", new_uuid != null ? new_uuid.toString() : null);
         request.put("full_id", full_id);
@@ -31,7 +30,7 @@ public class WS_Message_Hardware_uuid_converter_cleaner extends WS_AbstractMessa
 
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
-        request.put("message_channel", Model_HomerServer.CHANNEL);
+        request.put("message_channel", Homer.CHANNEL);
         request.put("old_uuid_id", old_uuid);
         request.put("new_uuid_id", new_uuid != null ? new_uuid.toString() : null);
         request.put("full_id", full_id);

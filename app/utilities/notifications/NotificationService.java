@@ -2,15 +2,10 @@ package utilities.notifications;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Singleton;
-import exceptions.BadRequestException;
-import exceptions.NotFoundException;
-import exceptions.NotSupportedException;
 import models.*;
 import play.libs.Json;
 import utilities.enums.NetworkStatus;
-import utilities.enums.NotificationAction;
 import utilities.enums.NotificationImportance;
-import utilities.enums.NotificationState;
 import utilities.logger.Logger;
 import websocket.interfaces.Portal;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
@@ -83,22 +78,6 @@ public class NotificationService {
         }
     }
 
-    public void confirm(Model_Notification notification, NotificationAction action, String payload) {
-        if (notification.confirmed) {
-            throw new BadRequestException("Notification is already confirmed");
-        } else {
-            notification.confirm();
-            this.send(notification.getPerson(), notification.setState(NotificationState.UPDATED));
-        }
-
-        switch (action) {
-            case CONFIRM_NOTIFICATION: break;
-            case ACCEPT_PROJECT_INVITATION: this.onProjectInvitationAccepted(UUID.fromString(payload)); break;
-            case REJECT_PROJECT_INVITATION: this.onProjectInvitationRejected(UUID.fromString(payload)); break;
-            default: throw new NotSupportedException("Unsupported action: " + action.name());
-        }
-    }
-
     public void subscribe(Portal portal) {
         if (!this.subscriptions.containsKey(portal.getPersonId())) {
             this.subscriptions.put(portal.getPersonId(), new ArrayList<>());
@@ -159,62 +138,5 @@ public class NotificationService {
                 }
             });
         }
-    }
-
-    private void onProjectInvitationAccepted(UUID invitationId) {
-
-        Model_Invitation invitation;
-
-        try {
-            invitation = Model_Invitation.find.byId(invitationId);
-        } catch (NotFoundException e) {
-            throw new BadRequestException("Failed to add you to the project. Invitation no longer exists, it might have been drawn back.");
-        }
-
-        Model_Person person = Model_Person.find.query().where().eq("email", invitation.email).findOne();
-
-        Model_Project project = invitation.getProject();
-
-        if (!project.persons.contains(person)) {
-            project.persons.add(person);
-            project.update();
-
-            try {
-                Model_Role role = Model_Role.find.query().where().eq("project.id", project.id).eq("default_role", true).findOne();
-                if (!role.persons.contains(person)) {
-                    role.persons.add(person);
-                    role.update();
-                }
-            } catch (NotFoundException e) {
-                logger.warn("onProjectInvitationAccepted - unable to find default role for project, id {}", project.id);
-            }
-        }
-
-        person.idCache().add(Model_Project.class, project.id);
-        // TODO project.notification_project_invitation_accepted(person, invitation.owner);
-
-        // TODO new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, project_not_cached.id, project_not_cached.id))).start();
-
-        invitation.delete();
-        project.refresh();
-    }
-
-    private void onProjectInvitationRejected(UUID invitationId) {
-
-        Model_Invitation invitation;
-
-        try {
-            invitation = Model_Invitation.find.byId(invitationId);
-        } catch (NotFoundException e) {
-            throw new BadRequestException("Failed to add you to the project. Invitation no longer exists, it might have been drawn back.");
-        }
-
-        Model_Person person = Model_Person.find.query().where().eq("email", invitation.email).findOne();
-
-        Model_Project project = invitation.getProject();
-
-        // TODO project.notification_project_invitation_rejected(invitation.owner);
-
-        invitation.delete();
     }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import models.Model_HomerServer;
 import play.libs.Json;
+import websocket.interfaces.Homer;
 import websocket.messages.common.abstract_class.WS_AbstractMessage;
 
 public class WS_Message_Homer_Get_configuration extends WS_AbstractMessage {
@@ -15,13 +16,12 @@ public class WS_Message_Homer_Get_configuration extends WS_AbstractMessage {
 
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
-
     @JsonIgnore
     public ObjectNode make_request(Model_HomerServer server) {
 
         ObjectNode request_conf = Json.newObject();
         request_conf.put("message_type", message_type);
-        request_conf.put("message_channel", Model_HomerServer.CHANNEL);
+        request_conf.put("message_channel", Homer.CHANNEL);
         request_conf.put("status", "success");
         request_conf.put("server_name", server.name);
         request_conf.put("mqtt_port", server.mqtt_port);

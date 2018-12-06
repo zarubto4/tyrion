@@ -114,7 +114,6 @@ public class UpdateService {
         this.bulkUpdate(group.getHardware(), updatable, type);
     }
 
-    // TODO refactor
     public void onUpdateMessage(WS_Message_Hardware_UpdateProcedure_Progress message) {
         try {
 
@@ -281,8 +280,7 @@ public class UpdateService {
     private Model_HardwareUpdate createUpdate(Model_Hardware hardware, Updatable updatable, FirmwareType type) {
         ExpressionList<Model_HardwareUpdate> expressions = Model_HardwareUpdate.find.query().where()
                 .eq("hardware.id", hardware.id)
-                .or(Expr.eq("state", HardwareUpdateState.PENDING), Expr.eq("state", HardwareUpdateState.RUNNING))
-                .lt("actualization_procedure.date_of_planing", new Date());
+                .or(Expr.eq("state", HardwareUpdateState.PENDING), Expr.eq("state", HardwareUpdateState.RUNNING));
 
         if (type.equals(FirmwareType.FIRMWARE)) {
             expressions.eq("firmware_type", FirmwareType.FIRMWARE);
@@ -295,7 +293,7 @@ public class UpdateService {
         }
 
         List<Model_HardwareUpdate> updates = expressions
-                .order().desc("actualization_procedure.date_of_planing")
+                .order().desc("created")
                 .findList();
 
         if (updates.size() > 0) {

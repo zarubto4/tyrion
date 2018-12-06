@@ -13,6 +13,7 @@ import utilities.authentication.Authentication;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationState;
 import utilities.logger.Logger;
+import utilities.notifications.NotificationConfirmationService;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.input.Swagger_Notification_Confirm;
@@ -31,9 +32,13 @@ public class Controller_Notification extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
+    private final NotificationConfirmationService notificationConfirmationService;
+
     @Inject
-    public Controller_Notification(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
+    public Controller_Notification(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
+                                   NotificationService notificationService, NotificationConfirmationService notificationConfirmationService) {
         super(ws, formFactory, config, permissionService, notificationService);
+        this.notificationConfirmationService = notificationConfirmationService;
     }
 
 // PUBLIC CONTROLLER METHODS ###########################################################################################
@@ -209,7 +214,7 @@ public class Controller_Notification extends _BaseController {
 
           this.checkUpdatePermission(notification);
 
-          this.notificationService.confirm(notification, help.action, help.payload);
+          this.notificationConfirmationService.confirm(notification, help.action, help.payload);
 
           return ok();
       } catch (Exception e) {

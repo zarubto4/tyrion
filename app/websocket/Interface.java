@@ -109,7 +109,6 @@ public class Interface implements WebSocketInterface {
                 messageBuffer.get(messageId).resolve(message);
                 messageBuffer.remove(messageId);
             } else {
-                logger.trace("onReceived - message_id not found found in buffer");
                 this.onMessage(message);
             }
 

@@ -784,7 +784,6 @@ public class Controller_Blocko extends _BaseController {
     @ApiOperation(value = "remove Instance",
             tags = {"Instance"},
             notes = "", //TODO
-            //TODO
             protocols = "https"
     )
     @ApiResponses({
@@ -1096,7 +1095,6 @@ public class Controller_Blocko extends _BaseController {
             // Get and Validate Object
             Swagger_Instance_Filter help = formFromRequestWithValidation(Swagger_Instance_Filter.class);
 
-
             // Tvorba parametru dotazu
             Query<Model_Instance> query = Ebean.find(Model_Instance.class);
             query.where().eq("deleted", false);
@@ -1131,7 +1129,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "update Instance Grid Settings",
             tags = { "Instance"},
-            notes = "",         //TODO
+            notes = "", //TODO
             produces = "application/json",
             protocols = "https",
             code = 200

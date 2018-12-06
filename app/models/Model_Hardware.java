@@ -3,7 +3,6 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import exceptions.NotFoundException;
 import io.ebean.Expr;
@@ -11,8 +10,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import mongo.ModelMongo_Hardware_ActivationStatus;
 import mongo.ModelMongo_Hardware_BackupIncident;
-import mongo.ModelMongo_Hardware_OnlineStatus;
-import org.ehcache.Cache;
 import play.libs.Json;
 import utilities.cache.CacheFinder;
 import utilities.cache.InjectCache;
@@ -30,12 +27,10 @@ import utilities.notifications.helps_objects.Notification_Text;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
 import utilities.swagger.output.Swagger_Short_Reference;
-import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Model_Hardware_Temporary_NotDominant_record;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import javax.persistence.Transient;
-import java.time.Instant;
 import java.util.*;
 
 @Entity
@@ -84,7 +79,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
      */
     public boolean dominant_entity;
 
-
     @JsonIgnore public String wifi_mac_address;
     public String mac_address;
 
@@ -126,7 +120,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
     // For Faster reload
-    @JsonIgnore @Transient @Cached public long cache_latest_online;
     @JsonIgnore @Transient @Cached public String cache_latest_know_ip_address;
 
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
@@ -359,7 +352,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
                     .eq("state", HardwareUpdateState.PENDING)
                     .eq("state", HardwareUpdateState.RUNNING)
                     .endJunction()
-                    .eq("hardware.id", id).order().asc("actualization_procedure.created").findList();
+                    .eq("hardware.id", id).order().asc("created").findList();
 
             return c_program_plans;
 
@@ -460,50 +453,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
             return null;
         }
     }
-
-    // TODO custom serializer
-   /* @JsonProperty
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @ApiModelProperty(value = "Value is missing, if device status is online")
-    public long latest_online() {
-        if (online_state() == NetworkStatus.ONLINE) return 0;
-        try {
-
-            if (cache_latest_online != 0) {
-                return cache_latest_online;
-            }
-
-            new Thread(() -> {
-                try {
-
-                    logger.warn("Need latest_online for device ID: {}", this.id);
-
-
-                    ModelMongo_Hardware_OnlineStatus status = ModelMongo_Hardware_OnlineStatus.find.query()
-                            .field("hardware_id").equal(this.id.toString())
-                            .field("server_version").equal(Server.mode.name())
-                            .order("created").get(new FindOptions().batchSize(1));
-
-                    if (status != null) {
-                        logger.debug("last_online: more than 1 record, finding latest record");
-                        cache_latest_online =  Instant.now().getEpochSecond();
-                        EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, getProject().id, this.id));
-                    } else  {
-                        cache_latest_online = -1;
-                    }
-
-                } catch (Exception e) {
-                    logger.internalServerError(e);
-                }
-            }).start();
-
-            return -1;
-
-        } catch (Exception e) {
-            // logger.internalServerError(e);
-            return -1;
-        }
-    }*/
 
     @JsonProperty @ApiModelProperty(required = true)
     public List<Swagger_Short_Reference> hardware_groups() {
@@ -932,26 +881,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
 /* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
 
-    public void make_log_connect() {
-        new Thread(() -> {
-            try {
-                ModelMongo_Hardware_OnlineStatus.create_record(this, true);
-            } catch (Exception e) {
-                logger.internalServerError(e);
-            }
-        }).start();
-    }
-
-    public void make_log_disconnect() {
-        new Thread(() -> {
-            try {
-                ModelMongo_Hardware_OnlineStatus.create_record(this, false);
-            } catch (Exception e) {
-                logger.internalServerError(e);
-            }
-        }).start();
-    }
-
     public void make_log_deactivated() {
         new Thread(() -> {
             try {
@@ -1053,9 +982,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-    @InjectCache(value = WS_Model_Hardware_Temporary_NotDominant_record.class, keyType = String.class,  maxElements = 10000, duration = InjectCache.DayCacheConstant, name = "Model_Hardware_NOT_DOMINANT_HARDWARE")
-    public static Cache<String, WS_Model_Hardware_Temporary_NotDominant_record> cache_not_dominant_hardware;  // FULL_ID, HOMER_SERVER_ID
 
     /**
      * Specialní vyjímka - vždy vracíme Hardware podle full_id (číslo procesoru) kde

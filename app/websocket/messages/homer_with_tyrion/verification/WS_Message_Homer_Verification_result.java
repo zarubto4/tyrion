@@ -2,9 +2,9 @@ package websocket.messages.homer_with_tyrion.verification;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.Model_HomerServer;
 import play.libs.Json;
 import utilities.errors.ErrorCode;
+import websocket.interfaces.Homer;
 import websocket.messages.common.abstract_class.WS_AbstractMessage;
 
 public class WS_Message_Homer_Verification_result extends WS_AbstractMessage {
@@ -14,8 +14,6 @@ public class WS_Message_Homer_Verification_result extends WS_AbstractMessage {
 
 /* INCOMING VALUES FOR FORM --------------------------------------------------------------------------------------------*/
 
-
-
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
@@ -23,7 +21,7 @@ public class WS_Message_Homer_Verification_result extends WS_AbstractMessage {
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
-        request.put("message_channel", Model_HomerServer.CHANNEL);
+        request.put("message_channel", Homer.CHANNEL);
         request.put("message_type", "homer_verification_result");
 
         if (verify) {

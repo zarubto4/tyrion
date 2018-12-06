@@ -1,6 +1,7 @@
 package utilities.network;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import exceptions.NeverConnectedException;
 import exceptions.NotSupportedException;
@@ -9,7 +10,10 @@ import models.Model_CompilationServer;
 import models.Model_Hardware;
 import models.Model_HomerServer;
 import models.Model_Instance;
+import mongo.ModelMongo_NetworkStatus;
 import org.ehcache.Cache;
+import org.mongodb.morphia.query.FindOptions;
+import utilities.Server;
 import utilities.cache.CacheService;
 import utilities.compiler.CompilerService;
 import utilities.enums.NetworkStatus;
@@ -31,18 +35,18 @@ public class NetworkStatusService {
     private final Cache<UUID, NetworkStatus> cache;
 
     private final NotificationService notificationService;
-    private final HardwareService hardwareService;
-    private final InstanceService instanceService;
+    private final Provider<HardwareService> hardwareServiceProvider;
+    private final Provider<InstanceService> instanceServiceProvider;
     private final CompilerService compilerService;
     private final HomerService homerService;
 
     @Inject
-    public NetworkStatusService(CacheService cacheService, HardwareService hardwareService, InstanceService instanceService,
+    public NetworkStatusService(CacheService cacheService, Provider<HardwareService> hardwareServiceProvider, Provider<InstanceService> instanceServiceProvider,
                                 CompilerService compilerService, HomerService homerService, NotificationService notificationService) {
         this.cache = cacheService.getCache("NetworkStatusCache", UUID.class, NetworkStatus.class, 1000, 3600, true);
         this.notificationService = notificationService;
-        this.hardwareService = hardwareService;
-        this.instanceService = instanceService;
+        this.hardwareServiceProvider = hardwareServiceProvider;
+        this.instanceServiceProvider = instanceServiceProvider;
         this.compilerService = compilerService;
         this.homerService = homerService;
     }
@@ -53,7 +57,9 @@ public class NetworkStatusService {
      * @return status
      */
     public NetworkStatus getStatus(Networkable networkable) {
+        logger.debug("getStatus - getting status for: {}, id: {}", networkable.getEntityType(), networkable.getId());
         if (this.cache.containsKey(networkable.getId())) {
+            logger.trace("getStatus - getting status from cache");
             return this.cache.get(networkable.getId());
         } else {
             this.requestStatus(networkable);
@@ -63,6 +69,8 @@ public class NetworkStatusService {
     }
 
     public void setStatus(Networkable networkable, NetworkStatus networkStatus) {
+        logger.debug("setStatus - setting status: {} for: {}, id: {}", networkStatus, networkable.getEntityType(), networkable.getId());
+
         this.cache.put(networkable.getId(), networkStatus);
 
         UUID projectId = null;
@@ -72,23 +80,36 @@ public class NetworkStatusService {
         }
 
         this.notificationService.networkStatusChanged(networkable.getClass(), networkable.getId(), networkStatus, projectId);
+
+        ModelMongo_NetworkStatus.create_record(networkable, networkStatus);
     }
 
-    // TODO
+    // TODO should be async with echo update
     public Long getLastOnline(Networkable networkable) {
-        return 0L;
+        ModelMongo_NetworkStatus networkStatus = ModelMongo_NetworkStatus.find.query()
+                .field("networkable_id").equal(networkable.getId().toString())
+                .field("status").equal(NetworkStatus.ONLINE)
+                .field("server_type").equal(Server.mode)
+                .order("created").get(new FindOptions().batchSize(1));
+
+        if (networkStatus != null) {
+            return networkStatus.created;
+        } else  {
+            return null;
+        }
     }
 
     private void requestStatus(Networkable networkable) {
+        logger.debug("requestStatus - requesting status for: {}, id: {}", networkable.getEntityType(), networkable.getId());
         CompletableFuture
                 .supplyAsync(() -> {
                     try {
                         switch (networkable.getEntityType()) {
                             case HARDWARE: {
-                                return this.hardwareService.getInterface((Model_Hardware) networkable).getNetworkStatus();
+                                return this.hardwareServiceProvider.get().getInterface((Model_Hardware) networkable).getNetworkStatus();
                             }
                             case INSTANCE: {
-                                return this.instanceService.getInterface((Model_Instance) networkable).getNetworkStatus();
+                                return this.instanceServiceProvider.get().getInterface((Model_Instance) networkable).getNetworkStatus();
                             }
                             case COMPILER: {
                                 try {

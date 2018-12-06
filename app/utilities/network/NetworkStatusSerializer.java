@@ -26,6 +26,7 @@ public class NetworkStatusSerializer extends StdSerializer<NetworkStatus> {
 
     @Override
     public void serialize(NetworkStatus value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        logger.trace("serialize - serializing network status for {}", gen.getCurrentValue().getClass().getSimpleName());
         if (gen.getCurrentValue() instanceof Networkable) {
             gen.writeString(this.networkStatusService.getStatus((Networkable) gen.getCurrentValue()).name());
         } else if (!gen.canOmitFields()) {

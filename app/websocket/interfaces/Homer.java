@@ -2,7 +2,6 @@ package websocket.interfaces;
 
 import akka.stream.Materializer;
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 import controllers._BaseFormFactory;
 import exceptions.FailedMessageException;
 import exceptions.NotFoundException;
@@ -17,11 +16,9 @@ import utilities.hardware.DominanceService;
 import utilities.hardware.HardwareEvents;
 import utilities.hardware.HardwareService;
 import utilities.homer.HomerEvents;
-import utilities.homer.HomerSynchronizationTask;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfiguration;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationFile;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationProgram;
-import utilities.synchronization.SynchronizationService;
 import utilities.hardware.update.UpdateService;
 import utilities.logger.Logger;
 import websocket.Interface;
@@ -47,30 +44,28 @@ public class Homer extends Interface {
 
     private static final Logger logger = new Logger(Homer.class);
 
+    public static final String CHANNEL = "homer_server";
+
     public static HashMap<UUID, Homer> apiKeys = new HashMap<>(); // TODO use DI instead of static field
 
     private final HardwareEvents hardwareEvents;
-    private final SynchronizationService synchronizationService;
     private final HardwareService hardwareService;
     private final UpdateService updateService;
     private final HomerEvents homerEvents;
     private final DominanceService dominanceService;
-    private final Injector injector;
 
     private boolean authorized = false;
     private UUID apiKey;
 
     @Inject
-    public Homer(Materializer materializer, _BaseFormFactory formFactory, Injector injector, HardwareEvents hardwareEvents, SynchronizationService synchronizationService,
-                 UpdateService updateService, HardwareService hardwareService, HomerEvents homerEvents, DominanceService dominanceService) {
+    public Homer(Materializer materializer, _BaseFormFactory formFactory, HardwareEvents hardwareEvents, UpdateService updateService,
+                 HardwareService hardwareService, HomerEvents homerEvents, DominanceService dominanceService) {
         super(materializer, formFactory);
         this.hardwareEvents = hardwareEvents;
-        this.synchronizationService = synchronizationService;
         this.hardwareService = hardwareService;
         this.updateService = updateService;
         this.homerEvents = homerEvents;
         this.dominanceService = dominanceService;
-        this.injector = injector;
     }
 
     @Override
@@ -146,11 +141,6 @@ public class Homer extends Interface {
                 this.send(new WS_Message_Homer_Verification_result().make_request(true, this.apiKey.toString()).put("message_id", message.message_id));
                 
                 this.homerEvents.connected(server);
-                
-                HomerSynchronizationTask task = this.injector.getInstance(HomerSynchronizationTask.class);
-                task.setServer(server);
-
-                this.synchronizationService.submit(task);
 
             } else {
                 this.send(new WS_Message_Homer_Verification_result().make_request(false, null).put("message_id", message.message_id));
@@ -188,7 +178,7 @@ public class Homer extends Interface {
 
 /* INSTANCE MESSAGES ---------------------------------------------------------------------------------------------------*/
 
-    public void onMessageInstance(Message message) {
+    private void onMessageInstance(Message message) {
         switch (message.getType()) {
             case WS_Message_Grid_token_verification.message_type: this.onTerminalVerify(message.as(WS_Message_Grid_token_verification.class)); break;
             case WS_Message_WebView_token_verification.messageType: this.onRemoteViewVerify(message.as(WS_Message_WebView_token_verification.class)); break;
@@ -202,7 +192,7 @@ public class Homer extends Interface {
     }
 
     // TODO improve
-    public void onTerminalVerify(WS_Message_Grid_token_verification message) {
+    private void onTerminalVerify(WS_Message_Grid_token_verification message) {
         try {
 
             logger.info("onTerminalVerify - verifying GRID token: {}, for instance: {}", message.token, message.instance_id);
@@ -312,7 +302,7 @@ public class Homer extends Interface {
         }
     }
 
-    public void onRemoteViewVerify(WS_Message_WebView_token_verification message) {
+    private void onRemoteViewVerify(WS_Message_WebView_token_verification message) {
         try {
 
             logger.info("onRemoteViewVerify - verifying VIEW token: {}, for instance: {}", message.token, message.instance_id);
@@ -344,7 +334,7 @@ public class Homer extends Interface {
 
 /* HARDWARE MESSAGES ---------------------------------------------------------------------------------------------------*/
 
-    public void onMessageHardware(Message message) {
+    private void onMessageHardware(Message message) {
         switch (message.getType()) {
             case WS_Message_Hardware_connected.message_type: this.onHardwareConnected(message.as(WS_Message_Hardware_connected.class)); break;
             case WS_Message_Hardware_disconnected.message_type: this.onHardwareDisconnected(message.as(WS_Message_Hardware_disconnected.class)); break;
@@ -381,7 +371,7 @@ public class Homer extends Interface {
         }
     }
 
-    public void onHardwareConnected(WS_Message_Hardware_connected help) {
+    private void onHardwareConnected(WS_Message_Hardware_connected help) {
         try {
 
             logger.debug("onHardwareConnected - hardware, id: {} is online", help.uuid);
@@ -403,7 +393,7 @@ public class Homer extends Interface {
         }
     }
 
-    public void onHardwareDisconnected(WS_Message_Hardware_disconnected help) {
+    private void onHardwareDisconnected(WS_Message_Hardware_disconnected help) {
 
         if (help.uuid == null) {
             return;
@@ -422,7 +412,7 @@ public class Homer extends Interface {
     }
 
     // TODO Device dělá autobackup
-    public void device_auto_backup_start_echo(WS_Message_Hardware_autobackup_making help) {
+    private void device_auto_backup_start_echo(WS_Message_Hardware_autobackup_making help) {
         try {
 
             logger.debug("device_auto_backup_start_echo - Device send Echo about making backup on hardware ID:: {} ", help.uuid);
@@ -440,7 +430,7 @@ public class Homer extends Interface {
     }
 
     // TODO Device udělal autobackup
-    public void device_auto_backup_done_echo(WS_Message_Hardware_autobackup_made help) {
+    private void device_auto_backup_done_echo(WS_Message_Hardware_autobackup_made help) {
         try {
 
             logger.debug("device_auto_backup_done_echo:: Device send Echo about backup done on hardware ID:: {} ", help.uuid);
@@ -464,7 +454,7 @@ public class Homer extends Interface {
     }
 
     // žádost void o synchronizaci online stavu
-    public void device_online_synchronization_echo(WS_Message_Hardware_online_status report) {
+    private void device_online_synchronization_echo(WS_Message_Hardware_online_status report) {
         try {
             for (WS_Message_Hardware_online_status.DeviceStatus status : report.hardware_list) {
                 try {
@@ -478,7 +468,7 @@ public class Homer extends Interface {
         }
     }
 
-    public void onHardwareMQTTAuthentication(WS_Message_Hardware_validation_request request) {
+    private void onHardwareMQTTAuthentication(WS_Message_Hardware_validation_request request) {
         try {
 
             Model_HomerServer server = Model_HomerServer.find.byId(this.id);
@@ -574,7 +564,7 @@ public class Homer extends Interface {
         }
     }
 
-    public void onConvertFullIdToUUID(WS_Message_Hardware_uuid_converter request) {
+    private void onConvertFullIdToUUID(WS_Message_Hardware_uuid_converter request) {
 
         Model_Hardware hardware = this.dominanceService.getDominant(request.full_id);
 
@@ -613,7 +603,7 @@ public class Homer extends Interface {
         this.send(request.get_result_error());
     }
 
-    public void onHardwareLoggerSubscriptionAuthentication(WS_Message_Hardware_terminal_logger_validation_request request) {
+    private void onHardwareLoggerSubscriptionAuthentication(WS_Message_Hardware_terminal_logger_validation_request request) {
         try {
 
             Model_AuthorizationToken authorizationToken = Model_AuthorizationToken.getByToken(UUID.fromString(request.token));
@@ -640,7 +630,7 @@ public class Homer extends Interface {
         }
     }
 
-    public void device_settings_set(WS_Message_Hardware_set_settings settings) {
+    private void device_settings_set(WS_Message_Hardware_set_settings settings) {
         if (settings.key != null) {
             if (settings.uuid != null) {
                 Model_Hardware hardware = Model_Hardware.find.byId(settings.uuid);

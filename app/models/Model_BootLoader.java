@@ -11,6 +11,7 @@ import utilities.enums.EntityType;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationLevel;
 import utilities.enums.NotificationType;
+import utilities.hardware.update.Updatable;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 import utilities.notifications.helps_objects.Becki_color;
@@ -24,7 +25,7 @@ import java.util.*;
 @Entity
 @ApiModel( value = "BootLoader", description = "Model of BootLoader")
 @Table(name="BootLoader")
-public class Model_BootLoader extends NamedModel implements Permissible {
+public class Model_BootLoader extends NamedModel implements Permissible, Updatable {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 

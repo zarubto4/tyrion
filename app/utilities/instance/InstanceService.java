@@ -5,10 +5,12 @@ import exceptions.NotFoundException;
 import exceptions.ServerOfflineException;
 import models.*;
 import utilities.enums.FirmwareType;
+import utilities.enums.NetworkStatus;
 import utilities.hardware.update.UpdateService;
 import utilities.homer.HomerInterface;
 import utilities.homer.HomerService;
 import utilities.logger.Logger;
+import utilities.network.NetworkStatusService;
 import websocket.WebSocketService;
 import websocket.interfaces.Homer;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Message_Homer_Hardware_ID_UUID_Pair;
@@ -22,12 +24,14 @@ public class InstanceService {
     private final WebSocketService webSocketService;
     private final HomerService homerService;
     private final UpdateService updateService;
+    private final NetworkStatusService networkStatusService;
 
     @Inject
-    public InstanceService(WebSocketService webSocketService, HomerService homerService, UpdateService updateService) {
+    public InstanceService(WebSocketService webSocketService, HomerService homerService, UpdateService updateService, NetworkStatusService networkStatusService) {
         this.webSocketService = webSocketService;
         this.homerService = homerService;
         this.updateService = updateService;
+        this.networkStatusService = networkStatusService;
     }
 
     public InstanceInterface getInterface(Model_Instance instance) {
@@ -56,6 +60,8 @@ public class InstanceService {
 
         // TODO notification_instance_set_wait_for_server(person);
 
+        this.networkStatusService.setStatus(instance, NetworkStatus.ONLINE);
+
         InstanceInterface instanceInterface = this.getInterface(instance);
         instanceInterface.setProgram();
 
@@ -72,9 +78,6 @@ public class InstanceService {
 
         instanceInterface.setHardware(pairs);
         // TODO instanceInterface.setTerminals();
-
-
-        // TODO WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, get_instance_id(), true, instance.getProjectId());
 
         // TODO think if this code shouldn't be elsewhere
         if (forceHardwareUpdate && snapshot.getProgram().interfaces.size() > 0) {
@@ -118,14 +121,10 @@ public class InstanceService {
             });
         }
 
-        // TODO WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Hardware.class, get_instance_id(), true, instance.getProjectId());
-
         // TODO new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Instance.class, instance.getProject().id, get_instance_id()))).start();
-
     }
 
     public void shutdown(Model_Instance instance) {
-        // TODO WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, this.id, false, getProjectId());
 
         instance.current_snapshot().getRequiredHardware().forEach(hardware -> {
             hardware.connected_instance_id = null;
@@ -138,6 +137,9 @@ public class InstanceService {
         try {
             HomerInterface homerInterface = this.homerService.getInterface(instance.getServer());
             homerInterface.removeInstance(Collections.singletonList(instance.id));
+
+            this.networkStatusService.setStatus(instance, NetworkStatus.OFFLINE);
+
         } catch (ServerOfflineException e) {
             // nothing - sever is offline
         }

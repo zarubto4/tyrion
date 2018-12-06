@@ -2,12 +2,10 @@ package websocket.messages.homer_with_tyrion;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.Model_HomerServer;
-import play.data.validation.Constraints;
 import play.libs.Json;
+import websocket.interfaces.Homer;
 import websocket.messages.common.abstract_class.WS_AbstractMessage_Instance;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,7 +24,7 @@ public class WS_Message_Homer_Instance_destroy extends WS_AbstractMessage_Instan
 
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
-        request.put("message_channel", Model_HomerServer.CHANNEL);
+        request.put("message_channel", Homer.CHANNEL);
         request.set("instance_ids", Json.toJson(instance_ids));
 
         return request;

@@ -17,6 +17,7 @@ import utilities.emails.Email;
 import utilities.logger.Logger;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
+import utilities.project.ProjectService;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Entity_Validation_Out;
 
@@ -35,9 +36,13 @@ public class Controller_Person extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
+    private final ProjectService projectService;
+
     @Inject
-    public Controller_Person(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
+    public Controller_Person(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
+                             NotificationService notificationService, ProjectService projectService) {
         super(ws, formFactory, config, permissionService, notificationService);
+        this.projectService = projectService;
     }
 
 
@@ -119,7 +124,7 @@ public class Controller_Person extends _BaseController {
                 try {
 
                     for(Model_Invitation invitation : invitations ) {
-                        // TODO NotificationActionHandler.perform(NotificationAction.ACCEPT_PROJECT_INVITATION, invitation.id.toString());
+                        this.projectService.acceptInvitation(invitation);
                     }
 
                 } catch (IllegalArgumentException e) {
