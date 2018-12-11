@@ -21,11 +21,16 @@ public class Compiler extends Interface {
 
     private static final Logger logger = new Logger(Compiler.class);
 
+    public static final String CHANNEL = "compilation_server";
+
+    private final NetworkStatusService networkStatusService;
+
     private Map<UUID, CompletableFuture<WS_Message_Make_compilation>> runningCompilations = new HashMap<>();
 
     @Inject
     public Compiler(NetworkStatusService networkStatusService, Materializer materializer, _BaseFormFactory formFactory) {
         super(materializer, formFactory);
+        this.networkStatusService = networkStatusService;
     }
 
     public WS_Message_Make_compilation compile(Request request) throws TimeoutException, InterruptedException, ExecutionException {
@@ -35,38 +40,27 @@ public class Compiler extends Interface {
         }
 
         WS_Message_Make_compilation result = message.as(WS_Message_Make_compilation.class);
+
         CompletableFuture<WS_Message_Make_compilation> future = new CompletableFuture<>();
 
         this.runningCompilations.put(result.build_id, future);
 
         WS_Message_Make_compilation completed = future.get(2L, TimeUnit.MINUTES);
-        completed.interface_code = result.interface_code; // Interface data comes only in the first response
+        completed.interface_code = message.getMessage().get("interface_code").toString(); // Interface data comes only in the first response TODO: find out how to bind the interface_code via form
         return completed;
     }
 
     @Override
     public void onMessage(Message message) {
         switch (message.getType()) {
-            case WS_Message_Make_compilation.message_type: this.onBuildComplete(message.as(WS_Message_Make_compilation.class));
+            case "buildSuccess": this.onBuildComplete(message.as(WS_Message_Make_compilation.class)); break; // TODO remove after code server is compatible
+            case WS_Message_Make_compilation.message_type: this.onBuildComplete(message.as(WS_Message_Make_compilation.class)); break;
         }
     }
 
     @Override
-    public Long ping() {
-        long start = System.currentTimeMillis();
-        try {
-            Message response = this.sendWithResponse(
-                    new Request(Json.newObject()
-                            .put("message_id", UUID.randomUUID().toString())
-                            .put("message_channel", "compilation_server")
-                            .put("message_type", "ping")
-                    )
-            );
-        } catch (FailedMessageException e) {
-            logger.warn("ping - got error response for ping, but still the server responded");
-        }
-
-        return System.currentTimeMillis() - start;
+    public String getDefaultChannel() {
+        return CHANNEL;
     }
 
     private void onBuildComplete(WS_Message_Make_compilation message) {

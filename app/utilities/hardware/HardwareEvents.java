@@ -28,6 +28,8 @@ public class HardwareEvents {
 
     public void connected(Model_Hardware hardware) {
 
+        logger.info("connected - hardware: {} connected", hardware.full_id);
+
         this.networkStatusService.setStatus(hardware, NetworkStatus.ONLINE);
 
         HardwareSynchronizationTask task = this.injector.getInstance(HardwareSynchronizationTask.class);
@@ -41,6 +43,8 @@ public class HardwareEvents {
     }
 
     public void disconnected(Model_Hardware hardware) {
+
+        logger.info("disconnected - hardware: {} disconnected", hardware.full_id);
 
         this.networkStatusService.setStatus(hardware, NetworkStatus.OFFLINE);
 

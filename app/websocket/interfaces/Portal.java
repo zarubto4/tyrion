@@ -62,6 +62,11 @@ public class Portal extends Interface {
     }
 
     @Override
+    public String getDefaultChannel() {
+        return CHANNEL;
+    }
+
+    @Override
     protected void onClose() {
         super.onClose();
         this.notificationService.unsubscribe(this);

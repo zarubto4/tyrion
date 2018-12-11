@@ -5,7 +5,6 @@ import play.libs.Json;
 import utilities.errors.ErrorCode;
 import utilities.logger.Logger;
 
-import java.util.Date;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -24,34 +23,22 @@ public class ResponseThread implements Supplier<Message> {
     private int timeout;
     private int retries;
     private boolean resolved;
-    private UUID websocket_identificator;
 
-    public ResponseThread(ObjectNode message, int delay, int timeout, int retries, UUID websocket_identificator) {
+    public ResponseThread(ObjectNode message, int delay, int timeout, int retries) {
         this.message = message;
         this.delay = delay;
         this.timeout = timeout;
         this.retries = retries;
-        this.id = UUID.fromString(message.get("message_id").asText());
-        this.websocket_identificator = websocket_identificator;
+        this.id = UUID.fromString(message.get(Message.ID).asText());
     }
 
     @Override
     public Message get() {
         try {
-
-            logger.trace("Sending Thread Start:: {}:{} Planed delay: {}", new Date().getMinutes(), new Date().getSeconds(), this.delay);
             sleep(this.delay);
-            logger.trace("Sending Thread After delay:: {}:{} Planed delay: {}", new Date().getMinutes(), new Date().getSeconds(), this.delay);
-
-            while (!resolved && this.retries >= 0) {
+            while (!resolved && this.retries > 0) {
 
                 logger.trace("get - sending message with response, message_id: {}, message_type: {}, retries: {}, timeout: {} ", id, message.get("message_type").asText(), retries, timeout);
-
-                // Sender is not set -so message was add to buffer for a second response
-                if(sender == null) {
-                    logger.trace("Sending Thread After delay:: {} time", this.delay);
-                    return time_out_exception_error_response();
-                }
 
                 this.sender.send(this.message);
 
@@ -91,7 +78,6 @@ public class ResponseThread implements Supplier<Message> {
         message.put("error_code", ErrorCode.WEBSOCKET_TIME_OUT_EXCEPTION.error_code());
         message.put("message_id",message.get("message_id").asText());
         message.put("message_channel",message.get("message_channel").asText());
-        message.put("websocket_identificator", websocket_identificator.toString());
 
         this.sender.removeMessage(this.id);
 

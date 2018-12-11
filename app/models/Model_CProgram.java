@@ -63,7 +63,8 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
         }
     }
 
-    @JsonProperty public List<Model_CProgramVersion> program_versions() {
+    @JsonProperty
+    public List<Model_CProgramVersion> program_versions() {
         try {
 
             return getVersions();
@@ -129,31 +130,9 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
                 .forEach(o -> this.idCache().add(Model_CProgramVersion.class, o.id));
     }
 
-    @JsonIgnore @Transient public List<Model_CProgramVersion> getVersions() {
-        try {
-
-            List<Model_CProgramVersion> list = new ArrayList<>();
-
-            for (UUID id : getVersionsId()) {
-                list.add(Model_CProgramVersion.find.byId(id));
-            }
-
-            return list;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new ArrayList<>();
-        }
-    }
-
-    @JsonIgnore @Transient public UUID getHardwareTypeId()     {
-
-        if (idCache().get(Model_HardwareType.class) == null) {
-            idCache().add(Model_HardwareType.class,  (UUID) Model_HardwareType.find.query().where().eq("c_programs.id", id).select("id").findSingleAttribute());
-        }
-
-        return idCache().get(Model_HardwareType.class);
-
+    @JsonIgnore
+    public List<Model_CProgramVersion> getVersions() {
+        return this.getVersionsId().stream().map(Model_CProgramVersion.find::byId).collect(Collectors.toList());
     }
 
     @JsonIgnore @Transient public Model_HardwareType getHardwareType()     {

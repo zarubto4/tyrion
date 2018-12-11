@@ -2,7 +2,9 @@ package utilities.synchronization;
 
 import common.Identifiable;
 
+import java.util.concurrent.CompletionStage;
+
 public interface Task extends Identifiable {
-    void start();
+    CompletionStage<Void> start();
     void stop();
 }

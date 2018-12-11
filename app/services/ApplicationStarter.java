@@ -19,6 +19,7 @@ import utilities.logger.ServerLogger;
 import utilities.permission.PermissionFilter;
 import common.InjectedHandlerInstantiator;
 import utilities.scheduler.SchedulerService;
+import websocket.WebSocketService;
 
 /**
  * This class demonstrates how to run code when the
@@ -43,17 +44,20 @@ public class ApplicationStarter {
     private final Instant start;
     private final SchedulerService scheduler;
     private final CacheService cache;
+    private final WebSocketService webSocketService;
 
     private final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("application");
 
     @Inject
-    public ApplicationStarter(Clock clock, ApplicationLifecycle appLifecycle, Config configuration, Injector injector, SchedulerService scheduler, CacheService cache, ApplicationEvolutions applicationEvolutions) {
+    public ApplicationStarter(Clock clock, ApplicationLifecycle appLifecycle, Config configuration, Injector injector,
+                              SchedulerService scheduler, CacheService cache, ApplicationEvolutions applicationEvolutions, WebSocketService webSocketService) {
 
         this.clock = clock;
         this.appLifecycle = appLifecycle;
         this.configuration = configuration;
         this.scheduler = scheduler;
         this.cache = cache;
+        this.webSocketService = webSocketService;
         try {
 
             ServerLogger.init(configuration);
@@ -84,9 +88,9 @@ public class ApplicationStarter {
         // ApplicationLifecycle object. The code inside the stop hook will
         // be run when the application stops.
         appLifecycle.addStopHook(() -> {
+            this.webSocketService.close();
             this.scheduler.stop();
             this.cache.close();
-            Server.stop();
             Instant stop = clock.instant();
             Long runningTime = stop.getEpochSecond() - start.getEpochSecond();
             logger.info("ApplicationTimer: Stopping application at " + clock.instant() + " after " + runningTime + "s.");

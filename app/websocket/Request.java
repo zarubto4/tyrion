@@ -16,7 +16,6 @@ public class Request {
 /* PUBLIC API ----------------------------------------------------------------------------------------------------------*/
 
     private UUID id;
-    public String message_type; // Its Required public for special operation
 
     public Request(ObjectNode message) {
         this(message, 0, 7500, 3);
@@ -24,21 +23,18 @@ public class Request {
 
     public Request(ObjectNode message, int delay, int timeout, int retries) {
 
-        this.message_type = message.get("message_type").asText();
-
-        if (!message.has("message_id")) {
+        if (!message.has(Message.ID)) {
             this.id =  UUID.randomUUID();
-            message.put("message_id", id.toString());
+            message.put(Message.ID, id.toString());
         } else {
-            this.id = UUID.fromString(message.get("message_id").asText());
+            this.id = UUID.fromString(message.get(Message.ID).asText());
         }
-        this.confirmationThread = new ResponseThread(message, delay, timeout, retries, id);
+        this.confirmationThread = new ResponseThread(message, delay, timeout, retries);
     }
 
 
     public Message send() {
         try {
-            logger.trace("send:: call ");
             future = CompletableFuture.supplyAsync(this.confirmationThread);
             return future.get();
         } catch (Exception e) {
@@ -56,13 +52,11 @@ public class Request {
     }
 
     public void resolve(Message message) {
-        logger.trace("resolve - {}", message.getMessage().toString());
         future.complete(message);
         confirmationThread.stop();
     }
 
     public void setSender(Interface sender) {
-        logger.trace("setSender - sender ID: {} ", sender.id);
         this.confirmationThread.setSender(sender);
     }
 

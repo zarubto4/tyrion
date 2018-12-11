@@ -952,20 +952,14 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     @Override
     public void update() {
 
-        logger.debug("update - updating database, id: {}", this.id);
-        logger.debug("update - updating database, actual synchronize to database is {} ", this.database_synchronize);
-
         if (getProject() != null) {
             if (getProject().id != null) {
-                logger.warn("SEnding Update for device ID: {}", this.id);
                 new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, getProject().id, this.id))).start();
             }
         }
 
         //Database Update
         super.update();
-
-        logger.debug("update - updating database, actual after update synchronize in database is {} ", this.database_synchronize);
     }
 
     @Override

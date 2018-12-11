@@ -24,7 +24,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public class Interface implements WebSocketInterface {
+public abstract class Interface implements WebSocketInterface {
 
     private static final Logger logger = new Logger(Interface.class);
 
@@ -82,7 +82,7 @@ public class Interface implements WebSocketInterface {
         Instant start = Instant.now();
 
         this.out = both.first();
-        return Flow.fromSinkAndSourceCoupled(Sink.foreach(this::onReceived), Source.fromPublisher(both.second()))
+        return Flow.fromSinkAndSourceCoupled(Sink.foreach(this::onReceived), Source.fromPublisher(both.second())) // TODO probably foreachParallel
                 .keepAlive(new FiniteDuration(60L, TimeUnit.SECONDS), this::keepAlive)
                 .watchTermination((notUsed, whenDone) -> {
                     whenDone.thenAccept(done -> {
@@ -117,16 +117,40 @@ public class Interface implements WebSocketInterface {
         } catch (Exception e) {
             logger.internalServerError(e);
 
-            ObjectNode json = Json.newObject();
-            json.put("status", "error");
-            json.put("error", "invalid message");
-            json.put("error_log", e.getMessage());
-            this.send(json);
+            ObjectNode error = Json.newObject();
+
+            if (msg.has(Message.ID)) {
+                error.set(Message.ID, msg.get(Message.ID));
+            } else {
+                error.put(Message.ID, UUID.randomUUID().toString());
+            }
+
+            if (msg.has(Message.CHANNEL)) {
+                error.set(Message.CHANNEL, msg.get(Message.CHANNEL));
+            } else {
+                error.put(Message.CHANNEL, this.getDefaultChannel());
+            }
+
+            if (msg.has(Message.TYPE)) {
+                error.set(Message.TYPE, msg.get(Message.TYPE));
+            } else {
+                error.put(Message.TYPE, "unknown");
+            }
+
+            error.put(Message.STATUS, "error");
+            error.put("error", "invalid message");
+            error.put("error_log", e.getMessage());
+            this.send(error);
         }
     }
 
+    /**
+     * Checks if message contains required fields and then wraps it in the Message object for easier manipulation.
+     * @param message to parse
+     * @return Message object
+     */
     private Message parseMessage(JsonNode message) {
-        if (message.has("message_id") && message.has("message_type") && message.has("message_channel")) {
+        if (message.has(Message.ID) && message.has(Message.TYPE) && message.has(Message.CHANNEL)) {
             return new Message((ObjectNode) message, this.formFactory);
         } else {
             throw new RuntimeException("parseMessage - (" + this.getClass().getSimpleName() + ") - id: " + this.id + " received an invalid message: " + message.toString());
@@ -140,9 +164,9 @@ public class Interface implements WebSocketInterface {
     private JsonNode keepAlive() {
         logger.trace("keepAlive - sending keepalive message");
         return Json.newObject()
-                .put("message_id", UUID.randomUUID().toString())
-                .put("message_type", "keepalive")
-                .put("message_chanel", "TODO");
+                .put(Message.ID, UUID.randomUUID().toString())
+                .put(Message.TYPE, "keepalive")
+                .put(Message.CHANNEL, this.getDefaultChannel());
     }
 
     /**
@@ -164,7 +188,7 @@ public class Interface implements WebSocketInterface {
     @Override
     public Message sendWithResponse(Request request) {
         logger.trace("sendWithResponse - sending request synchronously");
-        // request.setSender(this);
+        request.setSender(this);
         messageBuffer.put(request.getId(), request);
         return request.send();
     }
@@ -179,7 +203,7 @@ public class Interface implements WebSocketInterface {
     @Override
     public void sendWithResponseAsync(Request request, Consumer<Message> consumer) {
         logger.trace("sendWithResponseAsync - sending request asynchronously");
-        // message.setSender(this);
+        request.setSender(this);
         messageBuffer.put(request.getId(), request);
         request.sendAsync(consumer);
     }
@@ -203,9 +227,9 @@ public class Interface implements WebSocketInterface {
         try {
             Message response = this.sendWithResponse(
                     new Request(Json.newObject()
-                            .put("message_id", UUID.randomUUID().toString())
-                            .put("message_channel", "unknown")
-                            .put("message_type", "ping")
+                            .put(Message.ID, UUID.randomUUID().toString())
+                            .put(Message.CHANNEL, this.getDefaultChannel())
+                            .put(Message.TYPE, "ping")
                     )
             );
         } catch (FailedMessageException e) {
@@ -228,4 +252,6 @@ public class Interface implements WebSocketInterface {
     public void onClose(Consumer<Interface> onClose) {
         this.onClose = onClose;
     }
+
+    public abstract String getDefaultChannel();
 }

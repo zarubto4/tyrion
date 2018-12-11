@@ -159,13 +159,6 @@ public class Server {
     }
 
     /**
-     * Stops server components, that need to be properly shut down
-     */
-    public static void stop() {
-        Controller_WebSocket.close();
-    }
-
-    /**
      * Some time, after restart of Tyrion, we have more In Progress Updates on Hardware,
      * So we Clean this mess
      */

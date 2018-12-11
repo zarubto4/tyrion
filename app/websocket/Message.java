@@ -10,6 +10,14 @@ import java.util.UUID;
  */
 public class Message {
 
+    public static final String ID = "message_id";
+    public static final String CHANNEL = "message_channel";
+    public static final String TYPE = "message_type";
+    public static final String STATUS = "status";
+    public static final String ERROR_MESSAGE = "error_message";
+    public static final String ERROR_CODE = "error_code";
+
+
     private final _BaseFormFactory formFactory;
 
     private final ObjectNode message;
@@ -20,43 +28,43 @@ public class Message {
     }
 
     public UUID getId() {
-        if (this.message.has("message_id")) {
-            return UUID.fromString(this.message.get("message_id").asText());
+        if (this.message.has(ID)) {
+            return UUID.fromString(this.message.get(ID).asText());
         }
         return null;
     }
 
     public String getType() {
-        if (this.message.has("message_type")) {
-            return this.message.get("message_type").asText();
+        if (this.message.has(TYPE)) {
+            return this.message.get(TYPE).asText();
         }
         return null;
     }
 
     public String getChannel() {
-        if (this.message.has("message_channel")) {
-            return this.message.get("message_channel").asText();
+        if (this.message.has(CHANNEL)) {
+            return this.message.get(CHANNEL).asText();
         }
         return null;
     }
 
     public String getStatus() {
-        if (this.message.has("status")) {
-            return this.message.get("status").asText();
+        if (this.message.has(STATUS)) {
+            return this.message.get(STATUS).asText();
         }
         return null;
     }
 
     public String getErrorMessage() {
-        if (this.message.has("error_message")) {
-            return this.message.get("error_message").asText();
+        if (this.message.has(ERROR_MESSAGE)) {
+            return this.message.get(ERROR_MESSAGE).asText();
         }
         return null;
     }
 
     public Integer getErrorCode() {
-        if (this.message.has("error_code")) {
-            return this.message.get("error_code").asInt();
+        if (this.message.has(ERROR_CODE)) {
+            return this.message.get(ERROR_CODE).asInt();
         }
         return null;
     }

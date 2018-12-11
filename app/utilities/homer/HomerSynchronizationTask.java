@@ -5,6 +5,7 @@ import exceptions.FailedMessageException;
 import models.Model_Hardware;
 import models.Model_HomerServer;
 import models.Model_Instance;
+import play.libs.concurrent.HttpExecutionContext;
 import utilities.hardware.HardwareEvents;
 import utilities.hardware.update.UpdateService;
 import utilities.instance.InstanceService;
@@ -17,11 +18,14 @@ import websocket.messages.homer_with_tyrion.configuration.WS_Message_Homer_Get_h
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 public class HomerSynchronizationTask implements Task {
     
     private static final Logger logger = new Logger(HomerSynchronizationTask.class);
 
+    private final HttpExecutionContext httpExecutionContext;
     private final HomerService homerService;
     private final HardwareEvents hardwareEvents;
     private final UpdateService updateService;
@@ -30,8 +34,12 @@ public class HomerSynchronizationTask implements Task {
     private Model_HomerServer server;
     private HomerInterface homerInterface;
 
+    private CompletableFuture<Void> future;
+
     @Inject
-    public HomerSynchronizationTask(HomerService homerService, HardwareEvents hardwareEvents, UpdateService updateService, InstanceService instanceService) {
+    public HomerSynchronizationTask(HomerService homerService, HardwareEvents hardwareEvents, UpdateService updateService,
+                                    InstanceService instanceService, HttpExecutionContext httpExecutionContext) {
+        this.httpExecutionContext = httpExecutionContext;
         this.homerService = homerService;
         this.hardwareEvents = hardwareEvents;
         this.updateService = updateService;
@@ -44,21 +52,22 @@ public class HomerSynchronizationTask implements Task {
     }
 
     @Override
-    public void start() {
+    public CompletionStage<Void> start() {
         logger.info("start - synchronization task begins");
+        return future = CompletableFuture.runAsync(() -> {
+            if (this.server == null || this.homerInterface == null) {
+                throw new RuntimeException("You must set hardware before the task start.");
+            }
 
-        if (this.server == null || this.homerInterface == null) {
-            throw new RuntimeException("You must set hardware before the task start.");
-        }
-
-        this.synchronizeSettings();
-        this.synchronizeHardware();
-        this.synchronizeInstances();
+            this.synchronizeSettings();
+            this.synchronizeHardware();
+            this.synchronizeInstances();
+        }, this.httpExecutionContext.current());
     }
 
     @Override
     public void stop() {
-
+        this.future.cancel(true);
     }
 
     public void setServer(Model_HomerServer server) {

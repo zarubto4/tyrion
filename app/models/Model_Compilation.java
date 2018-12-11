@@ -17,10 +17,8 @@ import utilities.enums.NotificationLevel;
 import utilities.hardware.update.Updatable;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
-import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Notification_Text;
 import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.time.Duration;
@@ -60,6 +58,11 @@ public class Model_Compilation extends BaseModel implements Updatable {
     @JsonIgnore
     public Model_Blob getBlob() {
         return isLoaded("blob") ? blob : Model_Blob.find.query().where().eq("c_compilations_binary_file.id", id).findOne();
+    }
+
+    @JsonIgnore
+    public Model_CProgramVersion getVersion() {
+        return isLoaded("version") ? version : Model_CProgramVersion.find.query().where().eq("compilation.is", this.id).findOne();
     }
 
     @JsonProperty
@@ -106,7 +109,7 @@ public class Model_Compilation extends BaseModel implements Updatable {
         logger.trace("compile_program_procedure:: Body is ok - uploading to Azure was successful");
         compilation.status = CompilationStatus.SUCCESS;
         compilation.build_url = compilation_Result.build_url;
-        compilation.firmware_build_id = compilation_Result.build_id.toString();
+        compilation.firmware_build_id = compilation_Result.build_id_in_firmware;
         compilation.virtual_input_output = compilation_Result.interface_code;
         compilation.firmware_build_datetime = new Date();
         compilation.update();
@@ -118,15 +121,7 @@ public class Model_Compilation extends BaseModel implements Updatable {
 
     @JsonIgnore @Transient @Override
     public void update() {
-
-        logger.debug("update :: Update object Id: {}",  this.id);
-
-        // Call notification about model update
-
-        if(version != null) {
-            new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, version.get_c_program().getProjectId(), version.get_c_program_id()))).start();
-        }
-
+        // TODO new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, version.get_c_program().getProjectId(), version.get_c_program_id()))).start();
         super.update();
     }
 

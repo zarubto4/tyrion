@@ -2,6 +2,7 @@ package controllers;
 
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
+import exceptions.BadRequestException;
 import exceptions.FailedMessageException;
 import exceptions.ForbiddenException;
 import io.ebean.Ebean;
@@ -290,7 +291,7 @@ public class Controller_Hardware extends _BaseController {
 
             // Swagger_File_Content - Zástupný dokumentační objekt
             Swagger_File_Content content = new Swagger_File_Content();
-            content.file_in_base64 = version.compilation.blob.downloadString();
+            content.file_in_base64 = version.getCompilation().getBlob().downloadString();
 
             // Vracím content
             return ok(content);
@@ -1767,11 +1768,12 @@ public class Controller_Hardware extends _BaseController {
 
             this.checkReadPermission(version);
 
-            //Zkontroluji validitu Verze zda sedí k C_Programu
-            if (version.compilation == null) return badRequest("Version is not version of C_Program - Missing compilation File");
+            if (version.getCompilation() == null) {
+                throw new BadRequestException("Compilation is missing");
+            }
 
             // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
-            if (version.compilation.status != CompilationStatus.SUCCESS) return badRequest("You cannot upload code in state:: " + version.compilation.status.name());
+            if (version.getCompilation().status != CompilationStatus.SUCCESS) return badRequest("You cannot upload code in state:: " + version.getCompilation().status.name());
 
             List<Model_Hardware> hardwareList = new ArrayList<>();
 
@@ -1885,11 +1887,8 @@ public class Controller_Hardware extends _BaseController {
                     // Uprava desky na statický backup
                     Model_CProgramVersion c_program_version = Model_CProgramVersion.find.byId(hardware_backup_pair.c_program_version_id);
 
-                    //Zkontroluji validitu Verze zda sedí k C_Programu
-                    if (c_program_version.compilation == null) return badRequest("Version is not version of C_Program - Missing compilation File");
-
                     // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
-                    if (c_program_version.compilation.status != CompilationStatus.SUCCESS) return badRequest("You cannot upload code in state:: " + c_program_version.compilation.status.name());
+                    if (c_program_version.getCompilation().status != CompilationStatus.SUCCESS) return badRequest("You cannot upload code in state:: " + c_program_version.getCompilation().status.name());
 
                     WS_Help_Hardware_Pair b_pair = new WS_Help_Hardware_Pair();
                     b_pair.hardware = hardware;
@@ -2407,52 +2406,6 @@ public class Controller_Hardware extends _BaseController {
                 status.status = BoardRegistrationStatus.ALREADY_REGISTERED_IN_YOUR_ACCOUNT;
                 return ok(status);
             }
-
-        } catch (Exception e) {
-            return controllerServerError(e);
-        }
-    }
-
-    @ApiOperation(value = "get B_Program all details for integration",
-            tags = {"Blocko", "B_Program"},
-            notes = "get all hardware that user can integrate to Blocko program",
-            produces = "application/json",
-            consumes = "text/html",
-            protocols = "https"
-    )
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_Boards_For_Blocko.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    public Result hardware_allDetailsForBlocko(UUID project_id) {
-        try {
-
-            /* // TODO
-            // Kontrola objektu
-            Model_Project project = Model_Project.find.byId(project_id);
-            if (project == null) return notFound("Project project_id not found");
-
-            // Kontrola oprávnění
-            if (!project.read_permission()) return forbidden();
-
-            // Získání objektu
-            Swagger_Boards_For_Blocko boards_for_blocko = new Swagger_Boards_For_Blocko();
-            boards_for_blocko.add_M_Projects(project.getGridProjects());
-            boards_for_blocko.add_C_Programs(project.getCPrograms());
-
-            boards_for_blocko.hardware.addAll(project.getHardware());
-
-
-            boards_for_blocko.hardware_types = Model_HardwareType.find.query().where().eq("hardware.project.id", project.id).findList();
-
-
-            // Vrácení objektu
-            return ok(Json.toJson(boards_for_blocko));*/
-
-            return ok("TODO");
 
         } catch (Exception e) {
             return controllerServerError(e);

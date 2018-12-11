@@ -2,7 +2,6 @@ package controllers;
 
 import com.google.inject.Injector;
 import com.typesafe.config.Config;
-import exceptions.NotFoundException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -26,7 +25,6 @@ import websocket.interfaces.*;
 import websocket.interfaces.Compiler;
 
 import javax.inject.Inject;
-import java.awt.geom.NoninvertibleTransformException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -60,13 +58,8 @@ public class Controller_WebSocket extends _BaseController {
      */
     public static Cache<UUID, UUID> tokenCache;
 
-    /**
-     * Closes all WebSocket connections
-     */
-    public static void close() {
-    }
 
-    /* PUBLIC API ----------------------------------------------------------------------------------------------------------*/
+/* PUBLIC API ----------------------------------------------------------------------------------------------------------*/
 
     @ApiOperation(value = "get Websocket Access Token",
             tags = {"Access", "WebSocket"},
@@ -130,7 +123,7 @@ public class Controller_WebSocket extends _BaseController {
                     return CompletableFuture.completedFuture(F.Either.Right(this.webSocketService.register(homer)));
 
                 } else {
-                    logger.warn("homer - server with token: {} is not registered in the database, rejecting connection with token: {}", token);
+                    logger.warn("homer - server with token: {} is not registered in the database, rejecting connection with token: {}", token, token);
                 }
 
             } catch (Exception e) {

@@ -3,6 +3,7 @@ package utilities.hardware;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import models.*;
+import play.libs.concurrent.HttpExecutionContext;
 import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import utilities.enums.*;
 import utilities.hardware.update.UpdateService;
@@ -13,13 +14,18 @@ import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_set_set
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 public class HardwareSynchronizationTask implements Task {
 
     private static final Logger logger = new Logger(HardwareSynchronizationTask.class);
 
+    private final HttpExecutionContext httpExecutionContext;
     private final HardwareService hardwareService;
     private final UpdateService updateService;
+
+    private CompletableFuture<Void> future;
 
     private Model_Hardware hardware;
 
@@ -28,7 +34,8 @@ public class HardwareSynchronizationTask implements Task {
     private WS_Message_Hardware_overview_Board overview;
 
     @Inject
-    public HardwareSynchronizationTask(HardwareService hardwareService, UpdateService updateService) {
+    public HardwareSynchronizationTask(HardwareService hardwareService, UpdateService updateService, HttpExecutionContext httpExecutionContext) {
+        this.httpExecutionContext = httpExecutionContext;
         this.hardwareService = hardwareService;
         this.updateService = updateService;
     }
@@ -39,28 +46,26 @@ public class HardwareSynchronizationTask implements Task {
     }
 
     @Override
-    public void start() {
+    public CompletionStage<Void> start() {
 
         logger.info("start - synchronization task begins");
+        return future = CompletableFuture.runAsync(() -> {
+            if (this.hardware == null || this.hardwareInterface == null) {
+                throw new RuntimeException("You must set hardware before the task start.");
+            }
 
-        if (this.hardware == null || this.hardwareInterface == null) {
-            throw new RuntimeException("You must set hardware before the task start.");
-        }
+            this.overview = this.hardwareInterface.getOverview();
 
-        this.overview = this.hardwareInterface.getOverview();
-
-        try {
             this.synchronizeSettings();
             this.synchronizeFirmware();
             this.synchronizeBackup();
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
+
+        }, this.httpExecutionContext.current());
     }
 
     @Override
     public void stop() {
-
+        this.future.cancel(true);
     }
 
     public void setHardware(Model_Hardware hardware) {
@@ -212,7 +217,7 @@ public class HardwareSynchronizationTask implements Task {
                 firmware = defaultVersion;
             }
 
-            if (!firmware.compilation.firmware_build_id.equals(this.overview.binaries.firmware.build_id)) {
+            if (!firmware.getCompilation().firmware_build_id.equals(this.overview.binaries.firmware.build_id)) {
                 // TODO mark as unstable if device is running backup
                 this.updateService.update(this.hardware, firmware, FirmwareType.FIRMWARE);
             }
@@ -238,7 +243,7 @@ public class HardwareSynchronizationTask implements Task {
                 return;
             }
 
-            if (backup.compilation.firmware_build_id.equals(overview.binaries.backup.build_id)) {
+            if (backup.getCompilation().firmware_build_id.equals(overview.binaries.backup.build_id)) {
                 this.updateService.update(this.hardware, backup, FirmwareType.BACKUP);
             }
 
@@ -247,7 +252,7 @@ public class HardwareSynchronizationTask implements Task {
 
             if (this.overview.binaries.backup != null && overview.binaries.backup.build_id != null && !overview.binaries.backup.build_id.equals("")) {
 
-                if (this.hardware.getCurrentBackup() != null && this.hardware.getCurrentBackup().compilation.firmware_build_id.equals(overview.binaries.backup.build_id)) {
+                if (this.hardware.getCurrentBackup() != null && this.hardware.getCurrentBackup().getCompilation().firmware_build_id.equals(overview.binaries.backup.build_id)) {
                     logger.debug("synchronizeBackup - ({}) already synchronized");
                 } else {
 

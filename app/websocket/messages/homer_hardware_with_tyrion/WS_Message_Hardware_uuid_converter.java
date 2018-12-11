@@ -2,11 +2,8 @@ package websocket.messages.homer_hardware_with_tyrion;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.Model_Hardware;
-import play.data.validation.Constraints;
 import play.libs.Json;
 import websocket.messages.common.abstract_class.WS_AbstractMessage;
-import websocket.messages.common.abstract_class.WS_AbstractMessage_Hardware;
 
 import java.util.UUID;
 

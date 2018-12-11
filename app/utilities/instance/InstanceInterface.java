@@ -1,5 +1,6 @@
 package utilities.instance;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.FailedMessageException;
 import models.Model_Instance;
 import utilities.enums.NetworkStatus;
@@ -27,6 +28,13 @@ public class InstanceInterface {
         this.webSocketInterface = webSocketInterface;
     }
 
+    private Message sendWithResponse(ObjectNode message) {
+        if (!message.has("instance_id")) {
+            message.put("instance_id", this.instance.getId().toString());
+        }
+        return this.webSocketInterface.sendWithResponse(new Request(message));
+    }
+
     public NetworkStatus getNetworkStatus() {
         try {
             if (this.instance.current_snapshot_id == null) {
@@ -40,7 +48,7 @@ public class InstanceInterface {
     }
 
     public WS_Message_Instance_status getStatus() {
-        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Instance_status().make_request(Collections.singletonList(this.instance.id.toString()))));
+        Message response = this.sendWithResponse(new WS_Message_Instance_status().make_request(Collections.singletonList(this.instance.id.toString())));
         if (response.isErroneous()) {
             throw new FailedMessageException(response);
         } else {
@@ -49,7 +57,7 @@ public class InstanceInterface {
     }
 
     public WS_Message_Instance_set_program setProgram() {
-        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Instance_set_program().make_request(this.instance.current_snapshot()))); // TODO maybe not current_snapshot()
+        Message response = this.sendWithResponse(new WS_Message_Instance_set_program().make_request(this.instance.current_snapshot())); // TODO maybe not current_snapshot()
         if (response.isErroneous()) {
             throw new FailedMessageException(response);
         } else {
@@ -58,7 +66,7 @@ public class InstanceInterface {
     }
 
     public WS_Message_Instance_set_hardware setHardware(List<WS_Message_Homer_Hardware_ID_UUID_Pair> hardware) {
-        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Instance_set_hardware().make_request(hardware)));
+        Message response = this.sendWithResponse(new WS_Message_Instance_set_hardware().make_request(hardware));
         if (response.isErroneous()) {
             throw new FailedMessageException(response);
         } else {
@@ -67,7 +75,7 @@ public class InstanceInterface {
     }
 
     public WS_Message_Instance_set_terminals setTerminals(List<UUID> terminalIds) {
-        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Instance_set_terminals().make_request(terminalIds)));
+        Message response = this.sendWithResponse(new WS_Message_Instance_set_terminals().make_request(terminalIds));
         if (response.isErroneous()) {
             throw new FailedMessageException(response);
         } else {
@@ -76,7 +84,7 @@ public class InstanceInterface {
     }
 
     public WS_Message_Hardware_overview getHardwareOverview() {
-        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_overview().make_request(this.instance.getHardwareIds())));
+        Message response = this.sendWithResponse(new WS_Message_Hardware_overview().make_request(this.instance.getHardwareIds()));
         if (response.isErroneous()) {
             throw new FailedMessageException(response);
         } else {

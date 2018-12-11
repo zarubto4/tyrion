@@ -39,7 +39,7 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                                                                   public Model_CProgram c_program;
-    @JsonIgnore @OneToOne(mappedBy="version", cascade = CascadeType.ALL)                                             public Model_Compilation compilation; // TODO dá se cachovat
+    @JsonIgnore @OneToOne(mappedBy="version", cascade = CascadeType.ALL, fetch = FetchType.LAZY)                     public Model_Compilation compilation;
 
     @JsonIgnore @OneToMany(mappedBy="actual_c_program_version", fetch = FetchType.LAZY)                              public List<Model_Hardware> c_program_version_boards  = new ArrayList<>(); // Používám pro zachycení, která verze C_programu na desce běží
     @JsonIgnore @OneToMany(mappedBy="actual_backup_c_program_version", fetch = FetchType.LAZY)                       public List<Model_Hardware>  c_program_version_backup_boards  = new ArrayList<>(); // Nikdy z této ztrany nepoužívat!
@@ -47,28 +47,40 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
 
     @OneToOne @JsonIgnore  public Model_CProgram default_program;
 
-/* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
-    public CompilationStatus status(){
-        return compilation != null ? compilation.status : CompilationStatus.UNDEFINED;
+    public CompilationStatus status() {
+        try {
+            return this.getCompilation().status;
+        } catch (Exception e) {
+            return CompilationStatus.UNDEFINED;
+        }
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true)
-    public String compilation_version(){
-        return  compilation != null ? compilation.firmware_version_lib : CompilationStatus.UNDEFINED.name();
+    public String compilation_version() {
+        try {
+            return this.getCompilation().firmware_version_lib;
+        } catch (Exception e) {
+            return CompilationStatus.UNDEFINED.name();
+        }
     }
 
     @JsonProperty @ApiModelProperty(required = true, readOnly = true, value = "Value can be empty, Server cannot guarantee that.")
     public String virtual_input_output(){
-        return compilation != null ? compilation.virtual_input_output : null;
+        try {
+            return this.getCompilation().virtual_input_output;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @JsonProperty @ApiModelProperty(required = false, readOnly = true, value = "Link for download file in Binary (Not in Base64). Its ready to manual Upload. Only if \"status\" == \"SUCCESS\"")
     public String download_link_bin_file() {
         try {
             if (status() == CompilationStatus.SUCCESS) {
-                return compilation.file_path();
+                return getCompilation().file_path();
             } else {
                 return null;
             }
@@ -142,6 +154,11 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
         return isLoaded("c_program") ? c_program : Model_CProgram.find.query().where().eq("versions.id", id).findOne();
     }
 
+    @JsonIgnore
+    public Model_Compilation getCompilation() {
+        return isLoaded("compilation") ? compilation : Model_Compilation.find.query().nullable().where().eq("version.id", id).findOne();
+    }
+
     @JsonIgnore @Override
     public Model_Project getProject() {
         return this.get_c_program().getProject();
@@ -151,8 +168,6 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
 
     @JsonIgnore @Override
     public void save() {
-
-        logger.debug("save :: Creating new Object");
         super.save();
 
         // Add to Cache
@@ -160,7 +175,6 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
         Model_CProgram program = get_c_program();
 
         if(get_c_program() != null) {
-            System.out.println("Add To CProgram by get_c_program()");
             program.getVersionsId();
             program.idCache().add(this.getClass(), id);
             program.sort_Model_Model_CProgramVersion_ids();

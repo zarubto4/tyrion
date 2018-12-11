@@ -266,7 +266,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
 
         super.save();
 
-        new Thread(this::cache).start(); // Caches the object
+        this.cache(); // Caches the object
 
         logger.trace("save - saved {} to DB, id: {}", this.getClass().getSimpleName(), this.id);
 
@@ -284,8 +284,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         this.invalidate();
         this.updated = new Date();
         super.update();
-
-        new Thread(this::cache).start();
+        this.cache();
     }
 
     @Override
@@ -293,8 +292,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         logger.debug("delete - soft deleting {}, id: {}", this.getClass().getSimpleName(), this.id);
         this.invalidate();
         super.delete();
-
-        new Thread(this::evict).start(); // Evict the object from cache
+        this.evict(); // Evict the object from cache
         this.echoParent(); // Send echo update of parent object
 
         return true;

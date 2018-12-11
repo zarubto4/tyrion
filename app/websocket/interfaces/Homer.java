@@ -3,18 +3,15 @@ package websocket.interfaces;
 import akka.stream.Materializer;
 import com.google.inject.Inject;
 import controllers._BaseFormFactory;
-import exceptions.FailedMessageException;
 import exceptions.NotFoundException;
 import models.*;
 import mongo.ModelMongo_Hardware_RegistrationEntity;
 import org.mindrot.jbcrypt.BCrypt;
-import play.libs.Json;
 import utilities.Server;
 import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import utilities.enums.ServerMode;
 import utilities.hardware.DominanceService;
 import utilities.hardware.HardwareEvents;
-import utilities.hardware.HardwareService;
 import utilities.homer.HomerEvents;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfiguration;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationFile;
@@ -23,7 +20,6 @@ import utilities.hardware.update.UpdateService;
 import utilities.logger.Logger;
 import websocket.Interface;
 import websocket.Message;
-import websocket.Request;
 import websocket.messages.homer_hardware_with_tyrion.*;
 import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
 import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_hardware;
@@ -49,7 +45,6 @@ public class Homer extends Interface {
     public static HashMap<UUID, Homer> apiKeys = new HashMap<>(); // TODO use DI instead of static field
 
     private final HardwareEvents hardwareEvents;
-    private final HardwareService hardwareService;
     private final UpdateService updateService;
     private final HomerEvents homerEvents;
     private final DominanceService dominanceService;
@@ -58,11 +53,10 @@ public class Homer extends Interface {
     private UUID apiKey;
 
     @Inject
-    public Homer(Materializer materializer, _BaseFormFactory formFactory, HardwareEvents hardwareEvents, UpdateService updateService,
-                 HardwareService hardwareService, HomerEvents homerEvents, DominanceService dominanceService) {
+    public Homer(Materializer materializer, _BaseFormFactory formFactory, HardwareEvents hardwareEvents,
+                 UpdateService updateService, HomerEvents homerEvents, DominanceService dominanceService) {
         super(materializer, formFactory);
         this.hardwareEvents = hardwareEvents;
-        this.hardwareService = hardwareService;
         this.updateService = updateService;
         this.homerEvents = homerEvents;
         this.dominanceService = dominanceService;
@@ -90,21 +84,8 @@ public class Homer extends Interface {
     }
 
     @Override
-    public Long ping() {
-        long start = System.currentTimeMillis();
-        try {
-            Message response = this.sendWithResponse(
-                    new Request(Json.newObject()
-                            .put("message_id", UUID.randomUUID().toString())
-                            .put("message_channel", "homer_server")
-                            .put("message_type", "ping")
-                    )
-            );
-        } catch (FailedMessageException e) {
-            logger.warn("ping - got error response for ping, but still the server responded");
-        }
-
-        return System.currentTimeMillis() - start;
+    public String getDefaultChannel() {
+        return CHANNEL;
     }
 
     @Override

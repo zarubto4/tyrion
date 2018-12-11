@@ -766,11 +766,7 @@ public class Controller_ExternalServer extends _BaseController {
             Model_CProgramVersion version = Model_CProgramVersion.find.byId(version_id);
 
             // Získám soubor
-            Model_Compilation compilation = version.compilation;
-
-            if (compilation == null) {
-                throw new NotFoundException(Model_Compilation.class);
-            }
+            Model_Compilation compilation = version.getCompilation();
 
             if (compilation.status != CompilationStatus.SUCCESS) {
                 throw new NotFoundException(Model_Blob.class);

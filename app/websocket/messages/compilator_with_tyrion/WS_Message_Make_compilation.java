@@ -2,11 +2,11 @@ package websocket.messages.compilator_with_tyrion;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import models.Model_CompilationServer;
 import models.Model_HardwareType;
 import play.data.validation.Constraints;
 import play.libs.Json;
 import utilities.swagger.output.Swagger_Compilation_Build_Error;
+import websocket.interfaces.Compiler;
 import websocket.messages.common.abstract_class.WS_AbstractMessage;
 
 import javax.validation.Valid;
@@ -37,7 +37,7 @@ public class WS_Message_Make_compilation extends WS_AbstractMessage {
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();
         request.put("message_type", message_type);
-        request.put("message_channel",    Model_CompilationServer.CHANNEL);
+        request.put("message_channel",    Compiler.CHANNEL);
         request.put("target",             hardwareType.compiler_target_name);
         request.put("library_version",    library_version);
         request.put("version_id",         version_id.toString());

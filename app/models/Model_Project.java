@@ -129,323 +129,158 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
 
     @JsonIgnore
     public List<UUID> getPersonsIds() {
-
         if (idCache().gets(Model_Person.class) == null) {
             idCache().add(Model_Person.class, Model_Person.find.query().where().eq("projects.id", id).ne("deleted", true).select("id").findSingleAttributeList());
         }
-
         return idCache().gets(Model_Person.class) != null ?  idCache().gets(Model_Person.class) : new ArrayList<>();
     }
 
     @JsonIgnore
     public List<Model_Person> getPersons() {
-        try {
-            return getPersonsIds().stream().map(Model_Person.find::byId).collect(Collectors.toList());
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new ArrayList<>();
-        }
+        return getPersonsIds().stream().map(Model_Person.find::byId).collect(Collectors.toList());
     }
 
     @JsonIgnore
     public List<UUID> getInvitationIds() {
-
         if (idCache().gets(Model_Invitation.class) == null) {
             idCache().add(Model_Invitation.class, Model_Invitation.find.query().where().eq("project.id", id).ne("deleted", true).select("id").findSingleAttributeList());
         }
-
         return idCache().gets(Model_Invitation.class) != null ?  idCache().gets(Model_Invitation.class) : new ArrayList<>();
     }
 
     @JsonIgnore
     public List<Model_Invitation> getInvitations() {
-        try {
-            return getInvitationIds().stream().map(Model_Invitation.find::byId).collect(Collectors.toList());
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new ArrayList<>();
-        }
+        return getInvitationIds().stream().map(Model_Invitation.find::byId).collect(Collectors.toList());
     }
 
     @JsonIgnore
     public List<UUID> getHardwareIds() {
-
         if (idCache().gets(Model_Hardware.class) == null) {
             idCache().add(Model_Hardware.class, Model_Hardware.find.query().where().eq("project.id", id).ne("deleted", true).select("id").findSingleAttributeList());
         }
-
         return idCache().gets(Model_Hardware.class) != null ?  idCache().gets(Model_Hardware.class) : new ArrayList<>();
     }
 
     @JsonIgnore
     public List<Model_Hardware> getHardware() {
-        try {
-
-            List<Model_Hardware> list = new ArrayList<>();
-
-            for (UUID id : getHardwareIds() ) {
-                list.add(Model_Hardware.find.byId(id));
-            }
-
-            return list;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new ArrayList<>();
-        }
+        return getHardwareIds().stream().map(Model_Hardware.find::byId).collect(Collectors.toList());
     }
 
     @JsonIgnore
     public List<UUID> getCProgramsIds() {
-
         if (idCache().gets(Model_CProgram.class) == null) {
             idCache().add(Model_CProgram.class, Model_CProgram.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
-
         return idCache().gets(Model_CProgram.class) != null ?  idCache().gets(Model_CProgram.class) : new ArrayList<>();
     }
 
     @JsonIgnore
     public List<Model_CProgram> getCPrograms() {
-        try {
-
-            List<Model_CProgram> list = new ArrayList<>();
-
-            for (UUID id : getCProgramsIds() ) {
-                list.add(Model_CProgram.find.byId(id));
-            }
-
-            return list;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new ArrayList<>();
-        }
+        return getCProgramsIds().stream().map(Model_CProgram.find::byId).collect(Collectors.toList());
     }
 
     @JsonIgnore
     public List<UUID> getLibrariesIds() {
-
         if (idCache().gets(Model_Library.class) == null) {
             idCache().add(Model_Library.class, Model_Library.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
-
         return idCache().gets(Model_Library.class) != null ?  idCache().gets(Model_Library.class) : new ArrayList<>();
     }
 
     @JsonIgnore
     public List<Model_Library> getLibraries() {
-        try {
-
-            List<Model_Library> list = new ArrayList<>();
-
-            for (UUID id : getLibrariesIds() ) {
-                list.add(Model_Library.find.byId(id));
-            }
-
-            return list;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new ArrayList<>();
-        }
+        return getLibrariesIds().stream().map(Model_Library.find::byId).collect(Collectors.toList());
     }
 
     @JsonIgnore
     public List<UUID> getBProgramsIds() {
-
         if (idCache().gets(Model_BProgram.class) == null) {
             idCache().add(Model_BProgram.class, Model_BProgram.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
-
         return idCache().gets(Model_BProgram.class) != null ?  idCache().gets(Model_BProgram.class) : new ArrayList<>();
     }
 
     @JsonIgnore
     public List<Model_BProgram> getBPrograms() {
-        try {
-
-            List<Model_BProgram> list = new ArrayList<>();
-
-            for (UUID id : getBProgramsIds() ) {
-                list.add(Model_BProgram.find.byId(id));
-            }
-
-            return list;
-
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new ArrayList<>();
-        }
+        return getBProgramsIds().stream().map(Model_BProgram.find::byId).collect(Collectors.toList());
     }
 
     @JsonIgnore
     public List<UUID> getGridProjectsIds() {
-
         if (idCache().gets(Model_GridProject.class) == null) {
             idCache().add(Model_GridProject.class, Model_GridProject.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
-
         return idCache().gets(Model_GridProject.class) != null ?  idCache().gets(Model_GridProject.class) : new ArrayList<>();
     }
 
     @JsonIgnore
     public List<Model_GridProject> getGridProjects() {
-        try {
-
-            List<Model_GridProject> list = new ArrayList<>();
-
-            for (UUID id : getGridProjectsIds() ) {
-                list.add(Model_GridProject.find.byId(id));
-            }
-
-            return list;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new ArrayList<>();
-        }
+        return getGridProjectsIds().stream().map(Model_GridProject.find::byId).collect(Collectors.toList());
     }
 
     @JsonIgnore
     public List<UUID> getHardwareGroupsIds() {
-
         if (idCache().gets(Model_HardwareGroup.class) == null) {
             idCache().add(Model_HardwareGroup.class, Model_HardwareGroup.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
-
         return idCache().gets(Model_HardwareGroup.class) != null ?  idCache().gets(Model_HardwareGroup.class) : new ArrayList<>();
     }
 
     @JsonIgnore
     public List<Model_HardwareGroup> getHardwareGroups() {
-        try {
-
-            List<Model_HardwareGroup> list = new ArrayList<>();
-
-            for (UUID id : getHardwareGroupsIds() ) {
-                list.add(Model_HardwareGroup.find.byId(id));
-            }
-
-            return list;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new ArrayList<>();
-        }
+        return getHardwareGroupsIds().stream().map(Model_HardwareGroup.find::byId).collect(Collectors.toList());
     }
 
     @JsonIgnore
     public List<UUID> getWidgetsIds() {
-
         if (idCache().gets(Model_Widget.class) == null) {
             idCache().add(Model_Widget.class, Model_Widget.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
-
         return idCache().gets(Model_Widget.class) != null ?  idCache().gets(Model_Widget.class) : new ArrayList<>();
     }
 
     @JsonIgnore
     public List<Model_Widget> getWidgets() {
-        try {
-
-            List<Model_Widget> list = new ArrayList<>();
-
-            for (UUID id : getWidgetsIds() ) {
-                list.add(Model_Widget.find.byId(id));
-            }
-
-            return list;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new ArrayList<>();
-        }
+        return getWidgetsIds().stream().map(Model_Widget.find::byId).collect(Collectors.toList());
     }
 
     @JsonIgnore
     public List<UUID> getBlocksIds() {
-
         if (idCache().gets(Model_Block.class) == null) {
             idCache().add(Model_Block.class, Model_Block.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
-
         return idCache().gets(Model_Block.class) != null ?  idCache().gets(Model_Block.class) : new ArrayList<>();
     }
 
     @JsonIgnore
     public List<Model_Block> getBlocks() {
-        try {
-
-            List<Model_Block> list = new ArrayList<>();
-
-            for (UUID id : getBlocksIds() ) {
-                list.add(Model_Block.find.byId(id));
-            }
-
-            return list;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new ArrayList<>();
-        }
+        return getBlocksIds().stream().map(Model_Block.find::byId).collect(Collectors.toList());
     }
 
     @JsonIgnore
     public List<UUID> getHomerServerIds() {
-
         if (idCache().gets(Model_HomerServer.class) == null) {
             idCache().add(Model_HomerServer.class, Model_HomerServer.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
-
         return idCache().gets(Model_HomerServer.class) != null ?  idCache().gets(Model_HomerServer.class) : new ArrayList<>();
     }
 
     @JsonIgnore
     public List<Model_HomerServer> getHomerServers() {
-        try {
-
-            List<Model_HomerServer> list = new ArrayList<>();
-
-            for (UUID id : getHomerServerIds() ) {
-                list.add(Model_HomerServer.find.byId(id));
-            }
-
-            return list;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new ArrayList<>();
-        }
+        return getHomerServerIds().stream().map(Model_HomerServer.find::byId).collect(Collectors.toList());
     }
 
     @JsonIgnore
     public List<UUID> getInstancesIds() {
-
         if (idCache().gets(Model_Instance.class) == null) {
             idCache().add(Model_Instance.class, Model_Instance.find.query().where().eq("project.id", id).ne("deleted", true).orderBy("UPPER(name) ASC").select("id").findSingleAttributeList());
         }
-
         return idCache().gets(Model_Instance.class) != null ?  idCache().gets(Model_Instance.class) : new ArrayList<>();
     }
 
     @JsonIgnore
     public List<Model_Instance> getInstances() {
-        try {
-
-            List<Model_Instance> list = new ArrayList<>();
-
-            for (UUID id : getInstancesIds() ) {
-                list.add(Model_Instance.find.byId(id));
-            }
-
-            return list;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new ArrayList<>();
-        }
+        return getInstancesIds().stream().map(Model_Instance.find::byId).collect(Collectors.toList());
     }
 
     @JsonIgnore

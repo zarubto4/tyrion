@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import com.microsoft.azure.storage.StorageException;
 import controllers._BaseFormFactory;
-import exceptions.BadRequestException;
-import exceptions.ExternalErrorException;
-import exceptions.InvalidBodyException;
-import exceptions.ServerOfflineException;
+import exceptions.*;
 import models.*;
 import org.apache.commons.io.FileExistsException;
 import play.libs.Json;
@@ -47,25 +44,36 @@ public class CompilationService {
     }
 
     public void compileAsync(Model_CProgramVersion version, String libraryVersion) {
-        new Thread(() -> this.compile(version, libraryVersion)).start();
+        new Thread(() -> {
+            try {
+                this.compile(version, libraryVersion);
+            } catch (Exception e) {
+                logger.internalServerError(e);
+            }
+            version.invalidate();
+            version.refresh();
+
+        }).start();
     }
 
     public List<Swagger_Compilation_Build_Error> compile(Model_CProgramVersion version, String libraryVersion) {
 
         Model_HardwareType hardwareType = Model_HardwareType.find.query().where().eq("c_programs.id", version.get_c_program_id()).findOne();
 
-        Model_Compilation compilation;
+        Model_Compilation compilation = version.getCompilation();
 
-        if (version.compilation != null) {
-            if (version.compilation.status.equals(CompilationStatus.SERVER_OFFLINE) || version.compilation.status.equals(CompilationStatus.SERVER_ERROR)) {
-                compilation = version.compilation;
-            } else {
+        if (compilation != null) {
+            if (!compilation.status.equals(CompilationStatus.SERVER_OFFLINE) && !compilation.status.equals(CompilationStatus.SERVER_ERROR)) {
                 return new ArrayList<>(); // TODO maybe something else
             }
         } else {
             compilation = new Model_Compilation();
+            compilation.version = version;
+            compilation.save();
+            version.refresh();
         }
 
+        compilation.firmware_version_lib = libraryVersion;
         compilation.status = CompilationStatus.IN_PROGRESS;
         compilation.update();
 
@@ -142,6 +150,7 @@ public class CompilationService {
             compilation.update();
             throw new ServerOfflineException("Compilation server is offline! It will be compiled as soon as possible!");
         } catch (Exception e) {
+            logger.internalServerError(e);
             compilation.status = CompilationStatus.SERVER_ERROR;
             compilation.update();
             throw new ExternalErrorException();
@@ -158,14 +167,6 @@ public class CompilationService {
             return compilationResult.build_errors;
         }
 
-        // Toto už regulérní zpráva není  - něco se posralo!
-        if (!compilationResult.status.equals("success") && compilationResult.error_message != null) {
-            compilation.status = CompilationStatus.SERVER_ERROR;
-            compilation.update();
-
-            throw new ExternalErrorException();
-        }
-
         if (compilationResult.interface_code == null || compilationResult.build_url == null) {
 
             logger.internalServerError(new Exception("Missing fields ('interface_code' or 'build_url') in result from Code Server. Result: " + Json.toJson(compilationResult).toString()));
@@ -176,7 +177,7 @@ public class CompilationService {
             throw new BadRequestException("Json code is broken - contact tech support!");
         }
 
-        if (compilationResult.error_message != null || !compilationResult.status.equals("success")) {
+        if (compilationResult.error_message != null) {
 
             logger.internalServerError(new Exception("Error is empty, but status is not 'success' in result from Code Server. Result: " + Json.toJson(compilationResult).toString()));
 
@@ -186,82 +187,53 @@ public class CompilationService {
             throw new ExternalErrorException();
         }
 
-        if (compilationResult.status.equals("success")) {
+        logger.trace("compile - compilation was successful");
 
-            logger.trace("compile - compilation was successful");
+        try {
 
-            try {
+            logger.trace("compile - try to download file");
 
-                logger.trace("compile - try to download file");
+            CompletionStage<? extends WSResponse> responsePromise = wsClient.url(compilationResult.build_url)
+                    .setContentType("undefined")
+                    .setRequestTimeout(Duration.ofMillis(7500))
+                    .get();
 
-                CompletionStage<? extends WSResponse> responsePromise = wsClient.url(compilationResult.build_url)
-                        .setContentType("undefined")
-                        .setRequestTimeout(Duration.ofMillis(7500))
-                        .get();
+            byte[] body = responsePromise.toCompletableFuture().get().asByteArray();
 
-                byte[] body = responsePromise.toCompletableFuture().get().asByteArray();
-
-                //(response -> body = response.asByteArray())
-                //      get().asByteArray();
-
-                if (body == null || body.length == 0) {
-                    throw new FileExistsException("Body length is 0");
-                }
-
-                logger.trace("compile - Body is ok - uploading to Azure");
-
-                // Daný soubor potřebuji dostat na Azure a Propojit s verzí
-                compilation.blob = Model_Blob.upload(body, "firmware.bin", compilation.get_path());
-
-                logger.trace("compile - Body is ok - uploading to Azure was successful");
-                compilation.status = CompilationStatus.SUCCESS;
-                compilation.build_url = compilationResult.build_url;
-                compilation.firmware_build_id = compilationResult.build_id.toString();
-                compilation.virtual_input_output = compilationResult.interface_code;
-                compilation.firmware_build_datetime = new Date();
-                compilation.update();
-
-                return new ArrayList<>();
-
-            } catch (StorageException e) {
-
-                logger.internalServerError(new Exception("StorageException" + compilationResult.build_url, e));
-                compilation.status = CompilationStatus.SERVER_ERROR;
-                compilation.update();
-
-                throw new ExternalErrorException();
-
-            } catch (ConnectException e) {
-
-                logger.internalServerError(new Exception("Compilation Server is probably offline on URL: " + compilationResult.build_url, e));
-                compilation.status = CompilationStatus.SUCCESS_DOWNLOAD_FAILED;
-                compilation.update();
-
-                throw new ExternalErrorException();
-
-            } catch (FileExistsException e) {
-
-                logger.internalServerError(new Exception("Compilation body is empty.", e));
-
-                compilation.status = CompilationStatus.SUCCESS_DOWNLOAD_FAILED;
-                compilation.update();
-
-                throw new ExternalErrorException();
-
-            } catch (Exception e) {
-
-                logger.internalServerError(e);
-
-                compilation.status = CompilationStatus.SERVER_ERROR;
-                compilation.update();
-
-                throw new ExternalErrorException();
+            if (body == null || body.length == 0) {
+                throw new FileExistsException("Body length is 0");
             }
+
+            logger.trace("compile - Body is ok - uploading to Azure");
+
+            // Daný soubor potřebuji dostat na Azure a Propojit s verzí
+            compilation.blob = Model_Blob.upload(body, "firmware.bin", compilation.get_path());
+
+            logger.trace("compile - Body is ok - uploading to Azure was successful");
+            compilation.status = CompilationStatus.SUCCESS;
+            compilation.build_url = compilationResult.build_url;
+            compilation.firmware_build_id = compilationResult.build_id_in_firmware;
+            compilation.virtual_input_output = compilationResult.interface_code;
+            compilation.firmware_build_datetime = new Date();
+            compilation.update();
+
+            return new ArrayList<>();
+
+        } catch (StorageException e) {
+            logger.internalServerError(new Exception("StorageException" + compilationResult.build_url, e));
+            compilation.status = CompilationStatus.SERVER_ERROR;
+        } catch (ConnectException e) {
+            logger.internalServerError(new Exception("Compilation Server is probably offline on URL: " + compilationResult.build_url, e));
+            compilation.status = CompilationStatus.SUCCESS_DOWNLOAD_FAILED;
+        } catch (FileExistsException e) {
+            logger.internalServerError(new Exception("Compilation body is empty.", e));
+            compilation.status = CompilationStatus.SUCCESS_DOWNLOAD_FAILED;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            compilation.status = CompilationStatus.SERVER_ERROR;
         }
 
-        compilation.status = CompilationStatus.UNDEFINED;
         compilation.update();
-
         throw new ExternalErrorException();
     }
 }

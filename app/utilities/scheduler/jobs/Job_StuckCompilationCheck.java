@@ -66,8 +66,8 @@ public class Job_StuckCompilationCheck implements Job {
                         }
 
                         logger.debug("compilation_check_thread?: starting compilation of version {} with ID: {}", version.name, version.id);
-                        version.compilation.status = CompilationStatus.IN_PROGRESS;
-                        version.compilation.update();
+                        // version.compilation.status = CompilationStatus.IN_PROGRESS;
+                        // version.compilation.update();
 
                         // Výsledek se kterým se dále nic neděje
                         // TODO version.compile_program_procedure();

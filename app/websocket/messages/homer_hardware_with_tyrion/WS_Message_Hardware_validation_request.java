@@ -29,7 +29,6 @@ public class WS_Message_Hardware_validation_request {
     @Constraints.Required public String password;
     @Constraints.Required public String full_id;
 
-    @Constraints.Required public String websocket_identificator;   // Becki ID, Homer Server ID Etc - Dosazuje do JSONu WS_SendMesage
     @Constraints.Required public String message_id;
     @Constraints.Required public String message_channel;
 

@@ -46,7 +46,6 @@ public class WS_Message_Hardware_overview_Board implements Constraints.Validatab
 
     // -- Kopírované parametry  z WS_AbstractMessage
 
-    public UUID websocket_identificator;   // Becki ID, Homer Server ID Etc - Dosazuje do JSONu WS_SendMesage
     public String message_type;
     public String message_id;
     public String message_channel;

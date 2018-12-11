@@ -127,7 +127,7 @@ public class Controller_Code extends _BaseController {
             WS_Message_Make_compilation compilation_result = this.compilerService.compile(new Request(new WS_Message_Make_compilation().make_request( hardwareType , help.library_compilation_version, UUID.randomUUID(), help.main, includes)));
 
             // V případě úspěšného buildu obsahuje příchozí JsonNode build_url
-            if (compilation_result.build_url != null && compilation_result.status.equals("success")) {
+            if (compilation_result.build_url != null) {
 
                 Swagger_Compilation_Server_CompilationResult result = new Swagger_Compilation_Server_CompilationResult();
                 result.interface_code = compilation_result.interface_code;
@@ -235,7 +235,7 @@ public class Controller_Code extends _BaseController {
                 version.file = Model_Blob.upload(hardwareType.get_main_c_program().default_main_version.file.downloadString(), "code.json", c_program.get_path());
                 version.update();
 
-                this.compilationService.compileAsync(version, hardwareType.get_main_c_program().default_main_version.compilation.firmware_version_lib);
+                this.compilationService.compileAsync(version, hardwareType.get_main_c_program().default_main_version.getCompilation().firmware_version_lib);
             }
 
             return created(c_program);
@@ -312,7 +312,7 @@ public class Controller_Code extends _BaseController {
                 copy_object.file = Model_Blob.upload(fileRecord.downloadString(), "code.json" , c_program_new.get_path());
                 copy_object.update();
 
-                this.compilationService.compileAsync(copy_object, version.compilation.firmware_version_lib);
+                this.compilationService.compileAsync(copy_object, version.getCompilation().firmware_version_lib);
             }
 
             c_program_new.refresh();
@@ -997,7 +997,7 @@ public class Controller_Code extends _BaseController {
                 version.file = Model_Blob.upload(fileRecord.downloadString(), "code.json" , c_program.get_path());
                 version.update();
 
-                this.compilationService.compileAsync(version, version_old.compilation.firmware_version_lib);
+                this.compilationService.compileAsync(version, version_old.getCompilation().firmware_version_lib);
 
                 // Admin to schválil bez dalších keců
                 if ((help.reason == null || help.reason.length() < 4) ) {

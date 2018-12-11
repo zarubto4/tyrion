@@ -191,12 +191,12 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
                 if (c_program_version_for_update != null) {
 
-                    binary.download_id              = c_program_version_for_update.compilation.id;
-                    binary.build_id                 = c_program_version_for_update.compilation.firmware_build_id;
+                    binary.download_id              = c_program_version_for_update.getCompilation().id;
+                    binary.build_id                 = c_program_version_for_update.getCompilation().firmware_build_id;
                     binary.program_name             = c_program_version_for_update.get_c_program().name.length() > 32 ? c_program_version_for_update.get_c_program().name.substring(0, 32) : c_program_version_for_update.get_c_program().name;
                     binary.program_version_name     = c_program_version_for_update.name.length() > 32 ? c_program_version_for_update.name.substring(0, 32) : c_program_version_for_update.name;
-                    binary.compilation_lib_version  = c_program_version_for_update.compilation.firmware_version_lib;
-                    binary.time_stamp               = c_program_version_for_update.compilation.firmware_build_datetime;
+                    binary.compilation_lib_version  = c_program_version_for_update.getCompilation().firmware_version_lib;
+                    binary.time_stamp               = c_program_version_for_update.getCompilation().firmware_build_datetime;
 
                     // Update přímo z kompilace souboru bez archivace verze
                 } else if (binary_file  != null && binary_file.c_compilations_binary_file != null) {

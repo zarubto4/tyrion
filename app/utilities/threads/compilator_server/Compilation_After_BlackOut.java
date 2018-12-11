@@ -75,8 +75,8 @@ public class Compilation_After_BlackOut {
                             break;
                         }
                         terminal_logger.debug("Compilation_After_BlackOut:: run:: " + thread_name + " starting compilation");
-                        version.compilation.status = CompilationStatus.IN_PROGRESS;
-                        version.compilation.update();
+                        // version.compilation.status = CompilationStatus.IN_PROGRESS;
+                        // version.compilation.update();
 
                         // Výsledek se kterým se dále nic neděje
                         // TODO version.compile_program_procedure();

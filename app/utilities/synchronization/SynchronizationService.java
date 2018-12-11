@@ -6,6 +6,7 @@ import utilities.logger.Logger;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CancellationException;
 
 @Singleton
 public class SynchronizationService {
@@ -21,7 +22,21 @@ public class SynchronizationService {
 
         this.tasks.put(task.getId(), task);
         try {
-            task.start();
+
+            task.start().handle((result, exception) -> {
+                this.tasks.remove(task.getId());
+                if (exception != null) {
+                    if (exception instanceof CancellationException) {
+                        logger.warn("submit - synchronization task {}, id: {} was cancelled", task.getClass().getSimpleName(), task.getId());
+                    } else {
+                        logger.warn("submit - synchronization task {}, id: {} failed", task.getClass().getSimpleName(), task.getId());
+                        logger.internalServerError(exception);
+                    }
+                } else {
+                    logger.info("submit - synchronization task {}, id: {} was successful", task.getClass().getSimpleName(), task.getId());
+                }
+                return null;
+            });
         } catch (Exception e) {
             logger.internalServerError(e);
         }
