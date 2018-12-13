@@ -37,7 +37,7 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
 
     // Zatím nepodporováno ze strany Things Mobile
     public String iccid; // Optional Value
-    public String imsi;
+    public String type; // OnChip Sim
 
 
     public String name;
@@ -96,7 +96,6 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
     public Double month_cost() {
      return  monthlyTraffic / 1024 / 1024 * Controller_Things_Mobile.price_per_MB;
     }
-
 
     @JsonProperty
     public boolean block_sim_daily() {
@@ -161,5 +160,18 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
     public Long getAsLong_LastConnectionDate() {
         if(lastConnectionDate == null || lastConnectionDate.equals("")) return -1L;
         return LocalDate.parse(lastConnectionDate, TM_Sim_Status_cdr.formatter_from_tm).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
+    }
+
+
+    /**
+     * Same as in
+     * @see TM_Sim_Status_cdr
+     * @return
+     */
+    @JsonIgnore
+    public Long cdrImsi() {
+
+        if(cdrs.isEmpty()) return null;
+        return cdrs.get(0).cdrImsi;
     }
 }

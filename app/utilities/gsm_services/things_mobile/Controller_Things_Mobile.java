@@ -48,6 +48,7 @@ public class Controller_Things_Mobile {
             TMKeyStoreSender sender = new TMKeyStoreSender();
             sender.addKey("msisdn", msisdn.toString());
             sender.addKey("simBarcode", simBarcode);
+            sender.addKey("iccid", simBarcode);
 
             Document response = post("/services/business-api/activateSim", sender);
 
@@ -182,8 +183,7 @@ public class Controller_Things_Mobile {
                         node.msisdn                      = Long.valueOf(eElement.getElementsByTagName("msisdn").item(0).getTextContent());
 
                         // TODO Things Mobile
-                        // node.iccid                      = Long.valueOf(eElement.getElementsByTagName("msisdn").item(0).getTextContent());
-                        // node.imsi                       = Long.valueOf(eElement.getElementsByTagName("msisdn").item(0).getTextContent());
+                        node.iccid                      = eElement.getElementsByTagName("iccid").item(0).getTextContent();
 
                         node.name                        = eElement.getElementsByTagName("name").item(0).getTextContent();
                         node.status                      = eElement.getElementsByTagName("status").item(0).getTextContent();

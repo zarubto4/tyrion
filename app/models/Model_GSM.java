@@ -39,8 +39,8 @@ public class Model_GSM extends TaggedModel implements Permissible, UnderProject 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Project project;
 
     public Long msi_number;
-    public String imsi;
-    public String iccid;
+    public String imsi;     // Optional
+    public String iccid;    // Required??
 
     @JsonIgnore public String provider; // Sem ukládáme kdo dodává simakrty, ThingsMobile, T-Mobile, Vodafone etc.. (Ano, zatím máme integraci jen na ThingsMobile)
     @JsonIgnore public UUID registration_hash; // Sem ukládáme kro dodává simakrty, ThingsMobile, T-Mobile, Vodafone etc.. (Ano, zatím máme integraci jen na ThingsMobile)
