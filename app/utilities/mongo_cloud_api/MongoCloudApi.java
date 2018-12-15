@@ -94,7 +94,7 @@ public class MongoCloudApi {
     }
 
 
-    public SwaggerMongoCloudUser getUser(String username) throws Exception {
+    private SwaggerMongoCloudUser getUser(String username) throws Exception {
         WSResponse response =  ws.url(getBaseConnectionString() + "/databaseUsers/admin/" + username)
                 .setAuth(getMongoCloudLogin(),
                         getApiKey(),
@@ -108,8 +108,12 @@ public class MongoCloudApi {
         }
     }
 
-    public List<String> getCollections(String databaseId) {
-        MongoIterable<String> collections = Server.mongoClient.getDatabase(databaseId).listCollectionNames();
+
+    //Will throw IllegalArgumentException in case database with such name doesn't exist
+    public List<String> getCollections(String databaseName) throws IllegalArgumentException {
+        MongoIterable<String> collections = Server.mongoClient
+                                                  .getDatabase(databaseName)   //throws IllegalArgumentException
+                                                  .listCollectionNames();
         List<String> result = new ArrayList<>();
         for (String collectionName : collections ){
             result.add(collectionName);
@@ -117,9 +121,10 @@ public class MongoCloudApi {
         return result;
     }
 
-    public void createCollection(String databaseId, String collectionName) {
-        Server.mongoClient.getDatabase(databaseId)
-                          .createCollection(collectionName);
+    public void createCollection(String databaseId, String collectionName) throws IllegalArgumentException{
+        Server.mongoClient
+              .getDatabase(databaseId) //throws IllegalArgumentException
+              .createCollection(collectionName);
     }
 
     private void setRolesForUser(String username, SwaggerMongoCloudUserRole[] roles) throws Exception{
