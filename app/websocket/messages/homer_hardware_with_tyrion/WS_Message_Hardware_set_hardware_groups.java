@@ -28,7 +28,7 @@ public class WS_Message_Hardware_set_hardware_groups extends WS_AbstractMessage 
     @JsonIgnore
     public  ObjectNode make_request(List<Model_Hardware> devices, List<UUID> group_ids, Enum_type_of_command command_type) {
 
-        List<UUID> hardware_ids = devices.stream().map(Model_Hardware::get_id).collect(Collectors.toList());
+        List<UUID> hardware_ids = devices.stream().map(Model_Hardware::getId).collect(Collectors.toList());
 
         // Potvrzení Homer serveru, že je vše v pořádku
         ObjectNode request = Json.newObject();

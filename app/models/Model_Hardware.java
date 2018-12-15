@@ -23,6 +23,8 @@ import utilities.models_update_echo.EchoHandler;
 import utilities.network.JsonLastOnline;
 import utilities.network.JsonNetworkStatus;
 import utilities.network.Networkable;
+import utilities.notifications.helps_objects.Becki_color;
+import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
@@ -56,6 +58,9 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
         Uživatel ho musí nejdříve deaktivoat (freeznout v jednom projektu) aby ho mohl aktivovat v jiném projektu.
 
      */
+/* STATIC CONFIG  */
+
+    public static final String CHANNEL = "hardware";
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -127,7 +132,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     @JsonNetworkStatus @Transient @ApiModelProperty(required = true, value = "Value is cached with asynchronous refresh")
     public NetworkStatus online_state;
 
-    @JsonLastOnline @Transient @ApiModelProperty(value = "Value is cached with asynchronous refresh")
+    @JsonLastOnline @Transient @ApiModelProperty(required = true, value = "Value is cached with asynchronous refresh")
     public Long latest_online;
 
     @JsonProperty
@@ -146,7 +151,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
     @JsonProperty public Swagger_Short_Reference producer() {
         try {
-            return this.get_producer().ref();
+            return this.getProducer().ref();
         } catch (Exception e){
             logger.internalServerError(e);
             return null;
@@ -379,7 +384,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     @JsonProperty @ApiModelProperty(value = "Can be null, if device is not in Instance")
     public Swagger_Short_Reference actual_instance() {
         try {
-            Model_Instance i = get_instance();
+            Model_Instance i = getInstance();
 
             if (i != null){
                 Swagger_Short_Reference instance = i.ref();
@@ -397,7 +402,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     @JsonProperty
     public Swagger_Short_Reference actual_c_program() {
         try {
-            Model_CProgram type = this.get_actual_c_program();
+            Model_CProgram type = this.getActualCProgram();
             if (type != null) {
                 return type.ref();
             } else {
@@ -427,7 +432,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     @JsonProperty
     public Swagger_Short_Reference actual_c_program_backup() {
         try{
-            Model_CProgram program = this.get_backup_c_program();
+            Model_CProgram program = this.getBackupCProgram();
             if (program != null) {
                 return program.ref();
             } else {
@@ -506,7 +511,16 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
-    public UUID get_producerId() {
+    public Model_Producer getProducer(){
+        try {
+            return Model_Producer.find.byId(getProducerId());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @JsonIgnore
+    public UUID getProducerId() {
         if (idCache().get(Model_Producer.class) == null) {
             idCache().add(Model_Producer.class, (UUID) Model_Producer.find.query().where().eq("hardware_types.hardware.id", id).select("id").findSingleAttribute());
         }
@@ -514,20 +528,11 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
-    public Model_Producer get_producer(){
-        try {
-            return Model_Producer.find.byId(get_producerId());
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    @JsonIgnore
-    public Model_Instance get_instance(){
+    public Model_Instance getInstance(){
         try {
 
-            if(connected_instance_id != null) {
-                return Model_Instance.find.byId(connected_instance_id);
+            if(getInstanceId() != null) {
+                return Model_Instance.find.byId(getInstanceId());
             }
 
             return null;
@@ -537,7 +542,16 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
-    public UUID get_actual_c_program_id() {
+    public UUID getInstanceId(){
+        try {
+           return connected_instance_id;
+        }catch (Exception e) {
+            return null;
+        }
+    }
+
+    @JsonIgnore
+    public UUID getActualCProgramId() {
 
         if (idCache().get(Model_CProgram.class) == null) {
 
@@ -551,10 +565,10 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
-    public Model_CProgram get_actual_c_program(){
+    public Model_CProgram getActualCProgram(){
         try {
 
-            UUID id = get_actual_c_program_id();
+            UUID id = getActualCProgramId();
             if(id == null) return null;
             return Model_CProgram.find.byId(id);
 
@@ -565,7 +579,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
-    public UUID get_actual_c_program_version_id(){
+    public UUID getActualCProgramVersionId(){
 
         if (idCache().get(Model_CProgramVersion.class) == null) {
             UUID uuid =  Model_CProgramVersion.find.query().where().eq("c_program_version_boards.id", id).select("id").findSingleAttribute();
@@ -587,53 +601,17 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
-    public UUID get_actual_bootloader_id() {
-
-        if (idCache().get(Model_BootLoader.class) == null) {
-
-            UUID uuid =  Model_BootLoader.find.query().where().eq("hardware.id", id).select("id").findSingleAttribute();
-            if(uuid == null) return null;
-            idCache().add(Model_BootLoader.class, uuid);
-        }
-
-        return idCache().get(Model_BootLoader.class);
-    }
-
-    @JsonIgnore
     public Model_BootLoader getCurrentBootloader(){
         return isLoaded("actual_boot_loader") ? actual_boot_loader : Model_BootLoader.find.query().nullable().where().eq("hardware.id", id).findOne();
     }
 
     @JsonIgnore
-    public UUID get_backup_c_program_id() {
-
-        if (idCache().get(Model_CProgram.class) == null) {
-            UUID uuid = Model_CProgram.find.query().where().eq("versions.c_program_version_backup_boards.id", id).select("id").findSingleAttribute();
-            if(uuid == null) return null;
-            idCache().add(Model_CProgram.class, uuid);
-        }
-
-        return idCache().get(Model_CProgram.class);
-    }
-
-    @JsonIgnore
-    public Model_CProgram get_backup_c_program() {
-
+    public Model_CProgram getBackupCProgram() {
         try {
-            return Model_CProgram.find.byId(get_backup_c_program_id());
+            return Model_CProgram.find.query().where().eq("versions.c_program_version_backup_boards.id", id).select("id").findSingleAttribute();
         }catch (Exception e) {
             return null;
         }
-
-    }
-
-    @JsonIgnore
-    public UUID getHardwareTypeCache_id() {
-
-        if (idCache().get(Model_HardwareType.class) == null) {
-            idCache().add(Model_HardwareType.class, (UUID) Model_HardwareType.find.query().where().eq("hardware.id", id).select("id").findSingleAttribute());
-        }
-        return idCache().get(Model_HardwareType.class);
     }
 
     @JsonIgnore
@@ -642,7 +620,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
-    public UUID get_project_id() {
+    public UUID getProjectId() {
 
         if (idCache().get(Model_Project.class) == null) {
             idCache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("hardware.id", id).select("id").findSingleAttribute());
@@ -717,29 +695,20 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
-    public boolean update_boot_loader_required() {
-        if (getHardwareType().main_boot_loader() == null || getCurrentBootloader() == null) return true;
-        return (!this.getHardwareType().get_main_boot_loader_id().equals(get_actual_bootloader_id()));
-    }
-
-    @JsonIgnore
     public void update_bootloader_configuration(DM_Board_Bootloader_DefaultConfig configuration) {
         this.json_bootloader_core_configuration = Json.toJson(configuration).toString();
         this.update();
     }
 
-/* SERVER WEBSOCKET ----------------------------------------------------------------------------------------------------*/
-
-    public static final String CHANNEL = "hardware";
-
-    @JsonIgnore
-    public UUID get_id() {
-        return id;
-    }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
     // Online Offline Notification
+
+    /**
+     * Send online notification only after long time of offline state
+     * @return
+     */
     @JsonIgnore
     public Model_Notification notificationOnline() {
         return new Model_Notification()
@@ -750,6 +719,10 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
                 .setText(new Notification_Text().setText(" is online."));
     }
 
+    /**
+     * Send online notification only after long time of online state
+     * @return
+     */
     @JsonIgnore
     public Model_Notification notificationOffline() {
         return new Model_Notification()
@@ -789,94 +762,37 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
         }).start();
     }
 
+    /**
+     * Send Notification, if Connected hardware has unrecognized Firmware on it.
+     */
     @JsonIgnore
-    public void notification_board_not_databased_version() {
+    public void notification_board_no_firmware () {
         new Thread(() -> {
 
+            // Pokud to není yoda ale device tak neupozorňovat v notifikaci, že je deska offline - zbytečné zatížení
             if (project().id == null) return;
 
             try {
-
                 new Model_Notification()
-                        .setImportance( NotificationImportance.NORMAL)
-                        .setLevel(NotificationLevel.INFO)
-                        .setText(new Notification_Text().setText("Attention! Device "))
+                        .setImportance( NotificationImportance.HIGH)
+                        .setLevel(NotificationLevel.WARNING)
+                        .setText(new Notification_Text().setText("Attention! Hardware "))
                         .setObject(this)
-                        .setText(new Notification_Text().setText(" has logged in. Unfortunately, we do not have a synchronized knowledge of the " +
-                                "device status of what device firmware is running on. Perhaps this is the factory setting. " +
-                                "We are now updating to the default firmware on device."))
+                        .setText(new Notification_Text().setText(" connected successfully, but we have no records about Firmware on this Hardware. " +
+                                "Maybe you migrate Hardware from another project to this project "))
+                        .setObject(getProject())
+                        .setText(new Notification_Text().setText(" or this is a first time, when Hardware is connected under your account. "))
                         .setNewLine()
-                        .setText(new Notification_Text().setText("You do not have to do anything. Have a nice day."))
-                        .setNewLine()
-                        .setText(new Notification_Text().setText("Byzance"))
+                        .setText(new Notification_Text().setText("But stay calm. Just aprove that its ok, or you want to automatically set (Upload) default firmware."))
+                        .setButton(new Notification_Button().setAction(NotificationAction.ACCEPT_RESTORE_FIRMWARE).setPayload(getId().toString()).setColor(Becki_color.byzance_green).setText("Yes"))
+                        .setButton(new Notification_Button().setAction(NotificationAction.REJECT_RESTORE_FIRMWARE).setPayload(getId().toString()).setColor(Becki_color.byzance_red).setText("No"))
                         .send_under_project(project().id);
-
-
 
             } catch (Exception e) {
                 logger.internalServerError(e);
             }
         }).start();
     }
-/*
-    // Backup Notification
-    @JsonIgnore
-    public static void notification_set_static_backup_procedure_first_information_single(Model_BPair board_for_update) {
-        try {
-
-            new Thread(() -> {
-
-                new Model_Notification()
-                        .setImportance(NotificationImportance.LOW)
-                        .setLevel(NotificationLevel.WARNING)
-                        .setText(new Notification_Text().setText("You set Static Backup program: "))
-                        .setObject(board_for_update.c_program_version.c_program)
-                        .setText(new Notification_Text().setText(", in Version "))
-                        .setObject(board_for_update.c_program_version)
-                        .setText(new Notification_Text().setText(" for device "))
-                        .setObject(board_for_update.hardware)
-                        .setText(new Notification_Text().setText(". "))
-                        .setText(new Notification_Text().setText("We show you in hardware overview only what's currently on the device. " +
-                                "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
-                                "In the details of the instance or hardware overview, you can see the status of each procedure. " +
-                                "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
-                        .send_under_project(board_for_update.hardware.project_id());
-
-            }).start();
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    @JsonIgnore
-    public static void notification_set_static_backup_procedure_first_information_list( List<Model_BPair> board_for_update) {
-        try {
-
-            new Thread(() -> {
-
-                if ( board_for_update.size() == 0 )  throw new IllegalArgumentException("notification_set_static_backup_procedure_first_information_list:: List is empty! ");
-                if ( board_for_update.size() == 1 ) {
-                    notification_set_static_backup_procedure_first_information_single(board_for_update.get(0));
-                    return;
-                }
-
-                new Model_Notification()
-                        .setImportance(NotificationImportance.LOW)
-                        .setLevel(NotificationLevel.WARNING)
-                        .setText(new Notification_Text().setText("You set Static Backup program for Hardware Collection (" + board_for_update.size() + "). "))
-                        .setText(new Notification_Text().setText("We show you in hardware overview only what's currently on the device. " +
-                                "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
-                                "In the details of the instance or hardware overview, you can see the status of each procedure. " +
-                                "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
-                        .send_under_project(board_for_update.get(0).hardware.project_id());
-
-            }).start();
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }*/
 
 
 /* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/

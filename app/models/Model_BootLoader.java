@@ -118,7 +118,7 @@ public class Model_BootLoader extends NamedModel implements Permissible, Updatab
                             "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
                             "In the details of the instance or hardware overview, you can see the status of each procedures. " +
                             "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
-                    .send_under_project(plan.getHardware().get_project_id());
+                    .send_under_project(plan.getHardware().getProjectId());
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -141,7 +141,7 @@ public class Model_BootLoader extends NamedModel implements Permissible, Updatab
                     .setObject(plan.getHardware())
                     .setText(new Notification_Text().setText(". "))
                     .setText(new Notification_Text().setText("Have a nice Day!"))
-                    .send_under_project(plan.getHardware().get_project_id());
+                    .send_under_project(plan.getHardware().getProjectId());
 
         } catch (Exception e) {
             logger.internalServerError(e);
@@ -175,7 +175,7 @@ public class Model_BootLoader extends NamedModel implements Permissible, Updatab
                                 "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
                                 "In the details of the instance or hardware overview, you can see the status of each procedure. " +
                                 "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
-                        .send_under_project(plans.get(0).getHardware().get_project_id());
+                        .send_under_project(plans.get(0).getHardware().getProjectId());
 
             }).start();
 

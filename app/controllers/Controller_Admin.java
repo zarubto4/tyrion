@@ -118,7 +118,7 @@ public class Controller_Admin extends _BaseController {
 
     @ApiOperation(value = "Bugs get all",
             tags = {"Admin-Report"},
-            notes = "", //TODO
+            notes = "Get All Bugs",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -145,7 +145,7 @@ public class Controller_Admin extends _BaseController {
 
     @ApiOperation(value = "Bug get",
             tags = {"Admin-Report"},
-            notes = "",     //TODO
+            notes = "Get Bug",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
@@ -245,7 +245,7 @@ public class Controller_Admin extends _BaseController {
 
     @ApiOperation(value = "Bug delete",
             tags = {"Admin-Report"},
-            notes = "",     //TODO
+            notes = "Remove Bug",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https"
@@ -268,7 +268,7 @@ public class Controller_Admin extends _BaseController {
 
     @ApiOperation(value = "Bug delete all",
             tags = {"Admin-Report"},
-            notes = "",     //TODO
+            notes = "Delete all Bugs",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https"
@@ -298,7 +298,7 @@ public class Controller_Admin extends _BaseController {
 
     @ApiOperation(value = "remove Server Update Server_Component",
             tags = {"Admin"},
-            notes = "",         //TODO
+            notes = "Stop update proceso of this Server",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https"
@@ -328,7 +328,7 @@ public class Controller_Admin extends _BaseController {
 
     @ApiOperation(value = "update Server Server_Component",
             tags = {"Admin"},
-            notes = "",         //TODO
+            notes = "Update Tyrion Server",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https"
@@ -404,7 +404,7 @@ public class Controller_Admin extends _BaseController {
 
     @ApiOperation(value = "get server updates",
             tags = {"Admin"},
-            notes = "",     //TODO
+            notes = "Get Tyrion Server Updates",
             produces = "application/json",
             protocols = "https"
     )

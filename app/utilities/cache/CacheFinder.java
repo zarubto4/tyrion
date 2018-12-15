@@ -55,7 +55,7 @@ public class CacheFinder<T extends BaseModel> extends Finder<UUID, T> implements
 
         if (entity == null) {
             logger.debug("byId - ({}) id: {} not found", this.entityType.getSimpleName(), id);
-            throw new NotFoundException(this.entityType);
+            throw new NotFoundException(this.entityType, id);
         }
 
         cache.put(id, entity);

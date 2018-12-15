@@ -24,7 +24,7 @@ public class WS_Message_Instance_set_program extends WS_AbstractMessage_Instance
 /* MAKE REQUEST  -------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public ObjectNode make_request(Model_InstanceSnapshot snapshot) {  // TODO předělat na pole    LEVEL: HARD  TIME: LONGTERM
+    public ObjectNode make_request(Model_InstanceSnapshot snapshot) {
 
         List<Instance_Update_Request> request_list = new ArrayList<>();
 

@@ -302,6 +302,8 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
 
         logger.debug("delete - deleting from database, id: {} ", this.id);
 
+        this.current_snapshot_id = null;
+
         super.delete();
 
         try {

@@ -62,6 +62,7 @@ public class HomerSynchronizationTask implements Task {
             this.synchronizeSettings();
             this.synchronizeHardware();
             this.synchronizeInstances();
+
         }, this.httpExecutionContext.current());
     }
 
@@ -181,6 +182,7 @@ public class HomerSynchronizationTask implements Task {
             List<UUID> instances_required_by_tyrion = Model_Instance.find.query().where()
                     .eq("server_main.id", this.server.id)
                     .isNotNull("current_snapshot_id")
+                    .eq("deleted", false)
                     .select("id")
                     .findSingleAttributeList();
 

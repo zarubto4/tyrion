@@ -1,10 +1,13 @@
 package utilities.logger;
 
 import com.typesafe.config.Config;
+import exceptions.*;
 import models.Model_ServerError;
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
-import exceptions.NotFoundException;
+import responses.Result_InvalidBody;
+import responses.Result_UnsupportedException;
 // import utilities.slack.Slack;
 
 import java.util.List;
@@ -16,7 +19,6 @@ public class ServerLogger extends Controller {
     public static void init(Config configuration) {
 
         System.out.println("ServerLogger::init - loading settings");
-
         logger = new MainLogger(configuration);
     }
 
@@ -28,9 +30,9 @@ public class ServerLogger extends Controller {
     public static void warn (Class<?> t_class, String log_message, Object... args) {logger.warn (t_class, log_message, args);}
     public static void error(Class<?> t_class, String log_message, Object... args) {logger.error(t_class, log_message, args);}
 
-    public static void internalServerError(Throwable exception) {
+    public static void internalServerError(Throwable error) {
         StackTraceElement current_stack = Thread.currentThread().getStackTrace()[3]; // Find the caller origin
-        error(exception, current_stack.getClassName() + "::" + current_stack.getMethodName(), null);
+        error(error, current_stack.getClassName() + "::" + current_stack.getMethodName(), null);
     }
 
 /* SERVICES ------------------------------------------------------------------------------------------------------------*/

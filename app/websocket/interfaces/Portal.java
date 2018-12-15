@@ -55,7 +55,12 @@ public class Portal extends Interface {
                 switch (message.getType()) {
                     case WS_Message_Subscribe_Notifications.message_type: onSubscribeNotification(message); break;
                     case WS_Message_UnSubscribe_Notifications.message_type: onUnsubscribeNotification(message); break;
-                    default: // TODO
+                    default: {
+                        logger.error("onMessagePorta - incoming message not recognized: {}", message.getMessage().toString());
+                        if (!message.isErroneous()) {
+                            this.send(message.getMessage().put("error_message", "message_type not recognized").put("error_code", 400));
+                        }
+                    }
                 }
             }
         }

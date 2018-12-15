@@ -2705,8 +2705,8 @@ public class Controller_Hardware extends _BaseController {
                                  group.idCache().add(Model_HardwareType.class,  new ArrayList<>());
                             }
 
-                            if(!group.idCache().gets(Model_HardwareType.class).contains(hardware.getHardwareTypeCache_id())){
-                                    group.idCache().add(Model_HardwareType.class, hardware.getHardwareTypeCache_id());
+                            if(!group.idCache().gets(Model_HardwareType.class).contains(hardware.getHardwareType().getId())){
+                                    group.idCache().add(Model_HardwareType.class, hardware.getHardwareType().getId());
                             }
 
                             hardware.get_hardware_group_ids();
@@ -2786,8 +2786,8 @@ public class Controller_Hardware extends _BaseController {
                         group.idCache().add(Model_HardwareType.class,  new ArrayList<>());
                     }
 
-                    if(!group.idCache().gets(Model_HardwareType.class).contains(board.getHardwareTypeCache_id())){
-                        group.idCache().add(Model_HardwareType.class, board.getHardwareTypeCache_id());
+                    if(!group.idCache().gets(Model_HardwareType.class).contains(board.getHardwareType().getId())){
+                        group.idCache().add(Model_HardwareType.class, board.getHardwareType().getId());
                     }
                 }
 

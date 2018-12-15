@@ -52,7 +52,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
                                                                                 public HardwareUpdateState state;
                                                                     @JsonIgnore public Integer count_of_tries;                              // Počet celkovbých pokusu doručit update (změny z wait to progres atd...
-                                                                                public UUID tracking_id;
+                                                                                public UUID tracking_id;                                    // GROUP ID??
 
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Only if state is critical_error or Homer record some error")  public String error;
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Only if state is critical_error or Homer record some error")  public Integer error_code;
@@ -140,8 +140,8 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
     @JsonIgnore
     public UUID getComponentId() {
         switch (this.firmware_type) {
-            case FIRMWARE:
-            case BACKUP: return this.c_program_version_for_update.id;
+            case FIRMWARE: return this.c_program_version_for_update.id; // Same as BACKUP, but only if its not a Manual uploaded file
+            case BACKUP:   return this.c_program_version_for_update.id; // Same as FIRMWARE, but only if its not a Manual uploaded file
             case BOOTLOADER: return this.getBootloader().id;
             default: return null;
         }
@@ -175,9 +175,9 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
         try {
 
             Swagger_UpdatePlan_brief_for_homer brief_for_homer = new Swagger_UpdatePlan_brief_for_homer();
-            brief_for_homer.update_procedure_id = null; // TODO getActualizationProcedureId().toString();
-            brief_for_homer.hardware_update_id = id.toString();
-            brief_for_homer.uuid_ids.add(getHardware().id);
+            brief_for_homer.tracking_group_id = tracking_id;
+            brief_for_homer.tracking_id = this.getId();
+            brief_for_homer.uuid_ids.add(getHardware().getId());
 
             Swagger_UpdatePlan_brief_for_homer_BinaryComponent binary = new Swagger_UpdatePlan_brief_for_homer_BinaryComponent();
             binary.firmware_type = firmware_type;
