@@ -306,7 +306,7 @@ public class Controller_Database extends _BaseController {
             try {
                 db_response = this.extensionToSwaggerDatabase(database, baseConnectionString);
             } catch (IllegalArgumentException e) {
-                return controllerServerError(new BadRequestException("Database was removed"));
+                throw new BadRequestException("Database was removed");
             }
 
             return ok(db_response);
@@ -333,8 +333,12 @@ public class Controller_Database extends _BaseController {
 
             Model_ProductExtension database = Model_ProductExtension.find.byId(db_id);
             checkReadPermission(database);
-            mongoApi.createCollection(db_id.toString(), collection_name);
-
+            try {
+                mongoApi.createCollection(db_id.toString(), collection_name);
+            } catch (IllegalArgumentException e){
+                database.delete();
+                throw new BadRequestException("Database was removed");
+            }
             return ok(database);
 
         } catch ( Exception e ) {
