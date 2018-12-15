@@ -37,7 +37,7 @@ public class ModelMongo_Hardware_BackupIncident extends _Abstract_MongoModel {
 
     /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger logger = new Logger(ModelMongo_Hardware_OnlineStatus.class);
+    private static final Logger logger = new Logger(ModelMongo_Hardware_BackupIncident.class);
 
     /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
