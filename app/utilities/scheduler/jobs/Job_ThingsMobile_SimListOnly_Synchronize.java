@@ -64,13 +64,13 @@ public class Job_ThingsMobile_SimListOnly_Synchronize implements Job {
                         Model_GSM gsm = new Model_GSM();
                         gsm.msi_number = sim.msisdn;
                         gsm.iccid = sim.iccid;
-                        gsm.imsi = sim.imsi;
+                        gsm.imsi = sim.cdrImsi().toString();
                         gsm.provider = "ThingsMobile";
                         gsm.registration_hash = UUID.randomUUID();
                         gsm.save();
 
                         if(sim.status.equals("not active")) {
-                            Controller_Things_Mobile.sim_active(sim.msisdn, null);
+                            Controller_Things_Mobile.sim_active(sim.msisdn, sim.iccid);
                         }
 
                     }else {

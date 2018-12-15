@@ -1674,7 +1674,7 @@ public class Controller_Grid extends _BaseController {
             version.logic_json = help.logic_json;
             version.widget = gridWidget;
 
-            return create(gridWidget);
+            return create(version);
 
         } catch (Exception e) {
             return controllerServerError(e);

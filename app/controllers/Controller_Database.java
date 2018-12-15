@@ -4,6 +4,9 @@ import com.google.inject.Inject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.typesafe.config.Config;
+import exceptions.BadRequestException;
+import io.ebeaninternal.server.core.Message;
+import io.minio.errors.InvalidArgumentException;
 import io.swagger.annotations.*;
 import models.Model_Product;
 import models.Model_ProductExtension;
@@ -33,8 +36,8 @@ import utilities.swagger.output.Swagger_DatabaseCollectionList;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Security.Authenticated(Authentication.class)
 @Api(value = "Database")
@@ -87,12 +90,6 @@ public class Controller_Database extends _BaseController {
 
             Model_Product product = Model_Product.find.byId(info.product_id);
             checkUpdatePermission(product);
-
-            List<Model_ProductExtension> existingDatabaseList = Model_ProductExtension.find.query().where()
-                    .eq("product.id", info.product_id)
-                    .eq("active", true)
-                    .eq("type", ExtensionType.DATABASE)
-                    .findList();
 
             SwaggerMongoCloudUser user;
 
@@ -179,10 +176,14 @@ public class Controller_Database extends _BaseController {
                         product.id.toString(),  //login
                         password);
 
-                List<Swagger_Database> result = extensionList.stream()
-                        .map(databaseExtension -> extensionToSwaggerDatabase(databaseExtension, baseConnectionString))
-                        .collect(Collectors.toList());
-
+                List<Swagger_Database> result = new ArrayList<>();
+                for (Model_ProductExtension extension: extensionList) {
+                    try {
+                        result.add(this.extensionToSwaggerDatabase(extension, baseConnectionString));
+                    } catch (IllegalArgumentException e) {
+                        extension.delete();  // no permission validation is needed, we delete this because database was deleted from mongo;
+                    }
+                }
 
                 return ok(result);
             }
@@ -286,11 +287,9 @@ public class Controller_Database extends _BaseController {
     public Result get_collections(UUID db_id){
         try {
 
-            Swagger_DatabaseCollectionList collectionList = new Swagger_DatabaseCollectionList();
             Model_ProductExtension database = Model_ProductExtension.find.byId(db_id);
             checkReadPermission(database);
 
-            collectionList.names = mongoApi.getCollections(db_id.toString());
             String password = this.formFactory
                     .formFromJsonWithValidation(ConfigurationProduct.class, Json.parse(database.getProduct().configuration))
                     .mongoDatabaseUserPassword;
@@ -298,8 +297,13 @@ public class Controller_Database extends _BaseController {
                     database.getProduct().id.toString(),  //login
                     password);
             //
-            Swagger_Database db_response = this.extensionToSwaggerDatabase(database, baseConnectionString);
+            Swagger_Database db_response;
 
+            try {
+                db_response = this.extensionToSwaggerDatabase(database, baseConnectionString);
+            } catch (IllegalArgumentException e) {
+                throw new BadRequestException("Database was removed");
+            }
 
             return ok(db_response);
 
@@ -325,8 +329,12 @@ public class Controller_Database extends _BaseController {
 
             Model_ProductExtension database = Model_ProductExtension.find.byId(db_id);
             checkReadPermission(database);
-            mongoApi.createCollection(db_id.toString(), collection_name);
-
+            try {
+                mongoApi.createCollection(db_id.toString(), collection_name);
+            } catch (IllegalArgumentException e){
+                database.delete();
+                throw new BadRequestException("Database was removed");
+            }
             return ok(database);
 
         } catch ( Exception e ) {
@@ -334,7 +342,8 @@ public class Controller_Database extends _BaseController {
         }
     }
 
-    private Swagger_Database extensionToSwaggerDatabase(Model_ProductExtension extension, String baseConnectionString) {
+    // Will throw in case database fot given extension doesn't exist in mongo (e.g. was deleted from cloud directly)
+    private Swagger_Database extensionToSwaggerDatabase(Model_ProductExtension extension, String baseConnectionString) throws IllegalArgumentException {
         Swagger_Database result = new Swagger_Database();
         result.name = extension.name;
         result.description = extension.description;

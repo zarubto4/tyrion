@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @ApiModel( value = "Block", description = "Model of Block")
@@ -102,13 +103,7 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
 
     @JsonIgnore
     public UUID get_project_id() {
-
-        if (idCache().get(Model_Project.class) == null) {
-            idCache().add(Model_Project.class, Model_Project.find.query().where().eq("blocks.id", id).select("id").findSingleAttributeList());
-        }
-
-        return idCache().get(Model_Project.class);
-
+        return (UUID) Model_Project.find.query().where().eq("blocks.id", id).select("id").getId();
     }
 
     @JsonIgnore
@@ -118,12 +113,9 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
 
     @JsonIgnore
     public List<UUID> getVersionsId() {
-        if (idCache().gets(Model_BlockVersion.class) == null) {
-            idCache().add(Model_BlockVersion.class, Model_BlockVersion.find.query().where().eq("block.id", id).eq("deleted", false).select("id").findSingleAttributeList());
-        }
-
-        return idCache().gets(Model_BlockVersion.class) != null ?  idCache().gets(Model_BlockVersion.class) : new ArrayList<>();
+        return Model_BlockVersion.find.query().where().eq("block.id", id).eq("deleted", false).select("id").order("created").findSingleAttributeList();
     }
+
     @JsonIgnore
     public List<Model_BlockVersion> getVersions() {
         try {
