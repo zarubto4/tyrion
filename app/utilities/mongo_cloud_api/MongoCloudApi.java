@@ -94,7 +94,7 @@ public class MongoCloudApi {
     }
 
 
-    public SwaggerMongoCloudUser getUser(String username) throws Exception {
+    private SwaggerMongoCloudUser getUser(String username) throws Exception {
         WSResponse response =  ws.url(getBaseConnectionString() + "/databaseUsers/admin/" + username)
                 .setAuth(getMongoCloudLogin(),
                         getApiKey(),
@@ -119,9 +119,10 @@ public class MongoCloudApi {
         return result;
     }
 
-    public void createCollection(String databaseId, String collectionName) {
-        Server.mongoClient.getDatabase(databaseId)
-                          .createCollection(collectionName);
+    public void createCollection(String databaseId, String collectionName) throws IllegalArgumentException{
+        Server.mongoClient
+              .getDatabase(databaseId) //throws IllegalArgumentException
+              .createCollection(collectionName);
     }
 
     private void setRolesForUser(String username, SwaggerMongoCloudUserRole[] roles) throws Exception{
