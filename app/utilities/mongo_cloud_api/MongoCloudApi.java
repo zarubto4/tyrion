@@ -111,7 +111,9 @@ public class MongoCloudApi {
 
     //Will throw IllegalArgumentException in case database with such name doesn't exist
     public List<String> getCollections(String databaseName) throws IllegalArgumentException {
-        MongoIterable<String> collections = Server.mongoClient.getDatabase(databaseName).listCollectionNames();
+        MongoIterable<String> collections = Server.mongoClient
+                                                  .getDatabase(databaseName)   //throws IllegalArgumentException
+                                                  .listCollectionNames();
         List<String> result = new ArrayList<>();
         for (String collectionName : collections ){
             result.add(collectionName);
