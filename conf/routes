@@ -345,15 +345,15 @@ DELETE    /compilation_server/:server_id                                controll
 
 #Actualization Procedure
 PUT       /release_update/make                                        controllers.Controller_Update.make_hardwareUpdateRelease()
-GET       /release_update/object/:task_id                             controllers.Controller_Update.get_hardwareUpdateRelease()
+GET       /release_update/object/:id                                  controllers.Controller_Update.get_hardwareUpdateRelease(id: java.util.UUID)
 PUT       /release_update/filter/:page_number                         controllers.Controller_Update.get_HardwareReleaseUpdate_by_filter(page_number: Int)
-PUT       /release_update/stop/:task_id                               controllers.Controller_Update.cancel_hardwareUpdateRelease(task_id: java.util.UUID)
+PUT       /release_update/stop/:id                                    controllers.Controller_Update.cancel_hardwareUpdateRelease(id: java.util.UUID)
 PUT       /release_update/make_bin                                    controllers.Controller_Update.uploadBinaryFileToBoard()
 
 #Task
 PUT       /update_task/filter/:page_number                              controllers.Controller_Update.get_HardwareUpdate_CProgramUpdatePlan_by_filter(page_number: Int)
-PUT       /update_task/stop/:task_id                                    controllers.Controller_Update.cancel_HardwareUpdate_CProgramUpdatePlan(task_id: java.util.UUID)
-GET       /update_task/object/:task_id                                  controllers.Controller_Update.get_HardwareUpdate_CProgramUpdatePlan(task_id: java.util.UUID)
+PUT       /update_task/stop/:id                                         controllers.Controller_Update.cancel_HardwareUpdate_CProgramUpdatePlan(id: java.util.UUID)
+GET       /update_task/object/:id                                       controllers.Controller_Update.get_HardwareUpdate_CProgramUpdatePlan(id: java.util.UUID)
 
 ### COMPILATION & LIBRARIES ############ COMPILATION & LIBRARIES ############### COMPILATION & LIBRARIES ################ COMPILATION & LIBRARIES ##############################
 ################################################################################################################################################################################

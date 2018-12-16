@@ -46,6 +46,62 @@ public class Model_HardwareReleaseUpdate extends TaggedModel implements Permissi
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
+    @ApiModelProperty(required = true,
+            value = "UNIX time in s",
+            example = "1466163471")
+    @JsonProperty
+    public Long  finished() {
+        try {
+
+            int total = Model_HardwareUpdate.find.query().where()
+                    .eq("tracking_release_procedure_id", this.getId())
+                    .findCount();
+
+            int finished = Model_HardwareUpdate.find.query().where()
+                    .eq("tracking_release_procedure_id", this.getId())
+                    .findCount();
+
+            if (total == finished) {
+
+                return Model_HardwareUpdate.find.query().where()
+                        .eq("tracking_release_procedure_id", this.getId())
+                        .orderBy("finished")
+                        .setMaxRows(1)
+                        .findOne().finished();
+
+            }
+
+            return null;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @ApiModelProperty(required = true,
+            value = "UNIX time in s",
+            example = "1466163471")
+    @JsonProperty
+    public Long  planned() {
+        try {
+            return Model_HardwareUpdate.find.query().where()
+                    .eq("tracking_release_procedure_id", this.getId())
+                    .setMaxRows(1)
+                    .findOne().planned();
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonProperty
+    public HardwareUpdateState state() {
+        // TODO doplnit stavy - opět na základě databáze, žádný magic [TZ]
+        return null;
+    }
+
     @JsonProperty
     @ApiModelProperty(required = true, readOnly = true)
     public Integer procedure_size_all() {

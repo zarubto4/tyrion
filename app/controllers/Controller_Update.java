@@ -473,7 +473,7 @@ public class Controller_Update extends _BaseController {
             query.order().desc("created");
 
 
-            if (help.update_states != null && !help.update_states.isEmpty()) {
+            if (helpw.update_states != null && !help.update_states.isEmpty()) {
                 query.where().in("state", help.update_states);
             }
 
