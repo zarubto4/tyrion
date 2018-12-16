@@ -259,6 +259,34 @@ public class Controller_Update extends _BaseController {
         }
     }
 
+    @ApiOperation(value = "get HardwareReleaseUpdate",
+            tags = {"Actualization"},
+            notes = "get Actualization task by ID",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_HardwareReleaseUpdate.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
+    public Result get_hardwareUpdateRelease(@ApiParam(required = true) UUID plan_id) {
+        try {
+
+            // Kontrola objektu
+            Model_HardwareReleaseUpdate plan = Model_HardwareReleaseUpdate.find.byId(plan_id);
+
+            // Vrácení objektu
+            return ok(plan);
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
     @ApiOperation(value = "cancel HardwareReleaseUpdate",
             tags = {"Actualization"},
             notes = "get Actualization task by ID",
