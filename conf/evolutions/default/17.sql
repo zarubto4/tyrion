@@ -1,7 +1,7 @@
 
 # --- !Ups
 
-create table hardwarreleaseupdate (
+create table hardwarereleaseupdate (
   id                            uuid not null,
   created                       timestamptz,
   updated                       timestamptz,
@@ -11,33 +11,33 @@ create table hardwarreleaseupdate (
   name                          varchar(255),
   description                   TEXT,
   author_id                     uuid,
-  constraint pk_hardwarreleaseupdate primary key (id)
+  constraint pk_hardwarereleaseupdate primary key (id)
 );
 
 
-create table hardwarreleaseupdate_tag (
-  hardwar_release_update_id     uuid not null,
+create table hardwarereleaseupdate_tag (
+  hardware_release_update_id     uuid not null,
   tag_id                        uuid not null,
-  constraint pk_hardwarreleaseupdate_tag primary key (hardwar_release_update_id, tag_id)
+  constraint pk_hardwarereleaseupdate_tag primary key (hardware_release_update_id, tag_id)
 );
 
 
-alter table hardwarreleaseupdate_tag add constraint fk_hardwarreleaseupdate_tag_hardwarreleaseupdate foreign key (hardwar_release_update_id) references hardwarreleaseupdate (id) on delete restrict on update restrict;
-create index ix_hardwarreleaseupdate_tag_hardwarreleaseupdate on hardwarreleaseupdate_tag (hardwar_release_update_id);
+alter table hardwarereleaseupdate_tag add constraint fk_hardwarereleaseupdate_tag_hardwarereleaseupdate foreign key (hardware_release_update_id) references hardwarereleaseupdate (id) on delete restrict on update restrict;
+create index ix_hardwarereleaseupdate_tag_hardwarereleaseupdate on hardwarereleaseupdate_tag (hardware_release_update_id);
 
-alter table hardwarreleaseupdate_tag add constraint fk_hardwarreleaseupdate_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
-create index ix_hardwarreleaseupdate_tag_tag on hardwarreleaseupdate_tag (tag_id);
+alter table hardwarereleaseupdate_tag add constraint fk_hardwarereleaseupdate_tag_tag foreign key (tag_id) references tag (id) on delete restrict on update restrict;
+create index ix_hardwarereleaseupdate_tag_tag on hardwarereleaseupdate_tag (tag_id);
 
 
 # --- !Downs
 
-drop table if exists hardwarreleaseupdate cascade;
+drop table if exists hardwarereleaseupdate cascade;
 
-alter table if exists hardwarreleaseupdate_tag drop constraint if exists fk_hardwarreleaseupdate_tag_hardwarreleaseupdate;
-drop index if exists ix_hardwarreleaseupdate_tag_hardwarreleaseupdate;
+alter table if exists hardwarereleaseupdate_tag drop constraint if exists fk_hardwarereleaseupdate_tag_hardwarereleaseupdate;
+drop index if exists ix_hardwarereleaseupdate_tag_hardwarereleaseupdate;
 
-alter table if exists hardwarreleaseupdate_tag drop constraint if exists fk_hardwarreleaseupdate_tag_tag;
-drop index if exists ix_hardwarreleaseupdate_tag_tag;
+alter table if exists hardwarereleaseupdate_tag drop constraint if exists fk_hardwarereleaseupdate_tag_tag;
+drop index if exists ix_hardwarereleaseupdate_tag_tag;
 
 
-drop table if exists hardwarreleaseupdate_tag cascade;
+drop table if exists hardwarereleaseupdate_tag cascade;

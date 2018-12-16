@@ -17,7 +17,10 @@ alter table hardwareupdate
                                                             'AUTOMATICALLY_BY_SERVER_ALWAYS_UP_TO_DATE'
                                                             ));
 
+
 alter table hardwareupdate validate constraint ck_hardwareupdate_type_of_update;
+
+
 
 # --- !Downs
 

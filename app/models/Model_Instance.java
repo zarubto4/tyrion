@@ -49,8 +49,8 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonNetworkStatus @Transient
-    public NetworkStatus online_state;
+    @JsonNetworkStatus @Transient @ApiModelProperty(required = true, value = "Value is cached with asynchronous refresh")
+    public NetworkStatus online_state;      // TODO Odstranit, ale jak Lexo??
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public List<Swagger_Short_Reference> snapshots() {
@@ -160,6 +160,8 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
         }
     }*/
 
+
+
     @JsonProperty @ApiModelProperty(required = true)
     public String instance_remote_url() {
         try {
@@ -266,6 +268,11 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
         snapshots.stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())
                 .forEach(o -> this.idCache().add(Model_InstanceSnapshot.class, o.id));
 
+    }
+
+    @JsonIgnore  @Override
+    public Swagger_Short_Reference ref(){
+        return new Swagger_Short_Reference(id, name, description, this.tags(), this.online_state);
     }
 
 /* JSON Override  Method -----------------------------------------------------------------------------------------*/

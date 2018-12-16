@@ -706,6 +706,10 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
         this.update();
     }
 
+    @JsonIgnore @Override
+    public Swagger_Short_Reference ref(){
+        return new Swagger_Short_Reference(id, name, description, this.tags(), this.online_state);
+    }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
