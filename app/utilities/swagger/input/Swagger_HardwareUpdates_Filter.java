@@ -22,7 +22,6 @@ public class Swagger_HardwareUpdates_Filter extends _Swagger_filter_parameter{
 
 
     @ApiModelProperty(required = false, readOnly = true)  public List<HardwareUpdateState> update_states  = new ArrayList<>();
-    @ApiModelProperty(required = false, readOnly = true)  public List<Enum_Update_group_procedure_state> update_status  = new ArrayList<>();
     @ApiModelProperty(required = false, readOnly = true)  public List<UpdateType> type_of_updates  = new ArrayList<>();
 
 

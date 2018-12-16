@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 import utilities.enums.Enum_Update_group_procedure_state;
+import utilities.enums.HardwareUpdateState;
 import utilities.enums.UpdateType;
 
 import java.util.ArrayList;
@@ -17,8 +18,7 @@ public class Swagger_HardwareReleaseUpdate_Filter extends _Swagger_filter_parame
 
     @ApiModelProperty(required = true,  readOnly = true)  @Constraints.Required public UUID project_id;
 
-    @ApiModelProperty(required = false, readOnly = true)  public List<Enum_Update_group_procedure_state> update_states  = new ArrayList<>();
-    @ApiModelProperty(required = false, readOnly = true)  public List<UpdateType> type_of_updates  = new ArrayList<>();
+    @ApiModelProperty(required = false, readOnly = true)  public List<Enum_Update_group_procedure_state> states  = new ArrayList<>();
 
 
 }
