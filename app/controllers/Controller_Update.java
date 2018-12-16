@@ -14,9 +14,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
-import utilities.enums.CompilationStatus;
-import utilities.enums.FirmwareType;
-import utilities.enums.UpdateType;
+import utilities.enums.*;
 import utilities.hardware.update.UpdateService;
 import utilities.logger.Logger;
 import utilities.notifications.NotificationService;
@@ -194,7 +192,7 @@ public class Controller_Update extends _BaseController {
 
 // ACTUALIZATION PROCEDURE #############################################################################################
 
-    @ApiOperation(value = "make HardwareUpdateProcedure",
+    @ApiOperation(value = "make HardwareReleaseUpdate",
             tags = {"HardwareUpdate"},
             notes = "make procedure",
             produces = "application/json",
@@ -261,6 +259,44 @@ public class Controller_Update extends _BaseController {
         }
     }
 
+    @ApiOperation(value = "cancel HardwareReleaseUpdate",
+            tags = {"Actualization"},
+            notes = "get Actualization task by ID",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_HardwareReleaseUpdate.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
+    public Result cancel_hardwareUpdateRelease(@ApiParam(required = true) UUID plan_id) {
+        try {
+
+            // Kontrola objektu
+            Model_HardwareReleaseUpdate plan = Model_HardwareReleaseUpdate.find.byId(plan_id);
+
+            List<Model_HardwareUpdate> updates = Model_HardwareUpdate.find.query().where()
+                    .eq("tracking_release_procedure_id", plan_id)
+                    .or(Expr.eq("state", HardwareUpdateState.PENDING),
+                        Expr.eq("state", HardwareUpdateState.IN_PLAN)
+                    ).findList();
+
+            for(Model_HardwareUpdate update : updates) {
+                updateService.cancel(update.getId());
+            }
+
+            // Vrácení objektu
+            return ok(plan);
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
     @ApiOperation(value = "get HardwareReleaseUpdate by Filter",
             tags = {"HardwareUpdate"},
             notes = "get release Update by query",
@@ -314,7 +350,7 @@ public class Controller_Update extends _BaseController {
 
 // C PROGRAM ACTUALIZATION PLAN ########################################################################################
 
-    @ApiOperation(value = "get ActualizationTask",
+    @ApiOperation(value = "get HardwareUpdate",
             tags = {"Actualization"},
             notes = "get Actualization task by ID",
             produces = "application/json",
@@ -342,7 +378,37 @@ public class Controller_Update extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "get HardwareUpdateTask by Filter",
+    @ApiOperation(value = "cancel HardwareUpdate",
+            tags = {"Actualization"},
+            notes = "get Actualization task by ID",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",               response = Model_HardwareUpdate.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
+    public Result cancel_HardwareUpdate_CProgramUpdatePlan(@ApiParam(required = true) UUID plan_id) {
+        try {
+
+            // Kontrola objektu
+            Model_HardwareUpdate plan = Model_HardwareUpdate.find.byId(plan_id);
+
+            updateService.cancel(plan_id);
+
+            // Vrácení objektu
+            return ok(plan);
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "get HardwareUpdate by Filter",
             tags = {"HardwareUpdate"},
             notes = "get actualization Tasks by query",
             produces = "application/json",

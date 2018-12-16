@@ -414,9 +414,9 @@ public class Model_HardwareReleaseUpdate extends TaggedModel implements Permissi
     return EntityType.UPDATE_PROCEDURE;
 }
 
-    @Override
+    @JsonIgnore @Override
     public List<Action> getSupportedActions() {
-        return null;
+        return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE);
     }
 
     /* CACHE ---------------------------------------------------------------------------------------------------------------*/
