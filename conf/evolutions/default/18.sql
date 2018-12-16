@@ -20,6 +20,14 @@ alter table hardwareupdate
 
 alter table hardwareupdate validate constraint ck_hardwareupdate_type_of_update;
 
+alter table gsm
+  add column sim_type                varchar(120),
+  add constraint ck_gsm_sim_type check ( sim_type in (
+  'CARD',
+  'CHIP'
+  ));
+
+alter table gsm validate constraint ck_gsm_sim_type;
 
 
 # --- !Downs
@@ -31,3 +39,8 @@ alter table hardwareupdate
   drop column if exists tracking_id_project_id cascade,
   drop column if exists tracking_release_procedure_id cascade,
   drop constraint if exists ck_hardwareupdate_type_of_update cascade;
+
+
+alter table gsm
+  drop column if exists sim_type cascade,
+  drop constraint if exists ck_gsm_sim_type cascade;

@@ -87,24 +87,24 @@ public class Controller_Things_Mobile_Analytics {
         while (true) {
 
 
-            logger.trace("While:: From {} To {}",  overview.datagram.get(overview.datagram.size() - 1).date_from(),  overview.datagram.get(overview.datagram.size() - 1).date_to());
+           // logger.trace("While:: From {} To {}",  overview.datagram.get(overview.datagram.size() - 1).date_from(),  overview.datagram.get(overview.datagram.size() - 1).date_to());
 
             while (true) {
 
-                logger.trace("While:: While: Pointer {}, datagram: {}", pointer, overview.datagram.get(overview.datagram.size() - 1));
+                // logger.trace("While:: While: Pointer {}, datagram: {}", pointer, overview.datagram.get(overview.datagram.size() - 1));
 
                 if (crds.isEmpty() || crds.size() <= pointer){
-                    logger.trace("While:: While:crds.size() < pointer = break");
+                    // logger.trace("While:: While:crds.size() < pointer = break");
                     break;
                 }
 
-                logger.trace("While:: While: Pointer {} cdr size {}", pointer, crds.size());
-                logger.trace("While:: While: CDR from {} to {}", crds.get(pointer).date_from(), crds.get(pointer).date_to());
+                // logger.trace("While:: While: Pointer {} cdr size {}", pointer, crds.size());
+                // logger.trace("While:: While: CDR from {} to {}", crds.get(pointer).date_from(), crds.get(pointer).date_to());
 
                 // Tady potřebujeme porovnat zda date start je později než date_fist
                 if ( crds.get(pointer).date_to().isBefore( overview.datagram.get(overview.datagram.size() - 1).date_to ) && crds.get(pointer).date_from().isAfter(overview.datagram.get(overview.datagram.size() - 1).date_from)) {
 
-                    logger.trace("While:: While: Condition is ok");
+                    // logger.trace("While:: While: Condition is ok");
 
                     // Udělám Záznam do správného dne
                     overview.datagram.get(overview.datagram.size() - 1).data_consumption += crds.get(pointer).cdrTraffic;
@@ -122,7 +122,7 @@ public class Controller_Things_Mobile_Analytics {
 
                     pointer++;
                 } else {
-                    logger.trace("While:: While: Nesplnena podminka::  CDR from {} to {}", crds.get(pointer).date_from(), crds.get(pointer).date_to());
+                    // logger.trace("While:: While: Nesplnena podminka::  CDR from {} to {}", crds.get(pointer).date_from(), crds.get(pointer).date_to());
                     break;
                 }
 
@@ -144,7 +144,6 @@ public class Controller_Things_Mobile_Analytics {
 
             // And of period
             if(next_datagram.date_from.isAfter(filter.date_to())) {
-                logger.trace("While Next Datagram From {} je po TO {} ", overview.datagram.get(overview.datagram.size() - 1).date_from(), filter.date_to().format(TM_Sim_Status_cdr.formatter));
                 break;
             }
 

@@ -4,6 +4,7 @@ import models.Model_GSM;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import utilities.enums.SimType;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_List;
 import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_List_list;
@@ -11,6 +12,7 @@ import utilities.logger.Logger;
 import utilities.scheduler.Restrict;
 import utilities.scheduler.Scheduled;
 
+import java.util.Date;
 import java.util.UUID;
 
 import static utilities.enums.ServerMode.DEVELOPER;
@@ -46,39 +48,68 @@ public class Job_ThingsMobile_SimListOnly_Synchronize implements Job {
             try {
 
                 logger.trace("run:: Executing Job_ThingsMobile_SimListOnly_Synchronize");
-
-                logger.trace("run:: Get SimList");
                 TM_Sim_List_list list =  Controller_Things_Mobile.sim_list();
 
-
-                //logger.trace("run:: list:: " + list.prettyPrint());
+                logger.trace("run:: Executing sins get: {}", list.sims.size());
 
                 //procházím list a hledám pokud v něm sim s msi_number existuje
                 //pokud ne vytvářím si novou a ukládám jí do databáze
                 for (TM_Sim_List sim : list.sims) {
 
-                    logger.trace("fpr:: msisdn:{} \n overview:: {} ", sim.msisdn, sim.prettyPrint());
+                    // logger.trace("fpr:: msisdn:{} \n overview:: {} ", sim.msisdn, sim.prettyPrint());
 
-                    if (Model_GSM.find.query().where().eq("msi_number", sim.msisdn).findCount() == 0) {
+                    if(sim.days_from_activation() == null) {
+                        continue;
+                    }
 
-                        Model_GSM gsm = new Model_GSM();
+
+                    Model_GSM gsm =  Model_GSM.find.query().nullable().where().eq("msi_number", sim.msisdn).findOne();
+
+
+
+                    if (gsm == null) {
+
+                        gsm = new Model_GSM();
                         gsm.msi_number = sim.msisdn;
                         gsm.iccid = sim.iccid;
-                        gsm.imsi = sim.cdrImsi().toString();
+
+                        if(sim.cdrImsi() != null) gsm.imsi = sim.cdrImsi().toString();
+
                         gsm.provider = "ThingsMobile";
                         gsm.registration_hash = UUID.randomUUID();
+                        gsm.activation_date = new Date(sim.getAsLong_ActivationDate());
+
+
+                        System.out.println("sim.type: " + sim.type);
+
+                        if(sim.type.equals("AllInOne Sim")) {
+                            gsm.sim_type = SimType.CHIP;
+                        } else if (sim.type.equals("OnChip Sim")) {
+                            gsm.sim_type = SimType.CHIP;
+                        }
+
+                        gsm.sim_type = sim.type.equals("AllInOne Sim") ? SimType.CARD : SimType.CHIP;
+
+
+
                         gsm.save();
 
-                        if(sim.status.equals("not active")) {
-                            Controller_Things_Mobile.sim_active(sim.msisdn, sim.iccid);
-                        }
 
                     }else {
                         logger.trace("fpr:: msisdn:{} ", sim.msisdn + " found already in database");
+
+
+                        if(gsm.imsi == null) {
+                            if(sim.cdrImsi() != null) gsm.imsi = sim.cdrImsi().toString();
+                            gsm.update();
+                        }
+
                     }
 
                     logger.trace("fpr:: msisdn:{} done. Total {} ", sim.msisdn, sim.cdrs.size());
                 }
+
+
 
             } catch (Exception e) {
                 e.printStackTrace();

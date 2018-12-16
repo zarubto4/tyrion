@@ -36,7 +36,7 @@ public class Controller_Things_Mobile {
 
 /* Object API  ---------------------------------------------------------------------------------------------------------*/
 
-    /**
+     /**
      *  3.1 SIM ACTIVE
      *  Aktivace se provede automaticky vždy když se najde nová simkarata která není spárovaná se systémem.
      */
@@ -182,8 +182,9 @@ public class Controller_Things_Mobile {
                         node.monthlyTrafficThreshold     = Long.valueOf(eElement.getElementsByTagName("monthlyTrafficThreshold").item(0).getTextContent());
                         node.msisdn                      = Long.valueOf(eElement.getElementsByTagName("msisdn").item(0).getTextContent());
 
-                        // TODO Things Mobile
+
                         node.iccid                      = eElement.getElementsByTagName("iccid").item(0).getTextContent();
+                        node.type                      = eElement.getElementsByTagName("type").item(0).getTextContent();
 
                         node.name                        = eElement.getElementsByTagName("name").item(0).getTextContent();
                         node.status                      = eElement.getElementsByTagName("status").item(0).getTextContent();
@@ -193,7 +194,7 @@ public class Controller_Things_Mobile {
                         node.totalTrafficThreshold       = Long.valueOf(eElement.getElementsByTagName("totalTrafficThreshold").item(0).getTextContent());
 
 
-
+                       // System.out.println("CRD msisdn:: " +   node.msisdn);
 
                         NodeList cdrs_list =  ((Element) nNode).getElementsByTagName("cdr");
 
@@ -207,11 +208,7 @@ public class Controller_Things_Mobile {
                             node_cdr.cdrDateStop    = eeElement.getElementsByTagName("cdrDateStop").item(0).getTextContent();
                             node_cdr.cdrNetwork     = eeElement.getElementsByTagName("cdrNetwork").item(0).getTextContent();
                             node_cdr.cdrCountry     = eeElement.getElementsByTagName("cdrCountry").item(0).getTextContent();
-
-
-                            System.out.println("CRD Traffik:: " + eeElement.getElementsByTagName("cdrTraffic").item(0).getTextContent());
-
-                            node_cdr.cdrTraffic     = Float.valueOf(eeElement.getElementsByTagName("cdrTraffic").item(0).getTextContent()).longValue();
+                            node_cdr.cdrTraffic  =  Long.valueOf(eeElement.getElementsByTagName("cdrTraffic").item(0).getTextContent().replaceAll("\\.", ""));
                             node.cdrs.add(node_cdr);
                         }
                     }
@@ -286,6 +283,7 @@ public class Controller_Things_Mobile {
                         node.msisdn =                       Long.valueOf(eElement.getElementsByTagName("msisdn").item(0).getTextContent());
                         node.name =                         eElement.getElementsByTagName("name").item(0).getTextContent();
                         node.plan =                         eElement.getElementsByTagName("plan").item(0).getTextContent();
+                        node.type =                         eElement.getElementsByTagName("type").item(0).getTextContent();
                         node.tag =                          eElement.getElementsByTagName("tag").item(0).getTextContent();
                         node.status =                       eElement.getElementsByTagName("status").item(0).getTextContent();
                         node.totalTraffic =                 Long.valueOf(eElement.getElementsByTagName("totalTraffic").item(0).getTextContent());
@@ -296,7 +294,6 @@ public class Controller_Things_Mobile {
 
                         System.out.println("Budu louskat cdrs");
                         System.out.println("Co mám v CDRS: size: " + ((Element) nNode).getElementsByTagName("cdrs").getLength());
-                        System.out.println("Co mám v CDRS: print: " + ((Element) nNode).getElementsByTagName("cdrs").toString());
 
                         for (int cdr_pointer = 0; cdr_pointer < cdrs_list.getLength(); cdr_pointer++) {
 
@@ -308,7 +305,8 @@ public class Controller_Things_Mobile {
                             node_cdr.cdrDateStop    = eeElement.getElementsByTagName("cdrDateStop").item(0).getTextContent();
                             node_cdr.cdrNetwork     = eeElement.getElementsByTagName("cdrNetwork").item(0).getTextContent();
                             node_cdr.cdrCountry     = eeElement.getElementsByTagName("cdrCountry").item(0).getTextContent();
-                            node_cdr.cdrTraffic     = Float.valueOf(  eeElement.getElementsByTagName("cdrTraffic").item(0).getTextContent()).longValue();
+
+                            node_cdr.cdrTraffic  =  Long.valueOf(eeElement.getElementsByTagName("cdrTraffic").item(0).getTextContent().replaceAll("\\.", ""));
                             node.cdrs.add(node_cdr);
                             node.done = true;
 
@@ -471,7 +469,9 @@ public class Controller_Things_Mobile {
 
             } else {
 
-                logger.error("update_sim_name:: Invalid Response: {}", response);
+                logger.error("update_sim_name:: Invalid Response: {}", response.toString());
+                logger.error("update_sim_name:: Invalid Response: errorMessage:: {}", response.getElementsByTagName("errorMessage").item(0).getTextContent());
+                logger.error("update_sim_name:: Invalid Response: errorCode:: {}", response.getElementsByTagName("errorCode").item(0).getTextContent());
                 node.done = false;
                 node.errorCode = Integer.valueOf( response.getElementsByTagName("errorCode").item(0).getTextContent());
                 node.errorMessage = response.getElementsByTagName("errorMessage").item(0).getTextContent();
@@ -536,7 +536,7 @@ public class Controller_Things_Mobile {
     */
     private static Document post(String url, TMKeyStoreSender sender) throws Exception {
 
-        logger.debug("Request Controller_Things_Mobile: url {} key stores {}", url, sender.prettyPrint());
+        // logger.debug("Request Controller_Things_Mobile: url {} key stores {}", url, sender.prettyPrint());
 
         //vytvoření hashmapy která majo klíč String a jako hodnotu pole Stringů
         sender.addKey("username", email);

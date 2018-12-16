@@ -23,11 +23,14 @@ import utilities.enums.*;
 import utilities.financial.extensions.ExtensionInvoiceItem;
 import utilities.financial.fakturoid.FakturoidService;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
+import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_List;
+import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_List_list;
 import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_Status;
 import utilities.logger.Logger;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.scheduler.jobs.Job_ThingsMobile_SimData_Synchronize;
+import utilities.scheduler.jobs.Job_ThingsMobile_SimListOnly_Synchronize;
 import websocket.WebSocketService;
 
 import java.io.FileOutputStream;
@@ -62,7 +65,17 @@ public class Controller_ZZZ_Tester extends _BaseController {
 
     @ApiOperation(value = "Hidden test Method", hidden = true)
     public Result test1() {
-        return ok();
+        try {
+
+
+            new Job_ThingsMobile_SimListOnly_Synchronize().execute(null);
+
+            return ok();
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return badRequest();
+        }
     }
 
     @ApiOperation(value = "Hidden test Method", hidden = true)

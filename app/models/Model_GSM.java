@@ -8,6 +8,7 @@ import org.ehcache.Cache;
 import utilities.cache.CacheFinder;
 import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
+import utilities.enums.SimType;
 import utilities.enums.TimePeriod;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile_Analytics;
@@ -38,21 +39,24 @@ public class Model_GSM extends TaggedModel implements Permissible, UnderProject 
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY) public Model_Project project;
 
-    public Long msi_number;
-    public String imsi;     // Optional
-    public String iccid;    // Required??
+    public Long   msi_number;   // Required
+    public String imsi;         // Optional . máme z CDR
+    public String iccid;        // Required
 
     @JsonIgnore public String provider; // Sem ukládáme kdo dodává simakrty, ThingsMobile, T-Mobile, Vodafone etc.. (Ano, zatím máme integraci jen na ThingsMobile)
     @JsonIgnore public UUID registration_hash; // Sem ukládáme kro dodává simakrty, ThingsMobile, T-Mobile, Vodafone etc.. (Ano, zatím máme integraci jen na ThingsMobile)
 
-    @JsonIgnore  public boolean blocked;
+    @JsonIgnore public boolean blocked;
+    @JsonIgnore public Date activation_date;
+
+    public SimType sim_type;
 
 
     /* Konfigurace SIMkarty - je nutné vždy spárovat se službou ThingsMobile  */
-    public boolean daily_traffic_threshold_notify_type;         // Zákazník bude informován o překročení
+    public boolean daily_traffic_threshold_notify_type;          // Zákazník bude informován o překročení
     public boolean weekly_traffic_threshold_notify_type;         // Zákazník bude informován o překročení
-    public boolean monthly_traffic_threshold_notify_type;       // Zákazník bude informován o překročení
-    public boolean total_traffic_threshold_notify_type;         // Zákazník bude informován o překročení
+    public boolean monthly_traffic_threshold_notify_type;        // Zákazník bude informován o překročení
+    public boolean total_traffic_threshold_notify_type;          // Zákazník bude informován o překročení
 
     public boolean daily_statistic;          // Zákazník bude informován o překročení
     public boolean weekly_statistic;         // Zákazník bude informován o překročení

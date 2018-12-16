@@ -40,17 +40,32 @@ public class ModelMongo_ThingsMobile_Daily_Overview extends _Abstract_MongoModel
 
     @JsonProperty()
     public Long data_in_bites(){
-        return cdrTraffic;
+        try {
+            return cdrTraffic;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty()
     public Long data_in_kb(){
-        return cdrTraffic / 1024;
+        try {
+            return cdrTraffic / 1024;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @JsonProperty()
     public Long data_in_mb(){
-        return cdrTraffic / 1024 / 1024;
+        try {
+            return cdrTraffic / 1024 / 1024;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/

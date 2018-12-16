@@ -41,8 +41,14 @@ public class Swagger_HardwareUpdate_Make extends Swagger_NameAndDescription impl
 
         for(Swagger_HardwareUpdate_Make_HardwareType type : hardware_type_settings) {
 
-            if ( firmware_type == FirmwareType.FIRMWARE || firmware_type == FirmwareType.BACKUP) {
 
+            if (type.c_program_version_id == null && type.bootloader_id == null) {
+                errors.add(new ValidationError("hardware_type_settings.c_program_version_id", "You have to set c_program_version_id or bootloader_id"));
+                errors.add(new ValidationError("hardware_type_settings.bootloader_id", "You have to set c_program_version_id or bootloader_id"));
+                continue;
+            }
+
+            if ( firmware_type == FirmwareType.FIRMWARE || firmware_type == FirmwareType.BACKUP) {
                 if ( Model_CProgramVersion.find.byId(type.c_program_version_id).status() != CompilationStatus.SUCCESS) {
                     errors.add(new ValidationError("hardware_type_settings.c_program_version_id","C Program Must be successfully compiled!"));
                 }
