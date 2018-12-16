@@ -345,6 +345,7 @@ DELETE    /compilation_server/:server_id                                controll
 
 #Actualization Procedure
 PUT       /update_procedure/make                                        controllers.Controller_Update.make_hardwareUpdateRelease()
+PUT       /update_procedure/filter/:page_number                         controllers.Controller_Update.get_HardwareReleaseUpdate_by_filter(page_number: Int)
 PUT       /update_procedure/make_bin                                    controllers.Controller_Update.uploadBinaryFileToBoard()
 
 #Task

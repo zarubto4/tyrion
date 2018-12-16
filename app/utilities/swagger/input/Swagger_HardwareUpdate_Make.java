@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @ApiModel(description = "Json Model for ActualizationProcedure Make Procedure",
           value = "HardwareUpdate_Make")
-public class Swagger_HardwareUpdate_Make extends _Swagger_filter_parameter implements Constraints.Validatable<List<ValidationError>>  {
+public class Swagger_HardwareUpdate_Make extends Swagger_NameAndDescription implements Constraints.Validatable<List<ValidationError>>  {
 
 
     @Constraints.Required @ApiModelProperty(required = true,  readOnly = true) public UUID project_id;
@@ -28,7 +28,7 @@ public class Swagger_HardwareUpdate_Make extends _Swagger_filter_parameter imple
     @ApiModelProperty(required = false, readOnly = true)  public List<UUID> hardware_ids;
 
     @Valid
-    @ApiModelProperty(required = true,  readOnly = true) public List<Swagger_ActualizationProcedure_Make_HardwareType> hardware_type_settings = new ArrayList<>();
+    @ApiModelProperty(required = true,  readOnly = true) public List<Swagger_HardwareUpdate_Make_HardwareType> hardware_type_settings = new ArrayList<>();
 
     @ApiModelProperty(required = false,  readOnly = true, value = "If  value is null - its a command for immediately update ") public Long time;
     @ApiModelProperty(required = false,  readOnly = true, value = "If  value is null - its a command for immediately update - Default Value 0") public Integer timeoffset = 0;
@@ -39,7 +39,7 @@ public class Swagger_HardwareUpdate_Make extends _Swagger_filter_parameter imple
 
         List<ValidationError> errors = new ArrayList<>();
 
-        for(Swagger_ActualizationProcedure_Make_HardwareType type : hardware_type_settings) {
+        for(Swagger_HardwareUpdate_Make_HardwareType type : hardware_type_settings) {
 
             if ( firmware_type == FirmwareType.FIRMWARE || firmware_type == FirmwareType.BACKUP) {
 
@@ -81,7 +81,7 @@ public class Swagger_HardwareUpdate_Make extends _Swagger_filter_parameter imple
     public Updatable getComponent(Model_HardwareType hardware_type) {
 
         if ( firmware_type == FirmwareType.FIRMWARE || firmware_type == FirmwareType.BACKUP) {
-            for(Swagger_ActualizationProcedure_Make_HardwareType type : hardware_type_settings) {
+            for(Swagger_HardwareUpdate_Make_HardwareType type : hardware_type_settings) {
 
                 if(type.hardware_type_id.equals(hardware_type.getId())) {
                     return Model_CProgramVersion.find.byId(type.c_program_version_id);
@@ -90,7 +90,7 @@ public class Swagger_HardwareUpdate_Make extends _Swagger_filter_parameter imple
         }
 
         if (firmware_type == FirmwareType.BOOTLOADER) {
-            for(Swagger_ActualizationProcedure_Make_HardwareType type : hardware_type_settings) {
+            for(Swagger_HardwareUpdate_Make_HardwareType type : hardware_type_settings) {
                 if(type.hardware_type_id.equals(hardware_type.getId())) {
                     return Model_BootLoader.find.byId(type.bootloader_id);
                 }

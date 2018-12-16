@@ -390,8 +390,8 @@ public class UpdateService {
         if(tracking_hash.containsKey("SNAPSHOT")){
             update.tracking_id_snapshot_id = tracking_hash.get("SNAPSHOT");
         }
-        if(tracking_hash.containsKey("PROCEDURE")){
-            update.tracking_procedure_id = tracking_hash.get("PROCEDURE");
+        if(tracking_hash.containsKey("RELEASE_PROCEDURE")){
+            update.tracking_release_procedure_id = tracking_hash.get("RELEASE_PROCEDURE");
         }
     }
 

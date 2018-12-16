@@ -56,7 +56,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
     @JsonIgnore public UUID tracking_id_snapshot_id;
     @JsonIgnore public UUID tracking_id_instance_id;
     @JsonIgnore public UUID tracking_id_project_id;
-    @JsonIgnore public UUID tracking_procedure_id;
+    @JsonIgnore public UUID tracking_release_procedure_id;
 
     public UpdateType type_of_update;
 

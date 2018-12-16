@@ -22,6 +22,7 @@ import utilities.logger.Logger;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.input.*;
+import utilities.swagger.output.filter_results.Swagger_HardwareReleaseUpdate_List;
 import utilities.swagger.output.filter_results.Swagger_HardwareUpdate_List;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 
@@ -47,78 +48,10 @@ public class Controller_Update extends _BaseController {
         this.updateService = updateService;
     }
 
-// ACTUALIZATION PROCEDURE #############################################################################################
-
-    @ApiOperation(value = "make HardwareUpdateProcedure",
-            tags = {"HardwareUpdate"},
-            notes = "make procedure",
-            produces = "application/json",
-            protocols = "https",
-            code = 201
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.input.Swagger_HardwareUpdate_Make",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "Ok Created",              response = Swagger_HardwareUpdate_List.class),
-            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result make_hardwareUpdateRelease() {
-        try {
-
-            // Get and Validate Object
-            Swagger_HardwareUpdate_Make help = formFromRequestWithValidation(Swagger_HardwareUpdate_Make.class);
-
-            // Kontrola Projektu
-            Model_Project project = Model_Project.find.byId(help.project_id);
-
-            List<Model_Hardware> hardwareList = Model_Hardware.find.query().where()
-                    .or(
-                         Expr.in("hardware_groups.id", help.hardware_group_ids),
-                         Expr.in("id", help.hardware_ids)
-                    ).findList();
 
 
-            Map<String, UUID> tracking_hash = new HashMap<>();
-            tracking_hash.put("PROCEDURE", UUID.randomUUID());
+// SINGLE UPDATES  #####################################################################################################
 
-            for(Model_Hardware hardware : hardwareList) {
-                // Planed
-                if (help.time != null && help.time != 0L) {
-                    updateService.scheduleUpdate(new Date(help.time), hardware, help.getComponent(hardware.hardware_type), help.firmware_type, UpdateType.MANUALLY_RELEASE_MANAGER, tracking_hash);
-
-                // Not planed
-                } else {
-                    updateService.update(hardware, help.getComponent(hardware.hardware_type), help.firmware_type, UpdateType.MANUALLY_RELEASE_MANAGER, tracking_hash);
-                }
-            }
-
-
-            Query<Model_HardwareUpdate> query = Ebean.find(Model_HardwareUpdate.class);
-            query.where().in("tracking_procedure_id", tracking_hash.get("PROCEDURE"));
-
-
-        // Vyvoření odchozího JSON
-        Swagger_HardwareUpdate_List result = new Swagger_HardwareUpdate_List(query, 0, help);
-
-
-            return created(result);
-        } catch (Exception e) {
-            return controllerServerError(e);
-        }
-    }
 
     @ApiOperation(value = "upload C_Program into Hardware",
             tags = {"HardwareUpdate"},
@@ -165,7 +98,7 @@ public class Controller_Update extends _BaseController {
             // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
             if (version.getCompilation().status != CompilationStatus.SUCCESS) return badRequest("You cannot upload code in state:: " + version.getCompilation().status.name());
 
-                // Kotrola objektu
+            // Kotrola objektu
             Model_Hardware hardware = Model_Hardware.find.byId(help.hardware_id);
             this.updateService.update(hardware, version, FirmwareType.FIRMWARE, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, new HashMap<>());
 
@@ -258,6 +191,126 @@ public class Controller_Update extends _BaseController {
         }
     }
 
+
+// ACTUALIZATION PROCEDURE #############################################################################################
+
+    @ApiOperation(value = "make HardwareUpdateProcedure",
+            tags = {"HardwareUpdate"},
+            notes = "make procedure",
+            produces = "application/json",
+            protocols = "https",
+            code = 201
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_HardwareUpdate_Make",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Ok Created",              response = Model_HardwareReleaseUpdate.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result make_hardwareUpdateRelease() {
+        try {
+
+            // Get and Validate Object
+            Swagger_HardwareUpdate_Make help = formFromRequestWithValidation(Swagger_HardwareUpdate_Make.class);
+
+            // Kontrola Projektu
+            Model_Project project = Model_Project.find.byId(help.project_id);
+
+            List<Model_Hardware> hardwareList = Model_Hardware.find.query().where()
+                    .or(
+                         Expr.in("hardware_groups.id", help.hardware_group_ids),
+                         Expr.in("id", help.hardware_ids)
+                    ).findList();
+
+
+            Model_HardwareReleaseUpdate releaseUpdate = new Model_HardwareReleaseUpdate();
+            releaseUpdate.project_id = help.project_id;
+            releaseUpdate.save();
+
+
+            Map<String, UUID> tracking_hash = new HashMap<>();
+            tracking_hash.put("RELEASE_PROCEDURE", releaseUpdate.getId());
+
+            for(Model_Hardware hardware : hardwareList) {
+                // Planed
+                if (help.time != null && help.time != 0L) {
+                    updateService.scheduleUpdate(new Date(help.time), hardware, help.getComponent(hardware.hardware_type), help.firmware_type, UpdateType.MANUALLY_RELEASE_MANAGER, tracking_hash);
+
+                // Not planed
+                } else {
+                    updateService.update(hardware, help.getComponent(hardware.hardware_type), help.firmware_type, UpdateType.MANUALLY_RELEASE_MANAGER, tracking_hash);
+                }
+            }
+
+            return created(releaseUpdate);
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "get HardwareReleaseUpdate by Filter",
+            tags = {"HardwareUpdate"},
+            notes = "get release Update by query",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_HardwareReleaseUpdate_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_HardwareReleaseUpdate_List.class),
+            @ApiResponse(code = 400, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
+    @BodyParser.Of(BodyParser.Json.class)
+    public Result get_HardwareReleaseUpdate_by_filter(int page_number) {
+        try {
+
+
+            Swagger_HardwareReleaseUpdate_Filter help  = formFromRequestWithValidation(Swagger_HardwareReleaseUpdate_Filter.class);
+
+            // Získání všech objektů a následné filtrování podle vlastníka
+            Query<Model_HardwareReleaseUpdate> query = Ebean.find(Model_HardwareReleaseUpdate.class);
+            query.order().desc("created");
+
+            if (help.project_id != null) {
+                query.where().in("project_id", help.project_id);
+            }
+
+            // Vyvoření odchozího JSON
+            Swagger_HardwareReleaseUpdate_List result = new Swagger_HardwareReleaseUpdate_List(query, page_number,help);
+
+            // Vrácení objektu
+            return ok(result);
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
 
 // C PROGRAM ACTUALIZATION PLAN ########################################################################################
 
@@ -357,8 +410,16 @@ public class Controller_Update extends _BaseController {
                 for (UUID instance_id : help.instance_snapshot_ids) {
                     Model_InstanceSnapshot.find.byId(instance_id);
                 }
-
                 query.where().in("tracking_id_snapshot_id", help.instance_snapshot_ids);
+            }
+
+            if (!help.release_update_ids.isEmpty()) {
+
+                for (UUID release_update_id : help.release_update_ids) {
+                    Model_HardwareReleaseUpdate.find.byId(release_update_id);
+                }
+
+                query.where().in("tracking_release_procedure_id", help.release_update_ids);
             }
 
 

@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.UUID;
 
 @ApiModel(description = "Json Model for ActualizationProcedure Filter",
-        value = "ActualizationProcedure_Filter")
-public class Swagger_ActualizationProcedure_Filter extends _Swagger_filter_parameter{
+        value = "HardwareReleaseUpdate_Filter")
+public class Swagger_HardwareReleaseUpdate_Filter extends _Swagger_filter_parameter{
 
 
     @ApiModelProperty(required = true,  readOnly = true)  @Constraints.Required public UUID project_id;
