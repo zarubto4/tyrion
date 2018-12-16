@@ -58,7 +58,8 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
         Uživatel ho musí nejdříve deaktivoat (freeznout v jednom projektu) aby ho mohl aktivovat v jiném projektu.
 
      */
-/* STATIC CONFIG  */
+
+/* STATIC CONFIG   -----------------------------------------------------------------------------------------------------*/
 
     public static final String CHANNEL = "hardware";
 
@@ -329,7 +330,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
         try {
 
             if (json_bootloader_core_configuration == null || json_bootloader_core_configuration.equals("{}") || json_bootloader_core_configuration.equals("null") || json_bootloader_core_configuration.length() == 0) {
-                json_bootloader_core_configuration = Json.toJson(DM_Board_Bootloader_DefaultConfig.generateConfig()).toString();
+                json_bootloader_core_configuration = DM_Board_Bootloader_DefaultConfig.generateConfig().json().toString();
                 this.update();
             }
 
@@ -343,7 +344,12 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            return null;
+
+            // Set new Default config! The old one is broken!
+            json_bootloader_core_configuration = DM_Board_Bootloader_DefaultConfig.generateConfig().json().toString();
+            this.update();
+
+            return bootloader_core_configuration();
         }
     }
 

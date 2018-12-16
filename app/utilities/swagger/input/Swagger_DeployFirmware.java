@@ -14,7 +14,7 @@ import java.util.UUID;
 public class Swagger_DeployFirmware {
 
     @Constraints.Required @ApiModelProperty(required = true)
-    public List<UUID> hardware_ids;
+    public UUID hardware_id;
 
     @Constraints.Required @ApiModelProperty(required = true)
     public UUID c_program_version_id;

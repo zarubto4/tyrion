@@ -344,11 +344,12 @@ DELETE    /compilation_server/:server_id                                controll
 ################################################################################################################################################################################
 
 #Actualization Procedure
-PUT       /update_procedure/bin/uploud                                  controllers.Controller_Update.uploadBinaryFileToBoard()
+PUT       /update_procedure/make                                        controllers.Controller_Update.make_hardwareupdate()
+PUT       /update_procedure/make_bin                                    controllers.Controller_Update.uploadBinaryFileToBoard()
 
 #Task
-PUT       /update_task/filter/:page_number                              controllers.Controller_Update.get_Actualization_CProgramUpdatePlan_by_filter(page_number: Int)
-PUT       /update_task/object/:task_id                                  controllers.Controller_Update.get_Actualization_CProgramUpdatePlan(task_id: java.util.UUID)
+PUT       /update_task/filter/:page_number                              controllers.Controller_Update.get_HardwareUpdate_CProgramUpdatePlan_by_filter(page_number: Int)
+PUT       /update_task/object/:task_id                                  controllers.Controller_Update.get_HardwareUpdate_CProgramUpdatePlan(task_id: java.util.UUID)
 
 ### COMPILATION & LIBRARIES ############ COMPILATION & LIBRARIES ############### COMPILATION & LIBRARIES ################ COMPILATION & LIBRARIES ##############################
 ################################################################################################################################################################################
@@ -397,7 +398,7 @@ PUT       /library/version_for_aprove/approve_decision                  controll
 PUT       /library/version/make_public/:version_id                      controllers.Controller_Library.library_version_make_public(version_id: java.util.UUID)
 
 #Actualization
-PUT       /c_program/version/upload                                     controllers.Controller_Hardware.hardware_updateFirmware()
+PUT       /c_program/version/upload                                     controllers.Controller_Update.hardware_updateFirmware()
 
 #Producer
 POST      /producer                                                     controllers.Controller_Hardware.producer_create()

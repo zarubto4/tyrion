@@ -31,7 +31,7 @@ public class WS_Message_Instance_set_program extends WS_AbstractMessage_Instance
         Model_BProgramVersion version = snapshot.getBProgramVersion();
 
         Instance_Update_Request update = new Instance_Update_Request();
-        update.instance_id = snapshot.get_instance_id();
+        update.instance_id = snapshot.getInstanceId();
         update.snapshot_id = snapshot.id;
         update.program_version_id = version.id;
         update.program_version_name = version.name;

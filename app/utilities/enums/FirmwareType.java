@@ -15,12 +15,4 @@ public enum FirmwareType {
         this.firmwareType = firmwareType;
     }
 
-    public static FirmwareType getFirmwareType(String value) {
-
-             if (value.equalsIgnoreCase(FIRMWARE.toString()       ))   return FirmwareType.FIRMWARE;
-        else if (value.equalsIgnoreCase(BOOTLOADER.toString()     ))   return FirmwareType.BOOTLOADER;
-        else if (value.equalsIgnoreCase(BACKUP.toString()         ))   return FirmwareType.BACKUP;
-
-        return null;
-    }
 }

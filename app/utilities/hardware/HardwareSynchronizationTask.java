@@ -2,7 +2,9 @@ package utilities.hardware;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
+import io.ebean.Expr;
 import models.*;
+import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import utilities.enums.*;
@@ -56,6 +58,13 @@ public class HardwareSynchronizationTask implements Task {
 
             this.overview = this.hardwareInterface.getOverview();
 
+            System.out.println("Overview for synchronization: \n" + this.hardwareInterface.getOverview().prettyPrint());
+
+            if(!this.overview.online_status) {
+                logger.info("start - Device is offline, there is no Overview");
+                return;
+            }
+
             this.synchronizeHardwareGroup();
 
             this.synchronizeHardwareAlias();
@@ -66,6 +75,11 @@ public class HardwareSynchronizationTask implements Task {
             this.synchronizeFirmware();
             this.synchronizeBackup();
             this.synchronizeBootloader();
+
+            // Find open updates and call update
+            this.findUpdatesForFirmware();
+            this.findUpdatesForBackup();
+            this.findUpdatesForBootloader();
 
         }, this.httpExecutionContext.current());
     }
@@ -132,7 +146,6 @@ public class HardwareSynchronizationTask implements Task {
      * protože může teoreticky dojít k tomu, že se register změní, ale na zařízení se to neprojeví.
      * Například změna portu www stránky pro vývojáře. Proto se vrací TRUE pokud vše sedí a připojovací procedura muže pokračovat nebo false, protože device byl restartován.
      */
-    // TODO rework to something better
     private boolean synchronizeSettings() {
 
         // ---- ZDE ještě nedělám žádné změny na HW!!! -----
@@ -216,6 +229,7 @@ public class HardwareSynchronizationTask implements Task {
         return changeSettings;
     }
 
+    /* Firmware */
     private void synchronizeFirmware() {
 
         logger.info("synchronizeFirmware - checking firmware for hardware, id: {}, full_id: {}", this.hardware.id, this.hardware.full_id);
@@ -227,14 +241,38 @@ public class HardwareSynchronizationTask implements Task {
             Model_CProgramVersion version = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", this.overview.binaries.firmware.build_id).findOne();
 
             if(version != null && version.get_c_program().getProjectId().equals(hardware.getProjectId())) {
-                this.updateService.update(this.hardware, version, FirmwareType.FIRMWARE);
+                    this.hardware.actual_c_program_version = version;
+                    this.hardware.update();
             } else {
                 // Program is from different project
                 this.hardware.notification_board_no_firmware();
             }
         }
+
+
     }
 
+    private void findUpdatesForFirmware() {
+
+       Model_HardwareUpdate firmware_update = Model_HardwareUpdate.find.query().nullable().where()
+                .eq("hardware.id", this.hardware.getId())
+                .eq("firmware_type", FirmwareType.FIRMWARE)
+                .or(Expr.eq("state", HardwareUpdateState.PENDING), Expr.eq("state", HardwareUpdateState.RUNNING))
+                .orderBy("")
+                .findOne();
+
+       if(firmware_update == null) return;
+
+       if(this.hardware.getCurrentFirmware() != null && this.hardware.getCurrentFirmware().getCompilation().firmware_build_id.equals(  firmware_update.c_program_version_for_update.getCompilation().firmware_build_id )) {
+           firmware_update.state = HardwareUpdateState.COMPLETE;
+           firmware_update.update();
+        } else {
+           this.updateService.update(firmware_update);
+       }
+    }
+
+
+    /* Backup */
     private void synchronizeBackup() {
 
         logger.info("synchronizeBackup - checking backup for hardware, id: {}, full_id: {}", this.hardware.id, this.hardware.full_id);
@@ -242,21 +280,64 @@ public class HardwareSynchronizationTask implements Task {
         if (this.hardware.getCurrentBackup() != null && !this.hardware.getCurrentFirmware().getCompilation().firmware_build_id.equals(this.overview.binaries.firmware.build_id)) {
             Model_CProgramVersion version = Model_CProgramVersion.find.query().where().eq("compilation.firmware_build_id", this.overview.binaries.firmware.build_id).findOne();
             if(version != null && version.get_c_program().getProjectId().equals(hardware.getProjectId())) {
-                this.updateService.update(this.hardware, version, FirmwareType.BACKUP);
+                this.hardware.actual_backup_c_program_version = version;
+                this.hardware.update();
             }
         }
+    }
 
+    private void findUpdatesForBackup() {
+
+        Model_HardwareUpdate firmware_update = Model_HardwareUpdate.find.query().nullable().where()
+                .eq("hardware.id", this.hardware.getId())
+                .eq("firmware_type", FirmwareType.BACKUP)
+                .or(Expr.eq("state", HardwareUpdateState.PENDING), Expr.eq("state", HardwareUpdateState.RUNNING))
+                .orderBy("")
+                .findOne();
+
+        if(firmware_update == null) return;
+
+        if(this.hardware.getCurrentBackup() != null && this.hardware.getCurrentBackup().getCompilation().firmware_build_id.equals(  firmware_update.c_program_version_for_update.getCompilation().firmware_build_id )) {
+            firmware_update.state = HardwareUpdateState.COMPLETE;
+            firmware_update.update();
+        } else {
+            this.updateService.update(firmware_update);
+        }
     }
 
 
+    /* Boot Loader */
     private void synchronizeBootloader() {
 
         logger.info("synchronizeBootloader - checking bootloader for hardware, id: {}, full_id: {}", this.hardware.id, this.hardware.full_id);
 
         if (hardware.getCurrentBootloader() == null || !overview.binaries.bootloader.build_id.equals(hardware.getCurrentBootloader().version_identifier)) {
-            Model_BootLoader actual_boot_loader = Model_BootLoader.find.query().where().eq("hardware_type.id", hardware.getHardwareType().getId()).eq("version_identifier", overview.binaries.bootloader.build_id).findOne();
-            this.updateService.update(this.hardware, actual_boot_loader, FirmwareType.BOOTLOADER);
+            Model_BootLoader actual_boot_loader = Model_BootLoader.find.query().nullable().where().eq("hardware_type.id", hardware.getHardwareType().getId()).eq("version_identifier", overview.binaries.bootloader.build_id).findOne();
+
+            if(actual_boot_loader != null) {
+                hardware.actual_boot_loader = actual_boot_loader;
+                hardware.update();
+            }
         }
 
+    }
+
+    private void findUpdatesForBootloader() {
+
+        Model_HardwareUpdate firmware_update = Model_HardwareUpdate.find.query().nullable().where()
+                .eq("hardware.id", this.hardware.getId())
+                .eq("firmware_type", FirmwareType.BOOTLOADER)
+                .or(Expr.eq("state", HardwareUpdateState.PENDING), Expr.eq("state", HardwareUpdateState.RUNNING))
+                .orderBy("")
+                .findOne();
+
+        if(firmware_update == null) return;
+
+        if(this.hardware.getCurrentBootloader() != null && this.hardware.getCurrentBootloader().version_identifier .equals(  firmware_update.bootloader.version_identifier)) {
+            firmware_update.state = HardwareUpdateState.COMPLETE;
+            firmware_update.update();
+        } else {
+            this.updateService.update(firmware_update);
+        }
     }
 }

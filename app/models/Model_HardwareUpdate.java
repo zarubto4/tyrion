@@ -34,15 +34,10 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                            @ApiModelProperty(required = true,
-                                                    value = "UNIX time in ms",
-                                                    example = "1466163478925")  public Date finished;
+                                            @JsonIgnore public Date finished;
+                                            @JsonIgnore public Date planned;
 
-                                            @ApiModelProperty(required = true,
-                                                    value = "UNIX time in ms",
-                                                    example = "1466163478925")  public Date planned;
-
-              @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                    public Model_Hardware hardware;     // Deska k aktualizaci
+                                @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_Hardware hardware;     // Deska k aktualizaci
                                             @ApiModelProperty(required = true)  public FirmwareType firmware_type;  // Typ Firmwaru
 
                                                                                 // Aktualizace je vázána buď na verzi C++ kodu nebo na soubor, nahraný uživatelem
@@ -52,28 +47,46 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
                                                                                 public HardwareUpdateState state;
                                                                     @JsonIgnore public Integer count_of_tries;                              // Počet celkovbých pokusu doručit update (změny z wait to progres atd...
-                                                                                public UUID tracking_id;                                    // GROUP ID??
+
+    /**
+     * Naprosto nekonfliktní hodnoty které pouze a výlučně slouží pro frontend
+     * Ukládáme zde "filtrační" ID
+     */
+    @JsonIgnore public UUID tracking_id;
+    @JsonIgnore public UUID tracking_id_snapshot_id;
+    @JsonIgnore public UUID tracking_id_instance_id;
+    @JsonIgnore public UUID tracking_id_project_id;
+    @JsonIgnore public UUID tracking_procedure_id;
+
+    public UpdateType type_of_update;
 
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Only if state is critical_error or Homer record some error")  public String error;
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Only if state is critical_error or Homer record some error")  public Integer error_code;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @ApiModelProperty(required = false, readOnly = true)
-    public UpdateType type_of_update () {
-        try {
-            return null; // TODO getActualizationProcedure().type_of_update;
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+
+    @ApiModelProperty(required = true,
+            value = "UNIX time in s",
+            example = "1466163471")
+    @JsonProperty
+    public Long  finished() {
+        return finished.getTime() / 1000;
+    }
+
+    @ApiModelProperty(required = true,
+            value = "UNIX time in s",
+            example = "1466163471")
+    @JsonProperty
+    public Long  planned() {
+        return planned.getTime() / 1000;
     }
 
     @ApiModelProperty(required = false, value = "Is visible only if update is for Firmware or Backup")
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
     public Swagger_C_Program_Update_program c_program_detail() {
-
         try {
+
             if (c_program_version_for_update == null) return null;
 
             Swagger_C_Program_Update_program c_program_detail = new Swagger_C_Program_Update_program();
@@ -118,6 +131,31 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
     public Swagger_Short_Reference hardware() {
         try {
             return getHardware().ref();
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonProperty @ApiModelProperty(required = false, readOnly = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Swagger_Short_Reference instance() {
+        try {
+
+            if(tracking_id_instance_id == null) return null;
+            return Model_Instance.find.byId(this.tracking_id_instance_id).ref();
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @JsonProperty @ApiModelProperty(required = false, readOnly = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Swagger_Short_Reference instance_snapshot() {
+        try {
+            if(tracking_id_snapshot_id == null) return null;
+            return Model_InstanceSnapshot.find.byId(this.tracking_id_snapshot_id).ref();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;

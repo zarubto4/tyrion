@@ -207,6 +207,10 @@ public class Controller_Things_Mobile {
                             node_cdr.cdrDateStop    = eeElement.getElementsByTagName("cdrDateStop").item(0).getTextContent();
                             node_cdr.cdrNetwork     = eeElement.getElementsByTagName("cdrNetwork").item(0).getTextContent();
                             node_cdr.cdrCountry     = eeElement.getElementsByTagName("cdrCountry").item(0).getTextContent();
+
+
+                            System.out.println("CRD Traffik:: " + eeElement.getElementsByTagName("cdrTraffic").item(0).getTextContent());
+
                             node_cdr.cdrTraffic     = Float.valueOf(eeElement.getElementsByTagName("cdrTraffic").item(0).getTextContent()).longValue();
                             node.cdrs.add(node_cdr);
                         }

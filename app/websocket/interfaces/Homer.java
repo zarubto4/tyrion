@@ -343,6 +343,10 @@ public class Homer extends Interface {
                 return;
             }
 
+            case "ping": {
+                // Do nothing
+            }
+
             default: {
                 logger.error("onMessageHardware - incoming message not recognized: {}", message.getMessage().toString());
                 if (!message.isErroneous()) {

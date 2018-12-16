@@ -97,7 +97,7 @@ public class Controller_GSM extends _BaseController {
 
             gsm.project = project;
 
-            Controller_Things_Mobile.update_sim_tag(gsm.msi_number, "project_id:" + project.id.toString());
+            Controller_Things_Mobile.update_sim_tag(gsm.msi_number, "project_id:" + project.getId().toString());
 
             return update(gsm);
 

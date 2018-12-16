@@ -49,10 +49,15 @@ public class UpdateService {
      * Executes a single update.
      * @param hardware for update
      * @param updatable firmware or bootloader
-     * @param type of the updatable
+     * @param firmwareType of the updatable
+     * @param updateType of the updatable
+     * @param tracking_hash of the map of keys with ID for tracking
      */
-    public void update(Model_Hardware hardware, Updatable updatable, FirmwareType type) {
-        Model_HardwareUpdate update = this.createUpdate(hardware, updatable, type);
+    public void update(Model_Hardware hardware, Updatable updatable, FirmwareType firmwareType, UpdateType updateType, Map<String, UUID> tracking_hash) {
+
+        Model_HardwareUpdate update = this.createUpdate(hardware, updatable, firmwareType, updateType, tracking_hash);
+        update.save();
+
         try {
             HardwareInterface hardwareInterface = this.hardwareService.getInterface(hardware);
             hardwareInterface.update(update);
@@ -68,7 +73,41 @@ public class UpdateService {
         }
     }
 
-    public void bulkUpdate(List<Model_Hardware> hardwareList, Updatable updatable, FirmwareType type) {
+    /**
+     * Update with Time
+     * @param date when its planed
+     * @param hardware for update
+     * @param updatable firmware or bootloader
+     * @param type of the updatable
+     * @param tracking_hash of the map of keys with ID for tracking
+     */
+    public void scheduleUpdate(Date date, Model_Hardware hardware, Updatable updatable, FirmwareType type, UpdateType updateType, Map<String, UUID> tracking_hash) {
+        Model_HardwareUpdate update = this.createUpdate(hardware, updatable, type, updateType, tracking_hash);
+        this.setSchedule(update, date);
+        update.save();
+    }
+
+    /**
+     * Execute already created single update
+     * @param update
+     */
+    public void update(Model_HardwareUpdate update) {
+        try {
+            HardwareInterface hardwareInterface = this.hardwareService.getInterface(update.hardware);
+            hardwareInterface.update(update);
+        } catch (ServerOfflineException | NeverConnectedException e) {
+            // nothing
+        } catch (FailedMessageException e) {
+            update.state = HardwareUpdateState.FAILED;
+            update.error = e.getFailedMessage().getErrorMessage();
+            update.error_code = e.getFailedMessage().getErrorCode();
+            update.update();
+        } catch (Exception e) {
+            logger.internalServerError(e);
+        }
+    }
+
+    public void bulkUpdate(List<Model_Hardware> hardwareList, Updatable updatable, FirmwareType type, UpdateType updateType, Map<String, UUID> tracking_hash) {
         Map<Model_HomerServer, List<Model_HardwareUpdate>> updates = new HashMap<>();
 
         for (Model_Hardware hardware : hardwareList) {
@@ -83,7 +122,10 @@ public class UpdateService {
                     updates.put(server, new ArrayList<>());
                 }
 
-                Model_HardwareUpdate update = this.createUpdate(hardware, updatable, type);
+                Model_HardwareUpdate update = this.createUpdate(hardware, updatable, type, updateType, tracking_hash);
+                update.save();
+
+
                 if (update.state == HardwareUpdateState.PENDING) {
                     updates.get(server).add(update);
                 }
@@ -108,10 +150,6 @@ public class UpdateService {
                 });
             }
         });
-    }
-
-    public void groupUpdate(Model_HardwareGroup group, Updatable updatable, FirmwareType type) {
-        this.bulkUpdate(group.getHardware(), updatable, type);
     }
 
     public void onUpdateMessage(WS_Message_Hardware_UpdateProcedure_Progress message) {
@@ -265,31 +303,42 @@ public class UpdateService {
 
     }
 
-    public void schedule() {
+  
+
+    public void bulkSchedule() {
 
     }
+
+
+
+
+
+
+    /* Common methods for creating Model_HardwareUpdate -------------------------------------------------------------------- */
+
 
     /**
      * This method will find all pending updates and marks them obsolete before it creates the new update.
      * @param hardware for update
      * @param updatable firmware or bootloader
-     * @param type of the updatable object
+     * @param firmwareType of the updatable object
+     * @param updateType of the updatable object
      * @return Model_HardwareUpdate
      */
-    private Model_HardwareUpdate createUpdate(Model_Hardware hardware, Updatable updatable, FirmwareType type) {
+    private Model_HardwareUpdate createUpdate(Model_Hardware hardware, Updatable updatable, FirmwareType firmwareType, UpdateType updateType,  Map<String, UUID> tracking_hash) {
 
         ExpressionList<Model_HardwareUpdate> expressions = Model_HardwareUpdate.find.query().where()
                 .eq("hardware.id", hardware.id)
                 .or(Expr.eq("state", HardwareUpdateState.PENDING), Expr.eq("state", HardwareUpdateState.RUNNING));
 
-        if (type.equals(FirmwareType.FIRMWARE)) {
+        if (firmwareType.equals(FirmwareType.FIRMWARE)) {
             expressions.eq("firmware_type", FirmwareType.FIRMWARE);
-        } else if (type.equals(FirmwareType.BACKUP)) {
+        } else if (firmwareType.equals(FirmwareType.BACKUP)) {
             expressions.eq("firmware_type", FirmwareType.BACKUP);
-        } else if (type.equals(FirmwareType.BOOTLOADER)) {
+        } else if (firmwareType.equals(FirmwareType.BOOTLOADER)) {
             expressions.eq("firmware_type", FirmwareType.BOOTLOADER);
         } else {
-            throw new RuntimeException("Unknown component type: " + type + ", allowable values are: FIRMWARE, BACKUP or BOOTLOADER");
+            throw new RuntimeException("Unknown component type: " + firmwareType + ", allowable values are: FIRMWARE, BACKUP or BOOTLOADER");
         }
 
         List<Model_HardwareUpdate> updates = expressions
@@ -308,8 +357,11 @@ public class UpdateService {
         Model_HardwareUpdate update = new Model_HardwareUpdate();
         update.hardware = hardware;
         update.state = HardwareUpdateState.PENDING;
-        update.firmware_type = type;
+        update.firmware_type = firmwareType;
+        update.type_of_update = updateType;
         update.count_of_tries = 0;
+
+        this.setTrackingHash(update, tracking_hash);
 
         if (updatable instanceof Model_CProgramVersion) {
             update.c_program_version_for_update = (Model_CProgramVersion) updatable;
@@ -321,8 +373,30 @@ public class UpdateService {
             throw new RuntimeException("updatable must be Model_CProgramVersion, Model_BootLoader or Model_Compilation");
         }
 
-        update.save();
-
         return update;
+    }
+
+
+    // TODO možná nahradit něčím univerzálnějším??
+    private void setTrackingHash(Model_HardwareUpdate update, Map<String, UUID> tracking_hash) {
+
+        // SET TRACKING NUMBERS
+        if(tracking_hash.containsKey("PROJECT")){
+            update.tracking_id_project_id = tracking_hash.get("PROJECT");
+        }
+        if(tracking_hash.containsKey("INSTANCE")){
+            update.tracking_id_instance_id = tracking_hash.get("INSTANCE");
+        }
+        if(tracking_hash.containsKey("SNAPSHOT")){
+            update.tracking_id_snapshot_id = tracking_hash.get("SNAPSHOT");
+        }
+        if(tracking_hash.containsKey("PROCEDURE")){
+            update.tracking_procedure_id = tracking_hash.get("PROCEDURE");
+        }
+    }
+
+    public void setSchedule(Model_HardwareUpdate update, Date planned){
+        update.state = HardwareUpdateState.IN_PLAN;
+        update.planned = planned;
     }
 }
