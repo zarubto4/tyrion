@@ -344,7 +344,7 @@ DELETE    /compilation_server/:server_id                                controll
 ################################################################################################################################################################################
 
 #Actualization Procedure
-PUT       /update_procedure/make                                        controllers.Controller_Update.make_hardwareupdate()
+PUT       /update_procedure/make                                        controllers.Controller_Update.make_hardwareUpdateRelease()
 PUT       /update_procedure/make_bin                                    controllers.Controller_Update.uploadBinaryFileToBoard()
 
 #Task

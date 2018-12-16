@@ -300,7 +300,7 @@ public class Controller_Update extends _BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "utilities.swagger.input.Swagger_HardwareUpdateProcedureTask_Filter",
+                            dataType = "utilities.swagger.input.Swagger_HardwareUpdates_Filter",
                             required = true,
                             paramType = "body",
                             value = "Contains Json with values"

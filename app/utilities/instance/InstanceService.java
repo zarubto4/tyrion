@@ -6,6 +6,7 @@ import exceptions.ServerOfflineException;
 import models.*;
 import utilities.enums.FirmwareType;
 import utilities.enums.NetworkStatus;
+import utilities.enums.UpdateType;
 import utilities.hardware.update.UpdateService;
 import utilities.homer.HomerInterface;
 import utilities.homer.HomerService;
@@ -125,7 +126,7 @@ public class InstanceService {
                         tracking_ids.put("PROJECT", snapshot.getInstance().getProjectId());
                         tracking_ids.put("SNAPSHOT", snapshot.getId());
 
-                        this.updateService.bulkUpdate(updates.get(interfaceId), version, FirmwareType.FIRMWARE, tracking_ids);
+                        this.updateService.bulkUpdate(updates.get(interfaceId), version, FirmwareType.FIRMWARE, UpdateType.MANUALLY_BY_INSTANCE, tracking_ids);
                     } catch (NotFoundException e) {
                         logger.warn("deploy - not found firmware version, id: {}, skipping update", interfaceId);
                     }

@@ -24,8 +24,8 @@ public class Swagger_HardwareUpdate_Make extends _Swagger_filter_parameter imple
     @Constraints.Required @ApiModelProperty(required = true,  readOnly = true) public UUID project_id;
     @Constraints.Required @ApiModelProperty(required = true,  readOnly = true) public FirmwareType firmware_type;
 
-    @Constraints.Required @ApiModelProperty(required = true, readOnly = true)  public List<UUID> hardware_group_ids;
-    @Constraints.Required @ApiModelProperty(required = true, readOnly = true)  public List<UUID> hardware_ids;
+    @ApiModelProperty(required = false, readOnly = true)  public List<UUID> hardware_group_ids;
+    @ApiModelProperty(required = false, readOnly = true)  public List<UUID> hardware_ids;
 
     @Valid
     @ApiModelProperty(required = true,  readOnly = true) public List<Swagger_ActualizationProcedure_Make_HardwareType> hardware_type_settings = new ArrayList<>();
@@ -67,6 +67,10 @@ public class Swagger_HardwareUpdate_Make extends _Swagger_filter_parameter imple
             } catch (Exception e) {
                 errors.add(new ValidationError("time", "Invalid Time Format"));
             }
+        }
+
+        if((hardware_group_ids == null || hardware_group_ids.isEmpty())  && (hardware_ids == null || hardware_ids.isEmpty())) {
+            errors.add(new ValidationError("hardware_group_ids", "hardware_ids or hardware_group_ids must contains at least one ID"));
         }
 
 
