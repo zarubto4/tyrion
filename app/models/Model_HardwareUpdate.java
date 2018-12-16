@@ -53,10 +53,24 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
      * Ukládáme zde "filtrační" ID
      */
     @JsonIgnore public UUID tracking_id;
+
+
+    //------------------------------------------------------------------------------------------------------------------------------------
+    /**
+     * TODO asi to půjde zcuknout pouze na to jedno tracking ID ??
+     * Do tracking number mužu uložit všechny 4 tyto následující,
+     *
+     * protože buď updatuju manuálně (pak nemám tracking id
+     * nebo přes instanci (pak mám snapshot)
+     * nebo release
+     *
+     * jenže, když to zcuknu, pak nevím které z těch id je jaký objekt, takže to nepůjde jednoduše "hledat" pouze to vyzkoušet na všechn objektech
+     */
     @JsonIgnore public UUID tracking_id_snapshot_id;
     @JsonIgnore public UUID tracking_id_instance_id;
     @JsonIgnore public UUID tracking_id_project_id;
-    @JsonIgnore public UUID tracking_release_procedure_id; // TODO asi to půjde zcuknout pouze na to jedno tracking ID
+    @JsonIgnore public UUID tracking_release_procedure_id;
+    //------------------------------------------------------------------------------------------------------------------------------------
 
     public UpdateType type_of_update;
 
@@ -71,15 +85,29 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
             example = "1466163471")
     @JsonProperty
     public Long  finished() {
-        return finished.getTime() / 1000;
+        try {
+
+            if(finished == null) return null;
+            return finished.getTime() / 1000;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @ApiModelProperty(required = true,
             value = "UNIX time in s",
             example = "1466163471")
     @JsonProperty
-    public Long  planned() {
-        return planned.getTime() / 1000;
+    public Long planned() {
+        try {
+            if(planned == null) return null;
+            return planned.getTime() / 1000;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @ApiModelProperty(required = false, value = "Is visible only if update is for Firmware or Backup")

@@ -66,7 +66,15 @@ public abstract class BaseModel extends Model implements JsonSerializable {
             example = "1466163471")
     @JsonProperty
     public Long  created() {
-        return created.getTime() / 1000;
+        try {
+
+            if(created == null) return null;
+            return created.getTime() / 1000;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
     @ApiModelProperty(required = true,
@@ -74,7 +82,15 @@ public abstract class BaseModel extends Model implements JsonSerializable {
             example = "1466163471")
     @JsonProperty
     public Long  updated() {
-        return updated.getTime() / 1000;
+        try {
+
+            if(updated == null) return null;
+            return updated.getTime() / 1000;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
     }
 
 
