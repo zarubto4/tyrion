@@ -22,9 +22,6 @@ public class Swagger_Notification_List extends _Swagger_Filter_Common {
 
 /* Basic Filter Value --------------------------------------------------------------------------------------------------*/
 
-    @ApiModelProperty(required = true, readOnly = true, value = "Numbers of pages, which you can call")
-    public List<Integer> pages = new ArrayList<>();
-
     @ApiModelProperty(required = true, readOnly = true, value = "Total unread subjects")
     public int unread_total = Model_Notification.find.query().where().eq("was_read", false).eq("person.id", _BaseController.personId()).findCount();
 
@@ -37,7 +34,8 @@ public class Swagger_Notification_List extends _Swagger_Filter_Common {
         this.total   = query.findCount();
         this.from   = (page_number - 1) * 25;
         this.to     = (page_number - 1) * 25 + content.size();
-        for (int i = 1; i < (total / 25) + 2; i++) pages.add(i);
+
+        this.pages = (int) Math.ceil (total /  25.0);
 
     }
 }

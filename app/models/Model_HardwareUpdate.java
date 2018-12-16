@@ -165,6 +165,20 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
         }
     }
 
+    @JsonProperty @ApiModelProperty(required = false, readOnly = true, value = "Only if its under Release Update")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public Swagger_Short_Reference release_update() {
+        try {
+
+            if(tracking_release_procedure_id == null) return null;
+            return Model_HardwareReleaseUpdate.find.byId(tracking_release_procedure_id).ref();
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
     @JsonProperty @ApiModelProperty(required = false, readOnly = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Swagger_Short_Reference instance() {
