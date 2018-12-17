@@ -18,7 +18,6 @@ import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware
 
 import java.lang.reflect.Field;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -92,62 +91,24 @@ public class HardwareInterface {
         }
     }
 
-    // TODO rework to something more systematic
-    public void setConfiguration(Swagger_Board_Developer_parameters help) {
-        DM_Board_Bootloader_DefaultConfig configuration = this.hardware.bootloader_core_configuration();
+    public void setParameter(String name, String value) {
+        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), name, value)));
+        if (response.isErroneous()) {
+            throw new FailedMessageException(response);
+        }
+    }
 
-        try {
+    public void setParameter(String name, Boolean value) {
+        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), name, value)));
+        if (response.isErroneous()) {
+            throw new FailedMessageException(response);
+        }
+    }
 
-            ObjectNode message;
-
-            String name = help.parameter_type.toLowerCase();
-
-            Field field = configuration.getClass().getField(name);
-            Class<?> type = field.getType();
-
-            if (type.equals(Boolean.class)) {
-
-                // Jediná přístupná vyjímka je pro autoback - ten totiž je zároven v COnfig Json (DM_Board_Bootloader_DefaultConfig)
-                // Ale zároveň je také přímo přístupný v databázi Tyriona
-                if (name.equals("autobackup")) {
-                    this.hardware.backup_mode = help.boolean_value; // TODO no modification should be here
-                    // Update bude proveden v this.update_bootloader_configuration
-                }
-
-                field.set(configuration, help.boolean_value);
-
-                message = new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), name, help.boolean_value);
-
-            } else if (type.equals(String.class)) {
-
-                field.set(configuration, help.string_value);
-
-                message = new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), name, help.string_value);
-
-            } else if (type.equals(Integer.class)) {
-
-                field.set(configuration, help.integer_value);
-
-                message = new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), name, help.integer_value);
-            } else {
-                throw new NoSuchFieldException();
-            }
-
-            if (!configuration.pending.contains(name)) {
-                configuration.pending.add(name);
-            }
-
-            this.hardware.update_bootloader_configuration(configuration);
-
-            this.webSocketInterface.sendWithResponseAsync(new Request(message), (response) -> {
-                if (response.isErroneous()) {
-                    logger.internalServerError(new Exception("Got error response: " + response.getMessage().toString()));
-                }
-            });
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            throw new IllegalArgumentException("Incoming Value " + help.parameter_type.toLowerCase() + " not recognized");
+    public void setParameter(String name, Integer value) {
+        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), name, value)));
+        if (response.isErroneous()) {
+            throw new FailedMessageException(response);
         }
     }
 

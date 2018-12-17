@@ -1,18 +1,14 @@
 package utilities.hardware;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import models.*;
 import play.libs.concurrent.HttpExecutionContext;
-import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import utilities.enums.*;
 import utilities.hardware.update.UpdateService;
 import utilities.logger.Logger;
 import utilities.synchronization.Task;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_overview_Board;
-import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_set_settings;
 
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -21,6 +17,7 @@ public class HardwareSynchronizationTask implements Task {
 
     private static final Logger logger = new Logger(HardwareSynchronizationTask.class);
 
+    private final HardwareConfigurationService hardwareConfigurationService;
     private final HttpExecutionContext httpExecutionContext;
     private final HardwareService hardwareService;
     private final UpdateService updateService;
@@ -34,7 +31,9 @@ public class HardwareSynchronizationTask implements Task {
     private WS_Message_Hardware_overview_Board overview;
 
     @Inject
-    public HardwareSynchronizationTask(HardwareService hardwareService, UpdateService updateService, HttpExecutionContext httpExecutionContext) {
+    public HardwareSynchronizationTask(HardwareService hardwareService, UpdateService updateService,
+                                       HttpExecutionContext httpExecutionContext, HardwareConfigurationService hardwareConfigurationService) {
+        this.hardwareConfigurationService = hardwareConfigurationService;
         this.httpExecutionContext = httpExecutionContext;
         this.hardwareService = hardwareService;
         this.updateService = updateService;
@@ -84,9 +83,9 @@ public class HardwareSynchronizationTask implements Task {
      * Například změna portu www stránky pro vývojáře. Proto se vrací TRUE pokud vše sedí a připojovací procedura muže pokračovat nebo false, protože device byl restartován.
      */
     // TODO rework to something better
-    private boolean synchronizeSettings() {
+    private void synchronizeSettings() {
 
-        // ---- ZDE ještě nedělám žádné změny na HW!!! -----
+        logger.info("synchronizeSettings - checking settings for hardware, id: {}, full_id: {}", this.hardware.id, this.hardware.full_id);
 
         // Kontrola Skupin Hardware Groups - To není synchronizace s HW ale s Instancí HW na Homerovi
         for (UUID hardware_group_id : this.hardware.get_hardware_group_ids()) {
@@ -97,105 +96,23 @@ public class HardwareSynchronizationTask implements Task {
             }
         }
 
+        if (this.hardware.mac_address == null && overview.mac != null) {
+            this.hardware.mac_address = overview.mac;
+            this.hardware.update();
+        }
+
+        if (this.hardwareConfigurationService.getConfigurator(this.hardware).configure(this.overview)) {
+            this.stop(); // Cancel synchronization device will be restarted
+        }
+
+        logger.info("synchronizeSettings - ({}) settings for hardware synchronized", this.hardware.full_id);
+
         // TODO make it work somehow
         /*// Uložení do Cache paměti // PORT je synchronizován v následujícím for cyklu
         if (cache_latest_know_ip_address == null || !cache_latest_know_ip_address.equals(overview.ip)) {
             logger.warn("check_settings nastavuju jí do cache ");
             cache_latest_know_ip_address = this.overview.ip;
         }*/
-
-
-        // ---- ZDE už dělám změny na HW!! -----
-
-        // Kontrola Aliasu
-        if (this.hardware.name != this.overview.alias) {
-            logger.warn("check_settings - inconsistent state: alias");
-            this.hardwareInterface.setAlias(this.hardware.name);
-        }
-
-        // Synchronizace mac_adressy pokud k tomu ještě nedošlo
-        if (this.hardware.mac_address == null && overview.mac != null) {
-            this.hardware.mac_address = overview.mac;
-            this.hardware.update();
-        }
-
-        /*
-            Tato smyčka prochází všechny položky v objektu DM_Board_Bootloader_DefaultConfig jeden po druhém a pak hledá
-            ty samé config parametry v příchozím objektu - pokud je nazelzne následě porovná očekávanou ohnotu od té
-            reálné a popřípadě upraví na hardwaru.
-
-            Pokud se něco změnilo - nastaví se change register na true
-
-         */
-        DM_Board_Bootloader_DefaultConfig configuration = this.hardware.bootloader_core_configuration();
-        boolean changeSettings = false; // Pokud došlo ke změně
-        boolean changeConfig = false;
-
-        try {
-
-            for (Field configField : configuration.getClass().getFields()) {
-
-                String configFieldName = configField.getName();
-
-                try {
-                    Field reportedField = overview.getClass().getField(configFieldName);
-
-                    Object configValue = configField.get(configuration);
-                    Object reportedValue = reportedField.get(overview);
-
-                    // If values are same do nothing
-                    if (configValue != reportedValue) {
-
-                        // If change was requested (is pending) update the hw setting, otherwise update database info
-                        if (configuration.pending.contains(configFieldName)) {
-                            Class type = reportedField.getType();
-
-                            ObjectNode message = null;
-
-                            if (type.equals(Boolean.class)) {
-
-                                message = new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), configFieldName, (Boolean) configField.get(configuration));
-
-                            } else if (type.equals(String.class)) {
-
-                                message = new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), configFieldName, (String) configField.get(configuration));
-
-                            } else if (type.equals(Integer.class)) {
-
-                                message = new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), configFieldName, (Integer) configField.get(configuration));
-
-                            } else {
-                                throw new NoSuchFieldException();
-                            }
-
-                            changeSettings = true;
-                            changeConfig = true;
-                            // TODO this.hardwareInterface.send ???
-                            configuration.pending.remove(configFieldName);
-
-                        } else {
-                            configField.set(configuration, reportedValue);
-                            changeConfig = true;
-                        }
-                    } else if (configuration.pending.contains(configFieldName)) {
-                        configuration.pending.remove(configFieldName);
-                        changeConfig = true;
-                    }
-
-                } catch (NoSuchFieldException e) {
-                    // Nothing
-                }
-            }
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-
-        if (changeConfig) {
-            this.hardware.update_bootloader_configuration(configuration);
-        }
-
-        return changeSettings;
     }
 
     private void synchronizeFirmware() {
@@ -253,19 +170,19 @@ public class HardwareSynchronizationTask implements Task {
             if (this.overview.binaries.backup != null && overview.binaries.backup.build_id != null && !overview.binaries.backup.build_id.equals("")) {
 
                 if (this.hardware.getCurrentBackup() != null && this.hardware.getCurrentBackup().getCompilation().firmware_build_id.equals(overview.binaries.backup.build_id)) {
-                    logger.debug("synchronizeBackup - ({}) already synchronized");
+                    logger.debug("synchronizeBackup - ({}) already synchronized", this.hardware.full_id);
                 } else {
 
-                    logger.debug("synchronizeBackup - ({}) synchronizing, finding backup reported by hardware");
+                    logger.debug("synchronizeBackup - ({}) synchronizing, finding backup reported by hardware", this.hardware.full_id);
 
                     Model_CProgramVersion version = Model_CProgramVersion.find.query().nullable().where().eq("compilation.firmware_build_id", overview.binaries.backup.build_id).findOne();
                     if (version != null) {
-                        logger.debug("synchronizeBackup - ({}) synchronizing, backup found");
+                        logger.debug("synchronizeBackup - ({}) synchronizing, backup found", this.hardware.full_id);
 
                         this.hardware.actual_backup_c_program_version = version;
                         this.hardware.update();
 
-                        logger.debug("synchronizeBackup - ({}) synchronized");
+                        logger.debug("synchronizeBackup - ({}) synchronized", this.hardware.full_id);
                     }
                 }
             }

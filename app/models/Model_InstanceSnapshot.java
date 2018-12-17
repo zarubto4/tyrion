@@ -386,104 +386,51 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
     /**
      * Saved Snap Shot as default, but server is offline, so it will be uploaded as soon as possible.
      */
-    public void notification_instance_set_wait_for_server(Model_Person person) {
-        try {
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.LOW)
-                    .setLevel(NotificationLevel.INFO)
-                    .setText( new Notification_Text().setText("Snapshot is Set as default. But "))
-                    .setObject(getInstance().getServer())
-                    .setText( new Notification_Text().setText("is"))
-                    .setText( new Notification_Text().setText("offline").setBoldText().setColor(Becki_color.byzance_red))
-                    .setText( new Notification_Text().setText("."))
-                    .setNewLine()
-                    .setText( new Notification_Text().setText("Immediately after server reconnect, We will deploy it on server."))
-                    .send(person);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
+    public Model_Notification notificationServerOffline() {
+        return new Model_Notification()
+                .setImportance(NotificationImportance.LOW)
+                .setLevel(NotificationLevel.INFO)
+                .setText( new Notification_Text().setText("Server "))
+                .setObject(this.getInstance().getServer())
+                .setText( new Notification_Text().setText(" is "))
+                .setText( new Notification_Text().setText("offline").setBoldText().setColor(Becki_color.byzance_red))
+                .setText( new Notification_Text().setText("."))
+                .setNewLine()
+                .setText( new Notification_Text().setText("The instance snapshot will be deployed as soon as possible."));
     }
 
-    public void notification_instance_start_upload(Model_Person person) {
-        try {
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.LOW)
-                    .setLevel(NotificationLevel.INFO)
-                    .setText( new Notification_Text().setText("Server started creating new Blocko Instance of Blocko Version "))
-                    .setText( new Notification_Text().setText(this.getBProgramVersion().getBProgram().name).setBoldText())
-                    .setObject(this.getBProgramVersion())
-                    .setText( new Notification_Text().setText(" from Blocko program "))
-                    .setObject(this.getBProgramVersion().getBProgram())
-                    .send(person);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
+    public Model_Notification notificationDeploymentStart() {
+        return new Model_Notification()
+                .setImportance(NotificationImportance.LOW)
+                .setLevel(NotificationLevel.INFO)
+                .setText( new Notification_Text().setText("The instance snapshot from the "))
+                .setObject(this.getBProgramVersion())
+                .setText( new Notification_Text().setText(" is being deployed."));
     }
 
-    public void notification_instance_successful_upload(Model_Person person) {
-        try {
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.LOW)
-                    .setLevel(NotificationLevel.SUCCESS)
-                    .setText(new Notification_Text().setText("Server successfully created the instance of Blocko Version "))
-                    .setObject(this.getBProgramVersion())
-                    .setText(new Notification_Text().setText(" from Blocko program "))
-                    .setObject(this.getBProgramVersion().getBProgram())
-                    .send(person);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
+    public Model_Notification notificationDeploymentSuccess() {
+        return new Model_Notification()
+                .setImportance(NotificationImportance.LOW)
+                .setLevel(NotificationLevel.SUCCESS)
+                .setText(new Notification_Text().setText("The instance snapshot from the "))
+                .setObject(this.getBProgramVersion())
+                .setText(new Notification_Text().setText(" was deployed successfully."));
     }
 
-    public void notification_instance_unsuccessful_upload(String reason, Model_Person person) {
-        try {
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.LOW)
-                    .setLevel(NotificationLevel.WARNING)
-                    .setText( new Notification_Text().setText("Server did not upload instance to cloud on Blocko Version "))
-                    .setText( new Notification_Text().setText(this.getBProgramVersion().name ).setBoldText())
-                    .setText( new Notification_Text().setText(" from Blocko program "))
-                    .setText( new Notification_Text().setText(this.getBProgramVersion().getBProgram().name).setBoldText())
-                    .setText( new Notification_Text().setText(" for reason: ").setBoldText() )
-                    .setText( new Notification_Text().setText(reason + " ").setBoldText())
-                    .setObject(this.getBProgramVersion())
-                    .setText( new Notification_Text().setText(" from Blocko program "))
-                    .setObject(this.getBProgramVersion().getBProgram())
-                    .setText( new Notification_Text().setText(". Server will try to do that as soon as possible."))
-                    .send(person);
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
+    public Model_Notification notificationDeploymentFail(String message) {
+        return new Model_Notification()
+                .setImportance(NotificationImportance.LOW)
+                .setLevel(NotificationLevel.WARNING)
+                .setText(new Notification_Text().setText("Deployment of the instance snapshot from the "))
+                .setObject(this.getBProgramVersion())
+                .setText(new Notification_Text().setText(" has failed with error: "))
+                .setText(new Notification_Text().setText(message).setBoldText())
+                .setText(new Notification_Text().setText("."));
     }
-
-    public void notification_new_actualization_request_instance() {
-        try {
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.LOW)
-                    .setLevel(NotificationLevel.INFO)
-                    .setText( new Notification_Text().setText("New actualization task was added to Task Queue on Version "))
-                    .setObject(this.getBProgramVersion())
-                    .send_under_project(this.getInstance().getProjectId());
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-/* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
 
 /* Helper Class --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public Swagger_Mobile_Connection_Summary get_connection_summary(UUID grid_program_id,  Http.Context context) {
 
         // OBJEKT který se variabilně naplní a vrátí - ITS EMPTY!!!!
@@ -694,7 +641,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public String get_path() {
         return getInstance().get_path() + "/snapshots/" + this.id;
     }

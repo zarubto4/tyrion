@@ -131,7 +131,7 @@ public class NotificationService {
     }
 
     public void modelUpdated(Class<?> cls, UUID id, UUID projectId) {
-        if (this.projectSubscriptions.containsKey(projectId)) {
+        if (projectId != null && this.projectSubscriptions.containsKey(projectId)) {
             this.projectSubscriptions.get(projectId).forEach(personId -> {
                 if (this.subscriptions.containsKey(personId)) {
                     this.subscriptions.get(personId).forEach(portal -> portal.send(new WSM_Echo(cls, projectId, id).make_request()));

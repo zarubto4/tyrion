@@ -761,62 +761,35 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
-    public void notification_board_unstable_actual_firmware_version(Model_CProgramVersion firmware_version) {
-        new Thread(() -> {
-
-            // Pokud to není yoda ale device tak neupozorňovat v notifikaci, že je deska offline - zbytečné zatížení
-            if (project().id == null) return;
-
-            try {
-
-                new Model_Notification()
-                        .setImportance( NotificationImportance.HIGH)
-                        .setLevel(NotificationLevel.ERROR)
-                        .setText(new Notification_Text().setText("Attention! We note the highest critical error on your device "))
-                        .setObject(this)
-                        .setText(new Notification_Text().setText(" There was a collapse of the running firmware "))
-                        .setObject(firmware_version.get_c_program())
-                        .setText(new Notification_Text().setText(" version "))
-                        .setObject(firmware_version)
-                        .setText(new Notification_Text().setText(". But stay calm. The hardware has successfully restarted and uploaded a backup version. " +
-                                "This can cause a data collision in your Blocko Program, but you have the chance to fix the firmware. " +
-                                "Incorrect version of Firmware has been flagged as unreliable."))
-                        .send_under_project(project().id);
-
-            } catch (Exception e) {
-                logger.internalServerError(e);
-            }
-        }).start();
+    public Model_Notification notificationFirmwareUnstable(Model_CProgramVersion firmware_version) {
+        return new Model_Notification()
+                .setImportance(NotificationImportance.HIGH)
+                .setLevel(NotificationLevel.ERROR)
+                .setText(new Notification_Text().setText("Attention! We note the highest critical error on your device "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" There was a collapse of the running firmware "))
+                .setObject(firmware_version.get_c_program())
+                .setText(new Notification_Text().setText(" version "))
+                .setObject(firmware_version)
+                .setText(new Notification_Text().setText(". But stay calm. The hardware has successfully restarted and uploaded a backup version. " +
+                        "This can cause a data collision in your Blocko Program, but you have the chance to fix the firmware. " +
+                        "Incorrect version of Firmware has been flagged as unreliable."));
     }
 
     @JsonIgnore
-    public void notification_board_not_databased_version() {
-        new Thread(() -> {
-
-            if (project().id == null) return;
-
-            try {
-
-                new Model_Notification()
-                        .setImportance( NotificationImportance.NORMAL)
-                        .setLevel(NotificationLevel.INFO)
-                        .setText(new Notification_Text().setText("Attention! Device "))
-                        .setObject(this)
-                        .setText(new Notification_Text().setText(" has logged in. Unfortunately, we do not have a synchronized knowledge of the " +
-                                "device status of what device firmware is running on. Perhaps this is the factory setting. " +
-                                "We are now updating to the default firmware on device."))
-                        .setNewLine()
-                        .setText(new Notification_Text().setText("You do not have to do anything. Have a nice day."))
-                        .setNewLine()
-                        .setText(new Notification_Text().setText("Byzance"))
-                        .send_under_project(project().id);
-
-
-
-            } catch (Exception e) {
-                logger.internalServerError(e);
-            }
-        }).start();
+    public Model_Notification notification_board_not_databased_version() {
+        return new Model_Notification()
+                .setImportance( NotificationImportance.NORMAL)
+                .setLevel(NotificationLevel.INFO)
+                .setText(new Notification_Text().setText("Attention! Device "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" has logged in. Unfortunately, we do not have a synchronized knowledge of the " +
+                        "device status of what device firmware is running on. Perhaps this is the factory setting. " +
+                        "We are now updating to the default firmware on device."))
+                .setNewLine()
+                .setText(new Notification_Text().setText("You do not have to do anything. Have a nice day."))
+                .setNewLine()
+                .setText(new Notification_Text().setText("Byzance"));
     }
 /*
     // Backup Notification

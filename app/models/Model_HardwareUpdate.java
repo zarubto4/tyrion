@@ -175,7 +175,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
         try {
 
             Swagger_UpdatePlan_brief_for_homer brief_for_homer = new Swagger_UpdatePlan_brief_for_homer();
-            brief_for_homer.update_procedure_id = null; // TODO getActualizationProcedureId().toString();
+            brief_for_homer.update_procedure_id = tracking_id.toString();
             brief_for_homer.hardware_update_id = id.toString();
             brief_for_homer.uuid_ids.add(getHardware().id);
 

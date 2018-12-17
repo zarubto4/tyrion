@@ -71,6 +71,8 @@ public class UpdateService {
     public void bulkUpdate(List<Model_Hardware> hardwareList, Updatable updatable, FirmwareType type) {
         Map<Model_HomerServer, List<Model_HardwareUpdate>> updates = new HashMap<>();
 
+        UUID trackingId = UUID.randomUUID();
+
         for (Model_Hardware hardware : hardwareList) {
             try {
                 Model_HomerServer server = hardware.get_connected_server();
@@ -83,7 +85,7 @@ public class UpdateService {
                     updates.put(server, new ArrayList<>());
                 }
 
-                Model_HardwareUpdate update = this.createUpdate(hardware, updatable, type);
+                Model_HardwareUpdate update = this.createUpdate(hardware, updatable, type, trackingId);
                 if (update.state == HardwareUpdateState.PENDING) {
                     updates.get(server).add(update);
                 }
@@ -244,7 +246,7 @@ public class UpdateService {
                             logger.debug("update_procedure_progress: nebylo třeba vůbec nic měnit.");
                         }
 
-                        EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, hardware.get_project_id(), hardware.id));
+                        this.notificationService.modelUpdated(Model_Hardware.class, hardware.id, hardware.get_project_id());
 
                         return;
                     } catch (Exception e) {
@@ -277,7 +279,7 @@ public class UpdateService {
      * @param type of the updatable object
      * @return Model_HardwareUpdate
      */
-    private Model_HardwareUpdate createUpdate(Model_Hardware hardware, Updatable updatable, FirmwareType type) {
+    private Model_HardwareUpdate createUpdate(Model_Hardware hardware, Updatable updatable, FirmwareType type, UUID trackingId) {
         ExpressionList<Model_HardwareUpdate> expressions = Model_HardwareUpdate.find.query().where()
                 .eq("hardware.id", hardware.id)
                 .or(Expr.eq("state", HardwareUpdateState.PENDING), Expr.eq("state", HardwareUpdateState.RUNNING));
@@ -296,20 +298,17 @@ public class UpdateService {
                 .order().desc("created")
                 .findList();
 
-        if (updates.size() > 0) {
-
-            for (Model_HardwareUpdate update : updates) {
-                if (update.state.equals(HardwareUpdateState.RUNNING)) {
-                    logger.info("update - ({}) - some update is already being executed on the hardware", hardware.full_id);
-                    if (update.getComponentId() == updatable.getId()) {
-                        logger.info("update - ({}) - attempt to create same update again - skipping", hardware.full_id);
-                        return update; // TODO is this a good idea?
-                    }
-                } else if (update.state.equals(HardwareUpdateState.PENDING)) {
-                    logger.info("update - ({}) - some update is pending for this hardware, marking obsolete", hardware.full_id);
-                    update.state = HardwareUpdateState.OBSOLETE;
-                    update.update();
+        for (Model_HardwareUpdate update : updates) {
+            if (update.state.equals(HardwareUpdateState.RUNNING)) {
+                logger.info("update - ({}) - some update is already being executed on the hardware", hardware.full_id);
+                if (update.getComponentId() == updatable.getId()) {
+                    logger.info("update - ({}) - attempt to create same update again - skipping", hardware.full_id);
+                    return update; // TODO is this a good idea?
                 }
+            } else if (update.state.equals(HardwareUpdateState.PENDING)) {
+                logger.info("update - ({}) - some update is pending for this hardware, marking obsolete", hardware.full_id);
+                update.state = HardwareUpdateState.OBSOLETE;
+                update.update();
             }
         }
 
@@ -318,6 +317,7 @@ public class UpdateService {
         update.state = HardwareUpdateState.PENDING;
         update.firmware_type = type;
         update.count_of_tries = 0;
+        update.tracking_id = trackingId;
 
         if (updatable instanceof Model_CProgramVersion) {
             update.c_program_version_for_update = (Model_CProgramVersion) updatable;
@@ -332,5 +332,9 @@ public class UpdateService {
         update.save();
 
         return update;
+    }
+
+    private Model_HardwareUpdate createUpdate(Model_Hardware hardware, Updatable updatable, FirmwareType type) {
+        return this.createUpdate(hardware, updatable, type, UUID.randomUUID());
     }
 }

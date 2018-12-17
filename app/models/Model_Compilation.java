@@ -3,7 +3,6 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import controllers._BaseController;
 import io.swagger.annotations.ApiModel;
 import org.apache.commons.io.FileExistsException;
 import play.libs.ws.WSClient;
@@ -119,13 +118,13 @@ public class Model_Compilation extends BaseModel implements Updatable {
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient @Override
+    @JsonIgnore @Override
     public void update() {
         // TODO new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, version.get_c_program().getProjectId(), version.get_c_program_id()))).start();
         super.update();
     }
 
-    @JsonIgnore @Transient @Override
+    @JsonIgnore @Override
     public boolean delete() {
         logger.internalServerError(new Exception("This object is not legitimate to remove."));
         return false;
@@ -135,99 +134,57 @@ public class Model_Compilation extends BaseModel implements Updatable {
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient
-    public void notification_compilation_start() {
-        try {
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.NORMAL)
-                    .setLevel(NotificationLevel.INFO)
-                    .setText(new Notification_Text().setText("Server starts compilation of Version "))
-                    .setObject(this)
-                    .send(_BaseController.person());
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
+    @JsonIgnore
+    public Model_Notification notificationStart() {
+        return new Model_Notification()
+                .setImportance(NotificationImportance.LOW)
+                .setLevel(NotificationLevel.INFO)
+                .setText(new Notification_Text().setText("Compilation of the "))
+                .setObject(this.getVersion())
+                .setText(new Notification_Text().setText(" has started."));
     }
 
-    @JsonIgnore @Transient
-    public void notification_compilation_success() {
-        try {
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.NORMAL)
-                    .setLevel(NotificationLevel.SUCCESS)
-                    .setText(new Notification_Text().setText("Compilation of Version "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText("was successful."))
-                    .send(_BaseController.person());
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
+    @JsonIgnore
+    public Model_Notification notificationSuccess() {
+        return new Model_Notification()
+                .setImportance(NotificationImportance.LOW)
+                .setLevel(NotificationLevel.SUCCESS)
+                .setText(new Notification_Text().setText("Compilation of the "))
+                .setObject(this.getVersion())
+                .setText(new Notification_Text().setText("was successful."));
     }
 
-    @JsonIgnore @Transient
-    public void notification_compilation_unsuccessful_warn(String reason) {
-        try {
-            new Model_Notification()
-                    .setImportance(NotificationImportance.NORMAL)
-                    .setLevel(NotificationLevel.WARNING)
-                    .setText(new Notification_Text().setText("Compilation of Version "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText("was unsuccessful, for reason:"))
-                    .setText(new Notification_Text().setText(reason).setBoldText())
-                    .send(_BaseController.person());
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
+    @JsonIgnore
+    public Model_Notification notificationUnsuccessfulWarn(String message) {
+        return new Model_Notification()
+                .setImportance(NotificationImportance.NORMAL)
+                .setLevel(NotificationLevel.WARNING)
+                .setText(new Notification_Text().setText("Compilation of the "))
+                .setObject(this.getVersion())
+                .setText(new Notification_Text().setText(" was unsuccessful, for reason: "))
+                .setText(new Notification_Text().setText(message).setBoldText());
     }
 
-    @JsonIgnore @Transient
-    public void notification_compilation_unsuccessful_error(String result) {
-        try {
-            new Model_Notification()
-                    .setImportance(NotificationImportance.NORMAL)
-                    .setLevel(NotificationLevel.ERROR)
-                    .setText(new Notification_Text().setText("Compilation of Version"))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText("with critical Error:"))
-                    .setText(new Notification_Text().setText(result).setBoldText())
-                    .send(_BaseController.person());
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    @JsonIgnore @Transient
-    public void notification_new_actualization_request_on_version() {
-
-        new Thread(() -> {
-            try {
-                new Model_Notification()
-                        .setImportance(NotificationImportance.NORMAL)
-                        .setLevel(NotificationLevel.INFO)
-                        .setText(new Notification_Text().setText("New actualization task was added to Task Queue on Version "))
-                        .setObject(this)
-                        .setText(new Notification_Text().setText(" from Program "))
-                        .setObject(this.version.get_c_program())
-                        .send(_BaseController.person());
-            } catch (Exception e) {
-                logger.internalServerError(e);
-            }
-        }).start();
+    @JsonIgnore
+    public Model_Notification notificationUnsuccessfulError(String message) {
+        return new Model_Notification()
+                .setImportance(NotificationImportance.NORMAL)
+                .setLevel(NotificationLevel.ERROR)
+                .setText(new Notification_Text().setText("Compilation of the "))
+                .setObject(this.getVersion())
+                .setText(new Notification_Text().setText(" was unsuccessful with critical error: "))
+                .setText(new Notification_Text().setText(message).setBoldText());
     }
 
 /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public String get_path() {
 
         return version.get_path();
     }
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public static String get_path_for_bin() throws Exception {
 
         CloudBlobContainer container = Server.blobClient.getContainerReference("bin-files");

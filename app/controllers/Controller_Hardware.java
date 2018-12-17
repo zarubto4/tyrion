@@ -19,6 +19,8 @@ import responses.*;
 import utilities.authentication.Authentication;
 import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import exceptions.NotFoundException;
+import utilities.hardware.HardwareConfigurationService;
+import utilities.hardware.HardwareConfigurator;
 import utilities.hardware.HardwareInterface;
 import utilities.hardware.HardwareService;
 import utilities.hardware.update.UpdateService;
@@ -49,13 +51,16 @@ public class Controller_Hardware extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
+    private final HardwareConfigurationService hardwareConfigurationService;
     private final HardwareService hardwareService;
     private final UpdateService updateService;
 
     @Inject
     public Controller_Hardware(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
-                               NotificationService notificationService, HardwareService hardwareService, UpdateService updateService) {
+                               NotificationService notificationService, HardwareService hardwareService, UpdateService updateService,
+                               HardwareConfigurationService hardwareConfigurationService) {
         super(ws, formFactory, config, permissionService, notificationService);
+        this.hardwareConfigurationService = hardwareConfigurationService;
         this.hardwareService = hardwareService;
         this.updateService = updateService;
     }
@@ -1566,7 +1571,6 @@ public class Controller_Hardware extends _BaseController {
             // Kotrola objektu
             Model_Hardware hardware = Model_Hardware.find.byId(hardware_id);
 
-            String help_previouse_name = hardware.name;
             // Uprava desky
             hardware.name = help.name;
             hardware.description = help.description;
@@ -1575,8 +1579,7 @@ public class Controller_Hardware extends _BaseController {
             hardware.update();
 
             // TODO might be async
-            HardwareInterface hardwareInterface = this.hardwareService.getInterface(hardware);
-            hardwareInterface.setAlias(hardware.name);
+            this.hardwareConfigurationService.getConfigurator(hardware).configure("alias", hardware.name);
 
             hardware.setTags(help.tags);
 
@@ -1626,91 +1629,89 @@ public class Controller_Hardware extends _BaseController {
 
             this.checkUpdatePermission(hardware);
 
-            HardwareInterface hardwareInterface = this.hardwareService.getInterface(hardware);
+            HardwareConfigurator configurator = this.hardwareConfigurationService.getConfigurator(hardware);
 
             switch (help.parameter_type.toLowerCase()) {
 
                 case "developer_kit": {
-
-                    // Synchronizace s Homer serverem a databází
                     hardware.developer_kit = help.boolean_value;
                     hardware.update();
                     break;
                 }
 
                 case "alias": {
-                    // Synchronizace s Homer serverem a databází
-
                     hardware.name = help.string_value;
-
-                    hardwareInterface.setAlias(hardware.name);
-
                     hardware.update();
+                    configurator.configure("alias", hardware.name);
+                    break;
+                }
 
+                case "autobackup": {
+                    hardware.backup_mode = help.boolean_value;
+                    hardware.update();
+                    configurator.configure("autobackup", hardware.backup_mode);
                     break;
                 }
 
                 case "database_synchronize": {
                     hardware.database_synchronize = help.boolean_value;
-
-                    hardwareInterface.setDatabaseSynchronize(hardware.database_synchronize);
-
                     hardware.update();
+                    configurator.configure("database_synchronize", hardware.database_synchronize);
                     break;
                 }
 
                 case "wdtime": {
 
                     if (help.integer_value  == null) {
-                        return badRequest("wdtime must be integer! And minimal value is 30");
+                        throw new BadRequestException("wdtime must be integer! And minimal value is 30");
                     }
 
-                    if(help.integer_value < 30) {
+                    if (help.integer_value < 30) {
                         help.integer_value = 30;
                     }
-                    hardwareInterface.setConfiguration(help);
+                    configurator.configure("wdtime", help.integer_value);
                     break;
                 }
 
                 case "autojump": {
 
                     if (help.integer_value  == null) {
-                        return badRequest("autojump must be integer! And minimal value is 30");
+                        throw new BadRequestException("autojump must be integer! And minimal value is 30");
                     }
 
-                    if(help.integer_value < 30) {
+                    if (help.integer_value < 30) {
                         help.integer_value = 30;
                     }
-                    hardwareInterface.setConfiguration(help);
+                    configurator.configure("autojump", help.integer_value);
                     break;
                 }
 
                 case "imsi": {
-                    return badRequest("imsi IS NOT possible to change!");
+                    throw new BadRequestException("imsi IS NOT possible to change!");
                 }
 
                 case "iccid": {
-                    return badRequest("iccid IS NOT possible to change!");
+                    throw new BadRequestException("iccid IS NOT possible to change!");
                 }
 
                 case "netsource": {
 
-                    if (help.string_value  == null) {
-                        return badRequest("netsource must be string! Allowed values: 6lowpan, ethernet, gsm");
+                    if (help.string_value == null) {
+                        throw new BadRequestException("netsource must be string! Allowed values: 6lowpan, ethernet, gsm");
                     }
 
-                    if(!(help.string_value.equals("ethernet") || help.string_value.equals("6lowpan")|| help.string_value.equals("gsm"))) {
-                        return badRequest("netsource must be string! Allowed values: 6lowpan, ethernet, gsm");
+                    if (!(help.string_value.equals("ethernet") || help.string_value.equals("6lowpan") || help.string_value.equals("gsm"))) {
+                        throw new BadRequestException("netsource must be string! Allowed values: 6lowpan, ethernet, gsm");
                     }
 
-                    hardwareInterface.setConfiguration(help);
+                    configurator.configure("netsource", help.string_value);
                     break;
                 }
 
                 default: {
 
                     try {
-                        hardwareInterface.setConfiguration(help);
+                        configurator.configure(help);
                         return ok(hardware);
                     } catch (IllegalArgumentException e) {
                         logger.trace("IllegalArgumentException" + e.getMessage());

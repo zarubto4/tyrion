@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import exceptions.NotSupportedException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
@@ -361,30 +362,25 @@ public class Model_Notification extends BaseModel implements Permissible, Person
         this.update();
     }
 
-    @JsonIgnore @Transient public List<UUID> list_of_ids_receivers = new ArrayList<>();
-
-    @JsonIgnore
+    @Deprecated @JsonIgnore
     public void send(List<Model_Person> receivers) {
-        for (Model_Person person : receivers) this.list_of_ids_receivers.add(person.id);
+        throw new NotSupportedException("Use notification service for this.");
     }
 
-    @JsonIgnore
+    @Deprecated @JsonIgnore
     public void send_under_project(UUID project_id) {
-
-        if (project_id == null) {
-            return;
-        }
-
+        throw new NotSupportedException("Use notification service for this.");
     }
 
-    @JsonIgnore
+    @Deprecated @JsonIgnore
     public void send(Model_Person person) {
-        this.list_of_ids_receivers.add(person.id);
+        throw new NotSupportedException("Use notification service for this.");
     }
 
     // Pro opětovné odeslání, když už notifikace obsahuje person
-    @JsonIgnore
+    @Deprecated @JsonIgnore
     public void send() {
+        throw new NotSupportedException("Use notification service for this.");
     }
 
     @Override
