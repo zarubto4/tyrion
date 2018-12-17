@@ -7,11 +7,11 @@ import play.data.validation.Constraints;
 import java.util.UUID;
 
 @ApiModel(description = "Json Model for ActualizationProcedure Make Procedure - HardwareType",
-          value = "ActualizationProcedure_Make_HardwareType")
-public class Swagger_ActualizationProcedure_Make_HardwareType {
+          value = "HardwareUpdate_Make_HardwareType")
+public class Swagger_HardwareUpdate_Make_HardwareType {
 
 
-    public Swagger_ActualizationProcedure_Make_HardwareType() {}
+    public Swagger_HardwareUpdate_Make_HardwareType() {}
 
     @ApiModelProperty(required = true,  readOnly = true)  @Constraints.Required public UUID hardware_type_id;
     @ApiModelProperty(required = true,  readOnly = true)  public UUID c_program_version_id;

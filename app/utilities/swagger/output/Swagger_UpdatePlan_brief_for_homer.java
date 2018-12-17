@@ -12,8 +12,8 @@ import java.util.UUID;
            value = "UpdatePlan_brief_for_homer")
 public class Swagger_UpdatePlan_brief_for_homer extends _Swagger_Abstract_Default {
 
-    @JsonProperty(value = "tracking_group_id") public String update_procedure_id;  // Procedure ID
-    @JsonProperty(value = "tracking_id")       public String hardware_update_id;    // Task ID
+    @JsonProperty      public UUID tracking_id;  // Procedure ID
+    @JsonProperty      public UUID tracking_group_id;    // Task ID
 
     // @JsonProperty public Enum_Update_type_of_update type_of_update;
 
@@ -22,7 +22,7 @@ public class Swagger_UpdatePlan_brief_for_homer extends _Swagger_Abstract_Defaul
                                                                             // tracking_id pak nemá smysl a řídí se vše jen podle tracking_group_id.
 
     @JsonProperty
-    public boolean progress_subscribe = false;                // Tyrion asks for information about the progress of the update
+    public boolean progress_subscribe = false;            // Tyrion asks for information about the progress of the update
 
     @JsonProperty
     public Swagger_UpdatePlan_brief_for_homer_BinaryComponent binary;

@@ -34,6 +34,6 @@ public class Swagger_C_Program_Version_Public_List extends _Swagger_Filter_Commo
         this.total = query.findCount();
         this.from   = (page_number - 1) * filter.count_on_page;
         this.to     = (page_number - 1) * filter.count_on_page + content.size();
-        this.pages = (total / filter.count_on_page);
+        this.pages = (int) Math.ceil (total / filter.count_on_page.doubleValue());
     }
 }

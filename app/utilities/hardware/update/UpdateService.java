@@ -51,7 +51,7 @@ public class UpdateService {
      * @param updatable firmware or bootloader
      * @param type of the updatable
      */
-    public void update(Model_Hardware hardware, Updatable updatable, FirmwareType type) {
+    public void update(Model_Hardware hardware, Updatable updatable, FirmwareType firmwareType, UpdateType updateType) {
         Model_HardwareUpdate update = this.createUpdate(hardware, updatable, type);
         try {
             HardwareInterface hardwareInterface = this.hardwareService.getInterface(hardware);
@@ -68,10 +68,8 @@ public class UpdateService {
         }
     }
 
-    public void bulkUpdate(List<Model_Hardware> hardwareList, Updatable updatable, FirmwareType type) {
+    public void bulkUpdate(List<Model_Hardware> hardwareList, Updatable updatable, FirmwareType type, UpdateType updateType, UUID trackingId) {
         Map<Model_HomerServer, List<Model_HardwareUpdate>> updates = new HashMap<>();
-
-        UUID trackingId = UUID.randomUUID();
 
         for (Model_Hardware hardware : hardwareList) {
             try {
@@ -85,7 +83,7 @@ public class UpdateService {
                     updates.put(server, new ArrayList<>());
                 }
 
-                Model_HardwareUpdate update = this.createUpdate(hardware, updatable, type, trackingId);
+                Model_HardwareUpdate update = this.createUpdate(hardware, updatable, type, updateType, trackingId);
                 if (update.state == HardwareUpdateState.PENDING) {
                     updates.get(server).add(update);
                 }
@@ -110,10 +108,6 @@ public class UpdateService {
                 });
             }
         });
-    }
-
-    public void groupUpdate(Model_HardwareGroup group, Updatable updatable, FirmwareType type) {
-        this.bulkUpdate(group.getHardware(), updatable, type);
     }
 
     public void onUpdateMessage(WS_Message_Hardware_UpdateProcedure_Progress message) {
@@ -186,7 +180,7 @@ public class UpdateService {
                     update.finished = new Date();
                     update.update();
 
-                    EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, hardware.get_project_id(), hardware.id));
+                    EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, hardware.getProjectId(), hardware.id));
 
                     return;
                 }
@@ -221,7 +215,7 @@ public class UpdateService {
 
                         if (update.firmware_type == FirmwareType.FIRMWARE) {
 
-                            if (hardware.getCurrentFirmware().id == null || !hardware.get_actual_c_program_version_id().equals(update.c_program_version_for_update.id)) {
+                            if (hardware.getCurrentFirmware().id == null || !hardware.getActualCProgramVersionId().equals(update.c_program_version_for_update.id)) {
                                 hardware.actual_c_program_version = update.c_program_version_for_update;
                                 hardware.update();
                             }
@@ -246,7 +240,7 @@ public class UpdateService {
                             logger.debug("update_procedure_progress: nebylo třeba vůbec nic měnit.");
                         }
 
-                        this.notificationService.modelUpdated(Model_Hardware.class, hardware.id, hardware.get_project_id());
+                        this.notificationService.modelUpdated(Model_Hardware.class, hardware.id, hardware.getProjectId());
 
                         return;
                     } catch (Exception e) {
@@ -273,25 +267,26 @@ public class UpdateService {
 
     /**
      * This method will find all pending updates and marks them obsolete before it creates the new update.
-     * If some update is already in progress, the method will not create new update but it will return the running one.
      * @param hardware for update
      * @param updatable firmware or bootloader
-     * @param type of the updatable object
+     * @param firmwareType of the updatable object
+     * @param updateType of the updatable object
      * @return Model_HardwareUpdate
      */
-    private Model_HardwareUpdate createUpdate(Model_Hardware hardware, Updatable updatable, FirmwareType type, UUID trackingId) {
+    private Model_HardwareUpdate createUpdate(Model_Hardware hardware, Updatable updatable, FirmwareType firmwareType, UpdateType updateType,  UUID trackingId) {
+
         ExpressionList<Model_HardwareUpdate> expressions = Model_HardwareUpdate.find.query().where()
                 .eq("hardware.id", hardware.id)
                 .or(Expr.eq("state", HardwareUpdateState.PENDING), Expr.eq("state", HardwareUpdateState.RUNNING));
 
-        if (type.equals(FirmwareType.FIRMWARE)) {
+        if (firmwareType.equals(FirmwareType.FIRMWARE)) {
             expressions.eq("firmware_type", FirmwareType.FIRMWARE);
-        } else if (type.equals(FirmwareType.BACKUP)) {
+        } else if (firmwareType.equals(FirmwareType.BACKUP)) {
             expressions.eq("firmware_type", FirmwareType.BACKUP);
-        } else if (type.equals(FirmwareType.BOOTLOADER)) {
+        } else if (firmwareType.equals(FirmwareType.BOOTLOADER)) {
             expressions.eq("firmware_type", FirmwareType.BOOTLOADER);
         } else {
-            throw new RuntimeException("Unknown component type: " + type + ", allowable values are: FIRMWARE, BACKUP or BOOTLOADER");
+            throw new RuntimeException("Unknown component type: " + firmwareType + ", allowable values are: FIRMWARE, BACKUP or BOOTLOADER");
         }
 
         List<Model_HardwareUpdate> updates = expressions
@@ -299,23 +294,17 @@ public class UpdateService {
                 .findList();
 
         for (Model_HardwareUpdate update : updates) {
-            if (update.state.equals(HardwareUpdateState.RUNNING)) {
-                logger.info("update - ({}) - some update is already being executed on the hardware", hardware.full_id);
-                if (update.getComponentId() == updatable.getId()) {
-                    logger.info("update - ({}) - attempt to create same update again - skipping", hardware.full_id);
-                    return update; // TODO is this a good idea?
-                }
-            } else if (update.state.equals(HardwareUpdateState.PENDING)) {
-                logger.info("update - ({}) - some update is pending for this hardware, marking obsolete", hardware.full_id);
-                update.state = HardwareUpdateState.OBSOLETE;
-                update.update();
-            }
+            logger.info("update - ({}) - some update is pending for this hardware, marking obsolete", hardware.full_id);
+            update.state = HardwareUpdateState.OBSOLETE;
+            update.update();
         }
+
 
         Model_HardwareUpdate update = new Model_HardwareUpdate();
         update.hardware = hardware;
         update.state = HardwareUpdateState.PENDING;
-        update.firmware_type = type;
+        update.firmware_type = firmwareType;
+        update.type_of_update = updateType;
         update.count_of_tries = 0;
         update.tracking_id = trackingId;
 

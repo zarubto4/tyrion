@@ -28,7 +28,7 @@ public class WS_Message_Hardware_set_settings extends WS_AbstractMessage {
     @JsonIgnore
     public  ObjectNode make_request(List<Model_Hardware> devices, String key, Boolean value) {
 
-        List<UUID> hardware_ids = devices.stream().map(Model_Hardware::get_id).collect(Collectors.toList());
+        List<UUID> hardware_ids = devices.stream().map(Model_Hardware::getId).collect(Collectors.toList());
 
         Set_CONF_Boolean_Parameter settings = new Set_CONF_Boolean_Parameter();
         settings.key = key;
@@ -47,7 +47,7 @@ public class WS_Message_Hardware_set_settings extends WS_AbstractMessage {
     @JsonIgnore
     public  ObjectNode make_request(List<Model_Hardware> devices, String key, String value) {
 
-        List<UUID> hardware_ids = devices.stream().map(Model_Hardware::get_id).collect(Collectors.toList());
+        List<UUID> hardware_ids = devices.stream().map(Model_Hardware::getId).collect(Collectors.toList());
 
         Set_CONF_String_Parameter settings = new Set_CONF_String_Parameter();
         settings.key = key;
@@ -65,7 +65,7 @@ public class WS_Message_Hardware_set_settings extends WS_AbstractMessage {
 
     @JsonIgnore
     public  ObjectNode make_request(List<Model_Hardware> devices, String key, Integer value) {
-        List<UUID> hardware_ids = devices.stream().map(Model_Hardware::get_id).collect(Collectors.toList());
+        List<UUID> hardware_ids = devices.stream().map(Model_Hardware::getId).collect(Collectors.toList());
 
         Set_CONF_Integer_Parameter settings = new Set_CONF_Integer_Parameter();
         settings.key = key;

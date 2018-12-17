@@ -37,7 +37,7 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
 
     // Zatím nepodporováno ze strany Things Mobile
     public String iccid; // Optional Value
-    public String imsi;
+    public String type; // OnChip Sim
 
 
     public String name;
@@ -94,9 +94,14 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
 
     @JsonProperty
     public Double month_cost() {
-     return  monthlyTraffic / 1024 / 1024 * Controller_Things_Mobile.price_per_MB;
-    }
+        try {
+            if(monthlyTraffic == null) return null;
+            return monthlyTraffic / 1024 / 1024 * Controller_Things_Mobile.price_per_MB;
 
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     @JsonProperty
     public boolean block_sim_daily() {
@@ -121,7 +126,14 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
     @JsonProperty
     @ApiModelProperty(name = "days_from_activation")
     public Long days_from_activation() {
-       return DAYS.between(LocalDate.parse(activationDate, TM_Sim_Status_cdr.formatter_from_tm), LocalDate.now());
+        try {
+
+            if(activationDate == null || activationDate.equals("") ) return null;
+
+            return DAYS.between(LocalDate.parse(activationDate, TM_Sim_Status_cdr.formatter_from_tm), LocalDate.now());
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**
@@ -133,7 +145,14 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
     @JsonProperty
     @ApiModelProperty(name = "activation_date_in_millis")
     public Long getAsLong_ActivationDate() {
-        return LocalDate.parse(activationDate, TM_Sim_Status_cdr.formatter_from_tm).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
+        try {
+            if(activationDate == null || activationDate.equals("") ) return null;
+            return LocalDate.parse(activationDate, TM_Sim_Status_cdr.formatter_from_tm).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
+        } catch (Exception e) {
+            System.out.println("Error: getAsLong_ActivationDate:: activationDate is null: " + activationDate);
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -145,8 +164,13 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
     @JsonProperty
     @ApiModelProperty(name = "expiration_date_in_millis")
     public Long getAsLong_ExpirationDate() {
-        if(expirationDate == null || expirationDate.equals("")) return -1L;
-        return LocalDate.parse(expirationDate, TM_Sim_Status_cdr.formatter_from_tm).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
+        try {
+            if (expirationDate == null || expirationDate.equals("")) return -1L;
+            return LocalDate.parse(expirationDate, TM_Sim_Status_cdr.formatter_from_tm).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
+        } catch (Exception e) {
+            System.out.println("Error: getAsLong_ExpirationDate is null: " + activationDate);
+            return null;
+        }
     }
 
 
@@ -159,7 +183,25 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
     @JsonProperty
     @ApiModelProperty(name = "last_connection_in_millis")
     public Long getAsLong_LastConnectionDate() {
-        if(lastConnectionDate == null || lastConnectionDate.equals("")) return -1L;
-        return LocalDate.parse(lastConnectionDate, TM_Sim_Status_cdr.formatter_from_tm).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
+        try {
+            if (lastConnectionDate == null || lastConnectionDate.equals("")) return -1L;
+            return LocalDate.parse(lastConnectionDate, TM_Sim_Status_cdr.formatter_from_tm).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
+        } catch (Exception e) {
+            System.out.println("activationDate: " + activationDate);
+            return null;
+        }
+    }
+
+
+    /**
+     * Same as in
+     * @see TM_Sim_Status_cdr
+     * @return
+     */
+    @JsonIgnore
+    public Long cdrImsi() {
+
+        if(cdrs.isEmpty()) return null;
+        return cdrs.get(0).cdrImsi;
     }
 }

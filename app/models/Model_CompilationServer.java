@@ -17,6 +17,7 @@ import utilities.permission.Action;
 import utilities.permission.Permissible;
 import utilities.permission.WithPermission;
 import utilities.logger.Logger;
+import utilities.swagger.output.Swagger_Short_Reference;
 
 import javax.persistence.*;
 import java.util.*;
@@ -63,6 +64,7 @@ public class Model_CompilationServer extends BaseModel implements Permissible, P
     public boolean isPublic() {
         return true;
     }
+
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 

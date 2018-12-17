@@ -70,6 +70,21 @@ public class HardwareService {
         }
     }
 
+    /**
+     * Call for set default firmware on Hardware (probably aprove from notification from users)
+     * @param hardware
+     */
+    public void setDefaultFirmware(Model_Hardware hardware) {
+        // TODO vykonat update defaultního updatu
+    }
+
+    /**
+     * Reject request to set to default firmware
+     */
+    public void rejectDefaultFirmware(Model_Hardware hardware) {
+        // TODO zaznamenat zamítnutí
+    }
+
     public void deactivate(Model_Hardware hardware) {
         this.dominanceService.setNondominant(hardware);
 

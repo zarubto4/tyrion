@@ -157,7 +157,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
                                     program_config.grid_program_id = program.grid_program().id;
                                     program_config.grid_program_version_id = program.get_grid_program_version_id();
                                     program_config.snapshot_settings = GridAccess.PROJECT;
-                                    program_config.connection_token = get_instance_id() + "/" + program_config.grid_program_id;
+                                    program_config.connection_token = getInstanceId() + "/" + program_config.grid_program_id;
 
                                     project_config.grid_programs.add(program_config);
                                 }
@@ -173,7 +173,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
                                 program_config.grid_program_id = program.get_grid_version_program().get_grid_program_id();
                                 program_config.grid_program_version_id = program.get_grid_program_version_id();
                                 program_config.snapshot_settings = GridAccess.PROJECT;
-                                program_config.connection_token = get_instance_id() + "/" + program_config.grid_program_id;
+                                program_config.connection_token = getInstanceId() + "/" + program_config.grid_program_id;
 
                                 project_config.grid_programs.add(program_config);
                             }
@@ -204,7 +204,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
                             program_config.grid_program_id = program.get_grid_version_program().get_grid_program_id();
                             program_config.grid_program_version_id = program.get_grid_program_version_id();
                             program_config.snapshot_settings = GridAccess.PROJECT;
-                            program_config.connection_token = get_instance_id() + "/" + program_config.grid_program_id;
+                            program_config.connection_token = getInstanceId() + "/" + program_config.grid_program_id;
 
                             project_config.grid_programs.add(program_config);
                         }
@@ -280,7 +280,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
     }
 
     @JsonIgnore
-    public UUID get_instance_id() {
+    public UUID getInstanceId() {
 
         if (idCache().gets(Model_Instance.class) == null) {
             idCache().add(Model_Instance.class, (UUID) Model_Instance.find.query().where().eq("snapshots.id", id).select("id").findSingleAttribute());
@@ -466,7 +466,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
         }
 
         summary.grid_app_url += Model_HomerServer.find.byId(getInstance().getServer_id()).get_Grid_APP_URL();
-        summary.grid_app_url += get_instance_id() + "/" ;
+        summary.grid_app_url += getInstanceId() + "/" ;
 
         switch (program.snapshot_settings) {
 
@@ -616,7 +616,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
 
         super.save();
 
-        this.idCache().add(Model_Instance.class, this.get_instance_id());
+        this.idCache().add(Model_Instance.class, this.getInstanceId());
 
         // Add to Cache
         if(getInstance() != null) {
@@ -625,7 +625,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
             getInstance().sort_Model_InstanceSnapshot_ids();
         }
 
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Instance.class, getInstance().getProjectId(), get_instance_id()))).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Instance.class, getInstance().getProjectId(), getInstanceId()))).start();
 
     }
 

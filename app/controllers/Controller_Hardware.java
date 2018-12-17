@@ -1267,7 +1267,7 @@ public class Controller_Hardware extends _BaseController {
             }
 
             if (!hardware_for_update.isEmpty()) {
-                this.updateService.bulkUpdate(boards, Model_BootLoader.find.byId(help.bootloader_id), FirmwareType.BOOTLOADER);
+                this.updateService.bulkUpdate(boards, Model_BootLoader.find.byId(help.bootloader_id), FirmwareType.BOOTLOADER, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, new HashMap<>());
             }else {
                 logger.error("bootLoader_manualUpdate hardware_for_update is Empty");
             }
@@ -1731,80 +1731,7 @@ public class Controller_Hardware extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "upload C_Program into Hardware",
-            tags = {"C_Program", "Board", "Actualization"},
-            notes = "Upload compilation to list of hardware. Compilation is on Version oc C_Program. And before uplouding compilation, you must succesfuly compile required version before! " +
-                    "Result (HTML code) will be every time 200. - Its because upload, restart, etc.. operation need more than ++30 second " +
-                    "There is also problem / chance that Tyrion didn't find where Embedded hardware is. So you have to listening Server Sent Events (SSE) and show \"future\" message to the user!",
-            produces = "application/json",
-            protocols = "https"
-    )
-    @ApiImplicitParams(
-            {
-                    @ApiImplicitParam(
-                            name = "body",
-                            dataType = "utilities.swagger.input.Swagger_DeployFirmware",
-                            required = true,
-                            paramType = "body",
-                            value = "Contains Json with values"
-                    )
-            }
-    )
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
-            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
-            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
-            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
-            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
-    })
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result hardware_updateFirmware() {
-        try {
 
-            // Get and Validate Object
-            Swagger_DeployFirmware help = formFromRequestWithValidation(Swagger_DeployFirmware.class);
-
-            // Ověření objektu
-            Model_CProgramVersion version = Model_CProgramVersion.find.byId(help.c_program_version_id);
-
-            this.checkReadPermission(version);
-
-            if (version.getCompilation() == null) {
-                throw new BadRequestException("Compilation is missing");
-            }
-
-            // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
-            if (version.getCompilation().status != CompilationStatus.SUCCESS) return badRequest("You cannot upload code in state:: " + version.getCompilation().status.name());
-
-            List<Model_Hardware> hardwareList = new ArrayList<>();
-
-            for (UUID hardware_id : help.hardware_ids) {
-
-                // Kotrola objektu
-                Model_Hardware hardware = Model_Hardware.find.byId(hardware_id);
-
-                this.checkUpdatePermission(hardware);
-
-                hardwareList.add(hardware);
-            }
-
-            if (!hardwareList.isEmpty()) {
-                new Thread(() -> {
-                    try {
-                        this.updateService.bulkUpdate(hardwareList, version, FirmwareType.FIRMWARE);
-                    } catch (Exception e) {
-                        logger.internalServerError(e);
-                    }
-                }).start();
-            }
-
-            // Vracím odpověď
-            return ok();
-
-        } catch (Exception e) {
-            return controllerServerError(e);
-        }
-    }
 
     @ApiOperation(value = "update Board Backup",
             tags = { "Hardware"},
@@ -2706,8 +2633,8 @@ public class Controller_Hardware extends _BaseController {
                                  group.idCache().add(Model_HardwareType.class,  new ArrayList<>());
                             }
 
-                            if(!group.idCache().gets(Model_HardwareType.class).contains(hardware.getHardwareTypeCache_id())){
-                                    group.idCache().add(Model_HardwareType.class, hardware.getHardwareTypeCache_id());
+                            if(!group.idCache().gets(Model_HardwareType.class).contains(hardware.getHardwareType().getId())){
+                                    group.idCache().add(Model_HardwareType.class, hardware.getHardwareType().getId());
                             }
 
                             hardware.get_hardware_group_ids();
@@ -2787,8 +2714,8 @@ public class Controller_Hardware extends _BaseController {
                         group.idCache().add(Model_HardwareType.class,  new ArrayList<>());
                     }
 
-                    if(!group.idCache().gets(Model_HardwareType.class).contains(board.getHardwareTypeCache_id())){
-                        group.idCache().add(Model_HardwareType.class, board.getHardwareTypeCache_id());
+                    if(!group.idCache().gets(Model_HardwareType.class).contains(board.getHardwareType().getId())){
+                        group.idCache().add(Model_HardwareType.class, board.getHardwareType().getId());
                     }
                 }
 

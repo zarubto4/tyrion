@@ -21,6 +21,7 @@ import utilities.logger.Logger;
 import utilities.notifications.NotificationService;
 import utilities.permission.Action;
 import utilities.permission.PermissionService;
+import utilities.scheduler.SchedulerService;
 import utilities.swagger.input.*;
 import utilities.swagger.output.filter_results.Swagger_B_Program_List;
 import utilities.swagger.output.filter_results.Swagger_Block_List;
@@ -40,12 +41,14 @@ public class Controller_Blocko extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     private final InstanceService instanceService;
+    private final SchedulerService schedulerService;
 
     @Inject
     public Controller_Blocko(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
-                             NotificationService notificationService, InstanceService instanceService) {
+                             NotificationService notificationService, SchedulerService schedulerService, InstanceService instanceService) {
         super(ws, formFactory, config, permissionService, notificationService);
         this.instanceService = instanceService;
+        this.schedulerService = schedulerService;
     }
 
 // B PROGRAM ###########################################################################################################
@@ -155,7 +158,7 @@ public class Controller_Blocko extends _BaseController {
 
             // Musí být splněna alespoň jedna podmínka, aby mohl být Junction aktivní. V opačném případě by totiž způsobil bychu
             // která vypadá nějak takto:  where t0.deleted = false and and .... KDE máme 2x end!!!!!
-            if (!(help.project_id != null)) {
+            if (help.project_id == null) {
                 return ok(new Swagger_B_Program_List());
             }
 
@@ -184,8 +187,6 @@ public class Controller_Blocko extends _BaseController {
 
             // Vytvoření odchozího JSON
             Swagger_B_Program_List result = new Swagger_B_Program_List(query, page_number, help);
-
-             // TODO permissions
 
             // Vrácení výsledku
             return ok(result);
@@ -245,7 +246,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "tag B_Program",
             tags = {"B_Program"},
-            notes = "", //TODO
+            notes = "Add Tag to Blocko Program",
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -292,7 +293,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "untag B_Program",
             tags = {"B_Program"},
-            notes = "", //TODO
+            notes = "Remove Tag from Blocko program",
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -554,7 +555,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "create Instance",
             tags = {"Instance"},
-            notes = "", //TODO
+            notes = "Create new Instance under Project",
             produces = "application/json",
             consumes = "application/json",
             protocols = "https",
@@ -641,7 +642,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "edit Instance",
             tags = {"Instance"},
-            notes = "", //TODO
+            notes = "Edit Basic information on Instance",
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -736,7 +737,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "untag Instance",
             tags = {"Instance"},
-            notes = "", //TODO
+            notes = "Remove Tag",
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -832,7 +833,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "create InstanceSnapshot",
             tags = {"Instance"},
-            notes = "", //TODO
+            notes = "Create new Instance Snapshot",
             produces = "application/json",
             consumes = "application/json",
             protocols = "https",
@@ -942,7 +943,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "get InstanceSnapshot",
             tags = {"Instance"},
-            notes = "", //TODO
+            notes = "Get InstanceSpapshot from Instance",
             produces = "application/json",
             protocols = "https"
     )
@@ -1013,19 +1014,18 @@ public class Controller_Blocko extends _BaseController {
 
                 // Deployed is future
                 snapshot.deployed = future;
-                // TODO scheduler.scheduleInstanceDeployment(snapshot);
+                schedulerService.scheduleInstanceDeployment(snapshot);
 
             } else {
 
                 logger.trace("instanceSnapshot_deploy:: Deploy Snapshot Immediately");
-
                 this.instanceService.deploy(snapshot);
+
             }
 
             return ok();
 
         } catch (Exception e) {
-            e.printStackTrace();
             return controllerServerError(e);
         }
     }
@@ -1117,8 +1117,6 @@ public class Controller_Blocko extends _BaseController {
             // Vytvářím seznam podle stránky
             Swagger_Instance_List result = new Swagger_Instance_List(query, page_number, help);
 
-            // TODO permissions
-
             // Vracím seznam
             return ok(result);
 
@@ -1129,7 +1127,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "update Instance Grid Settings",
             tags = { "Instance"},
-            notes = "", //TODO
+            notes = "Update Grid Settings on Instance",
             produces = "application/json",
             protocols = "https",
             code = 200
@@ -1177,7 +1175,6 @@ public class Controller_Blocko extends _BaseController {
             return badRequest("snapshot_settings is not valid");
 
         } catch (Exception e) {
-
             return controllerServerError(e);
         }
     }
@@ -1623,7 +1620,6 @@ public class Controller_Blocko extends _BaseController {
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
-
     )
     @ApiImplicitParams(
             {
@@ -1660,6 +1656,8 @@ public class Controller_Blocko extends _BaseController {
             blockNew.name = help.name;
             blockNew.description = help.description;
             blockNew.project = project;
+
+            blockNew.setTags(help.tags);
 
             // Duplicate all versions
             for (Model_BlockVersion version : blockOld.getVersions()) {
@@ -1744,7 +1742,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "tag Block",
             tags = {"Block"},
-            notes = "", //TODO
+            notes = "",
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -1792,7 +1790,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "untag Block",
             tags = {"Block"},
-            notes = "", //TODO
+            notes = "Remove Tag from Block",
             produces = "application/json",
             consumes = "application/json",
             protocols = "https"
@@ -2405,7 +2403,7 @@ public class Controller_Blocko extends _BaseController {
 
     @ApiOperation(value = "setMain BlockVersion",
             tags = {"Admin-Block"},
-            notes = "",     //TODO
+            notes = "Administration Byzance only - set Version as Main - First code in program",
             produces = "application/json",
             protocols = "https"
     )

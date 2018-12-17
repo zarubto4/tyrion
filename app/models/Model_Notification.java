@@ -197,7 +197,7 @@ public class Model_Notification extends BaseModel implements Permissible, Person
                 element.name = class_name;
                 element.id = hardware.id;
                 element.text = hardware.name != null && hardware.name.length() > 2 ? hardware.name : hardware.full_id;
-                element.project_id = hardware.get_project_id();
+                element.project_id = hardware.getProjectId();
                 break;
             }
             case "CProgram" : {

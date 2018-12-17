@@ -2,13 +2,14 @@ package websocket.messages.homer_hardware_with_tyrion;
 
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
+import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class WS_Message_Hardware_overview_Board implements Constraints.Validatable<List<ValidationError>> {
+public class WS_Message_Hardware_overview_Board extends _Swagger_Abstract_Default implements Constraints.Validatable<List<ValidationError>>  {
 
     public WS_Message_Hardware_overview_Board() {}
 

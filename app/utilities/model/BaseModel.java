@@ -2,6 +2,7 @@ package utilities.model;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers._BaseController;
@@ -58,7 +59,43 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         return id;
     }
 
+/* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
+
+    @ApiModelProperty(required = true,
+            value = "UNIX time in s",
+            example = "1466163471")
+    @JsonProperty
+    public Long  created() {
+        try {
+
+            if(created == null) return null;
+            return created.getTime() / 1000;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+    @ApiModelProperty(required = true,
+            value = "UNIX time in s",
+            example = "1466163471")
+    @JsonProperty
+    public Long  updated() {
+        try {
+
+            if(updated == null) return null;
+            return updated.getTime() / 1000;
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+
 /* GENERAL OBJECT CACHE ------------------------------------------------------------------------------------------------*/
+
 
    @JsonIgnore @Transient
     public IDCache idCache(){

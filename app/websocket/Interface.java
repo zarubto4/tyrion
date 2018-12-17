@@ -113,7 +113,8 @@ public abstract class Interface implements WebSocketInterface {
             }
 
         } catch (InvalidBodyException e) {
-            // TODO send message back
+            // Response is, there is a change that it will response to something, that dont recognize message and also response to this server with error message...
+            // Just ignore it
         } catch (Exception e) {
             logger.internalServerError(e);
 

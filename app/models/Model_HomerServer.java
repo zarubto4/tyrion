@@ -22,6 +22,7 @@ import utilities.network.Networkable;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
 import utilities.permission.WithPermission;
+import utilities.swagger.output.Swagger_Short_Reference;
 
 import javax.persistence.*;
 import java.util.*;
@@ -125,6 +126,11 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
     @JsonIgnore @Override
     public boolean isPublic() {
         return server_type != HomerType.PRIVATE;
+    }
+
+    @JsonIgnore  @Override
+    public Swagger_Short_Reference ref(){
+        return new Swagger_Short_Reference(id, name, description, this.tags(), this.online_state);
     }
 
     /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/

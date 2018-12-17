@@ -99,13 +99,13 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
 
         new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, program.get_grid_project().get_project_id(), program.id))).start();
 
-        program.idCache().add(this.getClass(), id);
+        program.idCache().add(this.getClass(), this.getId());
         program.sort_Model_Model_GridProgramVersion_ids();
     }
 
     @JsonIgnore @Override
     public void update() {
-        logger.debug("update::Update object Id: {}",  this.id);
+        logger.debug("update::Update object Id: {}",  this.getId());
         super.update();
 
         new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_GridProgram.class, getGridProgram().get_grid_project().get_project_id(), id))).start();
@@ -113,10 +113,10 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
 
     @JsonIgnore @Override
     public boolean delete() {
-        logger.debug("delete::Delete object Id: {}",  this.id);
+        logger.debug("delete::Delete object Id: {}",  this.getId());
         super.delete();
 
-        getGridProgram().idCache().remove(this.getClass(), id);
+        getGridProgram().idCache().remove(this.getClass(), this.getId());
 
         new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_GridProgram.class, getGridProgram().get_grid_project().get_project_id(), get_grid_program_id()))).start();
 
@@ -130,10 +130,10 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
     @JsonIgnore @Transient
     public String get_path() {
         if (getGridProgram() != null) {
-            return getGridProgram().get_path() + "/version/" + this.id;
+            return getGridProgram().get_path() + "/version/" + this.getId();
 
         } else {
-            return getGridProgram().get_path() + "/version/" + this.id;
+            return getGridProgram().get_path() + "/version/" + this.getId();
         }
     }
 

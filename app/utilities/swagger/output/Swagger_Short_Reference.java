@@ -26,6 +26,14 @@ public class Swagger_Short_Reference extends _Swagger_Abstract_Default {
         this.tags = tags;
     }
 
+    public Swagger_Short_Reference(UUID id, String name, String description, List<String> tags, NetworkStatus status){
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.tags = tags;
+        this.online_state = status;
+    }
+
     public String name;
     public String description;
     public UUID id;

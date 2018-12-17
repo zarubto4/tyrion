@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@ApiModel(description = "", value = "ActualizationProcedureTask_List")
-public class Swagger_ActualizationProcedureTask_List extends _Swagger_Filter_Common {
+@ApiModel(description = "", value = "HardwareUpdate_List")
+public class Swagger_HardwareUpdate_List extends _Swagger_Filter_Common {
 
 /* Content--------------------------------------------------------------------------------------------------------------*/
 
@@ -20,20 +20,19 @@ public class Swagger_ActualizationProcedureTask_List extends _Swagger_Filter_Com
 
 /* Set -----------------------------------------------------------------------------------------------------------------*/
 
-    public Swagger_ActualizationProcedureTask_List(Query<Model_HardwareUpdate> query , int page_number,_Swagger_filter_parameter filter) {
+    public Swagger_HardwareUpdate_List(Query<Model_HardwareUpdate> query , int page_number, _Swagger_filter_parameter filter) {
 
         if (page_number < 1) page_number = 1;
         List<UUID> ids =  query.setFirstRow((page_number - 1) * filter.count_on_page).setMaxRows(filter.count_on_page).findIds();
 
         for (UUID id : ids) {
             Model_HardwareUpdate task = Model_HardwareUpdate.find.byId(id);
-            if (task == null) continue;
             this.content.add(task);
         }
 
         this.total   = query.findCount();
         this.from   = (page_number - 1) * filter.count_on_page;
         this.to     = (page_number - 1) * filter.count_on_page + content.size();
-        this.pages = (total / filter.count_on_page);
+        this.pages = (int) Math.ceil (total / filter.count_on_page.doubleValue());
     }
 }
