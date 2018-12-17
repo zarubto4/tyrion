@@ -7,6 +7,7 @@ import org.mongodb.morphia.annotations.Entity;
 import utilities.Server;
 import utilities.cache.CacheMongoFinder;
 import utilities.cache.InjectCache;
+import utilities.enums.EntityType;
 import utilities.enums.NetworkStatus;
 import utilities.enums.ServerMode;
 import utilities.logger.Logger;
@@ -29,12 +30,11 @@ public class ModelMongo_NetworkStatus extends _Abstract_MongoModel {
 
     public String networkable_id;
     public NetworkStatus status;
+    public EntityType entity_type;
 
     // Common
     public String server_version;
     public ServerMode server_type;
-
-
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -66,6 +66,7 @@ public class ModelMongo_NetworkStatus extends _Abstract_MongoModel {
 
         ModelMongo_NetworkStatus networkStatus = new ModelMongo_NetworkStatus();
         networkStatus.networkable_id = networkable.getId().toString();
+        networkStatus.entity_type = networkable.getEntityType();
         networkStatus.status = status;
         networkStatus.save();
 
