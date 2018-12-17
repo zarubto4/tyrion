@@ -34,8 +34,12 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-                                            @JsonIgnore public Date finished;
-                                            @JsonIgnore public Date planned;
+                                                @ApiModelProperty(required = true,
+                                                        value = "UNIX time in s",
+                                                        example = "1466163471") public Date finished;
+                                                @ApiModelProperty(required = true,
+                                                        value = "UNIX time in s",
+                                                        example = "1466163471") public Date planned;
 
                                 @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_Hardware hardware;     // Deska k aktualizaci
                                             @ApiModelProperty(required = true)  public FirmwareType firmware_type;  // Typ Firmwaru
@@ -56,6 +60,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
 
     //------------------------------------------------------------------------------------------------------------------------------------
+
     /**
      * TODO asi to půjde zcuknout pouze na to jedno tracking ID ??
      * Do tracking number mužu uložit všechny 4 tyto následující,
@@ -70,6 +75,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
     @JsonIgnore public UUID tracking_id_instance_id;
     @JsonIgnore public UUID tracking_id_project_id;
     @JsonIgnore public UUID tracking_release_procedure_id;
+
     //------------------------------------------------------------------------------------------------------------------------------------
 
     public UpdateType type_of_update;

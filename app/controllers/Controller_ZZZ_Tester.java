@@ -26,11 +26,13 @@ import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_List;
 import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_List_list;
 import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_Status;
+import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_UpdateTresHold;
 import utilities.logger.Logger;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.scheduler.jobs.Job_ThingsMobile_SimData_Synchronize;
 import utilities.scheduler.jobs.Job_ThingsMobile_SimListOnly_Synchronize;
+import utilities.swagger.input.Swagger_GSM_Edit;
 import websocket.WebSocketService;
 
 import java.io.FileOutputStream;
@@ -68,7 +70,37 @@ public class Controller_ZZZ_Tester extends _BaseController {
         try {
 
 
-            new Job_ThingsMobile_SimListOnly_Synchronize().execute(null);
+            //
+            // new Job_ThingsMobile_SimListOnly_Synchronize().execute(null);
+
+            Swagger_GSM_Edit edit = new Swagger_GSM_Edit();
+            edit.daily_traffic_threshold = 2;
+            edit.block_sim_daily = false;
+            edit.monthly_traffic_threshold = 5;
+            edit.block_sim_monthly = false;
+            edit.total_traffic_threshold = 10;
+            edit.block_sim_total = false;
+
+
+            TM_Sim_UpdateTresHold hold = Controller_Things_Mobile.sim_set_tresHolds(882360005424320L, edit);
+
+            if(hold.done) {
+                System.out.println("Povedlo se");
+
+                TM_Sim_Status status = Controller_Things_Mobile.sim_status(882360005424320L);
+
+
+                System.err.println("daily_traffic_threshold: " +  status.dailyTrafficThreshold);
+                System.err.println("monthly_traffic_threshold: " +  status.monthlyTrafficThreshold);
+                System.err.println("total_traffic_threshold: " +  status.totalTrafficThreshold);
+
+
+            } else {
+                System.err.println("Nepovedlo se: " + hold.errorMessage);
+            }
+
+
+
 
             return ok();
 

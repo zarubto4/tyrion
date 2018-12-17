@@ -2,9 +2,11 @@ package services;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import javax.inject.*;
 
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.google.inject.Injector;
 import com.google.inject.Module;
@@ -16,6 +18,7 @@ import utilities.Server;
 import utilities.cache.CacheService;
 import utilities.enums.ServerMode;
 import utilities.logger.ServerLogger;
+import utilities.model.DateSerializer;
 import utilities.permission.PermissionFilter;
 import common.InjectedHandlerInstantiator;
 import utilities.scheduler.SchedulerService;
@@ -68,9 +71,16 @@ public class ApplicationStarter {
 
             this.cache.initialize();
 
+
+            // Date to seconds
+            SimpleModule module_date = new SimpleModule();
+            module_date.addSerializer(Date.class, new DateSerializer());
+
+
             // For dependency injected serializer for permissions
             Json.mapper()
                     .setFilterProvider(new SimpleFilterProvider().addFilter("permission", injector.getInstance(PermissionFilter.class)))
+                    .registerModule(module_date)
                     .setHandlerInstantiator(injector.getInstance(InjectedHandlerInstantiator.class));
 
             Server.start(injector);
