@@ -3,6 +3,7 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import exceptions.NotFoundException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
@@ -46,6 +47,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
     /** OR **/  @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)                  public Model_Blob binary_file;                              // Soubor, když firmware nahrává uživatel sám mimo flow
 
                                                                                 public HardwareUpdateState state;
+                                                                                public UpdateType type;
                                                                     @JsonIgnore public Integer count_of_tries;                              // Počet celkovbých pokusu doručit update (změny z wait to progres atd...
 
     /**
@@ -54,25 +56,6 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
      */
     @JsonIgnore public UUID tracking_id;
 
-
-    //------------------------------------------------------------------------------------------------------------------------------------
-    /**
-     * TODO asi to půjde zcuknout pouze na to jedno tracking ID ??
-     * Do tracking number mužu uložit všechny 4 tyto následující,
-     *
-     * protože buď updatuju manuálně (pak nemám tracking id
-     * nebo přes instanci (pak mám snapshot)
-     * nebo release
-     *
-     * jenže, když to zcuknu, pak nevím které z těch id je jaký objekt, takže to nepůjde jednoduše "hledat" pouze to vyzkoušet na všechn objektech
-     */
-    @JsonIgnore public UUID tracking_id_snapshot_id;
-    @JsonIgnore public UUID tracking_id_instance_id;
-    @JsonIgnore public UUID tracking_id_project_id;
-    @JsonIgnore public UUID tracking_release_procedure_id;
-    //------------------------------------------------------------------------------------------------------------------------------------
-
-    public UpdateType type_of_update;
 
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Only if state is critical_error or Homer record some error")  public String error;
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Only if state is critical_error or Homer record some error")  public Integer error_code;
@@ -170,38 +153,30 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
     public Swagger_Short_Reference release_update() {
         try {
 
-            if(tracking_release_procedure_id == null) return null;
-            return Model_HardwareReleaseUpdate.find.byId(tracking_release_procedure_id).ref();
-
+            if (tracking_id != null) {
+                return Model_HardwareReleaseUpdate.find.byId(this.tracking_id).ref();
+            }
+        } catch (NotFoundException e) {
+          // nothing
         } catch (Exception e) {
             logger.internalServerError(e);
-            return null;
         }
-    }
-
-    @JsonProperty @ApiModelProperty(required = false, readOnly = true)
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Swagger_Short_Reference instance() {
-        try {
-
-            if(tracking_id_instance_id == null) return null;
-            return Model_Instance.find.byId(this.tracking_id_instance_id).ref();
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
+        return null;
     }
 
     @JsonProperty @ApiModelProperty(required = false, readOnly = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Swagger_Short_Reference instance_snapshot() {
         try {
-            if(tracking_id_snapshot_id == null) return null;
-            return Model_InstanceSnapshot.find.byId(this.tracking_id_snapshot_id).ref();
+            if (tracking_id != null) {
+                return Model_InstanceSnapshot.find.byId(this.tracking_id).ref();
+            }
+        } catch (NotFoundException e) {
+            // nothing
         } catch (Exception e) {
             logger.internalServerError(e);
-            return null;
         }
+        return null;
     }
 
     @ApiModelProperty(required = false, value = "Is visible only if user send own binary file ( OR state for c_program_detail)")

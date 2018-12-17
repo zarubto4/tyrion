@@ -6,8 +6,8 @@ import models.Model_Hardware;
 import models.Model_HomerServer;
 import models.Model_Instance;
 import play.libs.concurrent.HttpExecutionContext;
+import utilities.hardware.DominanceService;
 import utilities.hardware.HardwareEvents;
-import utilities.hardware.update.UpdateService;
 import utilities.instance.InstanceService;
 import utilities.logger.Logger;
 import utilities.synchronization.Task;
@@ -28,8 +28,8 @@ public class HomerSynchronizationTask implements Task {
     private final HttpExecutionContext httpExecutionContext;
     private final HomerService homerService;
     private final HardwareEvents hardwareEvents;
-    private final UpdateService updateService;
     private final InstanceService instanceService;
+    private final DominanceService dominanceService;
 
     private Model_HomerServer server;
     private HomerInterface homerInterface;
@@ -37,13 +37,13 @@ public class HomerSynchronizationTask implements Task {
     private CompletableFuture<Void> future;
 
     @Inject
-    public HomerSynchronizationTask(HomerService homerService, HardwareEvents hardwareEvents, UpdateService updateService,
-                                    InstanceService instanceService, HttpExecutionContext httpExecutionContext) {
+    public HomerSynchronizationTask(HomerService homerService, HardwareEvents hardwareEvents, InstanceService instanceService,
+                                    HttpExecutionContext httpExecutionContext, DominanceService dominanceService) {
         this.httpExecutionContext = httpExecutionContext;
         this.homerService = homerService;
         this.hardwareEvents = hardwareEvents;
-        this.updateService = updateService;
         this.instanceService = instanceService;
+        this.dominanceService = dominanceService;
     }
 
     @Override
@@ -126,12 +126,12 @@ public class HomerSynchronizationTask implements Task {
             for (WS_Message_Homer_Hardware_ID_UUID_Pair pair : device_ids_on_server) {
                 try {
 
-                    Model_Hardware hardware = Model_Hardware.getByFullId(pair.full_id);
+                    Model_Hardware hardware = this.dominanceService.getDominant(pair.full_id);
 
                     // Device je autorizován pro připojení, ale není k němu aktuálně žádná aktivní virtual entita
                     // s nastavenou dominancí
                     if (hardware == null) {
-                        logger.info("check_device_on_server:: Device: Full ID: {} not found in database by getByFullId", pair.full_id);
+                        logger.info("synchronizeHardware - dominant hardware for id: {} not found", pair.full_id);
                         continue;
                     }
 
@@ -142,7 +142,7 @@ public class HomerSynchronizationTask implements Task {
                     }
 
                     // Homer server neměl spojení s Tyrionem a tak dočasně přiřadil uuid jako full id - proto hned zaměním
-                    if(pair.uuid.length() < 25) {
+                    if (pair.uuid.length() < 25) {
                         logger.warn("check_device_on_server:: Device: ID: {} there is a  same full ID: {} as a UUID {} from Server", hardware.id, pair.full_id, pair.full_id);
                         logger.warn("check_device_on_server:: Device: ID: {} Its required change pair on homer server", hardware.id);
                         // TODO board.device_converted_id_clean_switch_on_server(pair.uuid);
@@ -150,7 +150,7 @@ public class HomerSynchronizationTask implements Task {
                     }
 
                     // Zařízení má přiřazenou jinou UUID k Full ID než by měl mít
-                    if(!hardware.id.equals(UUID.fromString(pair.uuid))) {
+                    if (!hardware.id.equals(UUID.fromString(pair.uuid))) {
                         logger.warn("check_device_on_server:: Device: ID: {} there is a mistake with pair with full ID: {} and UUID {} from Server", hardware.id, pair.full_id, pair.full_id);
                         logger.warn("check_device_on_server:: Device: ID: {} Its required change pair on homer server!", hardware.id);
 
@@ -160,9 +160,9 @@ public class HomerSynchronizationTask implements Task {
                     }
 
 
-                    // TODO WS_Message_Hardware_overview_Board overview = board.get_devices_overview();
-
-                    this.hardwareEvents.connected(hardware);
+                    if (pair.online_state) {
+                        this.hardwareEvents.connected(hardware);
+                    }
 
                 } catch (Exception e) {
                     logger.internalServerError(e);

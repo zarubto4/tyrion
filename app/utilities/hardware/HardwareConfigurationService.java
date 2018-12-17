@@ -38,6 +38,6 @@ public class HardwareConfigurationService {
 
         hardware.update_bootloader_configuration(configuration);
 
-        this.notificationService.modelUpdated(Model_Hardware.class, hardware.getId(), hardware.get_project_id());
+        this.notificationService.modelUpdated(Model_Hardware.class, hardware.getId(), hardware.getProjectId());
     }
 }

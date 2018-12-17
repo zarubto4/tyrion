@@ -1,7 +1,6 @@
 package websocket;
 
 import akka.NotUsed;
-import akka.stream.Materializer;
 import akka.stream.javadsl.Flow;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;

@@ -14,14 +14,13 @@ import exceptions.FailedMessageException;
 import exceptions.InvalidBodyException;
 import org.reactivestreams.Publisher;
 import play.libs.Json;
-import scala.concurrent.duration.FiniteDuration;
 import utilities.logger.Logger;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public abstract class Interface implements WebSocketInterface {
@@ -83,7 +82,7 @@ public abstract class Interface implements WebSocketInterface {
 
         this.out = both.first();
         return Flow.fromSinkAndSourceCoupled(Sink.foreach(this::onReceived), Source.fromPublisher(both.second())) // TODO probably foreachParallel
-                .keepAlive(new FiniteDuration(60L, TimeUnit.SECONDS), this::keepAlive)
+                .keepAlive(Duration.ofSeconds(60L), this::keepAlive)
                 .watchTermination((notUsed, whenDone) -> {
                     whenDone.thenAccept(done -> {
                         logger.info("watchTermination$lambda - connection lasted for {} s", Instant.now().getEpochSecond() - start.getEpochSecond());

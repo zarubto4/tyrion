@@ -98,7 +98,7 @@ public class Controller_Update extends _BaseController {
 
             // Kotrola objektu
             Model_Hardware hardware = Model_Hardware.find.byId(help.hardware_id);
-            this.updateService.update(hardware, version, FirmwareType.FIRMWARE, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, new HashMap<>());
+            this.updateService.update(hardware, version, FirmwareType.FIRMWARE, UpdateType.MANUALLY_BY_USER_INDIVIDUAL);
 
 
             // Vracím odpověď
@@ -226,6 +226,7 @@ public class Controller_Update extends _BaseController {
 
             // Kontrola Projektu
             Model_Project project = Model_Project.find.byId(help.project_id);
+            this.checkUpdatePermission(project);
 
             List<Model_Hardware> hardwareList = Model_Hardware.find.query().where()
                     .or(
@@ -238,18 +239,14 @@ public class Controller_Update extends _BaseController {
             releaseUpdate.project_id = help.project_id;
             releaseUpdate.save();
 
-
-            Map<String, UUID> tracking_hash = new HashMap<>();
-            tracking_hash.put("RELEASE_PROCEDURE", releaseUpdate.getId());
-
-            for(Model_Hardware hardware : hardwareList) {
+            for (Model_Hardware hardware : hardwareList) {
                 // Planed
                 if (help.time != null && help.time != 0L) {
-                    updateService.scheduleUpdate(new Date(help.time), hardware, help.getComponent(hardware.hardware_type), help.firmware_type, UpdateType.MANUALLY_RELEASE_MANAGER, tracking_hash);
+                    this.updateService.schedule(new Date(help.time), hardware, help.getComponent(hardware.hardware_type), help.firmware_type, UpdateType.MANUALLY_RELEASE_MANAGER, releaseUpdate.getId());
 
                 // Not planed
                 } else {
-                    updateService.update(hardware, help.getComponent(hardware.hardware_type), help.firmware_type, UpdateType.MANUALLY_RELEASE_MANAGER, tracking_hash);
+                    this.updateService.update(hardware, help.getComponent(hardware.hardware_type), help.firmware_type, UpdateType.MANUALLY_RELEASE_MANAGER, releaseUpdate.getId());
                 }
             }
 
@@ -308,12 +305,11 @@ public class Controller_Update extends _BaseController {
             Model_HardwareReleaseUpdate plan = Model_HardwareReleaseUpdate.find.byId(plan_id);
 
             List<Model_HardwareUpdate> updates = Model_HardwareUpdate.find.query().where()
-                    .eq("tracking_release_procedure_id", plan_id)
-                    .or(Expr.eq("state", HardwareUpdateState.PENDING),
-                        Expr.eq("state", HardwareUpdateState.IN_PLAN)
-                    ).findList();
+                    .eq("tracking_id", plan_id)
+                    .eq("state", HardwareUpdateState.PENDING)
+                    .findList();
 
-            for(Model_HardwareUpdate update : updates) {
+            for (Model_HardwareUpdate update : updates) {
                 updateService.cancel(update.getId());
             }
 
@@ -478,7 +474,7 @@ public class Controller_Update extends _BaseController {
             }
 
             if (help.type_of_updates != null && !help.type_of_updates.isEmpty()) {
-                 query.where().in("type_of_update", help.type_of_updates);
+                 query.where().in("type", help.type_of_updates);
             }
 
             if (!help.hardware_ids.isEmpty()) {

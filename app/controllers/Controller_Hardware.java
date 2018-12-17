@@ -1267,7 +1267,7 @@ public class Controller_Hardware extends _BaseController {
             }
 
             if (!hardware_for_update.isEmpty()) {
-                this.updateService.bulkUpdate(boards, Model_BootLoader.find.byId(help.bootloader_id), FirmwareType.BOOTLOADER, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, new HashMap<>());
+                this.updateService.bulkUpdate(boards, Model_BootLoader.find.byId(help.bootloader_id), FirmwareType.BOOTLOADER, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, null);
             }else {
                 logger.error("bootLoader_manualUpdate hardware_for_update is Empty");
             }
@@ -1318,7 +1318,7 @@ public class Controller_Hardware extends _BaseController {
 
             // Kotrola objektu
             // TODO Kontrola vůči Globální autoritě!
-            if (Model_Hardware.getByFullId(help.full_id) != null) return badRequest("Hardware is already registered");
+            if (Model_Hardware.find.query().where().eq("full_id", help.full_id).findCount() > 0) return badRequest("Hardware is already registered");
 
             // Kotrola objektu
             Model_HardwareType hardwareType = Model_HardwareType.find.byId(help.hardware_type_id);

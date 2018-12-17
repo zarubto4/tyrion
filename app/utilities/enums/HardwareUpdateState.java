@@ -7,10 +7,6 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel(value = "HardwareUpdateState")
 public enum HardwareUpdateState {
 
-
-    @ApiModelProperty(value = "Update is planed into future")
-    @EnumValue("IN_PLAN") IN_PLAN,
-
     @ApiModelProperty(value = "Update cannot be executed for some reason. (hardware is offline, server is offline, etc.)")
     @EnumValue("PENDING") PENDING,
 

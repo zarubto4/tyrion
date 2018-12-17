@@ -4,9 +4,7 @@ import akka.stream.Materializer;
 import com.google.inject.Inject;
 import controllers._BaseFormFactory;
 import models.Model_Garfield;
-import models.Model_Project;
 import utilities.logger.Logger;
-import utilities.network.NetworkStatusService;
 import utilities.notifications.NotificationService;
 import websocket.Interface;
 import websocket.Message;
@@ -22,8 +20,6 @@ public class Portal extends Interface {
     public static final String CHANNEL = "becki";
 
     private UUID personId;
-
-    private boolean notificationSubscribed;
 
     private final NotificationService notificationService;
 
@@ -57,7 +53,7 @@ public class Portal extends Interface {
                     case WS_Message_UnSubscribe_Notifications.message_type: onUnsubscribeNotification(message); break;
                     case "ping": break;
                     default: {
-                        logger.error("onMessagePorta - incoming message not recognized: {}", message.getMessage().toString());
+                        logger.warn("onMessagePortal - incoming message not recognized: {}", message.getMessage().toString());
                         if (!message.isErroneous()) {
                             this.send(message.getMessage().put("error_message", "message_type not recognized").put("error_code", 400));
                         }
@@ -83,8 +79,6 @@ public class Portal extends Interface {
 
         this.notificationService.subscribe(this);
 
-        this.notificationSubscribed = true;
-
         this.send(WS_Message_Subscribe_Notifications.approve_result(message.getId().toString()));
     }
 
@@ -92,8 +86,6 @@ public class Portal extends Interface {
         logger.trace("onUnsubscribeNotification - id: {}", this.id);
 
         this.notificationService.unsubscribe(this);
-
-        this.notificationSubscribed = false;
 
         this.send(WS_Message_UnSubscribe_Notifications.approve_result(message.getId().toString()));
     }

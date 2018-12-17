@@ -3,19 +3,13 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.ebean.Expr;
-import io.ebean.Finder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
-import utilities.cache.Cached;
 import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
-import utilities.enums.FirmwareType;
 import utilities.enums.HardwareUpdateState;
-import utilities.enums.UpdateType;
 import utilities.logger.Logger;
-import utilities.model.NamedModel;
 import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
 import utilities.permission.Action;
@@ -24,8 +18,6 @@ import utilities.swagger.output.Swagger_Bootloader_Update_program;
 import utilities.swagger.output.Swagger_C_Program_Update_program;
 
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import java.util.*;
 
@@ -178,7 +170,7 @@ public class Model_HardwareReleaseUpdate extends TaggedModel implements Permissi
         }
     }
 
-    @JsonProperty @ApiModelProperty(required = true, value = "Only if type_of_update constant is MANUALLY_RELEASE_MANAGER && firmware_type is FIRMWARE or BACKUP")
+    @JsonProperty @ApiModelProperty(required = true, value = "Only if type constant is MANUALLY_RELEASE_MANAGER && firmware_type is FIRMWARE or BACKUP")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Swagger_C_Program_Update_program program(){
         try {
@@ -188,7 +180,7 @@ public class Model_HardwareReleaseUpdate extends TaggedModel implements Permissi
         }
     }
 
-    @JsonProperty @ApiModelProperty(required = true, value = "Only of type_of_update constant is MANUALLY_RELEASE_MANAGER && firmware_type is BOOTLOADER")
+    @JsonProperty @ApiModelProperty(required = true, value = "Only of type constant is MANUALLY_RELEASE_MANAGER && firmware_type is BOOTLOADER")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Swagger_Bootloader_Update_program bootloader(){
         try {
@@ -222,7 +214,7 @@ public class Model_HardwareReleaseUpdate extends TaggedModel implements Permissi
             notification.setImportance(NotificationImportance.LOW);
             notification.setLevel(NotificationLevel.INFO);
 
-            if (type_of_update == UpdateType.MANUALLY_BY_USER_INDIVIDUAL) {
+            if (type == UpdateType.MANUALLY_BY_USER_INDIVIDUAL) {
 
                 notification.setText(new Notification_Text().setText("Your manual update "))
                 .setObject(this);
@@ -250,7 +242,7 @@ public class Model_HardwareReleaseUpdate extends TaggedModel implements Permissi
 
                 notification.setText(new Notification_Text().setText(" just begun. We will keep you informed about progress."));
 
-            } else if (type_of_update == UpdateType.MANUALLY_BY_USER_BLOCKO_GROUP || type_of_update == UpdateType.MANUALLY_BY_USER_BLOCKO_GROUP_ON_TIME ) {
+            } else if (type == UpdateType.MANUALLY_BY_USER_BLOCKO_GROUP || type == UpdateType.MANUALLY_BY_USER_BLOCKO_GROUP_ON_TIME ) {
 
 
                 notification.setText(new Notification_Text().setText("Update under Instance "))
@@ -269,7 +261,7 @@ public class Model_HardwareReleaseUpdate extends TaggedModel implements Permissi
 
             } else {
 
-                throw new Exception( "Update procedure has not set the type_of_update.");
+                throw new Exception( "Update procedure has not set the type.");
             }
 
             notification.send_under_project(get_project_id());
@@ -320,7 +312,7 @@ public class Model_HardwareReleaseUpdate extends TaggedModel implements Permissi
                     Model_Notification notification = new Model_Notification();
 
                     // Single Update
-                    if (this.getUpdates().size() == 1 && (type_of_update == UpdateType.MANUALLY_BY_USER_INDIVIDUAL || type_of_update == UpdateType.MANUALLY_BY_USER_BLOCKO_GROUP)) {
+                    if (this.getUpdates().size() == 1 && (type == UpdateType.MANUALLY_BY_USER_INDIVIDUAL || type == UpdateType.MANUALLY_BY_USER_BLOCKO_GROUP)) {
 
                         logger.debug("notification_update_procedure_final_report :: Notification is for single update");
 
@@ -408,7 +400,7 @@ public class Model_HardwareReleaseUpdate extends TaggedModel implements Permissi
                             .setLevel(NotificationLevel.SUCCESS);
 
                 // Individual update
-                if (type_of_update == UpdateType.MANUALLY_BY_USER_INDIVIDUAL) {
+                if (type == UpdateType.MANUALLY_BY_USER_INDIVIDUAL) {
 
                     if (procedure_size_all() == 1) {
                         return;
@@ -475,29 +467,10 @@ public class Model_HardwareReleaseUpdate extends TaggedModel implements Permissi
         return Arrays.asList(Action.CREATE, Action.READ, Action.UPDATE);
     }
 
-    /* CACHE ---------------------------------------------------------------------------------------------------------------*/
+/* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
-    /**
-     * Specialní vyjímka - vždy vracíme Hardware podle full_id (číslo procesoru) kde
-     * máme dominanci! Tuto metodu výlučně používá část systému obsluhující fyzický hardware.
-     */
-    public static Model_HardwareReleaseUpdate getByFullId(String fullId) {
-        logger.trace("getByFullId: {}", fullId);
-        UUID id = find.query().where().eq("full_id", fullId).eq("dominant_entity", true).select("id").findSingleAttribute();
-
-
-        if (id == null){
-            logger.debug("getByFullId: {} Database ID is null", fullId);
-            return null;
-        }
-
-        logger.trace("getByFullId: {} Database ID {}", fullId, id.toString());
-        return find.byId(id);
-    }
-
-    /* FINDER --------------------------------------------------------------------------------------------------------------*/
+/* FINDER --------------------------------------------------------------------------------------------------------------*/
 
     @InjectCache(Model_HardwareReleaseUpdate.class)
     public static CacheFinder<Model_HardwareReleaseUpdate> find = new CacheFinder<>(Model_HardwareReleaseUpdate.class);
-
 }

@@ -144,6 +144,10 @@ public class SchedulerService {
         }
     }
 
+    public void schedule() {
+        // this.scheduler.scheduleJob(newJob())
+    }
+
     public void show_all_jobs() throws SchedulerException {
 
         for (String groupName : scheduler.getJobGroupNames()) {

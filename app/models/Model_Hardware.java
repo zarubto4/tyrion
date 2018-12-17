@@ -19,7 +19,6 @@ import utilities.enums.*;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
-import utilities.models_update_echo.EchoHandler;
 import utilities.network.JsonLastOnline;
 import utilities.network.JsonNetworkStatus;
 import utilities.network.Networkable;
@@ -29,7 +28,6 @@ import utilities.notifications.helps_objects.Notification_Text;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
 import utilities.swagger.output.Swagger_Short_Reference;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import javax.persistence.Transient;
@@ -736,7 +734,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     @JsonIgnore
     public Model_Notification notificationOffline() {
         return new Model_Notification()
-                .setImportance( NotificationImportance.LOW)
+                .setImportance(NotificationImportance.LOW)
                 .setLevel(NotificationLevel.WARNING)
                 .setText(new Notification_Text().setText("Hardware "))
                 .setObject(this)
@@ -763,34 +761,21 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
      * Send Notification, if Connected hardware has unrecognized Firmware on it.
      */
     @JsonIgnore
-    public void notification_board_no_firmware () {
-        new Thread(() -> {
-
-            // Pokud to není yoda ale device tak neupozorňovat v notifikaci, že je deska offline - zbytečné zatížení
-            if (project().id == null) return;
-
-            try {
-                new Model_Notification()
-                        .setImportance( NotificationImportance.HIGH)
-                        .setLevel(NotificationLevel.WARNING)
-                        .setText(new Notification_Text().setText("Attention! Hardware "))
-                        .setObject(this)
-                        .setText(new Notification_Text().setText(" connected successfully, but we have no records about Firmware on this Hardware. " +
-                                "Maybe you migrate Hardware from another project to this project "))
-                        .setObject(getProject())
-                        .setText(new Notification_Text().setText(" or this is a first time, when Hardware is connected under your account. "))
-                        .setNewLine()
-                        .setText(new Notification_Text().setText("But stay calm. Just aprove that its ok, or you want to automatically set (Upload) default firmware."))
-                        .setButton(new Notification_Button().setAction(NotificationAction.ACCEPT_RESTORE_FIRMWARE).setPayload(getId().toString()).setColor(Becki_color.byzance_green).setText("Yes"))
-                        .setButton(new Notification_Button().setAction(NotificationAction.REJECT_RESTORE_FIRMWARE).setPayload(getId().toString()).setColor(Becki_color.byzance_red).setText("No"))
-                        .send_under_project(project().id);
-
-            } catch (Exception e) {
-                logger.internalServerError(e);
-            }
-        }).start();
+    public Model_Notification notificationUnknownFirmware () {
+        return new Model_Notification()
+                .setImportance(NotificationImportance.HIGH)
+                .setLevel(NotificationLevel.WARNING)
+                .setText(new Notification_Text().setText("Attention! Hardware "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" connected successfully, but we have no records about Firmware on this Hardware. " +
+                        "Maybe you migrate Hardware from another project to this project "))
+                .setObject(getProject())
+                .setText(new Notification_Text().setText(" or this is a first time, when Hardware is connected under your account. "))
+                .setNewLine()
+                .setText(new Notification_Text().setText("Do you want to upload the default firmware for this hardware?"))
+                .setButton(new Notification_Button().setAction(NotificationAction.ACCEPT_RESTORE_FIRMWARE).setPayload(getId().toString()).setColor(Becki_color.byzance_green).setText("Yes"))
+                .setButton(new Notification_Button().setAction(NotificationAction.REJECT_RESTORE_FIRMWARE).setPayload(getId().toString()).setColor(Becki_color.byzance_red).setText("No"));
     }
-
 
 /* NO SQL JSON DATABASE ------------------------------------------------------------------------------------------------*/
 
@@ -863,19 +848,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
     @Override
-    public void update() {
-
-        if (getProject() != null) {
-            if (getProject().id != null) {
-                new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, getProject().id, this.id))).start();
-            }
-        }
-
-        //Database Update
-        super.update();
-    }
-
-    @Override
     public boolean delete() {
         this.dominant_entity = false;
         return super.delete();
@@ -889,24 +861,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-    /**
-     * Specialní vyjímka - vždy vracíme Hardware podle full_id (číslo procesoru) kde
-     * máme dominanci! Tuto metodu výlučně používá část systému obsluhující fyzický hardware.
-     */
-    public static Model_Hardware getByFullId(String fullId) {
-       logger.trace("getByFullId: {}", fullId);
-       UUID id = find.query().where().eq("full_id", fullId).eq("dominant_entity", true).select("id").findSingleAttribute();
-
-
-        if (id == null){
-            logger.debug("getByFullId: {} Database ID is null", fullId);
-            return null;
-        }
-
-        logger.trace("getByFullId: {} Database ID {}", fullId, id.toString());
-        return find.byId(id);
-    }
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

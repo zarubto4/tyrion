@@ -15,7 +15,7 @@ public class Swagger_UpdatePlan_brief_for_homer extends _Swagger_Abstract_Defaul
     @JsonProperty      public UUID tracking_id;  // Procedure ID
     @JsonProperty      public UUID tracking_group_id;    // Task ID
 
-    // @JsonProperty public Enum_Update_type_of_update type_of_update;
+    // @JsonProperty public Enum_Update_type_of_update type;
 
     @JsonProperty
     public List<UUID> uuid_ids = new ArrayList<>();       // Lze updatovat víc zařízení stejným frimwarem - Podpora do budocna když nebude třeba sledovat každý update zvlášť

@@ -12,6 +12,7 @@ import utilities.homer.HomerInterface;
 import utilities.homer.HomerService;
 import utilities.logger.Logger;
 import utilities.network.NetworkStatusService;
+import utilities.notifications.NotificationService;
 import websocket.WebSocketService;
 import websocket.interfaces.Homer;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Message_Homer_Hardware_ID_UUID_Pair;
@@ -26,13 +27,16 @@ public class InstanceService {
     private final HomerService homerService;
     private final UpdateService updateService;
     private final NetworkStatusService networkStatusService;
+    private final NotificationService notificationService;
 
     @Inject
-    public InstanceService(WebSocketService webSocketService, HomerService homerService, UpdateService updateService, NetworkStatusService networkStatusService) {
+    public InstanceService(WebSocketService webSocketService, HomerService homerService, UpdateService updateService,
+                           NetworkStatusService networkStatusService, NotificationService notificationService) {
         this.webSocketService = webSocketService;
         this.homerService = homerService;
         this.updateService = updateService;
         this.networkStatusService = networkStatusService;
+        this.notificationService = notificationService;
     }
 
     public InstanceInterface getInterface(Model_Instance instance) {
@@ -121,12 +125,7 @@ public class InstanceService {
                     try {
                         Model_CProgramVersion version = Model_CProgramVersion.find.byId(interfaceId);
 
-                        Map<String, UUID> tracking_ids = new HashMap<>();
-                        tracking_ids.put("INSTANCE", snapshot.getInstanceId());
-                        tracking_ids.put("PROJECT", snapshot.getInstance().getProjectId());
-                        tracking_ids.put("SNAPSHOT", snapshot.getId());
-
-                        this.updateService.bulkUpdate(updates.get(interfaceId), version, FirmwareType.FIRMWARE, UpdateType.MANUALLY_BY_INSTANCE, tracking_ids);
+                        this.updateService.bulkUpdate(updates.get(interfaceId), version, FirmwareType.FIRMWARE, UpdateType.MANUALLY_BY_INSTANCE, snapshot.getId());
                     } catch (NotFoundException e) {
                         logger.warn("deploy - not found firmware version, id: {}, skipping update", interfaceId);
                     }
@@ -134,7 +133,7 @@ public class InstanceService {
             }
 
         } catch (ServerOfflineException e) {
-            snapshot.notification_instance_set_wait_for_server();
+            this.notificationService.send(snapshot.getProject(), snapshot.notificationServerOffline());
         }
     }
 

@@ -49,10 +49,10 @@ public class UpdateService {
      * Executes a single update.
      * @param hardware for update
      * @param updatable firmware or bootloader
-     * @param type of the updatable
+     * @param firmwareType of the updatable
      */
-    public void update(Model_Hardware hardware, Updatable updatable, FirmwareType firmwareType, UpdateType updateType) {
-        Model_HardwareUpdate update = this.createUpdate(hardware, updatable, type);
+    public void update(Model_Hardware hardware, Updatable updatable, FirmwareType firmwareType, UpdateType updateType, UUID trackingId) {
+        Model_HardwareUpdate update = this.createUpdate(hardware, updatable, firmwareType, updateType, trackingId);
         try {
             HardwareInterface hardwareInterface = this.hardwareService.getInterface(hardware);
             hardwareInterface.update(update);
@@ -66,6 +66,10 @@ public class UpdateService {
         } catch (Exception e) {
             logger.internalServerError(e);
         }
+    }
+
+    public void update(Model_Hardware hardware, Updatable updatable, FirmwareType firmwareType, UpdateType updateType) {
+        this.update(hardware, updatable, firmwareType, updateType, null);
     }
 
     public void bulkUpdate(List<Model_Hardware> hardwareList, Updatable updatable, FirmwareType type, UpdateType updateType, UUID trackingId) {
@@ -123,7 +127,7 @@ public class UpdateService {
 
             // Pokud se vrátí fáze špatně - ukončuji celý update
             if (message.error_message != null || message.error_code != null) {
-                logger.warn("update_procedure_progress  Update Fail! Device ID: {}, update procedure: {}", update.getHardware().id, update.id);
+                logger.warn("onUpdateMessage - update failed, Device ID: {}, update procedure: {}", update.getHardware().id, update.id);
 
                 update.finished = new Date();
                 update.state = HardwareUpdateState.FAILED;
@@ -137,7 +141,7 @@ public class UpdateService {
                 return;
             }
 
-            logger.debug("update_procedure_progress :: Checking phase: Phase {} ", phase);
+            logger.debug("onUpdateMessage - phase {}", phase);
             // Fáze jsou volány jen tehdá, když má homer instrukce je zasílat
             switch (phase) {
                 case PHASE_UPLOAD_START: if (project != null) this.notificationService.send(project, update.notificationUpdateStart()); break;
@@ -153,11 +157,11 @@ public class UpdateService {
                         this.notificationService.send(project, update.notificationUpdateEnd());
                     }
 
-                    logger.debug("update_procedure_progress - procedure {} is UPDATE_DONE", update.id);
+                    logger.debug("onUpdateMessage - procedure {} is UPDATE_DONE", update.id);
 
                     Model_Hardware hardware = update.getHardware();
 
-                    logger.warn("update_procedure_progress :: UPDATE DONE :: update.firmware_type {} ", update.firmware_type);
+                    logger.warn("onUpdateMessage - update done, update.firmware_type {}", update.firmware_type);
 
                     if (update.firmware_type == FirmwareType.FIRMWARE) {
 
@@ -237,7 +241,7 @@ public class UpdateService {
                             }
 
                         } else {
-                            logger.debug("update_procedure_progress: nebylo třeba vůbec nic měnit.");
+                            logger.debug("onUpdateMessage - nebylo třeba vůbec nic měnit.");
                         }
 
                         this.notificationService.modelUpdated(Model_Hardware.class, hardware.id, hardware.getProjectId());
@@ -258,11 +262,15 @@ public class UpdateService {
     }
 
     public void cancel(UUID id) {
-
+        // TODO
     }
 
-    public void schedule() {
+    public void schedule(Date planned, Model_Hardware hardware, Updatable updatable, FirmwareType firmwareType, UpdateType updateType, UUID trackingId) {
+        Model_HardwareUpdate update = this.createUpdate(hardware, updatable, firmwareType, updateType, trackingId);
+        update.planned = planned;
+        update.update();
 
+        // TODO this.schedulerService.schedule
     }
 
     /**
@@ -299,12 +307,11 @@ public class UpdateService {
             update.update();
         }
 
-
         Model_HardwareUpdate update = new Model_HardwareUpdate();
         update.hardware = hardware;
         update.state = HardwareUpdateState.PENDING;
         update.firmware_type = firmwareType;
-        update.type_of_update = updateType;
+        update.type = updateType;
         update.count_of_tries = 0;
         update.tracking_id = trackingId;
 
@@ -323,7 +330,7 @@ public class UpdateService {
         return update;
     }
 
-    private Model_HardwareUpdate createUpdate(Model_Hardware hardware, Updatable updatable, FirmwareType type) {
-        return this.createUpdate(hardware, updatable, type, UUID.randomUUID());
+    private Model_HardwareUpdate createUpdate(Model_Hardware hardware, Updatable updatable, FirmwareType type, UpdateType updateType) {
+        return this.createUpdate(hardware, updatable, type, updateType, UUID.randomUUID());
     }
 }

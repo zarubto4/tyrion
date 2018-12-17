@@ -347,6 +347,7 @@ public class Homer extends Interface {
 
             case "ping": {
                 // Do nothing
+                return;
             }
 
             default: {

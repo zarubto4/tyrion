@@ -8,8 +8,9 @@ public class WS_Message_Homer_Hardware_ID_UUID_Pair {
 
     public WS_Message_Homer_Hardware_ID_UUID_Pair() {}
 
-    @Constraints.Required  public String full_id;
-    @Constraints.Required  public String uuid;  // Warning!!!!!! - It must be String not UUID
+    @Constraints.Required public String full_id;
+    @Constraints.Required public String uuid;  // Warning!!!!!! - It must be String not UUID
+    @Constraints.Required public Boolean online_state = false;
 
     /**
      * Why String:

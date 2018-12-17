@@ -137,7 +137,7 @@ public class Controller_Code extends _BaseController {
                     System.out.println("Success -  we have compilation file!");
 
 
-                    this.updateService.bulkUpdate(help.hardware_ids.stream().map(Model_Hardware.find::byId).collect(Collectors.toList()), compilation, FirmwareType.FIRMWARE, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, new HashMap<>());
+                    this.updateService.bulkUpdate(help.hardware_ids.stream().map(Model_Hardware.find::byId).collect(Collectors.toList()), compilation, FirmwareType.FIRMWARE, UpdateType.MANUALLY_BY_USER_INDIVIDUAL, null);
                 }
 
                 return ok(result);
