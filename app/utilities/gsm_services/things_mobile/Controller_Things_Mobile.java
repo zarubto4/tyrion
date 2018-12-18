@@ -548,7 +548,7 @@ public class Controller_Things_Mobile {
                //nastavuje typ obsahu
                 .setContentType("application/x-www-form-urlencoded")
                 //nastavuje jak dlouho se bude pokusit připojit než vyhodí chybu
-                .setRequestTimeout(Duration.ofSeconds(5))
+                .setRequestTimeout(Duration.ofSeconds(30))
                 .setQueryString(sender.getHash())
                 .post(sender.getHash().toString());
 

@@ -50,7 +50,7 @@ public class Model_HardwareReleaseUpdate extends TaggedModel implements Permissi
             value = "UNIX time in s",
             example = "1466163471")
     @JsonProperty
-    public Long  finished() {
+    public Date  finished() {
         try {
 
             int total = Model_HardwareUpdate.find.query().where()
@@ -67,7 +67,7 @@ public class Model_HardwareReleaseUpdate extends TaggedModel implements Permissi
                         .eq("tracking_release_procedure_id", this.getId())
                         .orderBy("finished")
                         .setMaxRows(1)
-                        .findOne().finished();
+                        .findOne().finished;
 
             }
 
@@ -83,12 +83,13 @@ public class Model_HardwareReleaseUpdate extends TaggedModel implements Permissi
             value = "UNIX time in s",
             example = "1466163471")
     @JsonProperty
-    public Long  planned() {
+    public Date  planned() {
         try {
+
             return Model_HardwareUpdate.find.query().where()
                     .eq("tracking_release_procedure_id", this.getId())
                     .setMaxRows(1)
-                    .findOne().planned();
+                    .findOne().planned;
 
         } catch (Exception e) {
             logger.internalServerError(e);

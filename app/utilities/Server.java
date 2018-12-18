@@ -53,6 +53,7 @@ public class Server {
 
     public static ServerMode mode;
     public static String version;
+    public static String ip;
     public static String httpAddress;
     public static String clearAddress;
     public static String wsAddress;
@@ -184,11 +185,14 @@ public class Server {
             // Speciální podmínka, která nastaví podklady sice v Developerském modu - ale s URL adresami tak, aby byly v síti přístupné
 
             logger.info("setConstants - special settings for DEV office servers.");
-            logger.info("setConstants - local URL: {}", IP_Founder.getLocalHostLANAddress().getHostAddress());
 
+
+            ip = IP_Founder.getLocalHostLANAddress().getHostAddress();
             httpAddress = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
             wsAddress   = "ws://"   + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
             becki_mainUrl = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":8080";
+
+            logger.info("setConstants - local URL: {}", ip);
 
             // Nastavení adresy, kde běží Grid APP
             grid_app_main_url       = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":8888";

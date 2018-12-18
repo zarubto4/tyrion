@@ -37,6 +37,7 @@ import websocket.WebSocketService;
 
 import java.io.FileOutputStream;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -70,9 +71,31 @@ public class Controller_ZZZ_Tester extends _BaseController {
         try {
 
 
+            new Job_ThingsMobile_SimData_Synchronize().execute(null);
+
+
+            /*
+
+            DateTimeFormatter formatter_from_tm = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+
+            LocalDate date = LocalDate.parse("2018-11-14 11:13:47", formatter_from_tm);
+
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date parsedDate = dateFormat.parse("2018-11-14 11:13:47");
+            Timestamp timestamp = new java.sql.Timestamp(parsedDate.getTime());
+
+
+            System.out.println("Time:" + timestamp.getTime() );
+
+
+            */
+
             //
             // new Job_ThingsMobile_SimListOnly_Synchronize().execute(null);
 
+            /*
             Swagger_GSM_Edit edit = new Swagger_GSM_Edit();
             edit.daily_traffic_threshold = 2;
             edit.block_sim_daily = false;
@@ -98,6 +121,8 @@ public class Controller_ZZZ_Tester extends _BaseController {
             } else {
                 System.err.println("Nepovedlo se: " + hold.errorMessage);
             }
+
+            */
 
 
 
