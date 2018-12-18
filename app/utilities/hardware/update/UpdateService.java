@@ -175,6 +175,11 @@ public class UpdateService {
 
                 if (project != null) {
                     this.notificationService.send(project, update.notificationUpdateFailed(message.error_code));
+
+                    // Critical Faild - Device was restored from Backup!
+                    if (message.error.equals(Enum_HardwareHomerUpdate_state.ERROR_BACKUP_RESTORE.name())) {
+                        this.notificationService.send(project, update.notificationRestoreFromBackup());
+                    }
                 }
                 return;
             }

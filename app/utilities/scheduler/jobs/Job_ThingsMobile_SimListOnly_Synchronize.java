@@ -77,7 +77,7 @@ public class Job_ThingsMobile_SimListOnly_Synchronize implements Job {
 
                         gsm.provider = "ThingsMobile";
                         gsm.registration_hash = UUID.randomUUID();
-                        gsm.activation_date = new Date(sim.getAsLong_ActivationDate());
+                        gsm.activation_date = new Date(sim.getActivationDate());
 
 
                         System.out.println("sim.type: " + sim.type);

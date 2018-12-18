@@ -182,7 +182,6 @@ public class Controller_Things_Mobile {
                         node.monthlyTrafficThreshold     = Long.valueOf(eElement.getElementsByTagName("monthlyTrafficThreshold").item(0).getTextContent()) / 1000000;
                         node.msisdn                      = Long.valueOf(eElement.getElementsByTagName("msisdn").item(0).getTextContent());
 
-
                         node.iccid                      = eElement.getElementsByTagName("iccid").item(0).getTextContent();
                         node.type                      = eElement.getElementsByTagName("type").item(0).getTextContent();
 

@@ -81,40 +81,10 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
     public UpdateType type_of_update;
 
     @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Only if state is critical_error or Homer record some error")  public String error;
-    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Only if state is critical_error or Homer record some error")  public Integer error_code;
+    @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty("Only if state is critical_error or Homer record some error")  public Integer error_code; // ERROR CODE from HOMER SERVER ABOUT UPDATE PROCEDURE
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-
-    @ApiModelProperty(required = true,
-            value = "UNIX time in s",
-            example = "1466163471")
-    @JsonProperty
-    public Long  finished() {
-        try {
-
-            if(finished == null) return null;
-            return finished.getTime() / 1000;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    @ApiModelProperty(required = true,
-            value = "UNIX time in s",
-            example = "1466163471")
-    @JsonProperty
-    public Long planned() {
-        try {
-            if(planned == null) return null;
-            return planned.getTime() / 1000;
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
 
     @ApiModelProperty(required = false, value = "Is visible only if update is for Firmware or Backup")
     @JsonInclude(JsonInclude.Include.NON_NULL) @JsonProperty
@@ -489,7 +459,24 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
                 .setObject(this)
                 .setText(new Notification_Text().setText(" of hardware "))
                 .setObject(this.getHardware())
-                .setText(new Notification_Text().setText(" - " + (this.firmware_type.equals(FirmwareType.FIRMWARE) ? "firmware" : this.firmware_type.equals(FirmwareType.BOOTLOADER) ? "bootloader" : "backup") + " is already on the hardware."));
+                .setText(new Notification_Text().setText(" - " + (this.firmware_type.equals(FirmwareType.FIRMWARE) ? "firmware" : this.firmware_type.equals(FirmwareType.BOOTLOADER) ? "bootloader" : "backup") + " has failed. "));
+    }
+
+    public Model_Notification notificationRestoreFromBackup() {
+        return new Model_Notification()
+                .setChainType(NotificationType.CHAIN_END)
+                .setNotificationId(this.getId())
+                .setImportance(NotificationImportance.NORMAL)
+                .setLevel(NotificationLevel.ERROR)
+                .setText(new Notification_Text().setText("Update "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" of hardware "))
+                .setObject(this.getHardware())
+                .setText(new Notification_Text().setText(" - " + (this.firmware_type.equals(FirmwareType.FIRMWARE) ? "firmware" : this.firmware_type.equals(FirmwareType.BOOTLOADER) ? "bootloader" : "backup") + " is already on the hardware."))
+                .setNewLine()
+                .setText(new Notification_Text().setText("New Firmware is critically broken and the WatchDog restarted device and restore it from backup. Please check it!"))
+                ;
+
     }
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
