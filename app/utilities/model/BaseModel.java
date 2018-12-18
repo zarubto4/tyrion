@@ -236,21 +236,7 @@ public abstract class BaseModel extends Model implements JsonSerializable {
      * @return JSON representation of this model
      */
     public ObjectNode json() {
-
-        /*
-
-        // Výrzané zrychlení kdy je cachován už rovnou celý objekt v json podobě,
-        // bohužel se musí udělat opravdu hluboké testování na veškšrou kombinatoriku protože při každé změně je nutné udělat clean tohoto jsonu
-        if(cache().get_cached_json() != null) {
-            return cache().get_cached_json();
-        }
-
-        cache().set_cached_json( Json.toJson(this));
-        return cache().get_cached_json();
-        */
-
         return (ObjectNode) Json.toJson(this);
-
     }
 
     /**

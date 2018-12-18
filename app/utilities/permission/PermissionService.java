@@ -5,20 +5,20 @@ import com.google.inject.Singleton;
 import exceptions.ForbiddenException;
 import exceptions.NotSupportedException;
 import io.ebean.Expr;
-import models.Model_Customer;
-import models.Model_Person;
-import models.Model_Project;
-import models.Model_Role;
+import models.*;
 import org.ehcache.Cache;
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
 import utilities.cache.CacheService;
 import utilities.enums.EntityType;
 import exceptions.NotFoundException;
 import utilities.logger.Logger;
 import utilities.model.*;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Singleton
 public class PermissionService {
@@ -30,6 +30,8 @@ public class PermissionService {
     @Inject
     public PermissionService(CacheService serverCache) {
         this.cache = serverCache.getCache("PermissionServiceCache", UUID.class, CachePermissionList.class, 500, 3600, true);
+        this.setPermissions();
+        this.setAdministrator();
     }
 
     public void checkCreate(Model_Person person, BaseModel model) throws ForbiddenException, NotSupportedException {
@@ -198,5 +200,121 @@ public class PermissionService {
 
     private boolean resolveUnderCustomer(Model_Person person, UnderCustomer underProduct) {
         return underProduct.getCustomer().isEmployee(person);
+    }
+
+    private void setPermissions() {
+        long start = System.currentTimeMillis();
+
+        // Get classes in 'models' package
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+                .setUrls(ClasspathHelper.forPackage("models"))
+                .setScanners(new SubTypesScanner()));
+
+        // Get classes that implements Permittable
+        Set<Class<? extends Permissible>> classes = reflections.getSubTypesOf(Permissible.class);
+
+        logger.trace("setPermissions - found {} classes", classes.size());
+
+        List<Model_Permission> permissions = Model_Permission.find.all();
+
+        classes.forEach(cls -> {
+            try {
+                Permissible permissible = cls.newInstance();
+                EntityType entityType = permissible.getEntityType();
+                List<Action> actions = permissible.getSupportedActions();
+
+                actions.forEach(action -> {
+                    if (permissions.stream().noneMatch(p -> p.action == action && p.entity_type == entityType)) {
+                        Model_Permission permission = new Model_Permission();
+                        permission.entity_type = entityType;
+                        permission.action = action;
+                        permission.save();
+                    }
+                });
+
+            } catch (Exception e) {
+                logger.internalServerError(e);
+            }
+        });
+
+        logger.trace("setPermissions - scanning for permissions took: {} ms", System.currentTimeMillis() - start);
+
+        // Set default project roles (temporary)
+        List<Model_Project> projects = Model_Project.find.query().where().isEmpty("roles").findList();
+        projects.forEach(project -> {
+
+            List<Model_Person> persons = Model_Person.find.query().where().eq("projects.id", project.id).findList();
+            Model_Role adminRole = Model_Role.createProjectAdminRole();
+            adminRole.project = project;
+            if(adminRole.persons == null) adminRole.persons = new ArrayList<>();
+            adminRole.persons.addAll(persons);
+            adminRole.save();
+
+            Model_Role memberRole = Model_Role.createProjectMemberRole();
+            memberRole.project = project;
+            memberRole.save();
+        });
+    }
+
+    private void setAdministrator() {
+        // For Developing
+        Model_Role role;
+
+        try {
+            role = Model_Role.getByName("SuperAdmin");
+
+            logger.trace("setAdministrator - role SuperAdmin exists");
+
+        } catch (NotFoundException e) {
+
+            logger.warn("setAdministrator - SuperAdmin role was not found, creating it");
+
+            role = new Model_Role();
+            role.name = "SuperAdmin";
+            role.save();
+        }
+
+        logger.info("setAdministrator - updating permissions in the role");
+
+        List<UUID> permissionIds = role.permissions.stream().map(permission -> permission.id).collect(Collectors.toList());
+
+        logger.trace("setAdministrator - role contains {} permission(s)", permissionIds.size());
+
+        List<Model_Permission> permissions = Model_Permission.find.query().where().notIn("id", permissionIds).findList();
+
+        logger.trace("setAdministrator - role is missing {} permission(s)", permissions.size());
+
+        if (!permissions.isEmpty()) {
+            logger.debug("setAdministrator - adding {} permission(s)", permissions.size());
+            role.permissions.addAll(permissions);
+            role.update();
+        }
+
+        Model_Person person;
+
+        try {
+            person = Model_Person.getByEmail("admin@byzance.cz");
+
+            logger.trace("setAdministrator - admin is already created");
+
+        } catch (NotFoundException e) {
+
+            logger.warn("setAdministrator - creating first admin account: admin@byzance.cz, password: 123456789");
+
+            person = new Model_Person();
+            person.first_name = "Admin";
+            person.last_name = "Byzance";
+            person.validated = true;
+            person.nick_name = "Syndibád";
+            person.email = "admin@byzance.cz";
+            person.setPassword("123456789");
+            person.save();
+        }
+
+        if (!role.persons.contains(person)) {
+            logger.info("setAdministrator - adding admin account to role");
+            role.persons.add(person);
+            role.update();
+        }
     }
 }

@@ -43,6 +43,10 @@ public class CompilationService {
         this.wsClient = wsClient;
     }
 
+    public boolean isAvailable() {
+        return this.compilerService.isAvailable();
+    }
+
     public void compileAsync(Model_CProgramVersion version, String libraryVersion) {
         new Thread(() -> {
             try {

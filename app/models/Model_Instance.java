@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.ehcache.Cache;
 import utilities.Server;
 import utilities.cache.CacheFinder;
 import utilities.cache.InjectCache;
@@ -50,7 +49,7 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
     @JsonNetworkStatus @Transient @ApiModelProperty(required = true, value = "Value is cached with asynchronous refresh")
-    public NetworkStatus online_state;      // TODO Odstranit, ale jak Lexo??
+    public NetworkStatus online_state;
 
     @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL)
     public List<Swagger_Short_Reference> snapshots() {
@@ -106,62 +105,6 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
         return null;
     }
 
-    /*public NetworkStatus online_state() {
-
-        // Pokud Tyrion nezná server ID - to znamená deska se ještě nikdy nepřihlásila - chrání to proti stavu "během výroby"
-        // i stavy při vývoji kdy se tvoří zběsile nové desky na dev serverech
-        if (current_snapshot() == null) {
-
-            if (getSnapShots().isEmpty()) {
-                return NetworkStatus.NOT_YET_FIRST_CONNECTED;
-            } else {
-                return NetworkStatus.SHUT_DOWN;
-            }
-        }
-
-        // Pokud je server offline - tyrion si nemuže být jistý stavem hardwaru - ten teoreticky muže být online
-        // nebo také né - proto se vrací stav Enum_Online_status - na to reaguje parameter latest_online(),
-        // který následně vrací latest know online
-        try {
-
-            if ((Model_HomerServer.find.byId(getServer_id()) != null) && Model_HomerServer.find.byId(getServer_id()).online_state() == NetworkStatus.ONLINE) {
-
-                if (cache_status.containsKey(id)) {
-                    return cache_status.get(id) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
-                }
-
-                //else {
-                // Začnu zjišťovat stav - v separátním vlákně! Po strátě spojení se serverem nebo po načítání se někde opomělo změnit stav na online proto
-                // je podmínka zakomentovaná aby se to ověřovalo vždy
-                // TODO ASAP ošetřit!!!!
-                new Thread(() -> {
-                    try {
-
-                        WS_Message_Instance_status status = get_instance_status();
-
-                        if (status.status.equals("success")) cache_status.put(id, status.get_status(id).status);
-                        WS_Message_Online_Change_status.synchronize_online_state_with_becki_project_objects(Model_Instance.class, this.id, status.get_status(id).status, getProjectId());
-
-                    } catch (Exception e) {
-                        logger.internalServerError(e);
-                    }
-                }).start();
-
-                return NetworkStatus.SYNCHRONIZATION_IN_PROGRESS;
-                //}
-
-            } else {
-                return NetworkStatus.UNKNOWN_LOST_CONNECTION_WITH_SERVER;
-            }
-
-        } catch (Exception e) {
-            // Záměrný Exception - Občas se nedosynchronizuje Cach - ale system stejnak po zvalidování dorovná stav
-           return NetworkStatus.UNKNOWN_LOST_CONNECTION_WITH_SERVER;
-        }
-    }*/
-
-
-
     @JsonProperty @ApiModelProperty(required = true)
     public String instance_remote_url() {
         try {
@@ -180,8 +123,6 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
             return null;
         }
     }
-
-/* GET Variable short type of objects ----------------------------------------------------------------------------------*/
 
 /* JSON IGNORE ---------------------------------------------------------------------------------------------------------*/
 
@@ -358,9 +299,6 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
     }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-    @InjectCache(value = Boolean.class, name = "Model_Instance_Status")
-    public static Cache<UUID, Boolean> cache_status;
 
 /* FINDER --------------------------------------------------------------------------------------------------------------*/
 

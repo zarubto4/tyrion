@@ -30,6 +30,10 @@ public class CompilerService {
         }
     }
 
+    public boolean isAvailable() {
+        return this.webSocketService.countOf(iface -> iface instanceof Compiler) > 0;
+    }
+
     public WS_Message_Make_compilation compile(Request request) throws Exception {
         List<UUID> ids = this.webSocketService.getIdsOf(iface -> iface instanceof Compiler);
         if (ids.isEmpty()) {

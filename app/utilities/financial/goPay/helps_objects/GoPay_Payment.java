@@ -50,8 +50,8 @@ public class GoPay_Payment {
 
     public class GoPay_Callback{
 
-        public String return_url = Server.GoPay_return_url;
-        public String notification_url = Server.GoPay_notification_url;
+        public String return_url = null; //Server.GoPay_return_url;
+        public String notification_url = null; // Server.GoPay_notification_url;
     }
 
     public class GoPay_Items{
@@ -62,7 +62,7 @@ public class GoPay_Payment {
     public class GoPay_Target{
 
         public String type = "ACCOUNT";
-        public Long goid = Server.GoPay_go_id;
+        public Long goid = null;
 
     }
 

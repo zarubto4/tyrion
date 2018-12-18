@@ -3,43 +3,21 @@ package utilities;
 import com.google.inject.Injector;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.MongoClientURI;
-import com.mongodb.client.MongoDatabase;
 import com.typesafe.config.Config;
-import controllers.Controller_WebSocket;
 import controllers._BaseFormFactory;
 import io.intercom.api.Intercom;
 import models.*;
-import org.mongodb.morphia.Datastore;
-import org.mongodb.morphia.Morphia;
-import org.mongodb.morphia.annotations.Entity;
-import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
-import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
-import exceptions.NotFoundException;
 import utilities.grid_support.utils.IP_Founder;
 import utilities.homer_auto_deploy.DigitalOceanThreadRegister;
 import utilities.logger.Logger;
-import utilities.model._Abstract_MongoModel;
-import utilities.permission.Action;
-import utilities.permission.Permissible;
 import utilities.scheduler.jobs.Job_GetCompilationLibraries;
 
 import java.math.RoundingMode;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import javax.inject.*;
 
 @Singleton
@@ -91,16 +69,7 @@ public class Server {
     public static String PrintNode_url;
     public static String PrintNode_apiKey;
 
-    public static String GoPay_api_url;
-    public static String GoPay_client_id;
-
-    public static String GoPay_client_secret;
-    public static Long   GoPay_go_id;
-    public static String GoPay_return_url;
-    public static String GoPay_notification_url;
-
     public static String link_api_swagger;
-
 
     // Slack
 
@@ -120,14 +89,6 @@ public class Server {
     public static RoundingMode financial_tax_rounding = RoundingMode.UP;
 
 
-    // Mongo Databases
-    private static final Morphia morphia = new Morphia();
-    public static MongoClient mongoClient = null;
-
-    public static MongoDatabase main_database = null;
-    public static Datastore main_data_store = null;
-
-
     /**
      * Loads all configurations and start all server components.
      * @param injector default application injector
@@ -139,14 +100,7 @@ public class Server {
 
         setConstants();
 
-        cleanUpdateMess();
-
-        // Init DocumentDB
-        init_mongo_database();
-
         try {
-            setPermission();
-            setAdministrator();
             setWidgetAndBlock();
         } catch (Exception e) {
             logger.error("start - DB is inconsistent, probably evolution will occur", e);
@@ -156,14 +110,6 @@ public class Server {
 
         // Set Libraries
         injector.getInstance(Job_GetCompilationLibraries.class).execute(null);
-    }
-
-    /**
-     * Some time, after restart of Tyrion, we have more In Progress Updates on Hardware,
-     * So we Clean this mess
-     */
-    public static void cleanUpdateMess() {
-
     }
 
     /**
@@ -246,16 +192,6 @@ public class Server {
         Facebook_url            = configuration.getString("Facebook." + mode +".url");
         Facebook_apiKey         = configuration.getString("Facebook." + mode +".apiKey  ");
 
-        // Go Pay Config ------------------------------------------------------------------------------------------------------------
-
-        GoPay_api_url           = configuration.getString("GOPay."+ mode +".api_url");
-        GoPay_client_id         = configuration.getString("GOPay."+ mode +".client_id");
-        GoPay_client_secret     = configuration.getString("GOPay."+ mode +".client_secret");
-        GoPay_go_id             = configuration.getLong(  "GOPay."+ mode +".go_id");
-
-        GoPay_return_url        = configuration.getString("GOPay."+ mode +".return_url");
-        GoPay_notification_url  = configuration.getString("GOPay."+ mode +".notification_url");
-
         // Azure Config ------------------------------------------------------------------------------------------------------------
 
         azure_blob_Link = configuration.getString("blob." + mode + ".url");
@@ -268,76 +204,6 @@ public class Server {
 
         // Set token to InterCom
         Intercom.setToken(configuration.getString("Intercom.token"));
-
-
-
-    }
-
-    /**
-     * Creates first admin account, if it does not exists
-     * and update permissions.
-     */
-    private static void setAdministrator() {
-
-        // For Developing
-        Model_Role role;
-
-        try {
-            role = Model_Role.getByName("SuperAdmin");
-
-            logger.trace("setAdministrator - role SuperAdmin exists");
-
-        } catch (NotFoundException e) {
-
-            logger.warn("setAdministrator - SuperAdmin role was not found, creating it");
-
-            role = new Model_Role();
-            role.name = "SuperAdmin";
-            role.save();
-        }
-
-        logger.info("setAdministrator - updating permissions in the role");
-
-        List<UUID> permissionIds = role.permissions.stream().map(permission -> permission.id).collect(Collectors.toList());
-
-        logger.trace("setAdministrator - role contains {} permission(s)", permissionIds.size());
-
-        List<Model_Permission> permissions = Model_Permission.find.query().where().notIn("id", permissionIds).findList();
-
-        logger.trace("setAdministrator - role is missing {} permission(s)", permissions.size());
-
-        if (!permissions.isEmpty()) {
-            logger.debug("setAdministrator - adding {} permission(s)", permissions.size());
-            role.permissions.addAll(permissions);
-            role.update();
-        }
-
-        Model_Person person;
-
-        try {
-            person = Model_Person.getByEmail("admin@byzance.cz");
-
-            logger.trace("setAdministrator - admin is already created");
-
-        } catch (NotFoundException e) {
-
-            logger.warn("setAdministrator - creating first admin account: admin@byzance.cz, password: 123456789");
-
-            person = new Model_Person();
-            person.first_name = "Admin";
-            person.last_name = "Byzance";
-            person.validated = true;
-            person.nick_name = "Syndibád";
-            person.email = "admin@byzance.cz";
-            person.setPassword("123456789");
-            person.save();
-        }
-
-        if (!role.persons.contains(person)) {
-            logger.info("setAdministrator - adding admin account to role");
-            role.persons.add(person);
-            role.update();
-        }
     }
 
     /**
@@ -383,65 +249,6 @@ public class Server {
     }
 
     /**
-     * Method will look up all enums called 'Permission'
-     * and updates the database values of permissions.
-     */
-    private static void setPermission() {
-
-        long start = System.currentTimeMillis();
-
-        // Get classes in 'models' package
-        Reflections reflections = new Reflections(new ConfigurationBuilder()
-                .setUrls(ClasspathHelper.forPackage("models"))
-                .setScanners(new SubTypesScanner()));
-
-        // Get classes that implements Permittable
-        Set<Class<? extends Permissible>> classes = reflections.getSubTypesOf(Permissible.class);
-
-        logger.trace("setPermission - found {} classes", classes.size());
-
-        List<Model_Permission> permissions = Model_Permission.find.all();
-
-        classes.forEach(cls -> {
-            try {
-                Permissible permissible = cls.newInstance();
-                EntityType entityType = permissible.getEntityType();
-                List<Action> actions = permissible.getSupportedActions();
-
-                actions.forEach(action -> {
-                    if (permissions.stream().noneMatch(p -> p.action == action && p.entity_type == entityType)) {
-                        Model_Permission permission = new Model_Permission();
-                        permission.entity_type = entityType;
-                        permission.action = action;
-                        permission.save();
-                    }
-                });
-
-            } catch (Exception e) {
-                logger.internalServerError(e);
-            }
-        });
-
-        logger.trace("setPermission - scanning for permissions took: {} ms", System.currentTimeMillis() - start);
-
-        // Set default project roles (temporary)
-        List<Model_Project> projects = Model_Project.find.query().where().isEmpty("roles").findList();
-        projects.forEach(project -> {
-
-            List<Model_Person> persons = Model_Person.find.query().where().eq("projects.id", project.id).findList();
-            Model_Role adminRole = Model_Role.createProjectAdminRole();
-            adminRole.project = project;
-            if(adminRole.persons == null) adminRole.persons = new ArrayList<>();
-            adminRole.persons.addAll(persons);
-            adminRole.save();
-
-            Model_Role memberRole = Model_Role.createProjectMemberRole();
-            memberRole.project = project;
-            memberRole.save();
-        });
-    }
-
-    /**
      * Set BaseForm for Json Control
      */
     private static void setBaseForm() {
@@ -449,102 +256,11 @@ public class Server {
         Model_InstanceSnapshot.formFactory                  = Server.injector.getInstance(_BaseFormFactory.class);
     }
 
-
-    /**
-     * Initialization Mongo Databases from config file, all collection are checked, if some missing, this method will
-     * create it.
-     */
-    @SuppressWarnings("unchecked")
-    public static void init_mongo_database() {
-
-        String mode = Server.mode.name().toLowerCase();
-
-        // Připojení na MongoClient v Azure
-        logger.info("init_mongo_database:");
-        logger.trace("init_mongo_database:: URL {}", configuration.getString("MongoDB." + mode + ".url"));
-
-
-        MongoClientOptions.Builder options_builder = new MongoClientOptions.Builder();
-        options_builder.maxConnectionIdleTime(1000 * 60 * 60 *24);
-        options_builder.retryWrites(true);
-
-        MongoClientURI uri = new MongoClientURI(configuration.getString("MongoDB." + mode + ".url"), options_builder);
-        Server.mongoClient = new MongoClient(uri);
-
-        try {
-
-            mongoClient.getAddress();
-
-        } catch (Exception e) {
-            logger.error("init_mongo_database:: Mongo is down");
-            mongoClient.close();
-            return;
-        }
-
-        // Mongo ORM zástupný onbjekt pro lepší práci s databází
-        main_data_store = morphia.createDatastore(mongoClient, configuration.getString("MongoDB." + mode + ".main_database_name"));
-
-        // Připojení na konkrétní Databázi clienta
-        main_database = mongoClient.getDatabase(configuration.getString("MongoDB." + mode + ".main_database_name"));
-
-        if(main_data_store == null) {
-            logger.error("init_mongo_database:: Required Main Database not Exist!");
-        }
-
-        // Kontrola databáze
-        if(! mongoClient.getDatabaseNames().contains(configuration.getString("MongoDB." + mode + ".main_database_name"))){
-            logger.error("init_mongo_database:: Required Main Database not Exist!");
-        }
-
-
-        // Kontrola kolekcí nad Mongo Databází
-        Reflections reflections = new Reflections(new ConfigurationBuilder()
-                .setUrls(ClasspathHelper.forPackage("models"))
-                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner()));
-
-        Set<Class<?>> classes = reflections.getTypesAnnotatedWith(Entity.class);
-
-        classes.forEach(cls -> {
-            try {
-
-                Class<? extends _Abstract_MongoModel> model = (Class<? extends _Abstract_MongoModel>) cls; // Cast to model
-                Entity annotation = model.getAnnotation(Entity.class);
-
-                String value = annotation.value();
-
-                if (annotation == null) {
-                    logger.error("init_mongo_database:: In Class {} is not set anotation  @Entity! FIX THAT!", cls.getSimpleName());
-                    return;
-                }
-
-                if (!main_database.listCollectionNames().into(new ArrayList<String>()).contains(annotation.value())) {
-                    logger.warn("init_mongo_database:: {} Collection:: {}  - not exist. System will create that! ", model.getSimpleName(), annotation.value());
-                    main_database.createCollection(annotation.value());
-
-                }
-
-            } catch (Exception e) {
-                logger.error("init_mongo_database:: {} Collection Class:: {}  - not exist. Its Required create that! ", main_database.getName(), cls.getSimpleName());
-                logger.internalServerError(e);
-            }
-        });
-
-    }
-
-    public static Datastore getMainMongoDatabase() {
-        if(Server.main_data_store == null) {
-            logger.error("getMainMongoDatabase:: Required to init main_data_store.");
-            init_mongo_database();
-        }
-
-        return main_data_store;
-    }
-
     /**
      * Finds the MAC address of the current host.
      * @return String mac address
      */
-    private static String getMacAddress(){
+    private static String getMacAddress() {
         try {
 
             InetAddress ip = InetAddress.getLocalHost();

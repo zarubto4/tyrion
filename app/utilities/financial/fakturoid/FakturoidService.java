@@ -214,7 +214,6 @@ public class FakturoidService extends _BaseController {
             invoice.status = InvoiceStatus.PENDING;
             invoice.total_price_with_vat = fakturoidProforma.total;
             invoice.total_price_without_vat = fakturoidProforma.subtotal;
-            invoice.status = InvoiceStatus.PENDING;
             invoice.issued = new Date();
             invoice.public_html_url = fakturoidProforma.public_html_url;
             invoice.update();

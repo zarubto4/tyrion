@@ -118,18 +118,6 @@ public class Model_Compilation extends BaseModel implements Updatable {
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override
-    public void update() {
-        // TODO new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, version.get_c_program().getProjectId(), version.get_c_program_id()))).start();
-        super.update();
-    }
-
-    @JsonIgnore @Override
-    public boolean delete() {
-        logger.internalServerError(new Exception("This object is not legitimate to remove."));
-        return false;
-    }
-
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/

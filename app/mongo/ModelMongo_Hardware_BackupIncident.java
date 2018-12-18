@@ -95,7 +95,7 @@ public class ModelMongo_Hardware_BackupIncident extends _Abstract_MongoModel {
     @Override @JsonIgnore
     public CacheMongoFinder<?> getFinder() { return find; }
 
-    @JsonIgnore @InjectCache(value = ModelMongo_Hardware_BackupIncident.class, keyType = ObjectId.class)
+    @JsonIgnore @InjectStore @InjectCache(value = ModelMongo_Hardware_BackupIncident.class, keyType = ObjectId.class)
     public static CacheMongoFinder<ModelMongo_Hardware_BackupIncident> find = new CacheMongoFinder<>(ModelMongo_Hardware_BackupIncident.class);
 
 }

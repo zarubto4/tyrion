@@ -70,6 +70,6 @@ public class ModelMongo_FacebookProfile extends _Abstract_MongoModel {
         return find;
     }
 
-    @InjectCache(value = ModelMongo_FacebookProfile.class, keyType = ObjectId.class)
+    @InjectStore @InjectCache(value = ModelMongo_FacebookProfile.class, keyType = ObjectId.class)
     public static CacheMongoFinder<ModelMongo_FacebookProfile> find = new CacheMongoFinder<>(ModelMongo_FacebookProfile.class);
 }

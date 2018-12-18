@@ -223,7 +223,7 @@ public class ModelMongo_Hardware_BatchCollection extends _Abstract_MongoModel im
     @Override @JsonIgnore
     public CacheMongoFinder<?> getFinder() { return find; }
 
-    @JsonIgnore @InjectCache(value = ModelMongo_Hardware_BatchCollection.class, keyType = ObjectId.class)
+    @JsonIgnore @InjectStore @InjectCache(value = ModelMongo_Hardware_BatchCollection.class, keyType = ObjectId.class)
     public static CacheMongoFinder<ModelMongo_Hardware_BatchCollection> find = new CacheMongoFinder<>(ModelMongo_Hardware_BatchCollection.class);
 
 }

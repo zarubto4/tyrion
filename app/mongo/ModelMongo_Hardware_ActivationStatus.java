@@ -94,6 +94,6 @@ public class ModelMongo_Hardware_ActivationStatus extends _Abstract_MongoModel {
         return find;
     }
 
-    @InjectCache(value = ModelMongo_Hardware_ActivationStatus.class, keyType = ObjectId.class)
+    @InjectStore @InjectCache(value = ModelMongo_Hardware_ActivationStatus.class, keyType = ObjectId.class)
     public static CacheMongoFinder<ModelMongo_Hardware_ActivationStatus> find = new CacheMongoFinder<>(ModelMongo_Hardware_ActivationStatus.class);
 }

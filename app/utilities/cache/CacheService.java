@@ -1,5 +1,6 @@
 package utilities.cache;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import controllers.Controller_WebSocket;
 import exceptions.NotSupportedException;
@@ -14,13 +15,16 @@ import org.reflections.Reflections;
 import org.reflections.scanners.FieldAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
+import play.inject.ApplicationLifecycle;
 import utilities.homer_auto_deploy.DigitalOceanTyrionService;
 import utilities.homer_auto_deploy.models.common.Swagger_ServerRegistration_FormData;
 import utilities.logger.Logger;
+import utilities.logger.ServerLogger;
 
 import java.lang.reflect.Field;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 @Singleton
@@ -30,16 +34,15 @@ public class CacheService {
 
     private final CacheManager cacheManager;
 
-    public CacheService() {
-        this.cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true);
-    }
-
-    /**
-     * Method for initialization of cache layer.
-     * It finds every annotated cache fields in models and populate them.
-     */
+    @Inject
     @SuppressWarnings("unchecked")
-    public void initialize() {
+    public CacheService(ApplicationLifecycle appLifecycle, ServerLogger serverLogger) {
+        this.cacheManager = CacheManagerBuilder.newCacheManagerBuilder().build(true);
+
+        appLifecycle.addStopHook(() -> {
+            this.cacheManager.close();
+            return CompletableFuture.completedFuture(null);
+        });
 
         logger.info("init - cache layer initiating");
 
@@ -87,11 +90,12 @@ public class CacheService {
                         ResourcePoolsBuilder.heap(1000))
                         .withExpiry(Expirations.timeToLiveExpiration(Duration.of(25, TimeUnit.SECONDS))).build());
 
+        // TODO
         // Sets token cache for web socket connections
-        DigitalOceanTyrionService.tokenCache = this.cacheManager.createCache("Digital_Ocean_server_sizes",
+        /*DigitalOceanTyrionService.tokenCache = this.cacheManager.createCache("Digital_Ocean_server_sizes",
                 CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Swagger_ServerRegistration_FormData.class,
                         ResourcePoolsBuilder.heap(3))
-                        .withExpiry(Expirations.timeToLiveExpiration(Duration.of(12, TimeUnit.HOURS))).build());
+                        .withExpiry(Expirations.timeToLiveExpiration(Duration.of(12, TimeUnit.HOURS))).build());*/
     }
 
     public <K, V> Cache<K, V> getCache(String name, Class<K> keyType, Class<V> cachedType, long maxElements, long duration, boolean timeToIdle) {
@@ -107,12 +111,5 @@ public class CacheService {
     // TODO clear all caches
     public void clear() {
         logger.warn("clear - TODO");
-    }
-
-    /**
-     * Stops the cache
-     */
-    public void close() {
-        this.cacheManager.close();
     }
 }

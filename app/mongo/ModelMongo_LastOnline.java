@@ -4,34 +4,49 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Entity;
-import utilities.cache.InjectCache;
+import utilities.Server;
 import utilities.cache.CacheMongoFinder;
+import utilities.cache.InjectCache;
+import utilities.enums.EntityType;
+import utilities.enums.NetworkStatus;
+import utilities.enums.ServerMode;
 import utilities.logger.Logger;
 import utilities.model._Abstract_MongoModel;
-
-import java.util.UUID;
+import utilities.network.Networkable;
 
 @ApiModel( // Swagger annotation
-        value = "FacebookLoginRelation",
-        description = "Facebook login relation for current user"
+        value = "LastOnline",
+        description = "LastOnline collection"
 )
-@Entity("Facebook LoginRelation ")
-public class ModelMongo_FacebookLoginRelation extends _Abstract_MongoModel {
+@Entity("LastOnline")
+public class ModelMongo_LastOnline extends _Abstract_MongoModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger logger = new Logger(ModelMongo_FacebookLoginRelation.class);
+    private static final Logger logger = new Logger(ModelMongo_LastOnline.class);
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    public UUID hash;
-    public UUID person_id;
+
+    public String networkable_id;
+    public EntityType entity_type;
+
+    // Common
+    public String server_version;
+    public ServerMode server_type;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
+
+    @Override
+    public void save() {
+        server_version = Server.version;
+        server_type = Server.mode;
+        super.save();
+    }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -41,11 +56,20 @@ public class ModelMongo_FacebookLoginRelation extends _Abstract_MongoModel {
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-/* PERMISSION Description ----------------------------------------------------------------------------------------------*/
-
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 /* SPECIAL QUERY -------------------------------------------------------------------------------------------------------*/
+
+    @JsonIgnore
+    public static ModelMongo_LastOnline create_record(Networkable networkable) {
+
+        ModelMongo_LastOnline networkStatus = new ModelMongo_LastOnline();
+        networkStatus.networkable_id = networkable.getId().toString();
+        networkStatus.entity_type = networkable.getEntityType();
+        networkStatus.save();
+
+        return networkStatus;
+    }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
@@ -57,8 +81,6 @@ public class ModelMongo_FacebookLoginRelation extends _Abstract_MongoModel {
         return find;
     }
 
-    @JsonIgnore
-    @InjectStore @InjectCache(value = ModelMongo_FacebookLoginRelation.class, keyType = ObjectId.class)
-    public static CacheMongoFinder<ModelMongo_FacebookLoginRelation> find = new CacheMongoFinder<>(ModelMongo_FacebookLoginRelation.class);
-
+    @InjectStore @InjectCache(value = ModelMongo_LastOnline.class, keyType = ObjectId.class)
+    public static CacheMongoFinder<ModelMongo_LastOnline> find = new CacheMongoFinder<>(ModelMongo_LastOnline.class);
 }

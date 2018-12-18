@@ -83,6 +83,6 @@ public class ModelMongo_NetworkStatus extends _Abstract_MongoModel {
         return find;
     }
 
-    @InjectCache(value = ModelMongo_NetworkStatus.class, keyType = ObjectId.class)
+    @InjectStore @InjectCache(value = ModelMongo_NetworkStatus.class, keyType = ObjectId.class)
     public static CacheMongoFinder<ModelMongo_NetworkStatus> find = new CacheMongoFinder<>(ModelMongo_NetworkStatus.class);
 }

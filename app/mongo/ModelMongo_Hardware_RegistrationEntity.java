@@ -210,7 +210,7 @@ public class ModelMongo_Hardware_RegistrationEntity extends _Abstract_MongoModel
     }
 
     @JsonIgnore
-    @InjectCache(value = ModelMongo_Hardware_RegistrationEntity.class, keyType = ObjectId.class)
+    @InjectStore @InjectCache(value = ModelMongo_Hardware_RegistrationEntity.class, keyType = ObjectId.class)
     public static CacheMongoFinder<ModelMongo_Hardware_RegistrationEntity> find = new CacheMongoFinder<>(ModelMongo_Hardware_RegistrationEntity.class);
 
 }

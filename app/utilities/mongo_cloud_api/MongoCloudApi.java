@@ -6,6 +6,7 @@ import com.mongodb.client.MongoIterable;
 import com.typesafe.config.Config;
 import controllers._BaseFormFactory;
 import io.ebeaninternal.server.core.Message;
+import mongo.MongoDBConnector;
 import play.libs.ws.WSAuthScheme;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
@@ -23,15 +24,17 @@ import java.util.stream.Collectors;
 
 public class MongoCloudApi {
 
-    private WSClient ws;
-    private _BaseFormFactory formFactory;
-    private Config config;
+    private final WSClient ws;
+    private final _BaseFormFactory formFactory;
+    private final Config config;
+    private final MongoDBConnector mongoDBConnector;
 
     @Inject
-    public MongoCloudApi(WSClient ws, _BaseFormFactory formFactory, Config config) {
+    public MongoCloudApi(WSClient ws, _BaseFormFactory formFactory, Config config, MongoDBConnector mongoDBConnector) {
         this.ws = ws;
         this.formFactory = formFactory;
         this.config = config;
+        this.mongoDBConnector = mongoDBConnector;
     }
 
 
@@ -111,7 +114,7 @@ public class MongoCloudApi {
 
     //Will throw IllegalArgumentException in case database with such name doesn't exist
     public List<String> getCollections(String databaseName) throws IllegalArgumentException {
-        MongoIterable<String> collections = Server.mongoClient
+        MongoIterable<String> collections = this.mongoDBConnector.getMongoClient()
                                                   .getDatabase(databaseName)   //throws IllegalArgumentException
                                                   .listCollectionNames();
         List<String> result = new ArrayList<>();
@@ -122,7 +125,7 @@ public class MongoCloudApi {
     }
 
     public void createCollection(String databaseId, String collectionName) throws IllegalArgumentException{
-        Server.mongoClient
+        this.mongoDBConnector.getMongoClient()
               .getDatabase(databaseId) //throws IllegalArgumentException
               .createCollection(collectionName);
     }

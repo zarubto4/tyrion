@@ -283,6 +283,10 @@ public class UpdateService {
      */
     private Model_HardwareUpdate createUpdate(Model_Hardware hardware, Updatable updatable, FirmwareType firmwareType, UpdateType updateType,  UUID trackingId) {
 
+        if (trackingId == null) {
+            trackingId = UUID.randomUUID();
+        }
+
         ExpressionList<Model_HardwareUpdate> expressions = Model_HardwareUpdate.find.query().where()
                 .eq("hardware.id", hardware.id)
                 .or(Expr.eq("state", HardwareUpdateState.PENDING), Expr.eq("state", HardwareUpdateState.RUNNING));

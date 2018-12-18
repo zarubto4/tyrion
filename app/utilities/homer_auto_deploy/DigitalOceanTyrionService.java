@@ -34,7 +34,7 @@ public class DigitalOceanTyrionService {
 
     /*  VALUES -------------------------------------------------------------------------------------------------------------*/
 
-    public static DigitalOcean apiClient = new DigitalOceanClient(  Server.configuration.getString("digitalOcean.api_key"));
+    public static DigitalOcean apiClient; // TODO = new DigitalOceanClient(  Server.configuration.getString("digitalOcean.api_key"));
 
     /**
      * Holds person connection tokens and ids

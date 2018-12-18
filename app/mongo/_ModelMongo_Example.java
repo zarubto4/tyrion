@@ -159,7 +159,7 @@ public class _ModelMongo_Example extends _Abstract_MongoModel {
     @Override @JsonIgnore
     public CacheMongoFinder<?> getFinder() { return find; }
 
-    @JsonIgnore @InjectCache(value = _ModelMongo_Example.class, keyType = ObjectId.class)
+    @JsonIgnore @InjectStore @InjectCache(value = _ModelMongo_Example.class, keyType = ObjectId.class)
     public static CacheMongoFinder<_ModelMongo_Example> find = new CacheMongoFinder<>(_ModelMongo_Example.class);
 
 }

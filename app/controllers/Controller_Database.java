@@ -10,6 +10,7 @@ import io.minio.errors.InvalidArgumentException;
 import io.swagger.annotations.*;
 import models.Model_Product;
 import models.Model_ProductExtension;
+import mongo.MongoDBConnector;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.Result;
@@ -43,8 +44,9 @@ import java.util.UUID;
 @Api(value = "Database")
 public class Controller_Database extends _BaseController {
 
-    private MongoCloudApi mongoApi;
-    private ProductService productService;
+    private final MongoCloudApi mongoApi;
+    private final ProductService productService;
+    private final MongoDBConnector mongoDBConnector;
 
 // LOGGER ##############################################################################################################
 
@@ -54,10 +56,11 @@ public class Controller_Database extends _BaseController {
 
     @Inject
     public Controller_Database(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
-                               NotificationService notificationService, ProductService productService, MongoCloudApi mongoApi) {
+                               NotificationService notificationService, ProductService productService, MongoCloudApi mongoApi, MongoDBConnector mongoDBConnector) {
         super(ws, formFactory, config, permissionService, notificationService);
         this.productService = productService;
         this.mongoApi = mongoApi;
+        this.mongoDBConnector = mongoDBConnector;
     }
 
 
@@ -127,8 +130,7 @@ public class Controller_Database extends _BaseController {
                 mongoApi.addRole(product.id.toString(), extension.id.toString());
             }
 
-            MongoClient client = Server.mongoClient;
-            MongoDatabase database = client.getDatabase(extension.id.toString());
+            MongoDatabase database = this.mongoDBConnector.getMongoClient().getDatabase(extension.id.toString());
             database.createCollection(info.collection_name);
 
             Swagger_Database created_database = new Swagger_Database();

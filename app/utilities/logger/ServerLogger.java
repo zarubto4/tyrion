@@ -1,20 +1,24 @@
 package utilities.logger;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.typesafe.config.Config;
 import exceptions.*;
 import models.Model_ServerError;
-import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
-import responses.Result_InvalidBody;
-import responses.Result_UnsupportedException;
-// import utilities.slack.Slack;
 
 import java.util.List;
 
+@Singleton
 public class ServerLogger extends Controller {
 
     private static MainLogger logger;  // Vlastní Logger objekt definovaný konfigurací
+
+    @Inject
+    public ServerLogger(Config config) {
+        logger = new MainLogger(config);
+    }
 
     public static void init(Config configuration) {
 

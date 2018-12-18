@@ -5,9 +5,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
+import play.inject.ApplicationLifecycle;
 import play.libs.Json;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -22,8 +24,13 @@ public class WebSocketService {
     private Map<UUID, WebSocketInterface> interfaces = new HashMap<>();
 
     @Inject
-    public WebSocketService(Injector injector) {
+    public WebSocketService(Injector injector, ApplicationLifecycle applicationLifecycle) {
         this.injector = injector;
+
+        applicationLifecycle.addStopHook(() -> {
+            this.close();
+            return CompletableFuture.completedFuture(null);
+        });
     }
 
     public Flow<JsonNode, JsonNode, ?> register(WebSocketInterface iface) {

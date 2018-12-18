@@ -94,7 +94,7 @@ public class ModelMongo_ThingsMobile_Daily_Overview extends _Abstract_MongoModel
         return find;
     }
 
-    @InjectCache(value = ModelMongo_ThingsMobile_Daily_Overview.class, keyType = ObjectId.class)
+    @InjectStore @InjectCache(value = ModelMongo_ThingsMobile_Daily_Overview.class, keyType = ObjectId.class)
     public static CacheMongoFinder<ModelMongo_ThingsMobile_Daily_Overview> find = new CacheMongoFinder<>(ModelMongo_ThingsMobile_Daily_Overview.class);
 
 }

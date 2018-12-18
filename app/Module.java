@@ -3,7 +3,6 @@ import java.time.Clock;
 
 import org.quartz.Scheduler;
 import services.ApplicationStarter;
-import utilities.scheduler.SchedulerService;
 import utilities.scheduler.SchedulerProvider;
 
 /**
@@ -22,7 +21,6 @@ public class Module extends AbstractModule {
     public void configure() {
         bind(Clock.class).toInstance(Clock.systemDefaultZone());
         bind(Scheduler.class).toProvider(SchedulerProvider.class);
-        bind(SchedulerService.class).asEagerSingleton();
         bind(ApplicationStarter.class).asEagerSingleton();
     }
 }

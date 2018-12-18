@@ -17,16 +17,13 @@ import java.util.List;
 
 public class CacheMongoFinder<T extends _Abstract_MongoModel> implements ModelCache<ObjectId, T> {
 
-    /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
+/* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
     private static final Logger logger = new Logger(CacheFinder.class);
 
-    /* VALUE  -------------------------------------------------------------------------------------------------------------*/
+/* VALUE  -------------------------------------------------------------------------------------------------------------*/
 
-    /**
-     * The name of the EbeanServer, null for the default server.
-     */
-    private final Datastore datastore;
+    private Datastore datastore;
 
     /**
      * The entity bean type.
@@ -40,7 +37,10 @@ public class CacheMongoFinder<T extends _Abstract_MongoModel> implements ModelCa
 
     public CacheMongoFinder(Class<T > cls) {
         this.entityType = cls;
-        this.datastore = Server.getMainMongoDatabase(); // TODO use DI instead
+    }
+
+    public void setDatastore(Datastore datastore) {
+        this.datastore = datastore;
     }
 
     public T byId(String id) throws NotFoundException {

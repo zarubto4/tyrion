@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.typesafe.config.Config;
+import mongo.MongoDBConnector;
 import play.api.db.evolutions.ApplicationEvolutions;
 import play.inject.ApplicationLifecycle;
 import play.libs.Json;
@@ -19,7 +20,6 @@ import utilities.logger.ServerLogger;
 import utilities.permission.PermissionFilter;
 import common.InjectedHandlerInstantiator;
 import utilities.scheduler.SchedulerService;
-import websocket.WebSocketService;
 
 /**
  * This class demonstrates how to run code when the
@@ -42,31 +42,22 @@ public class ApplicationStarter {
     private final ApplicationLifecycle appLifecycle;
     private final Config configuration;
     private final Instant start;
-    private final SchedulerService scheduler;
-    private final CacheService cache;
-    private final WebSocketService webSocketService;
 
     private final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("application");
 
     @Inject
     public ApplicationStarter(Clock clock, ApplicationLifecycle appLifecycle, Config configuration, Injector injector,
-                              SchedulerService scheduler, CacheService cache, ApplicationEvolutions applicationEvolutions, WebSocketService webSocketService) {
+                              ApplicationEvolutions applicationEvolutions, ServerLogger serverLogger, CacheService cacheService,
+                              MongoDBConnector mongoDBConnector, SchedulerService schedulerService) { // These unused parameters are important due to DI - don't remove them!
 
         this.clock = clock;
         this.appLifecycle = appLifecycle;
         this.configuration = configuration;
-        this.scheduler = scheduler;
-        this.cache = cache;
-        this.webSocketService = webSocketService;
         try {
-
-            ServerLogger.init(configuration);
 
             // TODO ugly!!! should be completely reworked to use DI
             Server.configuration = configuration;
             Server.mode = configuration.getEnum(ServerMode.class,"server.mode");
-
-            this.cache.initialize();
 
             // For dependency injected serializer for permissions
             Json.mapper()
@@ -74,7 +65,7 @@ public class ApplicationStarter {
                     .setHandlerInstantiator(injector.getInstance(InjectedHandlerInstantiator.class));
 
             Server.start(injector);
-            this.scheduler.start();
+
         } catch (Exception e) {
             logger.error("Error starting the application", e);
             System.exit(1);
@@ -88,9 +79,6 @@ public class ApplicationStarter {
         // ApplicationLifecycle object. The code inside the stop hook will
         // be run when the application stops.
         appLifecycle.addStopHook(() -> {
-            this.webSocketService.close();
-            this.scheduler.stop();
-            this.cache.close();
             Instant stop = clock.instant();
             Long runningTime = stop.getEpochSecond() - start.getEpochSecond();
             logger.info("ApplicationTimer: Stopping application at " + clock.instant() + " after " + runningTime + "s.");

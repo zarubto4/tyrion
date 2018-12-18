@@ -13,17 +13,17 @@ public class DM_Board_Bootloader_DefaultConfig extends _Swagger_Abstract_Default
 
     public DM_Board_Bootloader_DefaultConfig() {}
 
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean autobackup;   // Default 0          // user configurable ( 0 or 1)
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean blreport;     // Default 0          // user configurable
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean wdenable;     // Default 1          // user configurable
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Boolean autobackup;   // Default 0          // user configurable ( 0 or 1)
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Boolean blreport;     // Default 0          // user configurable
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Boolean wdenable;     // Default 1          // user configurable
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String  netsource;    // Default ethernet   // user configurable ( 0 or 1)
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean webview;      // Default  1         // user configurable via Bootloader & Portal ( 0 or 1)
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public int     webport;      // Default  80        // user configurable via Bootloader & Portal ( 80 - 9999)
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public int     timeoffset;   // Default  0         // user configurable
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean timesync;     // Default  1         // user configurable
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public boolean lowpanbr;     // Default  0         // user configurable
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public int     autojump;     // Default  0         // user configurable
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public int     wdtime;       // Default 30         // user configurable
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Boolean webview;      // Default  1         // user configurable via Bootloader & Portal ( 0 or 1)
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Integer webport;      // Default  80        // user configurable via Bootloader & Portal ( 80 - 9999)
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Integer timeoffset;   // Default  0         // user configurable
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Boolean timesync;     // Default  1         // user configurable
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Boolean lowpanbr;     // Default  0         // user configurable
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Integer autojump;     // Default  0         // user configurable
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public Integer wdtime;       // Default 30         // user configurable
     @ApiModelProperty(required = true, readOnly = true)                        public String  lowpan_credentials;       // Default 30         // user configurable
 
 

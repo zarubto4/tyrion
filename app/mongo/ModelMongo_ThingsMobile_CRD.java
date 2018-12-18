@@ -137,7 +137,7 @@ public class ModelMongo_ThingsMobile_CRD extends _Abstract_MongoModel {
         return find;
     }
 
-    @InjectCache(value = ModelMongo_ThingsMobile_CRD.class, keyType = ObjectId.class)
+    @InjectStore @InjectCache(value = ModelMongo_ThingsMobile_CRD.class, keyType = ObjectId.class)
     public static CacheMongoFinder<ModelMongo_ThingsMobile_CRD> find = new CacheMongoFinder<>(ModelMongo_ThingsMobile_CRD.class);
 
 }

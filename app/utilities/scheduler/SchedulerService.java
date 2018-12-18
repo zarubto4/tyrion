@@ -10,14 +10,17 @@ import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
+import play.inject.ApplicationLifecycle;
 import utilities.Server;
 import utilities.enums.ServerMode;
 import utilities.logger.Logger;
+import utilities.logger.ServerLogger;
 import utilities.scheduler.jobs.*;
 import utilities.update_server.ServerUpdate;
 
 import java.util.*;
 import java.util.Calendar;
+import java.util.concurrent.CompletableFuture;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
@@ -33,22 +36,18 @@ public class SchedulerService {
 /*  VALUES -------------------------------------------------------------------------------------------------------------*/
 
     @Inject
-    public SchedulerService(Scheduler scheduler) {
-        this.scheduler = scheduler;
-    }
-
-    public Scheduler scheduler;
-
-    /**
-     * Method looks into utilities.scheduler.jobs package and finds all classes
-     * annotated with {@link Scheduled} and schedules the jobs based on config
-     * that was stored in the annotation.
-     */
     @SuppressWarnings("unchecked")
-    public void start() {
+    public SchedulerService(Scheduler scheduler, ApplicationLifecycle appLifecycle, ServerLogger serverLogger) {
+        this.scheduler = scheduler;
+
+        appLifecycle.addStopHook(() -> {
+            this.scheduler.clear();
+            return CompletableFuture.completedFuture(null);
+        });
+
         try {
 
-            logger.info("start - scheduling jobs");
+            logger.info("constructor - scheduling jobs");
 
             Reflections reflections = new Reflections(new ConfigurationBuilder()
                     .setUrls(ClasspathHelper.forPackage("utilities.scheduler.jobs"))
@@ -62,8 +61,6 @@ public class SchedulerService {
 
                 Class<? extends Job> job = (Class<? extends Job>) cls; // Cast to job
 
-
-
                 // Check Restriction
                 Restrict restrict = job.getAnnotation(Restrict.class);
                 if (restrict != null) {
@@ -75,8 +72,7 @@ public class SchedulerService {
                 Scheduled annotation = job.getAnnotation(Scheduled.class);
                 String value = annotation.value();
 
-
-                logger.debug("start - scheduling job: '{}' with schedule: '{}'", job.getSimpleName(), value);
+                logger.debug("constructor - scheduling job: '{}' with schedule: '{}'", job.getSimpleName(), value);
 
                 try {
 
@@ -96,38 +92,6 @@ public class SchedulerService {
                 }
             });
 
-             /*
-                // TODO - je nutné zajistit i kontrolu toho co se neudělalo v historii - třeba když spadne server, tak tu hodinu zpětně je třeba odstartovat
-                try {
-
-                    //List<Model_HomerInstanceRecord> records = Model_HomerInstanceRecord.find.query().where().gt("planed_when", new Date()).findList();
-
-                    //logger.debug("start: Scheduling new Job - Upload Blocko To Cloud for {} record(s)", records.size());
-
-                    //records.forEach(SchedulerController::scheduleInstanceDeployment);
-
-                } catch (Exception e) {
-                    logger.internalServerError(e);
-                }
-
-                // TODO - je nutné zajistit i kontrolu toho co se neudělalo v historii - třeba když spadne server, tak tu hodinu zpětně je třeba odstartovat
-                try {
-
-                    //List<Model_ActualizationProcedure> procedures = Model_ActualizationProcedure.find.query().where().gt("date_of_planing", new Date()).findList();
-
-                    //logger.debug("start: Scheduling new Job - Start With {} update procedures for Hardware.", procedures.size());
-
-                    //procedures.forEach(SchedulerController::scheduleUpdateProcedure);
-
-                } catch (Exception e) {
-                    logger.internalServerError(e);
-                }
-
-            } else {
-                logger.warn("start: CRON (Every-Day) is in RAM yet. Be careful with that!");
-            }
-            */
-
             // Nastartování scheduleru
             this.scheduler.start();
 
@@ -136,13 +100,7 @@ public class SchedulerService {
         }
     }
 
-    public void stop() {
-        try {
-            this.scheduler.clear();
-        } catch (SchedulerException e) {
-            logger.internalServerError(e);
-        }
-    }
+    public Scheduler scheduler;
 
     public void schedule() {
         // this.scheduler.scheduleJob(newJob())

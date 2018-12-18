@@ -163,7 +163,6 @@ public class Controller_Things_Mobile_Analytics {
     private static void main() {
 
         // Connect to mongodb
-        MongoClient mongo = Server.mongoClient;
 
 
         String map = "function () {"+

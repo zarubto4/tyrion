@@ -86,6 +86,13 @@ public abstract class _BaseController {
             throw e;
         }
         model.update();
+
+        try {
+            this.notificationService.modelUpdated(model);
+        } catch (Exception e) {
+            logger.internalServerError(e);
+        }
+
         return ok(model);
     }
 
@@ -121,19 +128,6 @@ public abstract class _BaseController {
 
     public void checkInvitePermission(BaseModel model) throws ForbiddenException, NotSupportedException {
         this.permissionService.check(person(), model, Action.INVITE);
-    }
-
-    public void sendModelUpdate(Echo model) {
-        try {
-            Model_Project project = ((UnderProject) model).getProject();
-            if (project != null) {
-                this.notificationService.modelUpdated(model.getClass(), model.getId(), project.getId());
-            }
-        } catch (NotFoundException e) {
-            // nothing
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
     }
 
     /**

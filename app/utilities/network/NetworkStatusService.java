@@ -10,9 +10,11 @@ import models.Model_CompilationServer;
 import models.Model_Hardware;
 import models.Model_HomerServer;
 import models.Model_Instance;
+import mongo.ModelMongo_LastOnline;
 import mongo.ModelMongo_NetworkStatus;
 import org.ehcache.Cache;
 import org.mongodb.morphia.query.FindOptions;
+import play.libs.concurrent.HttpExecutionContext;
 import utilities.Server;
 import utilities.cache.CacheService;
 import utilities.compiler.CompilerService;
@@ -32,8 +34,10 @@ public class NetworkStatusService {
 
     private static final Logger logger = new Logger(NetworkStatusService.class);
 
-    private final Cache<UUID, NetworkStatus> cache;
+    private final Cache<UUID, NetworkStatus> networkStatusCache;
+    private final Cache<UUID, Long> lastOnlineCache;
 
+    private final HttpExecutionContext httpExecutionContext;
     private final NotificationService notificationService;
     private final Provider<HardwareService> hardwareServiceProvider;
     private final Provider<InstanceService> instanceServiceProvider;
@@ -42,8 +46,11 @@ public class NetworkStatusService {
 
     @Inject
     public NetworkStatusService(CacheService cacheService, Provider<HardwareService> hardwareServiceProvider, Provider<InstanceService> instanceServiceProvider,
-                                CompilerService compilerService, HomerService homerService, NotificationService notificationService) {
-        this.cache = cacheService.getCache("NetworkStatusCache", UUID.class, NetworkStatus.class, 1000, 3600, true);
+                                CompilerService compilerService, HomerService homerService, NotificationService notificationService, HttpExecutionContext httpExecutionContext) {
+        this.networkStatusCache = cacheService.getCache("NetworkStatusCache", UUID.class, NetworkStatus.class, 1000, 3600, true);
+        this.lastOnlineCache = cacheService.getCache("LastOnlineCache", UUID.class, Long.class, 1000, 3600, true);
+
+        this.httpExecutionContext = httpExecutionContext;
         this.notificationService = notificationService;
         this.hardwareServiceProvider = hardwareServiceProvider;
         this.instanceServiceProvider = instanceServiceProvider;
@@ -58,12 +65,12 @@ public class NetworkStatusService {
      */
     public NetworkStatus getStatus(Networkable networkable) {
         logger.debug("getStatus - getting status for: {}, id: {}", networkable.getEntityType(), networkable.getId());
-        if (this.cache.containsKey(networkable.getId())) {
+        if (this.networkStatusCache.containsKey(networkable.getId())) {
             logger.trace("getStatus - getting status from cache");
-            return this.cache.get(networkable.getId());
+            return this.networkStatusCache.get(networkable.getId());
         } else {
             this.requestStatus(networkable);
-            this.cache.put(networkable.getId(), NetworkStatus.SYNCHRONIZATION_IN_PROGRESS);
+            this.networkStatusCache.put(networkable.getId(), NetworkStatus.SYNCHRONIZATION_IN_PROGRESS);
             return NetworkStatus.SYNCHRONIZATION_IN_PROGRESS;
         }
     }
@@ -71,7 +78,28 @@ public class NetworkStatusService {
     public void setStatus(Networkable networkable, NetworkStatus networkStatus) {
         logger.debug("setStatus - setting status: {} for: {}, id: {}", networkStatus, networkable.getEntityType(), networkable.getId());
 
-        this.cache.put(networkable.getId(), networkStatus);
+        if (this.networkStatusCache.containsKey(networkable.getId())) {
+            if (this.networkStatusCache.get(networkable.getId()).equals(NetworkStatus.ONLINE) && !networkStatus.equals(NetworkStatus.ONLINE)) {
+                CompletableFuture.runAsync(() -> {
+                    ModelMongo_LastOnline lastOnline = ModelMongo_LastOnline.create_record(networkable);
+                    this.setLastOnline(networkable, lastOnline.created);
+                });
+            }
+        } else {
+            CompletableFuture.runAsync(() -> {
+                ModelMongo_NetworkStatus mongoNetworkStatus = ModelMongo_NetworkStatus.find.query()
+                        .field("networkable_id").equal(networkable.getId().toString())
+                        .field("server_type").equal(Server.mode)
+                        .order("created").get(new FindOptions().batchSize(1));
+
+                if (mongoNetworkStatus != null && mongoNetworkStatus.status.equals(NetworkStatus.ONLINE) && !networkStatus.equals(NetworkStatus.ONLINE)) {
+                    ModelMongo_LastOnline lastOnline = ModelMongo_LastOnline.create_record(networkable);
+                    this.setLastOnline(networkable, lastOnline.created);
+                }
+            });
+        }
+
+        this.networkStatusCache.put(networkable.getId(), networkStatus);
 
         UUID projectId = null;
 
@@ -80,22 +108,16 @@ public class NetworkStatusService {
         }
 
         this.notificationService.networkStatusChanged(networkable.getClass(), networkable.getId(), networkStatus, projectId);
-
-        ModelMongo_NetworkStatus.create_record(networkable, networkStatus);
     }
 
-    // TODO should be async with echo update
     public Long getLastOnline(Networkable networkable) {
-        ModelMongo_NetworkStatus networkStatus = ModelMongo_NetworkStatus.find.query()
-                .field("networkable_id").equal(networkable.getId().toString())
-                .field("status").equal(NetworkStatus.ONLINE)
-                .field("server_type").equal(Server.mode)
-                .order("created").get(new FindOptions().batchSize(1));
-
-        if (networkStatus != null) {
-            return networkStatus.created;
-        } else  {
-            return null;
+        logger.debug("getLastOnline - getting last online for: {}, id: {}", networkable.getEntityType(), networkable.getId());
+        if (this.lastOnlineCache.containsKey(networkable.getId())) {
+            logger.trace("getLastOnline - getting last online from cache");
+            return this.lastOnlineCache.get(networkable.getId());
+        } else {
+            this.requestLastOnline(networkable);
+            return -1L;
         }
     }
 
@@ -137,7 +159,35 @@ public class NetworkStatusService {
                         logger.internalServerError(e);
                         return NetworkStatus.UNKNOWN_LOST_CONNECTION_WITH_SERVER;
                     }
-                })
+                }, this.httpExecutionContext.current())
                 .thenAccept(status -> this.setStatus(networkable, status));
+    }
+
+    private void requestLastOnline(Networkable networkable) {
+        CompletableFuture.supplyAsync(() -> {
+            ModelMongo_LastOnline lastOnline = ModelMongo_LastOnline.find.query()
+                    .field("networkable_id").equal(networkable.getId().toString())
+                    .field("server_type").equal(Server.mode)
+                    .order("created").get(new FindOptions().batchSize(1));
+
+            if (lastOnline != null) {
+                return lastOnline.created;
+            } else  {
+                return -1L;
+            }
+        }).thenAccept(last -> this.setLastOnline(networkable, last));
+    }
+
+    private void setLastOnline(Networkable networkable, Long lastOnline) {
+        logger.debug("setStatus - setting last online: {} for: {}, id: {}", lastOnline, networkable.getEntityType(), networkable.getId());
+
+        this.lastOnlineCache.put(networkable.getId(), lastOnline);
+
+        if (networkable instanceof UnderProject) {
+            UUID projectId = ((UnderProject) networkable).getProject() != null ? ((UnderProject) networkable).getProject().id : null;
+            if (projectId != null) {
+                this.notificationService.modelUpdated(networkable.getClass(), networkable.getId(), projectId);
+            }
+        }
     }
 }

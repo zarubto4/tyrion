@@ -6,10 +6,12 @@ import models.Model_Hardware;
 import models.Model_HomerServer;
 import models.Model_Instance;
 import play.libs.concurrent.HttpExecutionContext;
+import utilities.enums.NetworkStatus;
 import utilities.hardware.DominanceService;
 import utilities.hardware.HardwareEvents;
 import utilities.instance.InstanceService;
 import utilities.logger.Logger;
+import utilities.network.NetworkStatusService;
 import utilities.synchronization.Task;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Message_Homer_Hardware_ID_UUID_Pair;
 import websocket.messages.homer_with_tyrion.WS_Message_Homer_Hardware_list;
@@ -25,6 +27,7 @@ public class HomerSynchronizationTask implements Task {
     
     private static final Logger logger = new Logger(HomerSynchronizationTask.class);
 
+    private final NetworkStatusService networkStatusService;
     private final HttpExecutionContext httpExecutionContext;
     private final HomerService homerService;
     private final HardwareEvents hardwareEvents;
@@ -38,7 +41,8 @@ public class HomerSynchronizationTask implements Task {
 
     @Inject
     public HomerSynchronizationTask(HomerService homerService, HardwareEvents hardwareEvents, InstanceService instanceService,
-                                    HttpExecutionContext httpExecutionContext, DominanceService dominanceService) {
+                                    HttpExecutionContext httpExecutionContext, DominanceService dominanceService, NetworkStatusService networkStatusService) {
+        this.networkStatusService = networkStatusService;
         this.httpExecutionContext = httpExecutionContext;
         this.homerService = homerService;
         this.hardwareEvents = hardwareEvents;
@@ -162,6 +166,8 @@ public class HomerSynchronizationTask implements Task {
 
                     if (pair.online_state) {
                         this.hardwareEvents.connected(hardware);
+                    } else {
+                        this.networkStatusService.setStatus(hardware, NetworkStatus.OFFLINE);
                     }
 
                 } catch (Exception e) {
