@@ -20,8 +20,8 @@ import static utilities.enums.ServerMode.PRODUCTION;
 import static utilities.enums.ServerMode.STAGE;
 
 // Každou hodinu v 58 minutu
-//@Scheduled("0 58 * ? * * *")
-@Scheduled("0,20 0 0 ? * * *")
+@Scheduled("0 58 * ? * * *")
+// @Scheduled("0 20 0 0 ? * * *")
 @Restrict(value = { DEVELOPER, STAGE, PRODUCTION })
 public class Job_ThingsMobile_SimData_Synchronize implements Job {
 
@@ -62,11 +62,11 @@ public class Job_ThingsMobile_SimData_Synchronize implements Job {
                     cdr_c: for(TM_Sim_Status_cdr cdr : sim.cdrs) {
 
                         try {
+
                             if (cdr.cdrNetwork.equals("ActivateJerseyDirect")) {
                                 logger.trace("cdr_c:: msisdn: {} ActivateJerseyDirect - continue", sim.msisdn);
                                 continue;
                             }
-
 
                             List<ModelMongo_ThingsMobile_CRD> find_records = ModelMongo_ThingsMobile_CRD.find.query()
                                     .field("msisdn").equal(sim.msisdn)
@@ -75,9 +75,11 @@ public class Job_ThingsMobile_SimData_Synchronize implements Job {
                                     .asList();
 
                             if(find_records.size() > 1) {
-
-                                logger.trace("sim_l:: msisdn: {} there is more than one record for start {} and end {} ", sim.msisdn, cdr.cdrDateStart, cdr.cdrDateStop);
+                                logger.error("cdr_c:: msisdn: {} - more than one record!", sim.msisdn);
                             }
+
+                            logger.trace("sim_l:: msisdn: {} there is more than one record for start {} : {} and end {} : {} ", sim.msisdn,cdr.cdrDateStart, cdr.getAsLong_CdrDateStart(), cdr.cdrDateStop, cdr.getAsLong_CdrDateStart());
+
 
                             if (find_records.isEmpty()) {
 
@@ -94,7 +96,7 @@ public class Job_ThingsMobile_SimData_Synchronize implements Job {
                                 crd_mongo.save();
 
                             } else {
-                                logger.trace("sim_l:: msisdn:{} not new Records", sim.msisdn);
+                                logger.trace("sim_l:: msisdn:{} not new Records. cdrDateStart {}, cdrDateStop {} already exist ", sim.msisdn, cdr.cdrDateStart, cdr.cdrDateStop);
                             }
 
                         } catch (MappingException e){

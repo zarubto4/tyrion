@@ -41,29 +41,6 @@ public class DataSim_DataGram {
     @JsonIgnore
     public HashMap<String, Long> data_traffic_by_country = new HashMap<>();
 
-    @JsonProperty
-    @ApiModelProperty(required = true, value = "Represent time in millis")
-    public Long long_from() {
-        return date_from.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-    }
-
-    @JsonProperty
-    @ApiModelProperty(required = true, value = "Represent time in millis")
-    public Long long_to() {
-        return date_to.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-    }
-    @JsonProperty
-    @ApiModelProperty(required = true, value = "Readable value for users")
-    public String date_from() {
-        return  date_from.format(TM_Sim_Status_cdr.formatter_from_tm);
-    }
-
-    @JsonProperty
-    @ApiModelProperty(required = true, value = "Readable value for users")
-    public String date_to() {
-        return  date_to.format(TM_Sim_Status_cdr.formatter_from_tm);
-    }
-
     
     @JsonProperty
     @ApiModelProperty(required = true, value = "List of Pairs with country name and data_consumption", name = "data_traffic_by_country")

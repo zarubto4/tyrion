@@ -2,6 +2,7 @@ package mongo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Field;
@@ -28,39 +29,82 @@ public class ModelMongo_ThingsMobile_CRD extends _Abstract_MongoModel {
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
     public Long msisdn;
-    public Long cdrImsi;
+    @JsonIgnore() public Long cdrImsi;
 
-    public Long cdrDateStart;   // Time in Millis
-    public Long cdrDateStop;    // Time in Millis
+    @JsonIgnore() public Long cdrDateStart;   // Time in Millis
+    @JsonIgnore() public Long cdrDateStop;    // Time in Millis
 
-    public String cdrNetwork;
-    public String cdrCountry;   // Where sim consumt data
+    @JsonIgnore()  public String cdrNetwork;
+    @JsonIgnore() public String cdrCountry;   // Where sim consumt data
 
-    @JsonIgnore
-    public Long cdrTraffic;    // Consumption in Bites
+    @JsonIgnore public Long cdrTraffic;    // Consumption in Bites
 
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
-    @Transient
+
     @JsonProperty()
+    @ApiModelProperty(required = true,
+            value = "Dates in Bites")
     public Long data_in_bites(){
         return cdrTraffic;
     }
 
-    @Transient
     @JsonProperty()
-    public Long data_in_kb(){
-        return cdrTraffic / 1024;
+    @ApiModelProperty(required = true,
+            value = "UNIX time in s",
+            example = "1466163471")
+    public Long crd_msisdn() {
+        return cdrImsi;
     }
 
-    @Transient
     @JsonProperty()
-    public Long data_in_mb(){
-        return cdrTraffic / 1024 / 1024;
+    @ApiModelProperty(required = true,
+            value = "UNIX time in s",
+            example = "1466163471")
+    public Long cdr_date_start() {
+        return cdrDateStart;
     }
+
+    @JsonProperty()
+    @ApiModelProperty(required = true)
+    public Long cdr_date_stop() {
+        return cdrDateStop;
+    }
+
+    @JsonProperty()
+    @ApiModelProperty(required = true)
+    public String cdr_network() {
+        return cdrNetwork;
+    }
+
+    @JsonProperty()
+    @ApiModelProperty(required = true)
+    public String cdr_country() {
+        return cdrCountry;
+    }
+
+    @ApiModelProperty(required = true, value = "Total Cost in €")
+    @JsonProperty()
+    public Double cost() {
+
+        //1MB - 0,40€
+        //1000Kb - 0,40€
+        //1000000Kb - 0,40€
+        return cdrTraffic * (0.4 / 1024 / 1024 ) ;
+    }
+
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
+
+    public void setMsisdn(Long msisdn) {
+        System.out.println("setMsisdn Long");
+        this.msisdn = msisdn;
+    }
+
+    public void setMsisdn(String msisdn) {
+        System.out.println("setMsisdn String");
+    }
 
 
     @Transient
@@ -75,44 +119,11 @@ public class ModelMongo_ThingsMobile_CRD extends _Abstract_MongoModel {
         return  Instant.ofEpochMilli(cdrDateStop).atZone(ZoneId.systemDefault()).toLocalDateTime();
     }
 
-
+    @JsonIgnore()
     public Long getMsisdn() {
         return msisdn;
     }
 
-    public void setMsisdn(Long msisdn) {
-        System.out.println("setMsisdn Long");
-        this.msisdn = msisdn;
-    }
-
-    public void setMsisdn(String msisdn) {
-        System.out.println("setMsisdn String");
-    }
-
-
-    public Long getCdrImsi() {
-        return cdrImsi;
-    }
-
-    public void setCdrImsi(Long cdrImsi) {
-        this.cdrImsi = cdrImsi;
-    }
-
-    public Long getCdrDateStart() {
-        return cdrDateStart;
-    }
-
-    public void setCdrDateStart(Long cdrDateStart) {
-        this.cdrDateStart = cdrDateStart;
-    }
-
-    public Long getCdrDateStop() {
-        return cdrDateStop;
-    }
-
-    public void setCdrDateStop(Long cdrDateStop) {
-        this.cdrDateStop = cdrDateStop;
-    }
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

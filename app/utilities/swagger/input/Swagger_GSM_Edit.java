@@ -23,15 +23,18 @@ public class Swagger_GSM_Edit {
     public List<String> tags = new ArrayList<>();
 
 
-    @Constraints.Required public Long    daily_traffic_threshold = 0L;                     // Přípustná hodnota v KB
+    @ApiModelProperty(required = true, value = "Value in MB (Only round)")
+    @Constraints.Required public int     daily_traffic_threshold;                     // Přípustná hodnota v b
     @Constraints.Required public boolean block_sim_daily;      // Umožnit překročit limit
     @Constraints.Required public boolean daily_traffic_threshold_notify_type;         // Zákazník bude informován o překročení
 
-    @Constraints.Required public Long    monthly_traffic_threshold = 0L;                   // Přípustná hodnota v KB
+    @ApiModelProperty(required = true, value = "Value in MB (Only round)")
+    @Constraints.Required public int    monthly_traffic_threshold ;                   // Přípustná hodnota v b
     @Constraints.Required public boolean block_sim_monthly;    // Umožnit překročit limit
     @Constraints.Required public boolean monthly_traffic_threshold_notify_type;       // Zákazník bude informován o překročení
 
-    @Constraints.Required public Long    total_traffic_threshold = 0L;                     // Přípustná hodnota v KB
+    @ApiModelProperty(required = true, value = "Value in MB (Only round)")
+    @Constraints.Required public int     total_traffic_threshold ;                     // Přípustná hodnota v b
     @Constraints.Required public boolean block_sim_total;      // Umožnit překročit limit
     @Constraints.Required public boolean total_traffic_threshold_notify_type;         // Zákazník bude informován o překročení
 

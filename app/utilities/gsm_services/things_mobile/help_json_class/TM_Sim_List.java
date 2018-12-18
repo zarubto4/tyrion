@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
 
     public TM_Sim_List() {}
 
-    @JsonProperty(value = "activation_date")                 @ApiModelProperty(name = "activation_date") public String activationDate;
+    @JsonIgnore public String activationDate;
 
     public Integer balance;
 
@@ -51,14 +52,14 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
     public String tag;
 
 
-    @JsonProperty(value = "daily_traffic")                   @ApiModelProperty(name = "daily_traffic")              public Long dailyTraffic;
-    @JsonProperty(value = "daily_traffic_threshold")         @ApiModelProperty(name = "daily_traffic_threshold")    public Long dailyTrafficThreshold;
+    @JsonProperty(value = "daily_traffic")                   @ApiModelProperty(name = "daily_traffic", value = "in bites")           public Long dailyTraffic;
+    @JsonProperty(value = "daily_traffic_threshold")         @ApiModelProperty(name = "daily_traffic_threshold", value = "in MB")    public Long dailyTrafficThreshold;
 
-    @JsonProperty(value = "monthly_traffic")              @ApiModelProperty(name = "monthly_traffic")               public Long monthlyTraffic;
-    @JsonProperty(value = "monthly_traffic_threshold")    @ApiModelProperty(name = "monthly_traffic_threshold")     public Long monthlyTrafficThreshold;
+    @JsonProperty(value = "monthly_traffic")              @ApiModelProperty(name = "monthly_traffic", value = "in bites")            public Long monthlyTraffic;
+    @JsonProperty(value = "monthly_traffic_threshold")    @ApiModelProperty(name = "monthly_traffic_threshold", value = "in MB")     public Long monthlyTrafficThreshold;
 
-    @JsonProperty(value = "total_traffic")              @ApiModelProperty(name = "total_traffic")                   public Long totalTraffic;
-    @JsonProperty(value = "total_traffic_threshold")    @ApiModelProperty(name = "total_traffic_threshold")         public Long totalTrafficThreshold;
+    @JsonProperty(value = "total_traffic")              @ApiModelProperty(name = "total_traffic", value = "in bites")                public Long totalTraffic;
+    @JsonProperty(value = "total_traffic_threshold")    @ApiModelProperty(name = "total_traffic_threshold" , value = "in MB")        public Long totalTrafficThreshold;
 
 
     @JsonIgnore public Integer blockSimDaily;
@@ -129,8 +130,14 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
         try {
 
             if(activationDate == null || activationDate.equals("") ) return null;
+            try {
 
-            return DAYS.between(LocalDate.parse(activationDate, TM_Sim_Status_cdr.formatter_from_tm), LocalDate.now());
+                return DAYS.between( new java.sql.Timestamp(TM_Sim_Status_cdr.dateFormat.parse(activationDate).getTime()).toLocalDateTime().toLocalDate(), LocalDate.now());
+
+            } catch (ParseException e) {
+                System.err.print("days_from_activation:: Parse Error " + activationDate);
+                return null;
+            }
         } catch (Exception e) {
             return null;
         }
@@ -143,13 +150,14 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
      */
     // Time In Millis
     @JsonProperty
-    @ApiModelProperty(name = "activation_date_in_millis")
-    public Long getAsLong_ActivationDate() {
+    @ApiModelProperty(name = "activation_date")
+    public Long getActivation_date() {
         try {
             if(activationDate == null || activationDate.equals("") ) return null;
-            return LocalDate.parse(activationDate, TM_Sim_Status_cdr.formatter_from_tm).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
+            return new java.sql.Timestamp(TM_Sim_Status_cdr.dateFormat.parse(activationDate).getTime()).getTime() / 1000;
+
         } catch (Exception e) {
-            System.out.println("Error: getAsLong_ActivationDate:: activationDate is null: " + activationDate);
+            System.err.println("Error: getAsLong_ActivationDate:: activationDate is null: " + activationDate);
             e.printStackTrace();
             return null;
         }
@@ -162,13 +170,13 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
      */
     // Time In Millis
     @JsonProperty
-    @ApiModelProperty(name = "expiration_date_in_millis")
-    public Long getAsLong_ExpirationDate() {
+    @ApiModelProperty(name = "expiration_date")
+    public Long expiration_date() {
         try {
             if (expirationDate == null || expirationDate.equals("")) return -1L;
-            return LocalDate.parse(expirationDate, TM_Sim_Status_cdr.formatter_from_tm).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
+            return new java.sql.Timestamp(TM_Sim_Status_cdr.dateFormat.parse(expirationDate).getTime()).getTime() / 1000;
         } catch (Exception e) {
-            System.out.println("Error: getAsLong_ExpirationDate is null: " + activationDate);
+            System.err.println("Error: getAsLong_ExpirationDate is null: " + activationDate);
             return null;
         }
     }
@@ -181,11 +189,11 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
      */
     // Time In Millis
     @JsonProperty
-    @ApiModelProperty(name = "last_connection_in_millis")
-    public Long getAsLong_LastConnectionDate() {
+    @ApiModelProperty(name = "last_connection")
+    public Long last_connection_date() {
         try {
             if (lastConnectionDate == null || lastConnectionDate.equals("")) return -1L;
-            return LocalDate.parse(lastConnectionDate, TM_Sim_Status_cdr.formatter_from_tm).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
+            return new java.sql.Timestamp(TM_Sim_Status_cdr.dateFormat.parse(lastConnectionDate).getTime()).getTime() / 1000;
         } catch (Exception e) {
             System.out.println("activationDate: " + activationDate);
             return null;

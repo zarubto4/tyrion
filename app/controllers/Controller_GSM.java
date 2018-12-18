@@ -7,6 +7,7 @@ import io.ebean.Ebean;
 import io.ebean.Query;
 import io.swagger.annotations.*;
 import models.*;
+import mongo.ModelMongo_ThingsMobile_CRD;
 import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
@@ -22,11 +23,9 @@ import utilities.lablel_printer_service.labels.Label_62_GSM_thingsmobile_shield_
 import utilities.logger.Logger;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
-import utilities.swagger.input.Swagger_DataConsumption_Filter;
-import utilities.swagger.input.Swagger_GSM_Edit;
-import utilities.swagger.input.Swagger_GSM_Filter;
-import utilities.swagger.input.Swagger_GSM_Register;
+import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_Entity_Registration_Status;
+import utilities.swagger.output.filter_results.Swagger_GSM_CDR_List;
 import utilities.swagger.output.filter_results.Swagger_GSM_List;
 
 import java.util.List;
@@ -187,6 +186,10 @@ public class Controller_GSM extends _BaseController {
 
             if (help.project_id != null ) {
                 query.where().eq("project_id", help.project_id);
+            }
+
+            if (help.gsm_ids != null ) {
+                query.where().in("id", help.gsm_ids);
             }
 
             // Vytvářím seznam podle stránky
@@ -451,7 +454,7 @@ public class Controller_GSM extends _BaseController {
         }
     }
 
-    @ApiOperation(value = "get Sim data usage",
+     @ApiOperation(value = "get Sim data usage",
             tags = {"GSM"},
             notes = "",
             produces = "application/json",
@@ -529,6 +532,58 @@ public class Controller_GSM extends _BaseController {
             System.out.println("DataSim_overview:: " + overview.prettyPrint());
 
             return ok(overview);
+
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+
+    @ApiOperation(value = "get Sim crd records",
+            tags = {"GSM"},
+            notes = "",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https"
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_GSM_CDR_Filter",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_GSM_CDR_List.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result get_cdr_records(Integer page_number) {
+        try {
+
+            // Get and Validate Object
+            Swagger_GSM_CDR_Filter help = formFromRequestWithValidation(Swagger_GSM_CDR_Filter.class);
+
+            // Check Permission
+            List<Model_GSM> gsm = Model_GSM.find.query().where().idIn(help.gsm_ids).findList();
+
+            List<Long> gsm_msi_number = Model_GSM.find.query().where().idIn(help.gsm_ids).select("msi_number").findSingleAttributeList();
+
+            org.mongodb.morphia.query.Query<ModelMongo_ThingsMobile_CRD> crs = ModelMongo_ThingsMobile_CRD.find.query().field("msisdn").in(gsm_msi_number);
+
+            crs.order("-cdrDateStart");
+
+            // Vytvářím seznam podle stránky
+            Swagger_GSM_CDR_List result = new Swagger_GSM_CDR_List(crs, page_number, help);
+
+            // Vracím seznam
+            return ok(result);
+
 
         } catch (Exception e) {
             return controllerServerError(e);

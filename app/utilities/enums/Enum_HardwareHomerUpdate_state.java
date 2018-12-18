@@ -24,7 +24,8 @@ public enum Enum_HardwareHomerUpdate_state {
     @EnumValue("ERROR_RESTART_STATUS")               ERROR_RESTART_STATUS,
     @EnumValue("ERROR_INFO_STATUS")                  ERROR_INFO_STATUS,
     @EnumValue("NEW_VERSION_DOESNT_MATCH")           NEW_VERSION_DOESNT_MATCH,
-    
+    @EnumValue("ERROR_BACKUP_RESTORE")               ERROR_BACKUP_RESTORE,
+
     // phase
     @EnumValue("PHASE_UPLOAD_START")                  PHASE_UPLOAD_START,      // Creating backup
     @EnumValue("PHASE_FLASH_ERASING")                 PHASE_FLASH_ERASING,      // Creating backup
@@ -71,6 +72,7 @@ public enum Enum_HardwareHomerUpdate_state {
         else if (value.equalsIgnoreCase(ERROR_RESTART_STATUS.toString()))         return Enum_HardwareHomerUpdate_state.ERROR_RESTART_STATUS;
         else if (value.equalsIgnoreCase(ERROR_INFO_STATUS.toString()))            return Enum_HardwareHomerUpdate_state.ERROR_INFO_STATUS;
         else if (value.equalsIgnoreCase(NEW_VERSION_DOESNT_MATCH.toString()))     return Enum_HardwareHomerUpdate_state.NEW_VERSION_DOESNT_MATCH;
+        else if (value.equalsIgnoreCase(ERROR_BACKUP_RESTORE.toString()))         return Enum_HardwareHomerUpdate_state.ERROR_BACKUP_RESTORE;
 
 
         return null;

@@ -43,10 +43,10 @@ public abstract class BaseModel extends Model implements JsonSerializable {
     @Id
     public UUID id;
 
-    @ApiModelProperty(required = true, readOnly = true, dataType = "integer", example = "1466163478925")
+    @ApiModelProperty(required = true, readOnly = true, dataType = "integer", example = "1466163478")
     public Date created;
 
-    @ApiModelProperty(required = true, readOnly = true, dataType = "integer", example = "1466163478925")
+    @ApiModelProperty(required = true, readOnly = true, dataType = "integer", example = "1466163478")
     public Date updated;
 
     @JsonIgnore
@@ -60,39 +60,6 @@ public abstract class BaseModel extends Model implements JsonSerializable {
     }
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
-
-    @ApiModelProperty(required = true,
-            value = "UNIX time in s",
-            example = "1466163471")
-    @JsonProperty
-    public Long  created() {
-        try {
-
-            if(created == null) return null;
-            return created.getTime() / 1000;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    @ApiModelProperty(required = true,
-            value = "UNIX time in s",
-            example = "1466163471")
-    @JsonProperty
-    public Long  updated() {
-        try {
-
-            if(updated == null) return null;
-            return updated.getTime() / 1000;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
 
 /* GENERAL OBJECT CACHE ------------------------------------------------------------------------------------------------*/
 

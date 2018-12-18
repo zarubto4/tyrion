@@ -61,9 +61,15 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
     @JsonIgnore
     public boolean deleted; // Default value is false in save()
 
-
     @JsonIgnore
     public UUID author_id; // Default value is false in save()
+
+
+    @JsonIgnore
+    @Property("server_version")
+    private String tyrion_version;      // Special Value
+    private String tyrion_mode;         // Special Value
+    private String tyrion_cluster_id;   // Special Value
 
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
@@ -150,6 +156,10 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
             this.updated = Instant.now().getEpochSecond();
         }
         // new Thread(this::cache).start(); // Caches the object
+
+        this.tyrion_version     = Server.version;
+        this.tyrion_mode        = Server.mode.name();
+        this.tyrion_cluster_id  = Server.ip;
 
         if (its_person_operation()) {
             save_author();

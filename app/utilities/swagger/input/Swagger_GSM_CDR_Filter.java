@@ -4,17 +4,19 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.data.validation.Constraints;
 
-import javax.validation.Constraint;
 import java.util.List;
 import java.util.UUID;
 
 @ApiModel(description = "",
-        value = "GSM_Filter")
-public class Swagger_GSM_Filter extends _Swagger_filter_parameter{
+        value = "GSM_CRD_Filter")
+public class Swagger_GSM_CDR_Filter extends _Swagger_filter_parameter{
 
+    @ApiModelProperty(required = true)
     @Constraints.Required
-    @ApiModelProperty(required = true) public UUID project_id;
+    public UUID project_id;
 
-    @ApiModelProperty(required = false)
+    @ApiModelProperty(required = true)
+    @Constraints.Required
     public List<UUID> gsm_ids;
+
 }

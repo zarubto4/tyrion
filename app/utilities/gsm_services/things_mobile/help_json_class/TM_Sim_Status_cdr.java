@@ -7,6 +7,8 @@ import io.swagger.annotations.ApiModelProperty;
 import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -15,8 +17,8 @@ import java.time.format.DateTimeFormatter;
 
 public class TM_Sim_Status_cdr extends _Swagger_Abstract_Default {
 
-    public static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    public static final DateTimeFormatter formatter_from_tm = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public TM_Sim_Status_cdr() {}
     public Long cdrImsi;
@@ -42,12 +44,16 @@ public class TM_Sim_Status_cdr extends _Swagger_Abstract_Default {
     // Time In Millis
     @JsonProperty
     @ApiModelProperty(name = "cdr_date_stop_in_millis")
-    public Long getAsLong_CdrDateStop() {
-       return LocalDate.parse(cdrDateStop, formatter_from_tm).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
+    public Long getAsLong_CdrDateStop() throws ParseException {
+        try {
+            return new java.sql.Timestamp(TM_Sim_Status_cdr.dateFormat.parse(cdrDateStart).getTime()).getTime() / 1000;
+        } catch (ParseException e) {
+            return null;
+        }
     }
 
     /**
-     * Same as in
+     * Same as inLocalDate.parse
      * @see TM_Sim_List
      * @return
      */
@@ -55,7 +61,11 @@ public class TM_Sim_Status_cdr extends _Swagger_Abstract_Default {
     @JsonProperty()
     @ApiModelProperty(name = "cdr_date_start_in_millis")
     public Long getAsLong_CdrDateStart() {
-        return LocalDate.parse(cdrDateStop, formatter_from_tm).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
+        try {
+            return new java.sql.Timestamp(TM_Sim_Status_cdr.dateFormat.parse(cdrDateStop).getTime()).getTime() / 1000;
+        } catch (ParseException e) {
+            return null;
+        }
     }
 
 
