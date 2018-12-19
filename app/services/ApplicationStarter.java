@@ -22,6 +22,7 @@ import utilities.logger.ServerLogger;
 import utilities.model.DateSerializer;
 import utilities.permission.PermissionFilter;
 import common.InjectedHandlerInstantiator;
+import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerService;
 
 /**
@@ -51,7 +52,7 @@ public class ApplicationStarter {
     @Inject
     public ApplicationStarter(Clock clock, ApplicationLifecycle appLifecycle, Config configuration, Injector injector,
                               ApplicationEvolutions applicationEvolutions, ServerLogger serverLogger, CacheService cacheService,
-                              MongoDBConnector mongoDBConnector, SchedulerService schedulerService) { // These unused parameters are important due to DI - don't remove them!
+                              MongoDBConnector mongoDBConnector, SchedulerService schedulerService, PermissionService permissionService) { // These unused parameters are important due to DI - don't remove them!
 
         this.clock = clock;
         this.appLifecycle = appLifecycle;
@@ -62,15 +63,10 @@ public class ApplicationStarter {
             Server.configuration = configuration;
             Server.mode = configuration.getEnum(ServerMode.class,"server.mode");
 
-            // Date to seconds
-            SimpleModule module_date = new SimpleModule();
-            module_date.addSerializer(Date.class, new DateSerializer());
-
-            // For dependency injected serializer for permissions
             Json.mapper()
                     .setFilterProvider(new SimpleFilterProvider().addFilter("permission", injector.getInstance(PermissionFilter.class)))
-                    .registerModule(module_date)
-                    .setHandlerInstantiator(injector.getInstance(InjectedHandlerInstantiator.class));
+                    .registerModule(new SimpleModule().addSerializer(Date.class, new DateSerializer())) // Override Date.class serialization
+                    .setHandlerInstantiator(injector.getInstance(InjectedHandlerInstantiator.class)); // For dependency injected serializers
 
             Server.start(injector);
 

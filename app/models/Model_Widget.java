@@ -89,7 +89,7 @@ public class Model_Widget extends TaggedModel implements Permissible, UnderProje
     @JsonProperty @ApiModelProperty(required = true)
     public  List<Model_WidgetVersion> versions() {
         try {
-            return get_versions();
+            return getVersions();
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -124,7 +124,7 @@ public class Model_Widget extends TaggedModel implements Permissible, UnderProje
     }
 
     @JsonIgnore
-    public List<UUID> get_versionsId() {
+    public List<UUID> getVersionIds() {
         if (idCache().gets(Model_WidgetVersion.class) == null) {
             idCache().add(Model_WidgetVersion.class, Model_WidgetVersion.find.query().where().eq("widget.id", id).ne("deleted", true).select("id").findSingleAttributeList());
         }
@@ -135,29 +135,15 @@ public class Model_Widget extends TaggedModel implements Permissible, UnderProje
     @JsonIgnore
     public void sort_Model_Model_GridProgramVersion_ids() {
 
-        List<Model_WidgetVersion> versions = get_versions();
+        List<Model_WidgetVersion> versions = getVersions();
         this.idCache().removeAll(Model_WidgetVersion.class);
         versions.stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())
                 .forEach(o -> this.idCache().add(Model_WidgetVersion.class, o.id));
 
     }
     @JsonIgnore
-    public List<Model_WidgetVersion> get_versions() {
-        try {
-
-            List<Model_WidgetVersion> grid_versions  = new ArrayList<>();
-
-            for (UUID version_id : get_versionsId()) {
-                grid_versions.add(Model_WidgetVersion.find.byId(version_id));
-            }
-
-            return grid_versions;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new ArrayList<>();
-        }
-
+    public List<Model_WidgetVersion> getVersions() {
+        return this.getVersionIds().stream().map(Model_WidgetVersion.find::byId).collect(Collectors.toList());
     }
 
     @JsonIgnore

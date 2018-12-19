@@ -55,11 +55,11 @@ public class MainLogger {
         List<String> groups = this.configuration.getStringList("logger.logged_groups");
 
         System.out.println();
-        System.out.println("   ▄    _▄▄_ _▄▄_ _▄▄_ ▄▄▄ ▄▄▄  ▄▄_");
-        System.out.println("   █    █  █ █  ▀ █  ▀ █___ █__█ █_ ▀   █");
-        System.out.println("   █    █  █ █ ▄_ █ ▄_ █▀▀ ██▀   ▀▄");
-        System.out.println("   █___ █__█ █__█ █__█ █___ █  █ ▄__█   █");
-        System.out.println("   ▀▀▀  ▀▀   ▀▀   ▀▀  ▀▀▀ ▀  ▀  ▀▀");
+        System.out.println("    ");
+        System.out.println("    §§     §§§   §§§   §§§  §§§§§ §§§§  _§§§§");
+        System.out.println("    §§    §§ §§ §§    §§    §§___ §§_§§ §§_  ");
+        System.out.println("    §§    §§ §§ §§ §§ §§ §§ §§¨¨¨ §§'§_   ¨§§");
+        System.out.println("    §§§§§  §§§   §§§   §§§  §§§§§ §§ §§ §§§§'");
         System.out.println();
         System.out.println("     SETTINGS: Developer");
         System.out.println();

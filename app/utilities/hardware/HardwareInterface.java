@@ -1,6 +1,5 @@
 package utilities.hardware;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.FailedMessageException;
 import io.ebean.Expr;
 import models.Model_Hardware;
@@ -9,14 +8,12 @@ import models.Model_HomerServer;
 import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import utilities.enums.*;
 import utilities.logger.Logger;
-import utilities.swagger.input.Swagger_Board_Developer_parameters;
 import websocket.Message;
 import websocket.Request;
 import websocket.WebSocketInterface;
 import websocket.messages.homer_hardware_with_tyrion.*;
 import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Command;
 
-import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;

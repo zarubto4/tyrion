@@ -2425,9 +2425,8 @@ public class Controller_Blocko extends _BaseController {
                 return notFound("BlockVersion not from default program");
             }
 
-            Model_BlockVersion old_version = Model_BlockVersion.find.query().where().eq("publish_type", ProgramType.DEFAULT_VERSION.name()).select("id").findOne();
+            Model_BlockVersion old_version = Model_BlockVersion.find.query().nullable().where().eq("publish_type", ProgramType.DEFAULT_VERSION.name()).findOne();
             if (old_version != null) {
-                old_version = Model_BlockVersion.find.byId(old_version.id);
                 old_version.publish_type = null;
                 old_version.update();
             }

@@ -1352,7 +1352,7 @@ public class Controller_Grid extends _BaseController {
 
             grid_widget_new.refresh();
 
-            for (Model_WidgetVersion version : grid_widget_old.get_versions()) {
+            for (Model_WidgetVersion version : grid_widget_old.getVersions()) {
 
                 Model_WidgetVersion copy_object = new Model_WidgetVersion();
                 copy_object.name        = version.name;
@@ -1558,15 +1558,13 @@ public class Controller_Grid extends _BaseController {
 
             // Kontrola objektu
             Model_WidgetVersion version = Model_WidgetVersion.find.byId(version_id);
-            if (version == null) return notFound("GridWidgetVersion version_id not found");
 
-            if (!version.get_grid_widget_id().equals("00000000-0000-0000-0000-000000000001")) {
+            if (!version.get_grid_widget_id().equals(UUID.fromString("00000000-0000-0000-0000-000000000001"))) {
                 return notFound("GridWidgetVersion version_id not from default program");
             }
 
-            Model_WidgetVersion old_version = Model_WidgetVersion.find.query().where().eq("publish_type", ProgramType.DEFAULT_VERSION.name()).select("id").findOne();
+            Model_WidgetVersion old_version = Model_WidgetVersion.find.query().nullable().where().eq("publish_type", ProgramType.DEFAULT_VERSION.name()).findOne();
             if (old_version != null) {
-                old_version = Model_WidgetVersion.find.byId(old_version.id);
                 old_version.publish_type = null;
                 old_version.update();
             }
@@ -1788,7 +1786,7 @@ public class Controller_Grid extends _BaseController {
             this.checkReadPermission(widget);
 
             // Vrácení objektu
-            return ok(widget.versions);
+            return ok(widget.getVersions());
 
         } catch (Exception e) {
             return controllerServerError(e);

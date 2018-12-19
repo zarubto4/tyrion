@@ -8,6 +8,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.typesafe.config.Config;
+import exceptions.BadRequestException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.*;
@@ -137,16 +138,9 @@ public class Controller_ZZZ_Tester extends _BaseController {
 
     @ApiOperation(value = "Hidden test Method", hidden = true)
     public Result test2() {
-        try {
+        this.webSocketService.test();
 
-            this.webSocketService.test();
-
-            return ok();
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return badRequest();
-        }
+        throw new BadRequestException("HAHAHA");
     }
 
     @ApiOperation(value = "Hidden test Method", hidden = true)

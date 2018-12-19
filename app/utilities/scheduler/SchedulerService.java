@@ -102,8 +102,15 @@ public class SchedulerService {
 
     public Scheduler scheduler;
 
-    public void schedule() {
-        // this.scheduler.scheduleJob(newJob())
+    public void schedule(JobDefinition jobDefinition) {
+        try {
+            this.scheduler.scheduleJob(
+                    newJob(jobDefinition.getJob()).withIdentity(jobDefinition.getJobKey()).usingJobData(new JobDataMap(jobDefinition.getDataMap())).build(),
+                    newTrigger().withIdentity(jobDefinition.getJobKey()).withSchedule(jobDefinition.getSchedule()).startNow().build());
+        } catch (Exception e) {
+            logger.internalServerError(e);
+        }
+
     }
 
     public void show_all_jobs() throws SchedulerException {

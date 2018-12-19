@@ -11,6 +11,7 @@ import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
+import play.db.ebean.EbeanDynamicEvolutions;
 import utilities.cache.CacheService;
 import utilities.enums.EntityType;
 import exceptions.NotFoundException;
@@ -28,8 +29,8 @@ public class PermissionService {
     private Cache<UUID, CachePermissionList> cache;
 
     @Inject
-    public PermissionService(CacheService serverCache) {
-        this.cache = serverCache.getCache("PermissionServiceCache", UUID.class, CachePermissionList.class, 500, 3600, true);
+    public PermissionService(CacheService cacheService, EbeanDynamicEvolutions ebeanDynamicEvolutions) {
+        this.cache = cacheService.getCache("PermissionServiceCache", UUID.class, CachePermissionList.class, 500, 3600, true);
         this.setPermissions();
         this.setAdministrator();
     }

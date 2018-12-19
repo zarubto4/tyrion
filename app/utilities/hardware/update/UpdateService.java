@@ -19,6 +19,7 @@ import utilities.homer.HomerService;
 import utilities.logger.Logger;
 import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.NotificationService;
+import utilities.scheduler.JobDefinition;
 import utilities.scheduler.SchedulerService;
 import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
@@ -275,7 +276,7 @@ public class UpdateService {
         update.planned = planned;
         update.update();
 
-        // TODO this.schedulerService.schedule
+        this.schedulerService.schedule(new JobDefinition("hardware-update-" + update.getId(), UpdateJob.class).setDate(planned).setData(UpdateJob.UPDATE_ID, update.getId().toString()));
     }
 
     /**

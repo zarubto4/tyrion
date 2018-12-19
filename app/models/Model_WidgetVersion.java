@@ -72,7 +72,7 @@ public class Model_WidgetVersion extends VersionModel implements Permissible, Un
 
         // Add to Cache
         if (widget != null) {
-            widget.get_versionsId();
+            widget.getVersionIds();
             widget.idCache().add(this.getClass(), id);
             widget.sort_Model_Model_GridProgramVersion_ids();
         }
