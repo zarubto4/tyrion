@@ -36,7 +36,7 @@ public class TM_Sim_Status_cdr extends _Swagger_Abstract_Default {
      */
     // Time In Millis
     @JsonProperty
-    @ApiModelProperty(name = "cdr_date_stop")
+    @ApiModelProperty(name = "cdr_date_stop", dataType = "integer", example = "1536424319")
     public LocalDateTime getAsLong_CdrDateStop() {
         try {
 

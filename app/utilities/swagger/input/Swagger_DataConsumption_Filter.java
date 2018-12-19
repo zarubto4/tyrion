@@ -26,7 +26,7 @@ public class Swagger_DataConsumption_Filter {
     @ApiModelProperty(required = false, value = "Include only if you want to get Roles of given project")
     public List<Long> sim_msi_list;
 
-    public boolean blocked = false;
+    public Boolean blocked = false;
 
     @ApiModelProperty(required = false, value = "Default Value Year 2018.01.01")
     public Long from = 1514761200000L;

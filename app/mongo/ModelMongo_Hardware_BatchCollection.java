@@ -47,7 +47,9 @@ public class ModelMongo_Hardware_BatchCollection extends _Abstract_MongoModel im
 
     @ApiModelProperty(required = true) @Constraints.Required public String revision;                     // Kod HW revize
     @ApiModelProperty(required = true) @Constraints.Required public String production_batch;             // Kod HW revizedate_of_assembly
-    @ApiModelProperty(required = true) @Constraints.Required public LocalDateTime date_of_assembly;             // Den kdy došlo k sestavení
+    @ApiModelProperty(required = true, value = "unixTime", readOnly = true, dataType = "integer", example = "1536424319")
+    @Constraints.Required public LocalDateTime date_of_assembly;             // Den kdy došlo k sestavení
+
     @ApiModelProperty(required = true) @Constraints.Required public String pcb_manufacture_name;         // Jméno výrobce desky
     @ApiModelProperty(required = true) @Constraints.Required public String pcb_manufacture_id;           // Kod výrobce desky
     @ApiModelProperty(required = true) @Constraints.Required public String assembly_manufacture_name;    // Jméno firmy co osazovala DPS

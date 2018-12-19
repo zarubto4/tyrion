@@ -145,7 +145,7 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
      */
     // Time In Millis
     @JsonProperty
-    @ApiModelProperty(name = "activation_date")
+    @ApiModelProperty(name = "activation_date", dataType = "integer", example = "1536424319")
     public LocalDateTime getActivation_date() {
         try {
             if(activationDate == null || activationDate.equals("") ) return null;
@@ -164,7 +164,7 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
      */
     // Time In Millis
     @JsonProperty
-    @ApiModelProperty(name = "expiration_date")
+    @ApiModelProperty(name = "expiration_date", dataType = "integer", example = "1536424319")
     public LocalDateTime expiration_date() {
         try {
             if (expirationDate == null || expirationDate.equals("")) return null;
@@ -183,7 +183,7 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
      */
     // Time In Millis
     @JsonProperty
-    @ApiModelProperty(name = "last_connection")
+    @ApiModelProperty(name = "last_connection", dataType = "integer", example = "1536424319")
     public LocalDateTime last_connection_date() {
         try {
             if (lastConnectionDate == null || lastConnectionDate.equals("")) return null;

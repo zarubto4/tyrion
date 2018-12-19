@@ -27,7 +27,8 @@ public class Swagger_Notification_Element extends _Swagger_Abstract_Default {
     @ApiModelProperty(required =  true)                                 public boolean underline = false;
     @ApiModelProperty(required =  true)                                 public boolean button = false;
 
-    @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public Date date           = null;
+
+    @ApiModelProperty(required =  false, dataType = "number", example = "1536424319") @JsonInclude(JsonInclude.Include.NON_NULL)  public Date date  = null;
     @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String url          = null;
     @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String name         = null;
     @ApiModelProperty(required =  false) @JsonInclude(JsonInclude.Include.NON_NULL)  public String color        = null;

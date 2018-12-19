@@ -32,13 +32,13 @@ public class ModelMongo_ThingsMobile_CRD extends _Abstract_MongoModel {
 
     @ApiModelProperty(required = true)      public Long cdr_imsi;
 
-    @ApiModelProperty(required = true)      public LocalDateTime cdr_date_start;   // Time in Millis
-    @ApiModelProperty(required = true)      public LocalDateTime cdr_date_stop;    // Time in Millis
+    @ApiModelProperty(required = true, dataType = "integer", example = "1536424319")      public LocalDateTime cdr_date_start;   // Time in Millis
+    @ApiModelProperty(required = true, dataType = "integer", example = "1536424319")      public LocalDateTime cdr_date_stop;    // Time in Millis
 
     @ApiModelProperty(required = true)      public String cdr_network;
     @ApiModelProperty(required = true)      public String cdr_country;   // Where sim consumt data
 
-    @JsonIgnore public Long cdr_traffic;    // Consumption in Bites
+    @ApiModelProperty(required = true)  public Long cdr_traffic;    // Consumption in Bites
 
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
