@@ -11,7 +11,7 @@ import models.Model_Hardware;
 import models.Model_HardwareType;
 import org.bson.Document;
 import org.bson.types.ObjectId;
-import org.mongodb.morphia.annotations.*;
+import xyz.morphia.annotations.*;
 import play.data.validation.Constraints;
 import play.libs.Json;
 import utilities.cache.CacheMongoFinder;
@@ -24,6 +24,7 @@ import utilities.permission.Action;
 import utilities.permission.Permissible;
 
 import java.io.IOException;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -114,7 +115,7 @@ public class ModelMongo_Hardware_RegistrationEntity extends _Abstract_MongoModel
         hardware.mqtt_username = help.mqtt_username;
         hardware.mqtt_password = help.mqtt_password;
         hardware.is_active = false;
-        hardware.created = new Date(help.created);
+        hardware.created = Date.from(help.created.atZone(ZoneId.systemDefault()).toInstant());
         hardware.hardware_type = hardwareType;
         hardware.batch_id = help.production_batch_id.toString();
         hardware.save();

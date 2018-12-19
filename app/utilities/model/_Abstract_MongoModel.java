@@ -8,7 +8,7 @@ import controllers._BaseController;
 import exceptions.InvalidBodyException;
 import io.swagger.annotations.ApiModelProperty;
 import org.bson.types.ObjectId;
-import org.mongodb.morphia.annotations.*;
+import xyz.morphia.annotations.*;
 import play.data.validation.Constraints;
 import play.libs.Json;
 import utilities.Server;
@@ -20,13 +20,14 @@ import utilities.permission.JsonPermission;
 
 import java.lang.reflect.Field;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Indexes({
         @Index(
                 fields = {
                         // In this case, we have more anotation types with same name
-                        @org.mongodb.morphia.annotations.Field("id"),
+                        @xyz.morphia.annotations.Field("id"),
                 }
         )
 })
@@ -47,16 +48,16 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
     @Constraints.Required
     @Property("created")
     @ApiModelProperty(required = true, value = "unixTime", readOnly = true, dataType = "integer", example = "1536424319")
-    public long created;
+    public LocalDateTime created;
 
     @Constraints.Required
     @Property("updated")
     @ApiModelProperty(required = true, value = "unixTime", readOnly = true, dataType = "integer", example = "1536424319")
-    public long updated;
+    public LocalDateTime updated;
 
     @JsonIgnore
     @ApiModelProperty(required = true, value = "unixTime", readOnly = true, dataType = "integer", example = "1536424319")
-    public long removed;
+    public LocalDateTime removed;
 
     @JsonIgnore
     public boolean deleted; // Default value is false in save()
@@ -149,11 +150,11 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
         this.id = new ObjectId();
 
         // Set Time
-        if (this.created == 0) {
-            this.created = Instant.now().getEpochSecond();
+        if (this.created == null) {
+            this.created = LocalDateTime.now();
         }
-        if (this.updated == 0) {
-            this.updated = Instant.now().getEpochSecond();
+        if (this.updated == null) {
+            this.updated = LocalDateTime.now();
         }
         // new Thread(this::cache).start(); // Caches the object
 
@@ -172,7 +173,7 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
     @JsonIgnore public void update() {
 
         // Set Time
-        this.updated = Instant.now().getEpochSecond();
+        this.updated = LocalDateTime.now();
 
         // Save Document do Mongo Database
         getFinder().save(this);
@@ -187,7 +188,7 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
     @JsonIgnore public void delete() {
 
         // Set Time
-        this.removed = Instant.now().getEpochSecond();
+        this.removed = LocalDateTime.now();
         this.deleted = true;
 
         // Not Remove, but update!

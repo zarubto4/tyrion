@@ -3,7 +3,7 @@ package mongo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import org.bson.types.ObjectId;
-import org.mongodb.morphia.annotations.Entity;
+import xyz.morphia.annotations.Entity;
 import utilities.Server;
 import utilities.cache.CacheMongoFinder;
 import utilities.cache.InjectCache;

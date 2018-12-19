@@ -7,9 +7,6 @@ import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
 import com.typesafe.config.Config;
-import org.mongodb.morphia.Datastore;
-import org.mongodb.morphia.Morphia;
-import org.mongodb.morphia.annotations.Entity;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
@@ -20,6 +17,9 @@ import utilities.enums.ServerMode;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
 import utilities.model._Abstract_MongoModel;
+import xyz.morphia.Datastore;
+import xyz.morphia.Morphia;
+import xyz.morphia.annotations.Entity;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -50,7 +50,7 @@ public class MongoDBConnector {
 
         MongoClientOptions.Builder options_builder = new MongoClientOptions.Builder();
         options_builder.maxConnectionIdleTime(1000 * 60 * 60 *24);
-        options_builder.retryWrites(true);
+        // options_builder.retryWrites(true);
 
         this.mongoClient = new MongoClient(new MongoClientURI(this.url, options_builder));
 

@@ -1,7 +1,7 @@
 package utilities.scheduler.jobs;
 
 import mongo.ModelMongo_ThingsMobile_CRD;
-import org.mongodb.morphia.mapping.MappingException;
+import xyz.morphia.mapping.MappingException;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -71,7 +71,7 @@ public class Job_ThingsMobile_SimData_Synchronize implements Job {
                             List<ModelMongo_ThingsMobile_CRD> find_records = ModelMongo_ThingsMobile_CRD.find.query()
                                     .field("msisdn").equal(sim.msisdn)
                                     .field("cdrDateStart").equal(cdr.getAsLong_CdrDateStart())
-                                    .field("cdrDateStop").equal(cdr.getAsLong_CdrDateStart())
+                                    .field("cdrDateStop").equal(cdr.getAsLong_CdrDateStop())
                                     .asList();
 
                             if(find_records.size() > 1) {
@@ -87,12 +87,12 @@ public class Job_ThingsMobile_SimData_Synchronize implements Job {
 
                                 ModelMongo_ThingsMobile_CRD crd_mongo = new ModelMongo_ThingsMobile_CRD();
                                 crd_mongo.msisdn = sim.msisdn;
-                                crd_mongo.cdrImsi = cdr.cdrImsi;
-                                crd_mongo.cdrDateStart = cdr.getAsLong_CdrDateStart();
-                                crd_mongo.cdrDateStop = cdr.getAsLong_CdrDateStart();
-                                crd_mongo.cdrNetwork = cdr.cdrNetwork;
-                                crd_mongo.cdrCountry = cdr.cdrCountry;
-                                crd_mongo.cdrTraffic = cdr.cdrTraffic;
+                                crd_mongo.cdr_imsi = cdr.cdrImsi;
+                                crd_mongo.cdr_date_start = cdr.getAsLong_CdrDateStart();
+                                crd_mongo.cdr_date_stop = cdr.getAsLong_CdrDateStart();
+                                crd_mongo.cdr_network = cdr.cdrNetwork;
+                                crd_mongo.cdr_country = cdr.cdrCountry;
+                                crd_mongo.cdr_traffic = cdr.cdrTraffic;
                                 crd_mongo.save();
 
                             } else {

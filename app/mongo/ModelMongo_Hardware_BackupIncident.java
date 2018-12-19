@@ -6,7 +6,7 @@ import models.Model_Hardware;
 import models.Model_HardwareType;
 import org.bson.types.ObjectId;
 import org.ehcache.Cache;
-import org.mongodb.morphia.annotations.*;
+import xyz.morphia.annotations.*;
 import play.data.validation.Constraints;
 import utilities.Server;
 import utilities.cache.CacheMongoFinder;

@@ -1,7 +1,7 @@
 package utilities.enums;
 
 import io.ebean.annotation.EnumValue;
-import play.Configuration;
+import utilities.Server;
 import utilities.financial.extensions.extensions.*;
 import utilities.logger.Logger;
 
@@ -46,11 +46,11 @@ public enum ExtensionType {
     }
 
     public String getTypeName() {
-        return Configuration.root().getString("Financial.extensions." + name().toLowerCase() + ".name");
+        return Server.configuration.getString("Financial.extensions." + name().toLowerCase() + ".name");
     }
 
     public String getTypeDescription() {
-        return Configuration.root().getString("Financial.extensions." + name().toLowerCase() + ".description");
+        return Server.configuration.getString("Financial.extensions." + name().toLowerCase() + ".description");
     }
 
     private static final Logger logger = new Logger(ExtensionType.class);

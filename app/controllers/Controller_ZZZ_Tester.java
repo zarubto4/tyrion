@@ -1,6 +1,7 @@
 package controllers;
 
 import com.google.inject.Inject;
+import com.mongodb.AggregationOptions;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
@@ -12,6 +13,7 @@ import exceptions.BadRequestException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.*;
+import mongo.ModelMongo_ThingsMobile_CRD;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.bson.Document;
@@ -35,6 +37,7 @@ import utilities.scheduler.jobs.Job_ThingsMobile_SimData_Synchronize;
 import utilities.scheduler.jobs.Job_ThingsMobile_SimListOnly_Synchronize;
 import utilities.swagger.input.Swagger_GSM_Edit;
 import websocket.WebSocketService;
+import xyz.morphia.aggregation.Group;
 
 import java.io.FileOutputStream;
 import java.math.BigDecimal;
@@ -43,6 +46,7 @@ import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_ZZZ_Tester extends _BaseController {
@@ -71,9 +75,84 @@ public class Controller_ZZZ_Tester extends _BaseController {
     public Result test1() {
         try {
 
+            // new Job_ThingsMobile_SimData_Synchronize().execute(null);
+
+            // Iterator<CountResult> iterator = datastore.createAggregation(MyClass.class).group(Arrays.asList(Group.grouping("$year", "timestamp")), Group.grouping("count", new Accumulator("$sum", 1))).aggregate(CountResult.class);
+
+            /**
+
+            Iterator<QueryResultStats> aggregate = ModelMongo_ThingsMobile_CRD.find
+                    .createAggregation()
+                    /*
+                    .match(
+                            ModelMongo_ThingsMobile_CRD.find.query()
+                                    .field("cdr_date_start").greaterThan(LocalDateTime.)
+                                    .field("cdr_date_stop").lessThan(LocalDateTime.)
+
+                    )
+                    .project(
+                            Projection.projection("year" , Projection.projection("$year", "cdr_date_start") ),
+                            Projection.projection("month" , Projection.projection("$month", "cdr_date_start") ),
+
+                            Projection.projection("dayOfMonth" , Projection.projection("$dayOfMonth", "cdr_date_start") )
+                    )
+                    * /
+                    .s
+                    .group(
+                            "msisdn",
+
+                            Group.grouping(
+                                    "avarage_per_hour",
+
+                                    Group.grouping(
+                                            "consumption_total",
+                                            Group.sum( "cdr_date_start")
+
+                                    )
+                            ),
+
+                            Group.grouping(
+                                    "avarage_per_hour",
+
+                                    Group.grouping(
+                                            "consumption_total",
+                                            Group.sum( "cdr_date_start")
+
+                                    )
+                            )
+                    )
+                    .out(
+                            QueryResultStats.class,
+                            AggregationOptions
+                                    .builder()
+                                    .allowDiskUse(false)
+                                    .maxTime( 5000 , TimeUnit.SECONDS)
+                                    .build()
+                    );
+
+            while (aggregate.hasNext()) {
+
+                QueryResultStats test = aggregate.next();
+                // System.out.println("`Agregace: " + test.msisdn + " consuption: " +  test.avarage_per_hour.size());
+
+            }
+
+        */
+
+        return ok();
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return badRequest();
+        }
+    }
+
+    @ApiOperation(value = "Hidden test Method", hidden = true)
+    public Result test2() {
+        try {
+
 
             new Job_ThingsMobile_SimData_Synchronize().execute(null);
-
 
             /*
 
@@ -125,22 +204,12 @@ public class Controller_ZZZ_Tester extends _BaseController {
 
             */
 
-
-
-
             return ok();
 
         } catch (Exception e) {
             logger.internalServerError(e);
             return badRequest();
         }
-    }
-
-    @ApiOperation(value = "Hidden test Method", hidden = true)
-    public Result test2() {
-        this.webSocketService.test();
-
-        throw new BadRequestException("HAHAHA");
     }
 
     @ApiOperation(value = "Hidden test Method", hidden = true)

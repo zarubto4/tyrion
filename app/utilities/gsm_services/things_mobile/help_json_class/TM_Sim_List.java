@@ -9,6 +9,7 @@ import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
@@ -130,14 +131,8 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
         try {
 
             if(activationDate == null || activationDate.equals("") ) return null;
-            try {
+            return  DAYS.between( LocalDateTime.parse(activationDate, TM_Sim_Status_cdr.formatter), LocalDate.now());
 
-                return DAYS.between( new java.sql.Timestamp(TM_Sim_Status_cdr.dateFormat.parse(activationDate).getTime()).toLocalDateTime().toLocalDate(), LocalDate.now());
-
-            } catch (ParseException e) {
-                System.err.print("days_from_activation:: Parse Error " + activationDate);
-                return null;
-            }
         } catch (Exception e) {
             return null;
         }
@@ -151,11 +146,10 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
     // Time In Millis
     @JsonProperty
     @ApiModelProperty(name = "activation_date")
-    public Long getActivation_date() {
+    public LocalDateTime getActivation_date() {
         try {
             if(activationDate == null || activationDate.equals("") ) return null;
-            return new java.sql.Timestamp(TM_Sim_Status_cdr.dateFormat.parse(activationDate).getTime()).getTime() / 1000;
-
+            return  LocalDateTime.parse(activationDate, TM_Sim_Status_cdr.formatter);
         } catch (Exception e) {
             System.err.println("Error: getAsLong_ActivationDate:: activationDate is null: " + activationDate);
             e.printStackTrace();
@@ -171,10 +165,10 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
     // Time In Millis
     @JsonProperty
     @ApiModelProperty(name = "expiration_date")
-    public Long expiration_date() {
+    public LocalDateTime expiration_date() {
         try {
-            if (expirationDate == null || expirationDate.equals("")) return -1L;
-            return new java.sql.Timestamp(TM_Sim_Status_cdr.dateFormat.parse(expirationDate).getTime()).getTime() / 1000;
+            if (expirationDate == null || expirationDate.equals("")) return null;
+            return  LocalDateTime.parse(expirationDate, TM_Sim_Status_cdr.formatter);
         } catch (Exception e) {
             System.err.println("Error: getAsLong_ExpirationDate is null: " + activationDate);
             return null;
@@ -190,10 +184,10 @@ public class TM_Sim_List extends _Swagger_Abstract_Default {
     // Time In Millis
     @JsonProperty
     @ApiModelProperty(name = "last_connection")
-    public Long last_connection_date() {
+    public LocalDateTime last_connection_date() {
         try {
-            if (lastConnectionDate == null || lastConnectionDate.equals("")) return -1L;
-            return new java.sql.Timestamp(TM_Sim_Status_cdr.dateFormat.parse(lastConnectionDate).getTime()).getTime() / 1000;
+            if (lastConnectionDate == null || lastConnectionDate.equals("")) return null;
+            return  LocalDateTime.parse(lastConnectionDate, TM_Sim_Status_cdr.formatter);
         } catch (Exception e) {
             System.out.println("activationDate: " + activationDate);
             return null;

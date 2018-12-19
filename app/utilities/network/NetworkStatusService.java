@@ -13,7 +13,7 @@ import models.Model_Instance;
 import mongo.ModelMongo_LastOnline;
 import mongo.ModelMongo_NetworkStatus;
 import org.ehcache.Cache;
-import org.mongodb.morphia.query.FindOptions;
+import xyz.morphia.query.FindOptions;
 import play.libs.concurrent.HttpExecutionContext;
 import utilities.Server;
 import utilities.cache.CacheService;
@@ -26,6 +26,7 @@ import utilities.logger.Logger;
 import utilities.model.UnderProject;
 import utilities.notifications.NotificationService;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -35,7 +36,7 @@ public class NetworkStatusService {
     private static final Logger logger = new Logger(NetworkStatusService.class);
 
     private final Cache<UUID, NetworkStatus> networkStatusCache;
-    private final Cache<UUID, Long> lastOnlineCache;
+    private final Cache<UUID, LocalDateTime> lastOnlineCache;
 
     private final HttpExecutionContext httpExecutionContext;
     private final NotificationService notificationService;
@@ -48,7 +49,7 @@ public class NetworkStatusService {
     public NetworkStatusService(CacheService cacheService, Provider<HardwareService> hardwareServiceProvider, Provider<InstanceService> instanceServiceProvider,
                                 CompilerService compilerService, HomerService homerService, NotificationService notificationService, HttpExecutionContext httpExecutionContext) {
         this.networkStatusCache = cacheService.getCache("NetworkStatusCache", UUID.class, NetworkStatus.class, 1000, 3600, true);
-        this.lastOnlineCache = cacheService.getCache("LastOnlineCache", UUID.class, Long.class, 1000, 3600, true);
+        this.lastOnlineCache = cacheService.getCache("LastOnlineCache", UUID.class, LocalDateTime.class, 1000, 3600, true);
 
         this.httpExecutionContext = httpExecutionContext;
         this.notificationService = notificationService;
@@ -110,14 +111,14 @@ public class NetworkStatusService {
         this.notificationService.networkStatusChanged(networkable.getClass(), networkable.getId(), networkStatus, projectId);
     }
 
-    public Long getLastOnline(Networkable networkable) {
+    public LocalDateTime getLastOnline(Networkable networkable) {
         logger.debug("getLastOnline - getting last online for: {}, id: {}", networkable.getEntityType(), networkable.getId());
         if (this.lastOnlineCache.containsKey(networkable.getId())) {
             logger.trace("getLastOnline - getting last online from cache");
             return this.lastOnlineCache.get(networkable.getId());
         } else {
             this.requestLastOnline(networkable);
-            return -1L;
+            return null;
         }
     }
 
@@ -173,12 +174,12 @@ public class NetworkStatusService {
             if (lastOnline != null) {
                 return lastOnline.created;
             } else  {
-                return -1L;
+                return null;
             }
         }).thenAccept(last -> this.setLastOnline(networkable, last));
     }
 
-    private void setLastOnline(Networkable networkable, Long lastOnline) {
+    private void setLastOnline(Networkable networkable, LocalDateTime lastOnline) {
         logger.debug("setStatus - setting last online: {} for: {}, id: {}", lastOnline, networkable.getEntityType(), networkable.getId());
 
         this.lastOnlineCache.put(networkable.getId(), lastOnline);

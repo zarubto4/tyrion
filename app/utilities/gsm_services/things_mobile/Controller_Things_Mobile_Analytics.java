@@ -1,7 +1,7 @@
 package utilities.gsm_services.things_mobile;
 
 import mongo.ModelMongo_ThingsMobile_CRD;
-import org.mongodb.morphia.query.Query;
+import xyz.morphia.query.Query;
 import utilities.Server;
 import utilities.enums.TimePeriod;
 import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_Status_cdr;
@@ -98,31 +98,31 @@ public class Controller_Things_Mobile_Analytics {
                     break;
                 }
 
-                // logger.trace("While:: While: Pointer {} cdr size {}", pointer, crds.size());
-                // logger.trace("While:: While: CDR from {} to {}", crds.get(pointer).date_from(), crds.get(pointer).date_to());
+                logger.trace("While:: While: Pointer {} cdr size {}", pointer, crds.size());
+                logger.trace("While:: While: CDR from {} to {}", crds.get(pointer).cdr_date_stop, crds.get(pointer).cdr_date_start);
 
                 // Tady potřebujeme porovnat zda date start je později než date_fist
-                if ( crds.get(pointer).date_to().isBefore( overview.datagram.get(overview.datagram.size() - 1).date_to ) && crds.get(pointer).date_from().isAfter(overview.datagram.get(overview.datagram.size() - 1).date_from)) {
+                if ( crds.get(pointer).cdr_date_start.isBefore( overview.datagram.get(overview.datagram.size() - 1).date_to ) && crds.get(pointer).cdr_date_stop.isAfter(overview.datagram.get(overview.datagram.size() - 1).date_from)) {
 
                     // logger.trace("While:: While: Condition is ok");
 
                     // Udělám Záznam do správného dne
-                    overview.datagram.get(overview.datagram.size() - 1).data_consumption += crds.get(pointer).cdrTraffic;
+                    overview.datagram.get(overview.datagram.size() - 1).data_consumption += crds.get(pointer).cdr_traffic;
 
                     // Per County
-                    if(!filter.country_code.isEmpty() && (filter.country_code.contains("ALL") || filter.country_code.contains(crds.get(pointer).cdrCountry))) {
+                    if(!filter.country_code.isEmpty() && (filter.country_code.contains("ALL") || filter.country_code.contains(crds.get(pointer).cdr_country))) {
 
-                        if(!overview.datagram.get(overview.datagram.size() - 1).data_traffic_by_country.containsKey(crds.get(pointer).cdrCountry)){
-                            overview.datagram.get(overview.datagram.size() - 1).data_traffic_by_country.put(crds.get(pointer).cdrCountry, 0L);
+                        if(!overview.datagram.get(overview.datagram.size() - 1).data_traffic_by_country.containsKey(crds.get(pointer).cdr_country)){
+                            overview.datagram.get(overview.datagram.size() - 1).data_traffic_by_country.put(crds.get(pointer).cdr_country, 0L);
                         }
 
-                        overview.datagram.get(overview.datagram.size() - 1).data_traffic_by_country.put(crds.get(pointer).cdrCountry, overview.datagram.get(overview.datagram.size() - 1).data_traffic_by_country.get(crds.get(pointer).cdrCountry) + crds.get(pointer).cdrTraffic);
+                        overview.datagram.get(overview.datagram.size() - 1).data_traffic_by_country.put(crds.get(pointer).cdr_country, overview.datagram.get(overview.datagram.size() - 1).data_traffic_by_country.get(crds.get(pointer).cdr_country) + crds.get(pointer).cdr_traffic);
 
                     }
 
                     pointer++;
                 } else {
-                    // logger.trace("While:: While: Nesplnena podminka::  CDR from {} to {}", crds.get(pointer).date_from(), crds.get(pointer).date_to());
+                    logger.trace("While:: While: Nesplnena podminka::  CDR from {} to {}", crds.get(pointer).cdr_date_start , crds.get(pointer).cdr_date_stop);
                     break;
                 }
 
