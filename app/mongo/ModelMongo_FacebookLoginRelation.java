@@ -15,7 +15,7 @@ import java.util.UUID;
         value = "FacebookLoginRelation",
         description = "Facebook login relation for current user"
 )
-@Entity("Facebook LoginRelation ")
+@Entity("Facebook_LoginRelation")
 public class ModelMongo_FacebookLoginRelation extends _Abstract_MongoModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

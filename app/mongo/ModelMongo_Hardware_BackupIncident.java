@@ -44,10 +44,6 @@ public class ModelMongo_Hardware_BackupIncident extends _Abstract_MongoModel {
     @Indexed
     public String hardware_id;
 
-    // Common
-    public String server_version;
-    public ServerMode server_type;
-
 
     /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -57,8 +53,6 @@ public class ModelMongo_Hardware_BackupIncident extends _Abstract_MongoModel {
 
     @Override
     public void save() {
-        server_version = Server.version;
-        server_type = Server.mode;
         super.save();
     }
 

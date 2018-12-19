@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers._BaseController;
 import exceptions.InvalidBodyException;
 import io.swagger.annotations.ApiModelProperty;
+import mongo.LongToLocalDateTime;
 import org.bson.types.ObjectId;
 import xyz.morphia.annotations.*;
 import play.data.validation.Constraints;
@@ -19,7 +20,6 @@ import utilities.permission.Action;
 import utilities.permission.JsonPermission;
 
 import java.lang.reflect.Field;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -31,6 +31,7 @@ import java.util.*;
                 }
         )
 })
+@Converters(LongToLocalDateTime.class)
 public abstract class _Abstract_MongoModel implements JsonSerializable {
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
@@ -65,12 +66,9 @@ public abstract class _Abstract_MongoModel implements JsonSerializable {
     @JsonIgnore
     public UUID author_id; // Default value is false in save()
 
-
-    @JsonIgnore
-    @Property("server_version")
-    private String tyrion_version;      // Special Value
-    private String tyrion_mode;         // Special Value
-    private String tyrion_cluster_id;   // Special Value
+    @JsonIgnore @Property("server_version") private String tyrion_version;      // Special Value
+    @JsonIgnore                             private String tyrion_mode;         // Special Value
+    @JsonIgnore                             private String tyrion_cluster_id;   // Special Value
 
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/

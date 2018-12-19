@@ -70,8 +70,8 @@ public class Job_ThingsMobile_SimData_Synchronize implements Job {
 
                             List<ModelMongo_ThingsMobile_CRD> find_records = ModelMongo_ThingsMobile_CRD.find.query()
                                     .field("msisdn").equal(sim.msisdn)
-                                    .field("cdrDateStart").equal(cdr.getAsLong_CdrDateStart())
-                                    .field("cdrDateStop").equal(cdr.getAsLong_CdrDateStop())
+                                    .field("cdr_date_start").equal(cdr.getAsLong_CdrDateStart())
+                                    .field("cdr_date_stop").equal(cdr.getAsLong_CdrDateStop())
                                     .asList();
 
                             if(find_records.size() > 1) {

@@ -41,11 +41,6 @@ public class ModelMongo_Hardware_ActivationStatus extends _Abstract_MongoModel {
     public String hardware_id;
     public boolean activation;
 
-    // Common
-    public String server_version;
-    public ServerMode server_type;
-
-
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
@@ -54,8 +49,6 @@ public class ModelMongo_Hardware_ActivationStatus extends _Abstract_MongoModel {
 
     @Override
     public void save() {
-        server_version = Server.version;
-        server_type = Server.mode;
         super.save();
     }
 

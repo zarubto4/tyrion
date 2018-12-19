@@ -11,7 +11,6 @@ import java.time.format.DateTimeFormatter;
 
 public class TM_Sim_Status_cdr extends _Swagger_Abstract_Default {
 
-
     public static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public TM_Sim_Status_cdr() {}
@@ -37,9 +36,15 @@ public class TM_Sim_Status_cdr extends _Swagger_Abstract_Default {
      */
     // Time In Millis
     @JsonProperty
-    @ApiModelProperty(name = "cdr_date_stop_in_millis")
+    @ApiModelProperty(name = "cdr_date_stop")
     public LocalDateTime getAsLong_CdrDateStop() {
-       return LocalDateTime.parse(cdrDateStop, formatter);
+        try {
+
+            return LocalDateTime.parse(cdrDateStop, formatter);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -49,9 +54,14 @@ public class TM_Sim_Status_cdr extends _Swagger_Abstract_Default {
      */
     // Time In Millis
     @JsonProperty()
-    @ApiModelProperty(name = "cdr_date_start_in_millis")
+    @ApiModelProperty(name = "cdr_date_start")
     public LocalDateTime getAsLong_CdrDateStart() {
-        return LocalDateTime.parse(cdrDateStop, formatter);
+        try {
+            return LocalDateTime.parse(cdrDateStart, formatter);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 

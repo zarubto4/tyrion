@@ -1,7 +1,6 @@
 package controllers;
 
 import com.google.inject.Inject;
-import com.mongodb.AggregationOptions;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
@@ -9,11 +8,11 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.typesafe.config.Config;
-import exceptions.BadRequestException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import models.*;
-import mongo.ModelMongo_ThingsMobile_CRD;
+import mongo.ModelMongo_Hardware_BatchCollection;
+import mongo.ModelMongo_Hardware_RegistrationEntity;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.bson.Document;
@@ -26,27 +25,21 @@ import utilities.enums.*;
 import utilities.financial.extensions.ExtensionInvoiceItem;
 import utilities.financial.fakturoid.FakturoidService;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
-import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_List;
-import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_List_list;
 import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_Status;
-import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_UpdateTresHold;
 import utilities.logger.Logger;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.scheduler.jobs.Job_ThingsMobile_SimData_Synchronize;
-import utilities.scheduler.jobs.Job_ThingsMobile_SimListOnly_Synchronize;
-import utilities.swagger.input.Swagger_GSM_Edit;
 import websocket.WebSocketService;
-import xyz.morphia.aggregation.Group;
+import xyz.morphia.annotations.Entity;
+import xyz.morphia.annotations.Id;
 
 import java.io.FileOutputStream;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class Controller_ZZZ_Tester extends _BaseController {
@@ -71,54 +64,97 @@ public class Controller_ZZZ_Tester extends _BaseController {
 
 // CONTROLLER CONTENT ##################################################################################################
 
+    @Entity("QueryResultStats")
+    public static class QueryResultStats {
+
+        @Id
+        public Long msisdn;
+        public Long consumption_total;
+        public List<Record> avarage_per_hour;
+
+    }
+
+    @Entity("Record")
+    public static class Record {
+
+        public Long consumption_total;
+        public Date from;
+        public Date to;
+
+    }
+
+
     @ApiOperation(value = "Hidden test Method", hidden = true)
     public Result test1() {
         try {
 
+
+
+            List<ModelMongo_Hardware_RegistrationEntity> olds = ModelMongo_Hardware_RegistrationEntity.find.all();
+
+            System.out.println("Máme " + olds.size());
+
+
+
+            for (ModelMongo_Hardware_RegistrationEntity old : olds) {
+
+
+                // old.update();
+
+                /*
+                ModelMongo_Hardware_BatchCollection n = new ModelMongo_Hardware_BatchCollection();
+
+                n.revision = old.revision;
+                n.production_batch = old.production_batch;
+                n.date_of_assembly = LocalDateTime.now();
+                n.pcb_manufacture_name = old.pcb_manufacture_name;
+                n.pcb_manufacture_id = old.pcb_manufacture_id;
+                n.assembly_manufacture_name = old.assembly_manufacture_name;
+                n.assembly_manufacture_id = old.assembly_manufacture_id;
+                n.customer_product_name = old.customer_product_name;
+                n.customer_company_name = old.customer_company_name;
+                n.customer_company_made_description = old.customer_company_made_description;
+                n.mac_address_start = old.mac_address_start;
+                n.mac_address_end = old.mac_address_end;
+                n.latest_used_mac_address = old.latest_used_mac_address;
+                n.ean_number = old.ean_number;
+                n.description = old.compiler_target_name;
+                n.save();
+                */
+
+
+            }
+
+
             // new Job_ThingsMobile_SimData_Synchronize().execute(null);
 
-            // Iterator<CountResult> iterator = datastore.createAggregation(MyClass.class).group(Arrays.asList(Group.grouping("$year", "timestamp")), Group.grouping("count", new Accumulator("$sum", 1))).aggregate(CountResult.class);
-
-            /**
-
+            /*
             Iterator<QueryResultStats> aggregate = ModelMongo_ThingsMobile_CRD.find
                     .createAggregation()
-                    /*
-                    .match(
-                            ModelMongo_ThingsMobile_CRD.find.query()
-                                    .field("cdr_date_start").greaterThan(LocalDateTime.)
-                                    .field("cdr_date_stop").lessThan(LocalDateTime.)
 
-                    )
-                    .project(
-                            Projection.projection("year" , Projection.projection("$year", "cdr_date_start") ),
-                            Projection.projection("month" , Projection.projection("$month", "cdr_date_start") ),
+                                      .match(
+                                              ModelMongo_ThingsMobile_CRD.find.query()
+                                                      .field("cdr_date_start").greaterThan(LocalDateTime.of(2018, 1, 1, 0, 0, 0, 0))
+                                                      .field("cdr_date_stop").lessThan(LocalDateTime.now())
 
-                            Projection.projection("dayOfMonth" , Projection.projection("$dayOfMonth", "cdr_date_start") )
-                    )
-                    * /
-                    .s
+                                      )
+
+                                      .project(
+                                              Projection.projection("year" ,          Projection.projection("$year",      "cdr_date_start")),
+                                              Projection.projection("month" ,         Projection.projection("$month",     "cdr_date_start")),
+                                              Projection.projection("dayOfMonth" ,    Projection.projection("$dayOfMonth",     "cdr_date_start")),
+                                              Projection.projection("hour" ,          Projection.projection("$hour",       "cdr_date_start")),
+                                              Projection.projection("minute" ,        Projection.projection("$minute",     "cdr_date_start"))
+
+
+
                     .group(
                             "msisdn",
 
                             Group.grouping(
-                                    "avarage_per_hour",
+                                    "consumption_total",
+                                    Group.sum( "cdr_traffic")
 
-                                    Group.grouping(
-                                            "consumption_total",
-                                            Group.sum( "cdr_date_start")
-
-                                    )
-                            ),
-
-                            Group.grouping(
-                                    "avarage_per_hour",
-
-                                    Group.grouping(
-                                            "consumption_total",
-                                            Group.sum( "cdr_date_start")
-
-                                    )
                             )
                     )
                     .out(
@@ -127,17 +163,21 @@ public class Controller_ZZZ_Tester extends _BaseController {
                                     .builder()
                                     .allowDiskUse(false)
                                     .maxTime( 5000 , TimeUnit.SECONDS)
+                                    .outputMode(AggregationOptions.OutputMode.CURSOR)
                                     .build()
                     );
+
+
+
 
             while (aggregate.hasNext()) {
 
                 QueryResultStats test = aggregate.next();
-                // System.out.println("`Agregace: " + test.msisdn + " consuption: " +  test.avarage_per_hour.size());
+                System.out.println("`Agregace: " + test.msisdn);
 
             }
+            */
 
-        */
 
         return ok();
 
@@ -571,7 +611,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
 
             // new Job_ThingsMobile_SimData_Synchronize().execute(null);
 
-            /*
+/*
             BasicDBObject query = new BasicDBObject();
             query.put("deleted", false);
 
@@ -624,10 +664,6 @@ public class Controller_ZZZ_Tester extends _BaseController {
             // 3. cc6b3643-652a-40c5-88ee-04cff043afa5    "First production collection"     5bd5dd5423548a6f3082b428
             // 2. 26d189c5-b61f-4565-a8f7-5a043a73963e    "21- Test Collection"             5bd5dd5423548a6f3082b427
             // 1. abd218dc-14ca-4d2e-a731-66f71ed41245    "01 production"                   5bd5dd5423548a6f3082b426
-
-
-
-
 
 
             MongoClient mongoClient = new MongoClient(new MongoClientURI("mongodb://production-byzance-cosmos:PbimpRkWXhUrGBwRtLaR19B6NbffCgzklSfSVtHThFzMn6keUENJ9Hm50TZZgtqVOGesgbtCWLaC3yd6ENhoew==@production-byzance-cosmos.documents.azure.com:10255/?ssl=true&replicaSet=globaldb"));
@@ -684,7 +720,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
 
             }
 
-            */
+*/
 
             return ok();
 

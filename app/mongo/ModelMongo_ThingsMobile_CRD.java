@@ -18,7 +18,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-@Entity("ThingsMobile_CRD")
+@Entity("ThingsMobile_CDR")
 public class ModelMongo_ThingsMobile_CRD extends _Abstract_MongoModel {
 
 

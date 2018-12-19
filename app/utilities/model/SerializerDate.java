@@ -3,10 +3,7 @@ package utilities.model;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.google.inject.Inject;
 import utilities.logger.Logger;
-import utilities.network.NetworkStatusService;
-import utilities.network.Networkable;
 
 import java.io.IOException;
 import java.util.Date;
@@ -14,11 +11,11 @@ import java.util.Date;
 /**
  *
  */
-public class DateSerializer extends StdSerializer<Date>{
+public class SerializerDate extends StdSerializer<Date>{
 
-    private static final Logger logger = new Logger(DateSerializer.class);
+    private static final Logger logger = new Logger(SerializerDate.class);
 
-    public DateSerializer() {
+    public SerializerDate() {
         super(Date.class);
     }
 

@@ -29,7 +29,6 @@ libraryDependencies ++= Seq(
   "org.apache.poi" % "poi" % "3.17", // Excel support for report P&G
   "org.apache.poi" % "poi-ooxml" % "3.17",
   "xyz.morphia.morphia" % "core" % "1.4.0",
-  "org.mongodb" % "mongodb-driver-sync" % "3.9.1",
   "com.facebook.business.sdk" % "facebook-java-business-sdk" % "3.0.0",
   "com.sendgrid" % "sendgrid-java" % "4.0.1",
   "commons-validator" % "commons-validator" % "1.6", // Kontrola Emailů, URL adres etc

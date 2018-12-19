@@ -31,13 +31,8 @@ public class ModelMongo_LastOnline extends _Abstract_MongoModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-
     public String networkable_id;
     public EntityType entity_type;
-
-    // Common
-    public String server_version;
-    public ServerMode server_type;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -47,8 +42,6 @@ public class ModelMongo_LastOnline extends _Abstract_MongoModel {
 
     @Override
     public void save() {
-        server_version = Server.version;
-        server_type = Server.mode;
         super.save();
     }
 

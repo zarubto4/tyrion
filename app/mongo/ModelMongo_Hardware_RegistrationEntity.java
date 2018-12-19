@@ -32,7 +32,7 @@ import java.util.UUID;
 
 @ApiModel( // Swagger annotation
         value = "Hardware_RegistrationEntity",
-        description = "Registration entity of Byzance HArdware"
+        description = "Registration entity of Byzance Hardware"
 )
 @Entity("Hardware_RegistrationEntity")
 @Indexes({
@@ -59,10 +59,10 @@ public class ModelMongo_Hardware_RegistrationEntity extends _Abstract_MongoModel
 
     @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String hardware_type_compiler_target_name;
 
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public ObjectId production_batch_id;    // Kod HW revizedate_of_assembly
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public ObjectId production_batch_id;      // Kod HW revizedate_of_assembly
 
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String mqtt_password;        // Kod firmy co osazovala DPS
-    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String mqtt_username;        // Kod firmy co osazovala DPS
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String mqtt_password;              // Kod firmy co osazovala DPS
+    @ApiModelProperty(required = true, readOnly = true) @Constraints.Required  public String mqtt_username;              // Kod firmy co osazovala DPS
 
     /** Optional ! - Not supported now
      CAN_REGISTER,
