@@ -51,6 +51,8 @@ public class CompilationService {
         new Thread(() -> {
             try {
                 this.compile(version, libraryVersion);
+            } catch (BaseException e) {
+                logger.info("compileAsync - error during compilation: {}", e.getMessage());
             } catch (Exception e) {
                 logger.internalServerError(e);
             }
@@ -72,12 +74,19 @@ public class CompilationService {
             }
         } else {
             compilation = new Model_Compilation();
+            compilation.firmware_version_lib = libraryVersion;
             compilation.version = version;
             compilation.save();
             version.refresh();
         }
 
-        compilation.firmware_version_lib = libraryVersion;
+        if (!this.compilerService.isAvailable()) {
+            logger.warn("compile - server is offline");
+            compilation.status = CompilationStatus.SERVER_OFFLINE;
+            compilation.update();
+            throw new ServerOfflineException("Compilation server is offline! It will be compiled as soon as possible!");
+        }
+
         compilation.status = CompilationStatus.IN_PROGRESS;
         compilation.update();
 

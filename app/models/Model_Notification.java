@@ -233,7 +233,7 @@ public class Model_Notification extends BaseModel implements Permissible, Person
                 element.id = version.id;
                 element.text = version.name;
                 element.program_id = version.get_c_program_id();
-                element.project_id = version.get_c_program().getProjectId();
+                element.project_id = version.getProgram().getProjectId();
                 break;
             }
             case "BProgramVersion" : {

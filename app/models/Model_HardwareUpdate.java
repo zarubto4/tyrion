@@ -77,8 +77,8 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
             if (c_program_version_for_update == null) return null;
 
             Swagger_C_Program_Update_program c_program_detail = new Swagger_C_Program_Update_program();
-            c_program_detail.c_program_id = c_program_version_for_update.get_c_program().id;
-            c_program_detail.c_program_program_name = c_program_version_for_update.get_c_program().name;
+            c_program_detail.c_program_id = c_program_version_for_update.getProgram().id;
+            c_program_detail.c_program_program_name = c_program_version_for_update.getProgram().name;
             c_program_detail.c_program_version_id = c_program_version_for_update.id;
             c_program_detail.c_program_version_name = c_program_version_for_update.name;
 
@@ -224,7 +224,7 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 
                     binary.download_id              = c_program_version_for_update.getCompilation().id;
                     binary.build_id                 = c_program_version_for_update.getCompilation().firmware_build_id;
-                    binary.program_name             = c_program_version_for_update.get_c_program().name.length() > 32 ? c_program_version_for_update.get_c_program().name.substring(0, 32) : c_program_version_for_update.get_c_program().name;
+                    binary.program_name             = c_program_version_for_update.getProgram().name.length() > 32 ? c_program_version_for_update.getProgram().name.substring(0, 32) : c_program_version_for_update.getProgram().name;
                     binary.program_version_name     = c_program_version_for_update.name.length() > 32 ? c_program_version_for_update.name.substring(0, 32) : c_program_version_for_update.name;
                     binary.compilation_lib_version  = c_program_version_for_update.getCompilation().firmware_version_lib;
                     binary.time_stamp               = c_program_version_for_update.getCompilation().firmware_build_datetime;

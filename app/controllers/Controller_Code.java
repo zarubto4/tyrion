@@ -313,6 +313,7 @@ public class Controller_Code extends _BaseController {
                 copy_object.file = Model_Blob.upload(fileRecord.downloadString(), "code.json" , c_program_new.get_path());
                 copy_object.update();
 
+
                 this.compilationService.compileAsync(copy_object, version.getCompilation().firmware_version_lib);
             }
 
@@ -949,7 +950,7 @@ public class Controller_Code extends _BaseController {
             Model_CProgramVersion version_old = Model_CProgramVersion.find.byId(help.version_id);
 
             // Kontrola objektu
-            Model_CProgram c_program_old = Model_CProgram.find.byId(version_old.get_c_program().id);
+            Model_CProgram c_program_old = Model_CProgram.find.byId(version_old.getProgram().id);
 
             // TODO permissions
             // Zkontroluji oprávnění
@@ -1013,7 +1014,7 @@ public class Controller_Code extends _BaseController {
                                 .divider()
                                 .text("We will publish it as soon as possible.")
                                 .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                                .send(version_old.get_c_program().getProject().getProduct().owner, "Publishing your program" );
+                                .send(version_old.getProgram().getProject().getProduct().owner, "Publishing your program" );
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
@@ -1033,7 +1034,7 @@ public class Controller_Code extends _BaseController {
                                 .text("We will publish it as soon as possible. We also had to make some changes to your program or rename something.")
                                 .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
                                 .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                                .send(version_old.get_c_program().getProject().getProduct().owner, "Publishing your program" );
+                                .send(version_old.getProgram().getProject().getProduct().owner, "Publishing your program" );
 
                     } catch (Exception e) {
                         logger.internalServerError(e);
@@ -1058,7 +1059,7 @@ public class Controller_Code extends _BaseController {
                                     "We are glad that you want to contribute to our public libraries. Here are some tips what to improve, so you can try it again.")
                             .text(Email.bold("Reason: ") + Email.newLine() + help.reason)
                             .text(Email.bold("Thanks!") + Email.newLine() + person().full_name())
-                            .send(version_old.get_c_program().getProject().getProduct().owner, "Publishing your program");
+                            .send(version_old.getProgram().getProject().getProduct().owner, "Publishing your program");
 
                 } catch (Exception e) {
                     logger.internalServerError(e);
@@ -1093,23 +1094,23 @@ public class Controller_Code extends _BaseController {
             Model_CProgramVersion version = Model_CProgramVersion.find.byId(version_id);
 
             // TODO will not work
-            // if (version.get_c_program().hardware_type_default == null && version.get_c_program().hardware_type_test == null) return badRequest("Version_object is not version of c_program or is not default firmware");
+            // if (version.getProgram().hardware_type_default == null && version.getProgram().hardware_type_test == null) return badRequest("Version_object is not version of c_program or is not default firmware");
 
-            Model_CProgramVersion previous_main_version = Model_CProgramVersion.find.query().nullable().where().eq("c_program.id", version.get_c_program().id).isNotNull("default_program").findOne();
+            Model_CProgramVersion previous_main_version = Model_CProgramVersion.find.query().nullable().where().eq("c_program.id", version.getProgram().id).isNotNull("default_program").findOne();
             if (previous_main_version != null) {
                 previous_main_version.default_program = null;
-                version.get_c_program().default_main_version = null;
+                version.getProgram().default_main_version = null;
                 previous_main_version.update();
-                version.get_c_program().update();
+                version.getProgram().update();
             }
 
-            version.default_program = version.get_c_program();
+            version.default_program = version.getProgram();
             version.update();
 
-            version.get_c_program().refresh();
+            version.getProgram().refresh();
 
             // Vracím Json
-            return ok(version.get_c_program());
+            return ok(version.getProgram());
 
         } catch (Exception e) {
             return controllerServerError(e);

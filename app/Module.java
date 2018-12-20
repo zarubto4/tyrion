@@ -3,7 +3,6 @@ import java.time.Clock;
 
 import org.quartz.Scheduler;
 import services.ApplicationStarter;
-import utilities.permission.PermissionService;
 import utilities.scheduler.SchedulerProvider;
 
 /**

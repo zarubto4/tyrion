@@ -396,7 +396,7 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
                     version.file = Model_Blob.upload(Json.toJson(version_program).toString(), "code.json", c_program.get_path());
                     version.update();
 
-                    // Start with asynchronous ccompilation
+                    // Start with asynchronous compilation
                     this.compilationService.compileAsync(version, release.tag_name);
                 }
             }

@@ -150,7 +150,7 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
     }
 
     @JsonIgnore
-    public Model_CProgram get_c_program() {
+    public Model_CProgram getProgram() {
         return isLoaded("c_program") ? c_program : Model_CProgram.find.query().where().eq("versions.id", id).findOne();
     }
 
@@ -161,7 +161,7 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
 
     @JsonIgnore @Override
     public Model_Project getProject() {
-        return this.get_c_program().getProject();
+        return this.getProgram().getProject();
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
@@ -172,9 +172,9 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
 
         // Add to Cache
 
-        Model_CProgram program = get_c_program();
+        Model_CProgram program = getProgram();
 
-        if(get_c_program() != null) {
+        if(getProgram() != null) {
             program.getVersionsId();
             program.idCache().add(this.getClass(), id);
             program.sort_Model_Model_CProgramVersion_ids();
@@ -189,7 +189,7 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
         logger.debug("update::Update object Id: {}",  this.id);
         super.update();
 
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, get_c_program().getProjectId(), get_c_program_id()))).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, getProgram().getProjectId(), get_c_program_id()))).start();
 
     }
 
@@ -200,9 +200,9 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
 
         super.delete();
 
-        get_c_program().idCache().remove(this.getClass(), id);
+        getProgram().idCache().remove(this.getClass(), id);
 
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, get_c_program().getProjectId(), get_c_program_id()))).start();
+        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getProgram().getProjectId(), get_c_program_id()))).start();
 
         return false;
     }
@@ -212,7 +212,7 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient public String get_path() {
-        return  get_c_program().get_path() + "/version/" + this.id;
+        return  getProgram().get_path() + "/version/" + this.id;
     }
 
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
