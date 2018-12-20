@@ -3,7 +3,7 @@ package mongo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import org.bson.types.ObjectId;
-import org.mongodb.morphia.annotations.Entity;
+import xyz.morphia.annotations.Entity;
 import utilities.Server;
 import utilities.cache.CacheMongoFinder;
 import utilities.cache.InjectCache;
@@ -27,14 +27,9 @@ public class ModelMongo_NetworkStatus extends _Abstract_MongoModel {
 
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-
     public String networkable_id;
     public NetworkStatus status;
     public EntityType entity_type;
-
-    // Common
-    public String server_version;
-    public ServerMode server_type;
 
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
@@ -44,8 +39,6 @@ public class ModelMongo_NetworkStatus extends _Abstract_MongoModel {
 
     @Override
     public void save() {
-        server_version = Server.version;
-        server_type = Server.mode;
         super.save();
     }
 

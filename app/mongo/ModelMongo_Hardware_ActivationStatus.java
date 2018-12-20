@@ -5,10 +5,10 @@ import io.swagger.annotations.ApiModel;
 import models.Model_Hardware;
 import org.bson.types.ObjectId;
 import org.ehcache.Cache;
-import org.mongodb.morphia.annotations.Entity;
-import org.mongodb.morphia.annotations.Field;
-import org.mongodb.morphia.annotations.Index;
-import org.mongodb.morphia.annotations.Indexes;
+import xyz.morphia.annotations.Entity;
+import xyz.morphia.annotations.Field;
+import xyz.morphia.annotations.Index;
+import xyz.morphia.annotations.Indexes;
 import utilities.Server;
 import utilities.cache.CacheMongoFinder;
 import utilities.cache.InjectCache;
@@ -41,11 +41,6 @@ public class ModelMongo_Hardware_ActivationStatus extends _Abstract_MongoModel {
     public String hardware_id;
     public boolean activation;
 
-    // Common
-    public String server_version;
-    public ServerMode server_type;
-
-
 /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
@@ -54,8 +49,6 @@ public class ModelMongo_Hardware_ActivationStatus extends _Abstract_MongoModel {
 
     @Override
     public void save() {
-        server_version = Server.version;
-        server_type = Server.mode;
         super.save();
     }
 

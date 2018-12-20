@@ -57,7 +57,7 @@ public class Model_HomerServer extends TaggedModel implements Permissible, Under
     @JsonIgnore @OneToMany(mappedBy = "server_main", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Instance> instances = new ArrayList<>();
 
     public HomerType server_type;                     // Určující typ serveru
-    public Date time_stamp_configuration;             // Čas konfigurace
+    @ApiModelProperty(required = true, value = "unixTime", readOnly = true, dataType = "integer", example = "1536424319") public Date time_stamp_configuration;             // Čas konfigurace
 
     // Stav Deploy
     public Integer days_in_archive;

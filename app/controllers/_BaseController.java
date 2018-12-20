@@ -6,8 +6,6 @@ import com.typesafe.config.Config;
 import exceptions.*;
 import io.swagger.annotations.ApiModel;
 import models.Model_Person;
-import models.Model_Project;
-import play.Environment;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
@@ -18,15 +16,11 @@ import play.mvc.Result;
 import responses.*;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
-import utilities.logger.YouTrack;
 import utilities.model.BaseModel;
-import utilities.model.Echo;
 import utilities.model.JsonSerializable;
-import utilities.model.UnderProject;
 import utilities.notifications.NotificationService;
 import utilities.permission.Action;
 import utilities.permission.PermissionService;
-import utilities.scheduler.SchedulerService;
 import utilities.server_measurement.RequestLatency;
 
 import java.io.File;
@@ -143,10 +137,10 @@ public abstract class _BaseController {
 
     /**
      * Shortcuts for automatic validation and parsing of incoming JSON to MODEL class
-     * @param clazz
-     * @param <T>
-     * @return
-     * @throws InvalidBodyException
+     * @param clazz whatever
+     * @param <T> ???
+     * @return the same class
+     * @throws InvalidBodyException for unstable
      */
     public <T> T formFromRequestWithValidation(Class<T> clazz) throws InvalidBodyException {
         return formFactory.formFromRequestWithValidation(clazz);
@@ -344,7 +338,7 @@ public abstract class _BaseController {
 
     /**
      * Creates an ok result with given File.
-     * @param file
+     * @param file set File
      * @return
      */
     public static Result ok(File file) {
@@ -356,8 +350,8 @@ public abstract class _BaseController {
 
     /**
      * Create response with File in PDF
-     * @param byte_array
-     * @param file_name
+     * @param byte_array Array of Bites
+     * @param file_name Name of file
      * @return 200 result with file in body
      */
     public static Result file(byte[] byte_array, String file_name) {
@@ -565,10 +559,12 @@ public abstract class _BaseController {
 
 // EXCEPTION - ALL GENERAL EXCEPTIONS ##################################################################################
 
+
     /**
+     *
      * General Flow Exception for Controllers Method.
      * Here we recognized and logged all exception like Object not found, Incoming Json is not valid according Form Exception
-     * @param error
+     * @param error Throwable
      * @return
      */
     public static Result controllerServerError(Throwable error) {

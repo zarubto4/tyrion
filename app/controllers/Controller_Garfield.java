@@ -23,6 +23,7 @@ import utilities.permission.PermissionService;
 import utilities.swagger.input.Swagger_Garfield_Edit;
 import utilities.swagger.input.Swagger_Garfield_New;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -358,7 +359,7 @@ public class Controller_Garfield extends _BaseController {
                 ModelMongo_Hardware_BatchCollection info = new ModelMongo_Hardware_BatchCollection();
                 info.revision = "1.9.9";
                 info.production_batch = "1.9.9";
-                info.date_of_assembly = new Date().getTime();
+                info.date_of_assembly = LocalDateTime.now();
                 info.pcb_manufacture_name = "1.9.9";
                 info.pcb_manufacture_id = "1.9.9";
                 info.assembly_manufacture_name = "1.9.9";

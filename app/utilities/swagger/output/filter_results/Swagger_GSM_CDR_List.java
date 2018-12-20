@@ -2,15 +2,12 @@ package utilities.swagger.output.filter_results;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import models.Model_GSM;
 import mongo.ModelMongo_ThingsMobile_CRD;
-import org.mongodb.morphia.query.FindOptions;
-import org.mongodb.morphia.query.Query;
+import xyz.morphia.query.FindOptions;
+import xyz.morphia.query.Query;
 import utilities.swagger.input._Swagger_filter_parameter;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @ApiModel(description = "",
         value = "GSM_CDR_List")

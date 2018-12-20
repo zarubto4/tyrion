@@ -2,6 +2,7 @@ package services;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import javax.inject.*;
@@ -19,7 +20,8 @@ import utilities.Server;
 import utilities.cache.CacheService;
 import utilities.enums.ServerMode;
 import utilities.logger.ServerLogger;
-import utilities.model.DateSerializer;
+import utilities.model.SerializerDate;
+import utilities.model.SerializerLocalDateTime;
 import utilities.permission.PermissionFilter;
 import common.InjectedHandlerInstantiator;
 import utilities.permission.PermissionService;
@@ -65,7 +67,8 @@ public class ApplicationStarter {
 
             Json.mapper()
                     .setFilterProvider(new SimpleFilterProvider().addFilter("permission", injector.getInstance(PermissionFilter.class)))
-                    .registerModule(new SimpleModule().addSerializer(Date.class, new DateSerializer())) // Override Date.class serialization
+                    .registerModule(new SimpleModule().addSerializer(Date.class, new SerializerDate())) // Override Date.class serialization
+                    .registerModule(new SimpleModule().addSerializer(LocalDateTime.class, new SerializerLocalDateTime())) // Override Date.class serialization
                     .setHandlerInstantiator(injector.getInstance(InjectedHandlerInstantiator.class)); // For dependency injected serializers
 
             Server.start(injector);

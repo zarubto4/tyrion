@@ -18,9 +18,11 @@ public class Swagger_ExtensionFinancialEvent_Search {
     @ApiModelProperty(required = false)
     public UUID extension_id;
 
-    @ApiModelProperty(required = false)
+
+    @ApiModelProperty(required = false, value = "unixTime", readOnly = true, dataType = "integer", example = "1536424319")
     public Date from;
 
-    @ApiModelProperty(required = false)
+
+    @ApiModelProperty(required = false, value = "unixTime", readOnly = true, dataType = "integer", example = "1536424319")
     public Date to;
 }

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import org.bson.types.ObjectId;
 import org.ehcache.Cache;
-import org.mongodb.morphia.annotations.Entity;
+import xyz.morphia.annotations.Entity;
 import utilities.cache.InjectCache;
 import utilities.cache.CacheMongoFinder;
 import utilities.logger.Logger;

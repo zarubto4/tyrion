@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.ebean.ExpressionList;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import utilities.Server;
 import utilities.cache.CacheFinder;
 import utilities.cache.InjectCache;
@@ -32,9 +33,9 @@ public class Model_ExtensionFinancialEvent extends BaseModel {
 
                                         @ManyToOne public Model_ProductExtension product_extension;
 
-                                                   public Date event_start;
+    @ApiModelProperty(required = true, value = "unixTime", readOnly = true, dataType = "integer", example = "1536424319")          public Date event_start;
 
-                                                   public Date event_end;
+    @ApiModelProperty(required = true, value = "unixTime", readOnly = true, dataType = "integer", example = "1536424319")          public Date event_end;
 
     @JsonIgnore @Column(columnDefinition = "TEXT") public String consumption;
 

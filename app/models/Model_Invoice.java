@@ -50,16 +50,16 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderCustom
                                                                  public String public_html_url;
 
     @ApiModelProperty(required = false, readOnly = true,
-            dataType = "integer", value = "UNIX time in ms",
-            example = "1466163478925")                           public Date issued;
+            dataType = "integer", value = "UNIX time",
+            example = "1466163475")                           public Date issued;
 
     @ApiModelProperty(required = false, readOnly = true,
-            dataType = "integer", value = "UNIX time in ms",
-            example = "1466163478925")                           public Date paid;
+            dataType = "integer", value = "UNIX time",
+            example = "1466163475")                           public Date paid;
 
     @ApiModelProperty(required = true, readOnly = true,
-            dataType = "integer", value = "UNIX time in ms",
-            example = "1466163478925")                           public Date overdue;
+            dataType = "integer", value = "UNIX time",
+            example = "1466163475")                           public Date overdue;
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)               public Model_Product product;
 
@@ -204,6 +204,7 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderCustom
     }
 
     @JsonProperty
+    @ApiModelProperty(required = true, value = "unixTime", readOnly = true, dataType = "integer", example = "1536424319")
     public Date from() {
         Model_ExtensionFinancialEvent fst =  Model_ExtensionFinancialEvent.find.query()
                 .where()
@@ -219,7 +220,8 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderCustom
         return fst.event_start;
     }
 
-    @JsonProperty
+    @JsonProperty()
+    @ApiModelProperty(required = true, value = "unixTime", readOnly = true, dataType = "integer", example = "1536424319")
     public Date to() {
         Model_ExtensionFinancialEvent last =  Model_ExtensionFinancialEvent.find.query()
                 .where()

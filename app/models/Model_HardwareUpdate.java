@@ -36,10 +36,12 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
 /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
                                                 @ApiModelProperty(required = true,
-                                                        value = "UNIX time in s",
+                                                        value = "UNIX time",
+                                                        dataType = "integer",
                                                         example = "1466163471") public Date finished;
                                                 @ApiModelProperty(required = true,
-                                                        value = "UNIX time in s",
+                                                        value = "UNIX time",
+                                                        dataType = "integer",
                                                         example = "1466163471") public Date planned;
 
                                 @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_Hardware hardware;     // Deska k aktualizaci

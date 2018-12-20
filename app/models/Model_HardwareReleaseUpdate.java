@@ -40,6 +40,7 @@ public class Model_HardwareReleaseUpdate extends TaggedModel implements Permissi
 
     @ApiModelProperty(required = true,
             value = "UNIX time in s",
+            dataType = "integer",
             example = "1466163471")
     @JsonProperty
     public Date  finished() {
@@ -73,6 +74,7 @@ public class Model_HardwareReleaseUpdate extends TaggedModel implements Permissi
 
     @ApiModelProperty(required = true,
             value = "UNIX time in s",
+            dataType = "integer",
             example = "1466163471")
     @JsonProperty
     public Date  planned() {

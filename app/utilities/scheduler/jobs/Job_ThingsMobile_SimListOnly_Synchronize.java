@@ -12,6 +12,8 @@ import utilities.logger.Logger;
 import utilities.scheduler.Restrict;
 import utilities.scheduler.Scheduled;
 
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.UUID;
 
@@ -77,7 +79,7 @@ public class Job_ThingsMobile_SimListOnly_Synchronize implements Job {
 
                         gsm.provider = "ThingsMobile";
                         gsm.registration_hash = UUID.randomUUID();
-                        gsm.activation_date = new Date(sim.getActivation_date());
+                        gsm.activation_date = new Date(sim.getActivation_date().toEpochSecond(ZoneOffset.UTC));
 
 
                         System.out.println("sim.type: " + sim.type);

@@ -1,18 +1,22 @@
 package utilities.cache;
 
+import com.google.api.client.util.store.DataStore;
 import com.mongodb.DBCollection;
+import com.mongodb.MongoClient;
 import com.mongodb.WriteResult;
 import exceptions.NotFoundException;
 import org.bson.types.ObjectId;
 import org.ehcache.Cache;
-import org.mongodb.morphia.Datastore;
-import org.mongodb.morphia.Key;
-import org.mongodb.morphia.aggregation.AggregationPipeline;
-import org.mongodb.morphia.query.Query;
+import xyz.morphia.Datastore;
+import xyz.morphia.Key;
+import xyz.morphia.Morphia;
+import xyz.morphia.aggregation.AggregationPipeline;
+import xyz.morphia.query.Query;
 import utilities.Server;
 import utilities.logger.Logger;
 import utilities.model._Abstract_MongoModel;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class CacheMongoFinder<T extends _Abstract_MongoModel> implements ModelCache<ObjectId, T> {
@@ -23,7 +27,7 @@ public class CacheMongoFinder<T extends _Abstract_MongoModel> implements ModelCa
 
 /* VALUE  -------------------------------------------------------------------------------------------------------------*/
 
-    private Datastore datastore;
+    private Datastore datastore; // Main Data Store
 
     /**
      * The entity bean type.
@@ -117,7 +121,8 @@ public class CacheMongoFinder<T extends _Abstract_MongoModel> implements ModelCa
      * @return
      */
     public Query<T> find(){
-        return this.datastore.find(entityType);
+
+        return this.datastore.find(entityType).disableValidation();
     }
 
     /**

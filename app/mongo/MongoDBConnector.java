@@ -7,9 +7,6 @@ import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
 import com.typesafe.config.Config;
-import org.mongodb.morphia.Datastore;
-import org.mongodb.morphia.Morphia;
-import org.mongodb.morphia.annotations.Entity;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
@@ -20,6 +17,9 @@ import utilities.enums.ServerMode;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
 import utilities.model._Abstract_MongoModel;
+import xyz.morphia.Datastore;
+import xyz.morphia.Morphia;
+import xyz.morphia.annotations.Entity;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -30,84 +30,120 @@ public class MongoDBConnector {
 
     private static final Logger logger = new Logger(MongoDBConnector.class);
 
+    private Config config;
+    private String mode;
     private final String url;
-    private final String name;
 
     private MongoClient mongoClient;
-
-    private Morphia morphia;
-    private Datastore datastore;
-    private MongoDatabase database;
-
     @Inject
-    @SuppressWarnings("unchecked")
     public MongoDBConnector(Config config, ServerLogger serverLogger) {
 
-        String mode = config.getEnum(ServerMode.class, "server.mode").name().toLowerCase();
+        // SET Values
+        this.mode = config.getEnum(ServerMode.class, "server.mode").name().toLowerCase();
+        this.config = config;
+        this.url = config.getString("MongoDB." + mode + ".url"); // Cluster
 
-        this.url = config.getString("MongoDB." + mode + ".url");
-        this.name = config.getString("MongoDB." + mode + ".main_database_name");
 
+        // CONNECT TO MONGO CLUSTER
         MongoClientOptions.Builder options_builder = new MongoClientOptions.Builder();
-        options_builder.maxConnectionIdleTime(1000 * 60 * 60 *24);
-        options_builder.retryWrites(true);
-
+        options_builder.maxConnectionIdleTime(1000 * 60 * 60 * 24);
         this.mongoClient = new MongoClient(new MongoClientURI(this.url, options_builder));
 
+
+        // TRY TO CONNECT
         try {
-
             this.mongoClient.getAddress();
-
         } catch (Exception e) {
             logger.error("constructor - Mongo is down");
             this.mongoClient.close();
             return;
         }
 
-        this.morphia = new Morphia();
-
-        // Mongo ORM zástupný onbjekt pro lepší práci s databází
-        this.datastore = this.morphia.createDatastore(this.mongoClient, this.name);
-
-        // Připojení na konkrétní Databázi clienta
-        this.database = this.mongoClient.getDatabase(this.name);
-
-
-        // Kontrola databáze
-        if (!this.mongoClient.listDatabaseNames().into(new ArrayList<>()).contains(this.name)){
-            logger.error("constructor - Required Main Database not Exist!");
-        }
-
         // Kontrola kolekcí nad Mongo Databází
-        Reflections reflections = new Reflections(new ConfigurationBuilder()
-                .setUrls(ClasspathHelper.forPackage("mongo"))
-                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner()));
+        this.parseClass();
 
-        Set<Class<?>> classes = reflections.getTypesAnnotatedWith(Entity.class);
+    }
 
-        classes.forEach(cls -> {
+    @SuppressWarnings("unchecked")
+    private void parseClass(){
+        getClasses().forEach(cls -> {
             try {
 
                 Class<? extends _Abstract_MongoModel> model = (Class<? extends _Abstract_MongoModel>) cls; // Cast to model
                 Entity annotation = model.getAnnotation(Entity.class);
 
                 String value = annotation.value();
-
-                if (!this.database.listCollectionNames().into(new ArrayList<>()).contains(value)) {
-                    logger.warn("constructor - {} Collection:: {}  - not exist. System will create that! ", model.getSimpleName(), value);
-                    this.database.createCollection(value);
+                if(value.equals(".")) {
+                    value = model.getSimpleName();
                 }
+
+
 
                 for (Field field : model.getFields()) {
                     if (field.isAnnotationPresent(InjectStore.class) && field.get(null) instanceof CacheMongoFinder) {
-                        ((CacheMongoFinder)field.get(null)).setDatastore(this.datastore);
+
+                        if(!model.getCanonicalName().contains("mongo") && !model.getSimpleName().contains("ModelMongo")) {
+                            logger.error("constructor - {} Collection:: {}  - Class must start with ModelMongo prefix ", model.getSimpleName(), value);
+                            return;
+                        }
+
+                        if (!this.mongoClient.getDatabase(this.getDatabaseName(model)).listCollectionNames().into(new ArrayList<>()).contains(value)) {
+                            logger.error("constructor - {} {} Collection:: {}  - not exist. System will create that! ", model.getSimpleName(),  model.getCanonicalName(), value);
+                            this.mongoClient.getDatabase(this.getDatabaseName(model)).createCollection(value);
+                        }
+
+                        // Check Database
+                        // Kontrola databáze
+                        if (!this.mongoClient.listDatabaseNames().into(new ArrayList<>()).contains(this.getDatabaseName(model))) {
+                            logger.error("constructor - Required Main Database not Exist!");
+                            return;
+                        }
+
+                        // Mongo ORM zástupný onbjekt pro lepší práci s databází
+                        Datastore datastore = new Morphia().createDatastore(this.mongoClient, this.getDatabaseName(model));
+                        ((CacheMongoFinder)field.get(null)).setDatastore(datastore);
                     }
                 }
 
             } catch (Exception e) {
+                logger.error("constructor - {} shit happens! ", cls.getSimpleName());
+                logger.error("constructor - {} shit happens! ", cls.getSimpleName());
+                logger.error("constructor - {} shit happens! ", cls.getSimpleName());
                 logger.internalServerError(e);
             }
         });
+
+
+    }
+
+
+    /**
+     * Get All Classes with Mongo Anotation
+     * @return Set<Class<?>> list of clases
+     */
+    private Set<Class<?>> getClasses() {
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+                .setUrls(ClasspathHelper.forPackage("mongo"))
+                .setScanners(new TypeAnnotationsScanner(), new SubTypesScanner()));
+        Set<Class<?>> classes = reflections.getTypesAnnotatedWith(Entity.class);
+        return classes;
+    }
+
+    /**
+     * Get Database name
+     * @param model Class for parsing
+     * @return String - name of database
+     */
+    private String getDatabaseName(Class<? extends _Abstract_MongoModel> model) {
+        try {
+            _MongoCollectionConfig collectionConfig = model.getAnnotation(_MongoCollectionConfig.class);
+
+            if(collectionConfig.database_name().equals("")) throw new NullPointerException("Default Database");
+            return collectionConfig.database_name();
+
+        } catch (NullPointerException e) {
+            return  this.config.getString("MongoDB." + this.mode + ".main_database_name");
+        }
     }
 
     public MongoClient getMongoClient() {

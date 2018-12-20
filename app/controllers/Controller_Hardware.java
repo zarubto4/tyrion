@@ -39,6 +39,8 @@ import utilities.swagger.output.filter_results.Swagger_Hardware_List;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 
 import java.nio.charset.IllegalCharsetNameException;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Api(value = "Not Documented API - InProgress or Stuck")  // Záměrně takto zapsané - Aby ve swaggru nezdokumentované API byly v jedné sekci
@@ -827,7 +829,7 @@ public class Controller_Hardware extends _BaseController {
             batch.revision = help.revision;
             batch.production_batch = help.production_batch;
 
-            batch.date_of_assembly = help.date_of_assembly;
+            batch.date_of_assembly =  LocalDateTime.ofInstant(Instant.ofEpochSecond(help.date_of_assembly), TimeZone.getDefault().toZoneId());
 
             batch.pcb_manufacture_name = help.pcb_manufacture_name;
             batch.pcb_manufacture_id = help.pcb_manufacture_id;
@@ -931,7 +933,7 @@ public class Controller_Hardware extends _BaseController {
             batch.revision = help.revision;
             batch.production_batch = help.production_batch;
 
-            batch.date_of_assembly = help.date_of_assembly;
+            batch.date_of_assembly = LocalDateTime.ofInstant(Instant.ofEpochSecond(help.date_of_assembly), TimeZone.getDefault().toZoneId());
 
             batch.pcb_manufacture_name = help.pcb_manufacture_name;
             batch.pcb_manufacture_id = help.pcb_manufacture_id;

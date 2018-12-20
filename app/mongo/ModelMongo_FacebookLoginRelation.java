@@ -3,7 +3,7 @@ package mongo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import org.bson.types.ObjectId;
-import org.mongodb.morphia.annotations.Entity;
+import xyz.morphia.annotations.Entity;
 import utilities.cache.InjectCache;
 import utilities.cache.CacheMongoFinder;
 import utilities.logger.Logger;
@@ -15,7 +15,7 @@ import java.util.UUID;
         value = "FacebookLoginRelation",
         description = "Facebook login relation for current user"
 )
-@Entity("Facebook LoginRelation ")
+@Entity("Facebook_LoginRelation")
 public class ModelMongo_FacebookLoginRelation extends _Abstract_MongoModel {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/

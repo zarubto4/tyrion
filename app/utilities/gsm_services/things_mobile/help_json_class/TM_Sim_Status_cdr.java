@@ -1,24 +1,17 @@
 package utilities.gsm_services.things_mobile.help_json_class;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
 
 
 public class TM_Sim_Status_cdr extends _Swagger_Abstract_Default {
 
-
-    public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    public static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public TM_Sim_Status_cdr() {}
     public Long cdrImsi;
@@ -43,11 +36,13 @@ public class TM_Sim_Status_cdr extends _Swagger_Abstract_Default {
      */
     // Time In Millis
     @JsonProperty
-    @ApiModelProperty(name = "cdr_date_stop_in_millis")
-    public Long getAsLong_CdrDateStop() throws ParseException {
+    @ApiModelProperty(name = "cdr_date_stop", dataType = "integer", example = "1536424319")
+    public LocalDateTime getAsLong_CdrDateStop() {
         try {
-            return new java.sql.Timestamp(TM_Sim_Status_cdr.dateFormat.parse(cdrDateStart).getTime()).getTime() / 1000;
-        } catch (ParseException e) {
+
+            return LocalDateTime.parse(cdrDateStop, formatter);
+        } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -55,15 +50,16 @@ public class TM_Sim_Status_cdr extends _Swagger_Abstract_Default {
     /**
      * Same as inLocalDate.parse
      * @see TM_Sim_List
-     * @return
+     * @retur
      */
     // Time In Millis
     @JsonProperty()
-    @ApiModelProperty(name = "cdr_date_start_in_millis")
-    public Long getAsLong_CdrDateStart() {
+    @ApiModelProperty(name = "cdr_date_start")
+    public LocalDateTime getAsLong_CdrDateStart() {
         try {
-            return new java.sql.Timestamp(TM_Sim_Status_cdr.dateFormat.parse(cdrDateStop).getTime()).getTime() / 1000;
-        } catch (ParseException e) {
+            return LocalDateTime.parse(cdrDateStart, formatter);
+        } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }

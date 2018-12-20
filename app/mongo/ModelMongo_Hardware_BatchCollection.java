@@ -5,8 +5,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.Model_HardwareType;
 import org.bson.types.ObjectId;
-import org.mongodb.morphia.annotations.*;
-import org.mongodb.morphia.query.Query;
+import xyz.morphia.annotations.*;
+import xyz.morphia.query.Query;
 import play.data.validation.Constraints;
 import play.libs.Json;
 import utilities.Server;
@@ -21,6 +21,7 @@ import utilities.permission.Action;
 import utilities.permission.Permissible;
 
 import java.nio.charset.IllegalCharsetNameException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -34,6 +35,7 @@ import java.util.*;
         )
 })
 @ApiModel("HardwareBatch")
+@_MongoCollectionConfig(database_name = "Tyrion")
 public class ModelMongo_Hardware_BatchCollection extends _Abstract_MongoModel implements Permissible, Publishable {
 
 
@@ -45,7 +47,9 @@ public class ModelMongo_Hardware_BatchCollection extends _Abstract_MongoModel im
 
     @ApiModelProperty(required = true) @Constraints.Required public String revision;                     // Kod HW revize
     @ApiModelProperty(required = true) @Constraints.Required public String production_batch;             // Kod HW revizedate_of_assembly
-    @ApiModelProperty(required = true) @Constraints.Required public Long date_of_assembly;             // Den kdy došlo k sestavení
+    @ApiModelProperty(required = true, value = "unixTime", readOnly = true, dataType = "integer", example = "1536424319")
+    @Constraints.Required public LocalDateTime date_of_assembly;             // Den kdy došlo k sestavení
+
     @ApiModelProperty(required = true) @Constraints.Required public String pcb_manufacture_name;         // Jméno výrobce desky
     @ApiModelProperty(required = true) @Constraints.Required public String pcb_manufacture_id;           // Kod výrobce desky
     @ApiModelProperty(required = true) @Constraints.Required public String assembly_manufacture_name;    // Jméno firmy co osazovala DPS
@@ -63,11 +67,7 @@ public class ModelMongo_Hardware_BatchCollection extends _Abstract_MongoModel im
     @ApiModelProperty(required = true)                       public String description;
     @ApiModelProperty(required = true) @Constraints.Required public String compiler_target_name;
 
-    // Common
-    public String server_version;
-    public ServerMode server_type;
-
-    /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
+/* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
@@ -166,12 +166,8 @@ public class ModelMongo_Hardware_BatchCollection extends _Abstract_MongoModel im
     public void save() {
         try {
 
-
             // Set latest latest_used_mac_address if its empty
             if (latest_used_mac_address == null) latest_used_mac_address = mac_address_start;
-
-            server_version = Server.version;
-            server_type = Server.mode;
 
             // Try To make a Json and check validation properties of object  formFactory.formFromJsonWithValidation
             super.save();

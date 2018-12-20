@@ -30,11 +30,10 @@ public class DataSim_DataGram {
     public Long data_consumption = 0L; // v KB // Inicializace je nutná
 
     @Constraints.Required
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(required = true, value = "unixTime", readOnly = true, dataType = "integer", example = "1536424319")
     public LocalDateTime date_from;
 
-    @Constraints.Required
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(required = true, value = "unixTime", readOnly = true, dataType = "integer", example = "1536424319")
     public LocalDateTime date_to;
 
 

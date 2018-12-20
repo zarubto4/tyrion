@@ -574,7 +574,7 @@ public class Controller_GSM extends _BaseController {
 
             List<Long> gsm_msi_number = Model_GSM.find.query().where().idIn(help.gsm_ids).select("msi_number").findSingleAttributeList();
 
-            org.mongodb.morphia.query.Query<ModelMongo_ThingsMobile_CRD> crs = ModelMongo_ThingsMobile_CRD.find.query().field("msisdn").in(gsm_msi_number);
+            xyz.morphia.query.Query<ModelMongo_ThingsMobile_CRD> crs = ModelMongo_ThingsMobile_CRD.find.query().field("msisdn").in(gsm_msi_number);
 
             crs.order("-cdrDateStart");
 
