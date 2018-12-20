@@ -48,6 +48,7 @@ public class NetworkStatusService {
     @Inject
     public NetworkStatusService(CacheService cacheService, Provider<HardwareService> hardwareServiceProvider, Provider<InstanceService> instanceServiceProvider,
                                 CompilerService compilerService, HomerService homerService, NotificationService notificationService, HttpExecutionContext httpExecutionContext) {
+
         this.networkStatusCache = cacheService.getCache("NetworkStatusCache", UUID.class, NetworkStatus.class, 1000, 3600, true);
         this.lastOnlineCache = cacheService.getCache("LastOnlineCache", UUID.class, LocalDateTime.class, 1000, 3600, true);
 
@@ -70,8 +71,8 @@ public class NetworkStatusService {
             logger.trace("getStatus - getting status from cache");
             return this.networkStatusCache.get(networkable.getId());
         } else {
-            this.requestStatus(networkable);
             this.networkStatusCache.put(networkable.getId(), NetworkStatus.SYNCHRONIZATION_IN_PROGRESS);
+            this.requestStatus(networkable);
             return NetworkStatus.SYNCHRONIZATION_IN_PROGRESS;
         }
     }
@@ -117,8 +118,9 @@ public class NetworkStatusService {
             logger.trace("getLastOnline - getting last online from cache");
             return this.lastOnlineCache.get(networkable.getId());
         } else {
+            this.lastOnlineCache.put(networkable.getId(), LocalDateTime.MIN);
             this.requestLastOnline(networkable);
-            return null;
+            return LocalDateTime.MIN;
         }
     }
 
@@ -129,6 +131,9 @@ public class NetworkStatusService {
                     try {
                         switch (networkable.getEntityType()) {
                             case HARDWARE: {
+                                if (!((Model_Hardware) networkable).dominant_entity) {
+                                    return NetworkStatus.FREEZED;
+                                }
                                 return this.hardwareServiceProvider.get().getInterface((Model_Hardware) networkable).getNetworkStatus();
                             }
                             case INSTANCE: {
@@ -168,22 +173,29 @@ public class NetworkStatusService {
     }
 
     private void requestLastOnline(Networkable networkable) {
+        logger.debug("requestLastOnline - requesting last online for: {}, id: {}", networkable.getEntityType(), networkable.getId());
         CompletableFuture.supplyAsync(() -> {
-            ModelMongo_LastOnline lastOnline = ModelMongo_LastOnline.find.query()
-                    .field("networkable_id").equal(networkable.getId().toString())
-                    .field("server_type").equal(Server.mode)
-                    .order("created").get(new FindOptions().batchSize(1));
 
-            if (lastOnline != null) {
-                return lastOnline.created;
-            } else  {
-                return null;
+            try {
+                ModelMongo_LastOnline lastOnline = ModelMongo_LastOnline.find.query()
+                        .field("networkable_id").equal(networkable.getId().toString())
+                        .field("server_type").equal(Server.mode)
+                        .order("created").get(new FindOptions().batchSize(1));
+
+                if (lastOnline != null) {
+                    return lastOnline.created;
+                }
+            } catch (Exception e) {
+                logger.internalServerError(e);
             }
+
+            return LocalDateTime.MIN;
+
         }).thenAccept(last -> this.setLastOnline(networkable, last));
     }
 
     private void setLastOnline(Networkable networkable, LocalDateTime lastOnline) {
-        logger.debug("setStatus - setting last online: {} for: {}, id: {}", lastOnline, networkable.getEntityType(), networkable.getId());
+        logger.debug("setLastOnline - setting last online: {} for: {}, id: {}", lastOnline, networkable.getEntityType(), networkable.getId());
 
         this.lastOnlineCache.put(networkable.getId(), lastOnline);
 

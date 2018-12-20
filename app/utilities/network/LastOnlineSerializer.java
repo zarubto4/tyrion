@@ -29,7 +29,7 @@ public class LastOnlineSerializer extends StdSerializer<Long> {
     public void serialize(Long value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         if (gen.getCurrentValue() instanceof Networkable) {
             LocalDateTime last = this.networkStatusService.getLastOnline((Networkable) gen.getCurrentValue());
-            if (last != null) {
+            if (last != null && !last.isEqual(LocalDateTime.MIN)) {
                 gen.writeNumber(last.atZone(ZoneId.of("Europe/Paris")).toInstant().getEpochSecond());
             } else {
                 gen.writeNull();

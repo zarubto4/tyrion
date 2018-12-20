@@ -492,7 +492,7 @@ public class Controller_Update extends _BaseController {
                     Model_Instance.find.byId(instance_id);
                 }
 
-                query.where().in("tracking_id_instance_id", help.instance_ids);
+                query.where().in("tracking_id", help.instance_ids);
             }
 
             if (!help.instance_snapshot_ids.isEmpty()) {
@@ -500,7 +500,7 @@ public class Controller_Update extends _BaseController {
                 for (UUID instance_id : help.instance_snapshot_ids) {
                     Model_InstanceSnapshot.find.byId(instance_id);
                 }
-                query.where().in("tracking_id_snapshot_id", help.instance_snapshot_ids);
+                query.where().in("tracking_id", help.instance_snapshot_ids);
             }
 
             if (!help.release_update_ids.isEmpty()) {
@@ -509,7 +509,7 @@ public class Controller_Update extends _BaseController {
                     Model_HardwareReleaseUpdate.find.byId(release_update_id);
                 }
 
-                query.where().in("tracking_release_procedure_id", help.release_update_ids);
+                query.where().in("tracking_id", help.release_update_ids);
             }
 
 

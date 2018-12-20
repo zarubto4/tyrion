@@ -117,20 +117,11 @@ public class CacheMongoFinder<T extends _Abstract_MongoModel> implements ModelCa
     }
 
     /**
-     * Find Query start here for Mothpiha
-     * @return
-     */
-    public Query<T> find(){
-
-        return this.datastore.find(entityType).disableValidation();
-    }
-
-    /**
      * Returns a new query bound to the collection (a specific {@link DBCollection})
      * @return the query
      */
     public Query<T> query() {
-        return this.datastore.createQuery(entityType);
+        return this.datastore.createQuery(entityType).disableValidation();
     }
 
     public AggregationPipeline createAggregation() {

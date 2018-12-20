@@ -1,21 +1,14 @@
 package utilities.project;
 
 import com.google.inject.Inject;
-import exceptions.FailedMessageException;
 import exceptions.NotFoundException;
-import exceptions.ServerOfflineException;
 import models.*;
 import utilities.enums.NetworkStatus;
-import utilities.homer.HomerInterface;
 import utilities.homer.HomerService;
 import utilities.logger.Logger;
 import utilities.network.NetworkStatusService;
 import utilities.notifications.NotificationService;
 import utilities.swagger.output.Swagger_ProjectStats;
-import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_online_status;
-
-import java.util.List;
-import java.util.UUID;
 
 public class ProjectService {
 
@@ -50,7 +43,7 @@ public class ProjectService {
         stats.instance_online = 0;
         stats.servers_online = 0;
 
-        List<UUID> serverIds = Model_Hardware.find.query().where()
+        /*List<UUID> serverIds = Model_Hardware.find.query().where()
                 .eq("project.id", project.getId())
                 .eq("dominant_entity", true)
                 .isNotNull("connected_server_id")
@@ -80,6 +73,12 @@ public class ProjectService {
 
             } catch (NotFoundException | ServerOfflineException | FailedMessageException e) {
                 // Nothing
+            }
+        }*/
+
+        for (Model_Hardware hardware : project.getHardware()) {
+            if (this.networkStatusService.getStatus(hardware) == NetworkStatus.ONLINE) {
+                ++stats.hardware_online;
             }
         }
 

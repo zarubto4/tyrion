@@ -749,7 +749,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
                 .setText(new Notification_Text().setText("Attention! We note the highest critical error on your device "))
                 .setObject(this)
                 .setText(new Notification_Text().setText(" There was a collapse of the running firmware "))
-                .setObject(firmware_version.get_c_program())
+                .setObject(firmware_version.getProgram())
                 .setText(new Notification_Text().setText(" version "))
                 .setObject(firmware_version)
                 .setText(new Notification_Text().setText(". But stay calm. The hardware has successfully restarted and uploaded a backup version. " +

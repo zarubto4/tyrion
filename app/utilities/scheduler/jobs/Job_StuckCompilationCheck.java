@@ -1,7 +1,6 @@
 package utilities.scheduler.jobs;
 
 import com.google.inject.Inject;
-import exceptions.ServerOfflineException;
 import models.Model_CProgramVersion;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;

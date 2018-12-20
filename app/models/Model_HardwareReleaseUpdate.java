@@ -58,7 +58,7 @@ public class Model_HardwareReleaseUpdate extends TaggedModel implements Permissi
 
                 return Model_HardwareUpdate.find.query().where()
                         .eq("tracking_release_procedure_id", this.getId())
-                        .orderBy("finished")
+                        .order().desc("finished")
                         .setMaxRows(1)
                         .findOne().finished;
 
@@ -228,7 +228,7 @@ public class Model_HardwareReleaseUpdate extends TaggedModel implements Permissi
                         notification.setText(new Notification_Text().setText(" for Hardware "))
                                     .setObject(getUpdates().get(0).getHardware())
                                     .setText( new Notification_Text().setText(" from Code Editor with Program "))
-                                    .setObject(getUpdates().get(0).c_program_version_for_update.get_c_program())
+                                    .setObject(getUpdates().get(0).c_program_version_for_update.getProgram())
                                     .setText( new Notification_Text().setText(" version "))
                                     .setObject(getUpdates().get(0).c_program_version_for_update)
                                     .setText( new Notification_Text().setText("."));
