@@ -243,13 +243,13 @@ public class Model_HardwareUpdate extends BaseModel implements Permissible, Unde
                     // nutné vyseparovat id z binárky
                 } else if (binary_file  != null) {
 
-                    throw new IllegalAccessException("get_brief_for_update_homer_server:: ¨Firmware is FIRMWARE or BACKUP but there is no binary_file or file!");
+                    throw new IllegalAccessException("get_brief_for_update_homer_server:: Firmware is FIRMWARE or BACKUP but there is no binary_file or file!");
                     /*
                     binary.download_id              = binary_file.id;
-                    binary.build_id                 = "TODO";           // TODO! https://stackoverflow.com/questions/5600422/method-to-find-string-inside-of-the-text-file-then-getting-the-following-lines
+                    binary.build_id                 = binary_file.c_compilations_binary_file.firmware_build_id;
                     binary.program_name             = "Manual Update";
                     binary.program_version_name     = "Manual Update";
-                    binary.compilation_lib_version  = "TODO";           // TODO!
+                    binary.compilation_lib_version  = "Unknown";
                     binary.time_stamp               = binary_file.created;
                     */
 

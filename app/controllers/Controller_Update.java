@@ -14,7 +14,10 @@ import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
 import utilities.authentication.Authentication;
+import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import utilities.enums.*;
+import utilities.hardware.HardwareInterface;
+import utilities.hardware.HardwareService;
 import utilities.hardware.update.UpdateService;
 import utilities.logger.Logger;
 import utilities.notifications.NotificationService;
@@ -34,16 +37,19 @@ public class Controller_Update extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
-    private static final Logger logger = new Logger(Controller_Update.class);
+    public static final Logger logger = new Logger(Controller_Update.class);
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
     private final UpdateService updateService;
+    private final HardwareService hardwareService;
 
     @Inject
-    public Controller_Update(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService, UpdateService updateService) {
+    public Controller_Update(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
+                             NotificationService notificationService, UpdateService updateService,  HardwareService hardwareService) {
         super(ws, formFactory, config, permissionService, notificationService);
         this.updateService = updateService;
+        this.hardwareService = hardwareService;
     }
 
 
@@ -51,7 +57,7 @@ public class Controller_Update extends _BaseController {
 // SINGLE UPDATES  #####################################################################################################
 
 
-    @ApiOperation(value = "upload C_Program into Hardware",
+    @ApiOperation(value = "update Hardware",
             tags = {"HardwareUpdate"},
             notes = "Upload compilation to list of hardware. Compilation is on Version oc C_Program. And before uplouding compilation, you must succesfuly compile required version before! " +
                     "Result (HTML code) will be every time 200. - Its because upload, restart, etc.. operation need more than ++30 second " +
@@ -84,21 +90,33 @@ public class Controller_Update extends _BaseController {
             // Get and Validate Object
             Swagger_DeployFirmware help = formFromRequestWithValidation(Swagger_DeployFirmware.class);
 
-            // Ověření objektu
-            Model_CProgramVersion version = Model_CProgramVersion.find.byId(help.c_program_version_id);
 
-            this.checkReadPermission(version);
-
-            if (version.getCompilation() == null) {
-                throw new BadRequestException("Compilation is missing");
-            }
-
-            // Ověření zda je kompilovatelná verze a nebo zda kompilace stále neběží
-            if (version.getCompilation().status != CompilationStatus.SUCCESS) return badRequest("You cannot upload code in state:: " + version.getCompilation().status.name());
-
-            // Kotrola objektu
+            // Chech Harware permission
             Model_Hardware hardware = Model_Hardware.find.byId(help.hardware_id);
-            this.updateService.update(hardware, version, FirmwareType.FIRMWARE, UpdateType.MANUALLY_BY_USER_INDIVIDUAL);
+
+            // For CProgram
+            if (help.firmware_type == FirmwareType.FIRMWARE || help.firmware_type == FirmwareType.BACKUP ) {
+
+                if (help.c_program_version != null) {
+
+                    this.checkUpdatePermission(hardware);
+                    this.checkUpdatePermission(help.c_program_version);
+
+                    this.updateService.update(hardware, help.c_program_version, help.firmware_type, UpdateType.MANUALLY_BY_USER_INDIVIDUAL);
+
+                } else {
+
+                    Model_Compilation compilation = new Model_Compilation();
+                    compilation.blob = Model_Blob.upload( help.file_base_64, "blob", help.firmware_type + ".bin", hardware.getPath());
+                    compilation.firmware_build_id = help.firmware_build_id;
+                    compilation.save();
+                    compilation.refresh();
+
+                    this.updateService.update(hardware, compilation, help.firmware_type, UpdateType.MANUALLY_BY_USER_INDIVIDUAL);
+
+                }
+
+            }
 
 
             // Vracím odpověď
@@ -108,6 +126,8 @@ public class Controller_Update extends _BaseController {
             return controllerServerError(e);
         }
     }
+
+
 
     @ApiOperation(value = "upload C_Program Bin File",
             tags = {"Actualization"},

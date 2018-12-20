@@ -9,7 +9,7 @@ import utilities.swagger.output.filter_results._Swagger_Abstract_Default;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@Constraints.Validate
 @ApiModel(
         value = "Example_with_private_validation",
         description = "Json Model for validation on object with required parameters"

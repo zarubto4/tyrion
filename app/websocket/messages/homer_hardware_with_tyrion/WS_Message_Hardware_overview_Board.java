@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Constraints.Validate
 public class WS_Message_Hardware_overview_Board extends _Swagger_Abstract_Default implements Constraints.Validatable<List<ValidationError>>  {
 
     public WS_Message_Hardware_overview_Board() {}

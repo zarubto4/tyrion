@@ -1,6 +1,7 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import exceptions.*;
 import play.data.Form;
 import play.data.FormFactory;
 import play.data.format.Formatters;
@@ -8,11 +9,11 @@ import play.i18n.Lang;
 import play.i18n.MessagesApi;
 import play.libs.Json;
 import play.mvc.Controller;
-import exceptions.InvalidBodyException;
 import utilities.logger.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.validation.ValidationException;
 import javax.validation.Validator;
 
 /**
@@ -39,19 +40,28 @@ public class _BaseFormFactory extends FormFactory {
      * @param clazz    the class to map to a form.
      * @return a new form that wraps the specified class.
      */
-    public <T> T formFromRequestWithValidation(Class<T> clazz) throws InvalidBodyException {
+    public <T> T formFromRequestWithValidation(Class<T> clazz) {
+        try {
 
-        Form<T> form = super.form(clazz);
-        Form<T> bind = form.bindFromRequest();
+            Form<T> form = super.form(clazz);
+            Form<T> bind = form.bindFromRequest();
 
-        if (bind.hasErrors()){
-            logger.error("formFromJsonWithValidation::InvalidBody::JsonFor ParserControl:: {}",  Controller.request().body().asJson());
-            JsonNode node_errors = bind.errorsAsJson(Lang.forCode("en-US"));
-            logger.error("formFromJsonWithValidation::InvalidBody::ErrorList::{}", node_errors.toString());
-            throw new InvalidBodyException(node_errors);
+            if (bind.hasErrors()) {
+                logger.error("formFromJsonWithValidation::InvalidBody::JsonFor ParserControl:: {}", Controller.request().body().asJson());
+                JsonNode node_errors = bind.errorsAsJson(Lang.forCode("en-US"));
+                logger.error("formFromJsonWithValidation::InvalidBody::ErrorList::{}", node_errors.toString());
+                throw new InvalidBodyException(node_errors);
+            }
+
+            return bind.get();
+        } catch (ValidationException e) {
+
+            if(e.getCause() != null && e.getCause() instanceof BaseException) {
+                throw (BaseException) e.getCause();
+            }
+
+            throw e;
         }
-
-        return bind.get();
     }
 
     /**
@@ -61,19 +71,29 @@ public class _BaseFormFactory extends FormFactory {
      * @param <T>
      * @return a copy of this form filled with the new data
      */
-    public <T> T formFromJsonWithValidation(Class<T> clazz, JsonNode jsonNode) throws InvalidBodyException {
+    public <T> T formFromJsonWithValidation(Class<T> clazz, JsonNode jsonNode) {
+        try {
 
-        Form<T> form =  super.form(clazz);
-        Form<T> bind =  form.bind(jsonNode);
+            Form<T> form =  super.form(clazz);
+            Form<T> bind =  form.bind(jsonNode);
 
-        if (bind.hasErrors()){
+            if (bind.hasErrors()){
 
-            logger.error("formFromJsonWithValidation::InvalidBody::JsonFor ParserControl:: Class: {}, \n {}",clazz.getSimpleName(), Json.prettyPrint(jsonNode));
-            logger.error("formFromJsonWithValidation::InvalidBody::ErrorList:: \n {}", Json.prettyPrint(bind.errorsAsJson(Lang.forCode("en-US"))));
+                logger.error("formFromJsonWithValidation::InvalidBody::JsonFor ParserControl:: Class: {}, \n {}",clazz.getSimpleName(), Json.prettyPrint(jsonNode));
+                logger.error("formFromJsonWithValidation::InvalidBody::ErrorList:: \n {}", Json.prettyPrint(bind.errorsAsJson(Lang.forCode("en-US"))));
 
-            throw new InvalidBodyException(bind.errorsAsJson(Lang.forCode("en-US")));
+                throw new InvalidBodyException(bind.errorsAsJson(Lang.forCode("en-US")));
+            }
+
+            return bind.get();
+
+        } catch (ValidationException e) {
+
+            if(e.getCause() != null && e.getCause() instanceof BaseException) {
+                throw (BaseException) e.getCause();
+            }
+
+            throw e;
         }
-
-        return bind.get();
     }
 }

@@ -59,6 +59,8 @@ public class UpdateService {
             hardwareInterface.update(update);
         } catch (ServerOfflineException | NeverConnectedException e) {
             // nothing
+
+            System.out.println("update - server je offline");
         } catch (FailedMessageException e) {
             update.state = HardwareUpdateState.FAILED;
             update.error = e.getFailedMessage().getErrorMessage();

@@ -7,6 +7,7 @@ import org.ehcache.Cache;
 import utilities.Server;
 import utilities.cache.CacheFinder;
 import utilities.cache.InjectCache;
+import utilities.hardware.update.Updatable;
 import utilities.logger.Logger;
 import utilities.model.BaseModel;
 
@@ -234,13 +235,12 @@ public class Model_Blob extends BaseModel {
     }
 
     @JsonIgnore
-    public static byte[] get_decoded_binary_string_from_Base64(String binary_file) throws Exception {
-
+    public static byte[] get_decoded_binary_string_from_Base64(String binary_file) {
         return Base64.getDecoder().decode(binary_file.getBytes());
     }
 
     @JsonIgnore
-    public static String get_encoded_binary_string_from_body(byte[] bytes) throws Exception {
+    public static String get_encoded_binary_string_from_body(byte[] bytes) {
         return new String(Base64.getEncoder().encode( bytes ));
     }
 

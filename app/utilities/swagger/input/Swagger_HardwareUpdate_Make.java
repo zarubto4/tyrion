@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+@Constraints.Validate
 @ApiModel(description = "Json Model for ActualizationProcedure Make Procedure",
           value = "HardwareUpdate_Make")
 public class Swagger_HardwareUpdate_Make extends Swagger_NameAndDescription implements Constraints.Validatable<List<ValidationError>>  {

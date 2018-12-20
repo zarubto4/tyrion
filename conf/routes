@@ -402,7 +402,7 @@ PUT       /library/version_for_aprove/approve_decision                  controll
 PUT       /library/version/make_public/:version_id                      controllers.Controller_Library.library_version_make_public(version_id: java.util.UUID)
 
 #Actualization
-PUT       /c_program/version/upload                                     controllers.Controller_Update.hardware_updateFirmware()
+PUT       /hardware/update/firmware                                     controllers.Controller_Update.hardware_updateFirmware()
 
 #Producer
 POST      /producer                                                     controllers.Controller_Hardware.producer_create()
@@ -423,7 +423,7 @@ POST      /hardware/manual_registration                                 controll
 POST      /hardware/automatic_registration                              controllers.Controller_Hardware.hardware_create_garfield()
 PUT       /hardware/userDescription/:hardware_id                        controllers.Controller_Hardware.hardware_update_description(hardware_id: java.util.UUID)
 PUT       /hardware/parameters/:hardware_id                             controllers.Controller_Hardware.hardware_update_parameters(hardware_id: java.util.UUID)
-PUT       /hardware/backup                                              controllers.Controller_Hardware.hardware_updateBackup()
+
 
 PUT       /hardware/filter/:page_number                                 controllers.Controller_Hardware.hardware_getByFilter(page_number: Int)
 GET       /hardware/check/:registration_hash/:project_id                controllers.Controller_Hardware.hardware_check(registration_hash, project_id: java.util.UUID)

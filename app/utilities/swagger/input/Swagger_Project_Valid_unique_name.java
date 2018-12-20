@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Constraints.Validate
 @ApiModel(description = "Json Model for Validation of unique name in project",
         value = "Project_Valid_unique_name")
 public class Swagger_Project_Valid_unique_name implements Constraints.Validatable<List<ValidationError>> {

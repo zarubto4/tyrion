@@ -142,7 +142,7 @@ public abstract class _BaseController {
      * @return the same class
      * @throws InvalidBodyException for unstable
      */
-    public <T> T formFromRequestWithValidation(Class<T> clazz) throws InvalidBodyException {
+    public <T> T formFromRequestWithValidation(Class<T> clazz) {
         return formFactory.formFromRequestWithValidation(clazz);
     }
 
