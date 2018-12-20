@@ -92,7 +92,8 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public UUID getProjectId() {
+    @JsonIgnore
+    public UUID getProjectId() {
 
         if (publish_type == ProgramType.PRIVATE) {
 
@@ -112,7 +113,8 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
         return isLoaded("project") ? this.project : Model_Project.find.query().nullable().where().eq("c_programs.id", this.id).findOne();
     }
 
-    @JsonIgnore @Transient public List<UUID> getVersionsId() {
+    @JsonIgnore
+    public List<UUID> getVersionsId() {
 
         if (idCache().gets(Model_CProgramVersion.class) == null) {
             idCache().add(Model_CProgramVersion.class, Model_CProgramVersion.find.query().where().eq("c_program.id", id).ne("deleted", true).order().desc("created").select("id").findSingleAttributeList());
@@ -135,15 +137,15 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
         return this.getVersionsId().stream().map(Model_CProgramVersion.find::byId).collect(Collectors.toList());
     }
 
-    @JsonIgnore @Transient public Model_HardwareType getHardwareType()     {
+    @JsonIgnore
+    public Model_HardwareType getHardwareType()     {
         return isLoaded("hardware_type") ? hardware_type : Model_HardwareType.find.query().where().eq("c_programs.id", id).findOne();
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Override public void save() {
-
-        logger.debug("save :: Creating new Object");
+    @JsonIgnore @Override
+    public void save() {
 
         super.save();
 
@@ -153,9 +155,8 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
         if (project != null) new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, project.id, project.id))).start();
     }
 
-    @JsonIgnore @Override public void update() {
-
-        logger.debug("update :: Update object Id: {}",  this.id);
+    @JsonIgnore @Override
+    public void update() {
 
         // Call notification about model update
         if(publish_type == ProgramType.PRIVATE) {
@@ -165,9 +166,9 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
         super.update();
     }
 
-    @JsonIgnore @Override public boolean delete() {
+    @JsonIgnore @Override
+    public boolean delete() {
 
-        logger.debug("delete :: Delete object Id: {} ", this.id);
         super.delete();
 
         // Remove from Project Cache
@@ -197,7 +198,7 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
 
 /* BlOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient
+    @JsonIgnore
     public String get_path() {
 
         // C_Program is Private registred under Project

@@ -397,7 +397,9 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
                     version.update();
 
                     // Start with asynchronous ccompilation
-                    this.compilationService.compileAsync(version, release.tag_name);
+                    if (this.compilationService.isAvailable()) {
+                        this.compilationService.compileAsync(version, release.tag_name);
+                    }
                 }
             }
 

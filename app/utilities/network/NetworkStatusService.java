@@ -131,6 +131,9 @@ public class NetworkStatusService {
                                 return this.hardwareServiceProvider.get().getInterface((Model_Hardware) networkable).getNetworkStatus();
                             }
                             case INSTANCE: {
+                                if (((Model_Instance) networkable).current_snapshot_id == null) {
+                                    return NetworkStatus.SHUT_DOWN;
+                                }
                                 return this.instanceServiceProvider.get().getInterface((Model_Instance) networkable).getNetworkStatus();
                             }
                             case COMPILER: {
