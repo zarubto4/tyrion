@@ -111,29 +111,17 @@ public class Swagger_DeployFirmware extends _Swagger_Abstract_Default implements
 
             } else {
 
-                if (index < 0) {
-                    index = decoded.indexOf("%%OFF?*%%");
-                }
-                if (index < 0) {
-                    index = decoded.indexOf("%%OF?*%%");
-                }
-
-
-                System.out.println("index " + index);
+                index = decoded.indexOf("%%OFF?%%");
 
                 if (index < 0) {
                     throw new BadRequestException("In Bin file firmware_build_id not found! This is a supported on Firmware version > 1.34.1");
                 }
 
-                System.out.println("Firmware_ID" + decoded.substring(index, index + 12));
-
-
+                // System.out.println("Firmware_ID" + decoded.substring(index, index + 12));
                 firmware_build_id = decoded.substring(index, index + 12);
             }
 
         }
-
-        System.out.print("Kolik mám Errors: " + errors.size());
 
         return errors.isEmpty() ? null : errors;
     }

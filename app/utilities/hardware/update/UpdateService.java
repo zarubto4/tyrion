@@ -123,7 +123,6 @@ public class UpdateService {
             Enum_HardwareHomerUpdate_state phase = message.get_phase();
 
             Model_HardwareUpdate update = Model_HardwareUpdate.find.byId(message.tracking_id);
-
             Model_Project project = update.getProject();
 
             logger.debug("onUpdateMessage - update id: {}, progress: {}%", update.id, message.percentage_progress);

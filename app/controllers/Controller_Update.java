@@ -109,6 +109,8 @@ public class Controller_Update extends _BaseController {
                     Model_Compilation compilation = new Model_Compilation();
                     compilation.blob = Model_Blob.upload( help.file_base_64, "blob", help.firmware_type + ".bin", hardware.getPath());
                     compilation.firmware_build_id = help.firmware_build_id;
+                    compilation.firmware_version_lib = "Manual Update"; // TODO https://youtrack.byzance.cz/youtrack/issue/HW-1375
+                    compilation.firmware_build_datetime = new Date(); // TODO https://youtrack.byzance.cz/youtrack/issue/HW-1375
                     compilation.save();
                     compilation.refresh();
 
