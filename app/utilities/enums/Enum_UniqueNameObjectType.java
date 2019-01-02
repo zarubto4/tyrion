@@ -13,8 +13,8 @@ public enum Enum_UniqueNameObjectType {
     CLibrary,       // TODO - až budeme integrovat knihovny
     CLibraryVersion,// TODO - až budeme integrovat knihovny
 
-    GridProgram,
-    GridProgramVersion,
+    GridProgram,        // Vyžaduje objectID
+    GridProgramVersion, // Vyžaduje objectID
     GridProject,
 
     Hardware,
@@ -30,7 +30,7 @@ public enum Enum_UniqueNameObjectType {
     BlockVersion,
     Instance,
 
-    Snapshot,
+    Snapshot,   // Vyžaduje objectID
 
     Database,
     DatabaseCollection

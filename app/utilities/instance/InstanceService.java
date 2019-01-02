@@ -139,12 +139,15 @@ public class InstanceService {
 
     public void shutdown(Model_Instance instance) {
 
-        instance.current_snapshot().getRequiredHardware().forEach(hardware -> {
-            hardware.connected_instance_id = null;
-            hardware.update();
-        });
+        if(instance.current_snapshot() != null) {
+            instance.current_snapshot().getRequiredHardware().forEach(hardware -> {
+                hardware.connected_instance_id = null;
+                hardware.update();
+            });
+        }
 
         instance.current_snapshot_id = null;
+        this.networkStatusService.setStatus(instance, NetworkStatus.SHUT_DOWN);
         instance.update();
 
         try {
