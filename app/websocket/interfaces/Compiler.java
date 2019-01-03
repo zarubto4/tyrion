@@ -5,6 +5,7 @@ import com.google.inject.Inject;
 import controllers._BaseFormFactory;
 import exceptions.FailedMessageException;
 import play.libs.Json;
+import play.libs.concurrent.HttpExecutionContext;
 import utilities.logger.Logger;
 import utilities.network.NetworkStatusService;
 import websocket.Interface;
@@ -28,8 +29,8 @@ public class Compiler extends Interface {
     private Map<UUID, CompletableFuture<WS_Message_Make_compilation>> runningCompilations = new HashMap<>();
 
     @Inject
-    public Compiler(NetworkStatusService networkStatusService, Materializer materializer, _BaseFormFactory formFactory) {
-        super(materializer, formFactory);
+    public Compiler(NetworkStatusService networkStatusService, HttpExecutionContext httpExecutionContext, Materializer materializer, _BaseFormFactory formFactory) {
+        super(httpExecutionContext, materializer, formFactory);
         this.networkStatusService = networkStatusService;
     }
 

@@ -191,6 +191,8 @@ public class HomerSynchronizationTask implements Task {
                 }
             }
 
+        } catch (FailedMessageException e) {
+            logger.warn("synchronizeHardware - got error response: {}", e.getFailedMessage().getMessage());
         } catch (Exception e) {
             logger.internalServerError(e);
         }

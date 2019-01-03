@@ -44,6 +44,19 @@ public class HardwareService {
         }
     }
 
+    public HardwareConfigurator getConfigurator(Model_Hardware hardware) {
+
+        HardwareInterface hardwareInterface = null;
+
+        try {
+            hardwareInterface = this.getInterface(hardware);
+        } catch (ServerOfflineException e) {
+            // nothing - hardware is unreachable at this moment
+        }
+
+        return new HardwareConfigurator(hardware, hardwareInterface);
+    }
+
     public void activate(Model_Hardware hardware) {
         WS_Model_Hardware_Temporary_NotDominant_record record = this.dominanceService.getNondominant(hardware.full_id);
         if (this.dominanceService.setDominant(hardware)) {

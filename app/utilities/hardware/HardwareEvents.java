@@ -3,6 +3,7 @@ package utilities.hardware;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import models.Model_Hardware;
+import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import utilities.enums.NetworkStatus;
 import utilities.logger.Logger;
 import utilities.network.NetworkStatusService;
@@ -59,5 +60,16 @@ public class HardwareEvents {
 
     public void deactivated(Model_Hardware hardware) {
 
+    }
+
+    public void configured(Model_Hardware hardware, String parameter) {
+
+        DM_Board_Bootloader_DefaultConfig configuration = hardware.bootloader_core_configuration();
+
+        configuration.pending.remove(parameter.toLowerCase());
+
+        hardware.update_bootloader_configuration(configuration);
+
+        this.notificationService.modelUpdated(Model_Hardware.class, hardware.getId(), hardware.getProjectId());
     }
 }

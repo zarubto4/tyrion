@@ -19,7 +19,6 @@ import responses.*;
 import utilities.authentication.Authentication;
 import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import exceptions.NotFoundException;
-import utilities.hardware.HardwareConfigurationService;
 import utilities.hardware.HardwareConfigurator;
 import utilities.hardware.HardwareInterface;
 import utilities.hardware.HardwareService;
@@ -54,16 +53,13 @@ public class Controller_Hardware extends _BaseController {
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    private final HardwareConfigurationService hardwareConfigurationService;
     private final HardwareService hardwareService;
     private final UpdateService updateService;
 
     @Inject
     public Controller_Hardware(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
-                               NotificationService notificationService, HardwareService hardwareService, UpdateService updateService,
-                               HardwareConfigurationService hardwareConfigurationService, EchoService echoService) {
+                               NotificationService notificationService, HardwareService hardwareService, UpdateService updateService, EchoService echoService) {
         super(ws, formFactory, config, permissionService, notificationService, echoService);
-        this.hardwareConfigurationService = hardwareConfigurationService;
         this.hardwareService = hardwareService;
         this.updateService = updateService;
     }
@@ -1582,7 +1578,7 @@ public class Controller_Hardware extends _BaseController {
             hardware.update();
 
             // TODO might be async
-            this.hardwareConfigurationService.getConfigurator(hardware).configure("alias", hardware.name);
+            this.hardwareService.getConfigurator(hardware).configure("alias", hardware.name);
 
             hardware.setTags(help.tags);
 
@@ -1632,7 +1628,7 @@ public class Controller_Hardware extends _BaseController {
 
             this.checkUpdatePermission(hardware);
 
-            HardwareConfigurator configurator = this.hardwareConfigurationService.getConfigurator(hardware);
+            HardwareConfigurator configurator = this.hardwareService.getConfigurator(hardware);
 
             switch (help.parameter_type.toLowerCase()) {
 

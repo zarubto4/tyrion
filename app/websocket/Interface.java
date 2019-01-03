@@ -14,6 +14,7 @@ import exceptions.FailedMessageException;
 import exceptions.InvalidBodyException;
 import org.reactivestreams.Publisher;
 import play.libs.Json;
+import play.libs.concurrent.HttpExecutionContext;
 import utilities.logger.Logger;
 
 import java.time.Duration;
@@ -21,6 +22,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
 public abstract class Interface implements WebSocketInterface {
@@ -52,10 +54,12 @@ public abstract class Interface implements WebSocketInterface {
      */
     private Map<UUID, Request> messageBuffer = new HashMap<>();
 
+    protected final HttpExecutionContext httpExecutionContext;
     protected final Materializer materializer;
     protected final _BaseFormFactory formFactory;
 
-    public Interface(Materializer materializer, _BaseFormFactory formFactory) {
+    public Interface(HttpExecutionContext httpExecutionContext, Materializer materializer, _BaseFormFactory formFactory) {
+        this.httpExecutionContext = httpExecutionContext;
         this.materializer = materializer;
         this.formFactory = formFactory;
     }
@@ -84,13 +88,13 @@ public abstract class Interface implements WebSocketInterface {
         return Flow.fromSinkAndSourceCoupled(Sink.foreach(this::onReceived), Source.fromPublisher(both.second())) // TODO probably foreachParallel
                 .keepAlive(Duration.ofSeconds(60L), this::keepAlive)
                 .watchTermination((notUsed, whenDone) -> {
-                    whenDone.thenAccept(done -> {
+                    whenDone.thenAcceptAsync(done -> {
                         logger.info("watchTermination$lambda - connection lasted for {} s", Instant.now().getEpochSecond() - start.getEpochSecond());
                         if (this.onClose != null) {
                             this.onClose.accept(this);
                         }
                         this.onClose();
-                    });
+                    }, httpExecutionContext.current());
                     return notUsed;
                 });
     }
@@ -116,31 +120,6 @@ public abstract class Interface implements WebSocketInterface {
             // Just ignore it
         } catch (Exception e) {
             logger.internalServerError(e);
-
-            ObjectNode error = Json.newObject();
-
-            if (msg.has(Message.ID)) {
-                error.set(Message.ID, msg.get(Message.ID));
-            } else {
-                error.put(Message.ID, UUID.randomUUID().toString());
-            }
-
-            if (msg.has(Message.CHANNEL)) {
-                error.set(Message.CHANNEL, msg.get(Message.CHANNEL));
-            } else {
-                error.put(Message.CHANNEL, this.getDefaultChannel());
-            }
-
-            if (msg.has(Message.TYPE)) {
-                error.set(Message.TYPE, msg.get(Message.TYPE));
-            } else {
-                error.put(Message.TYPE, "unknown");
-            }
-
-            error.put(Message.STATUS, "error");
-            error.put("error", "invalid message");
-            error.put("error_log", e.getMessage());
-            this.send(error);
         }
     }
 
@@ -191,9 +170,8 @@ public abstract class Interface implements WebSocketInterface {
     @Override
     public Message sendWithResponse(Request request) {
         logger.trace("sendWithResponse - sending request synchronously");
-        request.setSender(this);
         messageBuffer.put(request.getId(), request);
-        return request.send();
+        return request.send(this);
     }
 
     /**
@@ -201,18 +179,13 @@ public abstract class Interface implements WebSocketInterface {
      * This operation is non-blocking, it executes the consumer callback
      * when the result is received.
      * @param request {@link Request} to send
-     * @param consumer asynchronous callback
      */
     @Override
-    public void sendWithResponseAsync(Request request, Consumer<Message> consumer) {
+    public CompletionStage<Message> sendWithResponseAsync(Request request) {
         logger.trace("sendWithResponseAsync - sending request asynchronously");
-        request.setSender(this);
         messageBuffer.put(request.getId(), request);
-        request.sendAsync(consumer);
-    }
-
-    public void removeMessage(UUID id) {
-        this.messageBuffer.remove(id);
+        return request.sendAsync(this)
+                .whenComplete((r, e) -> this.messageBuffer.remove(request.getId()));
     }
 
     @Override

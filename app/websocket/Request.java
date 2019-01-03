@@ -1,6 +1,8 @@
 package websocket;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import exceptions.FailedMessageException;
+import exceptions.RequestTimeoutException;
 import utilities.logger.Logger;
 
 import java.util.UUID;
@@ -29,35 +31,44 @@ public class Request {
         } else {
             this.id = UUID.fromString(message.get(Message.ID).asText());
         }
-        this.confirmationThread = new ResponseThread(message, delay, timeout, retries);
+        this.responseThread = new ResponseThread(message, delay, timeout, retries);
     }
 
 
-    public Message send() {
+    public Message send(Interface sender) throws RequestTimeoutException, FailedMessageException {
         try {
-            future = CompletableFuture.supplyAsync(this.confirmationThread);
+            this.responseThread.setSender(sender);
+            future = CompletableFuture.supplyAsync(this.responseThread);
             return future.get();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public void sendAsync(Consumer<Message> consumer) {
-        try {
-            future = CompletableFuture.supplyAsync(this.confirmationThread);
-            future.thenAcceptAsync(consumer);
-        } catch (Exception e) {
+        } catch (ExecutionException e) {
+            if (e.getCause() != null) {
+                if (e.getCause() instanceof FailedMessageException) {
+                    throw (FailedMessageException) e.getCause();
+                } else if (e.getCause() instanceof RequestTimeoutException) {
+                    throw (RequestTimeoutException) e.getCause();
+                }
+            }
+        } catch (InterruptedException e) {
             logger.internalServerError(e);
         }
+        return null;
+    }
+
+    public CompletionStage<Message> sendAsync(Interface sender) {
+        this.responseThread.setSender(sender);
+        future = CompletableFuture.supplyAsync(this.responseThread);
+        return future;
     }
 
     public void resolve(Message message) {
-        future.complete(message);
-        confirmationThread.stop();
-    }
 
-    public void setSender(Interface sender) {
-        this.confirmationThread.setSender(sender);
+        responseThread.stop();
+
+        if (message.isErroneous()) {
+            future.completeExceptionally(new FailedMessageException(message));
+        } else {
+            future.complete(message);
+        }
     }
 
     public UUID getId() {
@@ -66,6 +77,6 @@ public class Request {
 
 /* PRIVATE API ---------------------------------------------------------------------------------------------------------*/
 
-    private ResponseThread confirmationThread;
+    private ResponseThread responseThread;
     private CompletableFuture<Message> future;
 }

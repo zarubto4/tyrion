@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import models.*;
 import play.libs.concurrent.HttpExecutionContext;
 import utilities.enums.*;
-import utilities.hardware.update.UpdateService;
 import utilities.logger.Logger;
 import utilities.notifications.NotificationService;
 import utilities.synchronization.Task;
@@ -18,7 +17,6 @@ public class HardwareSynchronizationTask implements Task {
 
     private static final Logger logger = new Logger(HardwareSynchronizationTask.class);
 
-    private final HardwareConfigurationService hardwareConfigurationService;
     private final HttpExecutionContext httpExecutionContext;
     private final HardwareService hardwareService;
     private final NotificationService notificationService;
@@ -32,9 +30,7 @@ public class HardwareSynchronizationTask implements Task {
     private WS_Message_Hardware_overview_Board overview;
 
     @Inject
-    public HardwareSynchronizationTask(HardwareService hardwareService, HttpExecutionContext httpExecutionContext,
-                                       HardwareConfigurationService hardwareConfigurationService, NotificationService notificationService) {
-        this.hardwareConfigurationService = hardwareConfigurationService;
+    public HardwareSynchronizationTask(HardwareService hardwareService, HttpExecutionContext httpExecutionContext, NotificationService notificationService) {
         this.httpExecutionContext = httpExecutionContext;
         this.hardwareService = hardwareService;
         this.notificationService = notificationService;
@@ -103,7 +99,7 @@ public class HardwareSynchronizationTask implements Task {
             this.hardware.update();
         }
 
-        if (this.hardwareConfigurationService.getConfigurator(this.hardware).configure(this.overview)) {
+        if (this.hardwareService.getConfigurator(this.hardware).configure(this.overview)) {
             this.stop(); // Cancel synchronization device will be restarted
         }
 

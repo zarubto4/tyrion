@@ -85,7 +85,7 @@ public class NetworkStatusService {
                 CompletableFuture.runAsync(() -> {
                     ModelMongo_LastOnline lastOnline = ModelMongo_LastOnline.create_record(networkable);
                     this.setLastOnline(networkable, lastOnline.created);
-                });
+                }, httpExecutionContext.current());
             }
         } else {
             CompletableFuture.runAsync(() -> {
@@ -98,7 +98,7 @@ public class NetworkStatusService {
                     ModelMongo_LastOnline lastOnline = ModelMongo_LastOnline.create_record(networkable);
                     this.setLastOnline(networkable, lastOnline.created);
                 }
-            });
+            }, httpExecutionContext.current());
         }
 
         this.networkStatusCache.put(networkable.getId(), networkStatus);

@@ -7,10 +7,10 @@ import exceptions.NotFoundException;
 import models.*;
 import mongo.ModelMongo_Hardware_RegistrationEntity;
 import org.mindrot.jbcrypt.BCrypt;
+import play.libs.concurrent.HttpExecutionContext;
 import utilities.Server;
 import utilities.enums.ServerMode;
 import utilities.hardware.DominanceService;
-import utilities.hardware.HardwareConfigurationService;
 import utilities.hardware.HardwareEvents;
 import utilities.homer.HomerEvents;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfiguration;
@@ -48,20 +48,18 @@ public class Homer extends Interface {
     private final UpdateService updateService;
     private final HomerEvents homerEvents;
     private final DominanceService dominanceService;
-    private final HardwareConfigurationService hardwareConfigurationService;
 
     private boolean authorized = false;
     private UUID apiKey;
 
     @Inject
-    public Homer(Materializer materializer, _BaseFormFactory formFactory, HardwareEvents hardwareEvents, UpdateService updateService,
-                 HomerEvents homerEvents, DominanceService dominanceService, HardwareConfigurationService hardwareConfigurationService) {
-        super(materializer, formFactory);
+    public Homer(Materializer materializer, _BaseFormFactory formFactory, HardwareEvents hardwareEvents,
+                 UpdateService updateService, HomerEvents homerEvents, DominanceService dominanceService, HttpExecutionContext httpExecutionContext) {
+        super(httpExecutionContext, materializer, formFactory);
         this.hardwareEvents = hardwareEvents;
         this.updateService = updateService;
         this.homerEvents = homerEvents;
         this.dominanceService = dominanceService;
-        this.hardwareConfigurationService = hardwareConfigurationService;
     }
 
     @Override
@@ -622,7 +620,7 @@ public class Homer extends Interface {
         if (settings.key != null) {
             if (settings.uuid != null) {
                 Model_Hardware hardware = Model_Hardware.find.byId(settings.uuid);
-                this.hardwareConfigurationService.configured(hardware, settings.key);
+                this.hardwareEvents.configured(hardware, settings.key);
             } else {
                 logger.warn("device_settings_set - got message without 'uuid' property");
             }

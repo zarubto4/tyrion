@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.util.UUID;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
 public interface WebSocketInterface {
@@ -42,9 +43,8 @@ public interface WebSocketInterface {
      * Sends a message to the WebSocket interface. Response is required.
      * This operation is non-blocking. It executes the provided consumer after the response is received.
      * @param message object with details such as delay, timeout or tries.
-     * @param consumer function to execute with provided response
      */
-    void sendWithResponseAsync(Request message, Consumer<Message> consumer);
+    CompletionStage<Message> sendWithResponseAsync(Request message);
 
     /**
      * This method receives all messages, that were not responses to waiting requests.

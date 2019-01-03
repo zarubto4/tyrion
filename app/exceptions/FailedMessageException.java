@@ -10,6 +10,11 @@ public class FailedMessageException extends BaseException {
         this.message = message;
     }
 
+    @Override
+    public String getMessage() {
+        return this.getFailedMessage().getErrorMessage();
+    }
+
     public Message getFailedMessage() {
         return this.message;
     }

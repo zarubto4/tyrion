@@ -4,6 +4,7 @@ import akka.stream.Materializer;
 import com.google.inject.Inject;
 import controllers._BaseFormFactory;
 import models.Model_Garfield;
+import play.libs.concurrent.HttpExecutionContext;
 import utilities.logger.Logger;
 import utilities.notifications.NotificationService;
 import websocket.Interface;
@@ -24,8 +25,8 @@ public class Portal extends Interface {
     private final NotificationService notificationService;
 
     @Inject
-    public Portal(Materializer materializer, _BaseFormFactory formFactory, NotificationService notificationService) {
-        super(materializer, formFactory);
+    public Portal(HttpExecutionContext httpExecutionContext, Materializer materializer, _BaseFormFactory formFactory, NotificationService notificationService) {
+        super(httpExecutionContext, materializer, formFactory);
         this.notificationService = notificationService;
     }
 
