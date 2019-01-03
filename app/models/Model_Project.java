@@ -11,6 +11,7 @@ import utilities.cache.InjectCache;
 import utilities.enums.*;
 import exceptions.NotFoundException;
 import utilities.logger.Logger;
+import utilities.model.Echo;
 import utilities.model.TaggedModel;
 import utilities.model.UnderCustomer;
 import utilities.notifications.helps_objects.Becki_color;
@@ -32,7 +33,7 @@ import java.util.stream.Collectors;
 @ApiModel(value = "Project", description = "Model of Project")
 @Table(name="Project")
 @Permissions({ Action.CREATE, Action.READ, Action.UPDATE, Action.DELETE, Action.INVITE, Action.ACTIVATE })
-public class Model_Project extends TaggedModel implements Permissible, UnderCustomer {
+public class Model_Project extends TaggedModel implements Permissible, UnderCustomer, Echo {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -293,11 +294,28 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
         return getProduct().getCustomer();
     }
 
+
+
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public boolean isParticipant(Model_Person person) {
         return getPersons().stream().anyMatch(p -> p.id.equals(person.id));
+    }
+
+    @JsonIgnore @Override
+    public Echo getParent() {
+        return null;
+    }
+
+    @JsonIgnore @Override
+    public Model_Project getProject() {
+        return this;
+    }
+
+    @JsonIgnore @Override
+    public boolean isPublic() {
+        return false;
     }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/

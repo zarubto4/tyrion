@@ -23,6 +23,7 @@ import utilities.homer_auto_deploy.DigitalOceanTyrionService;
 import utilities.homer_auto_deploy.SelfDeployedThreadRegister;
 import utilities.homer_auto_deploy.models.common.Swagger_ServerRegistration_FormData;
 import utilities.logger.Logger;
+import utilities.model.EchoService;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.input.*;
@@ -41,8 +42,8 @@ public class Controller_ExternalServer extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @Inject
-    public Controller_ExternalServer(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
-        super(ws, formFactory, config, permissionService, notificationService);
+    public Controller_ExternalServer(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService, EchoService echoService) {
+        super(ws, formFactory, config, permissionService, notificationService, echoService);
     }
 
 

@@ -8,10 +8,8 @@ import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.UnderProject;
 import utilities.model.VersionModel;
-import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.Arrays;
@@ -63,7 +61,6 @@ public class Model_WidgetVersion extends VersionModel implements Permissible, Un
 
     @JsonIgnore @Override
     public void save() {
-        logger.debug("save::Creating new Object");
 
         // Save Object
         super.save();
@@ -76,34 +73,14 @@ public class Model_WidgetVersion extends VersionModel implements Permissible, Un
             widget.idCache().add(this.getClass(), id);
             widget.sort_Model_Model_GridProgramVersion_ids();
         }
-
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, widget.getProjectId(), widget.id))).start();
-    }
-
-    @JsonIgnore @Override
-    public void update() {
-
-        logger.debug("update::Update object Id: {}",  this.id);
-
-        // Update Object
-        super.update();
-
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getWidget().getProjectId(), get_grid_widget_id()))).start();
     }
 
     @JsonIgnore @Override
     public boolean delete() {
 
-        logger.debug("delete::Delete object Id: {}",  this.id);
-
-        // Delete
-        super.delete();
-
         getWidget().idCache().remove(this.getClass(), id);
 
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getWidget().getProjectId(), get_grid_widget_id()))).start();
-
-        return false;
+        return super.delete();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

@@ -24,6 +24,7 @@ import utilities.financial.extensions.extensions.Extension_Database;
 import utilities.financial.products.ConfigurationProduct;
 import utilities.financial.services.ProductService;
 import utilities.logger.Logger;
+import utilities.model.EchoService;
 import utilities.mongo_cloud_api.MongoCloudApi;
 import utilities.mongo_cloud_api.SwaggerMongoCloudUser;
 import utilities.notifications.NotificationService;
@@ -56,8 +57,9 @@ public class Controller_Database extends _BaseController {
 
     @Inject
     public Controller_Database(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
-                               NotificationService notificationService, ProductService productService, MongoCloudApi mongoApi, MongoDBConnector mongoDBConnector) {
-        super(ws, formFactory, config, permissionService, notificationService);
+                               NotificationService notificationService, ProductService productService, MongoCloudApi mongoApi,
+                               MongoDBConnector mongoDBConnector, EchoService echoService) {
+        super(ws, formFactory, config, permissionService, notificationService, echoService);
         this.productService = productService;
         this.mongoApi = mongoApi;
         this.mongoDBConnector = mongoDBConnector;

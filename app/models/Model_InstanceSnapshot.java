@@ -20,7 +20,6 @@ import utilities.enums.*;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
-import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.permission.Action;
@@ -30,7 +29,6 @@ import utilities.swagger.output.Swagger_InstanceSnapshot_JsonFile;
 import utilities.swagger.output.Swagger_InstanceSnapshot_JsonFile_Interface;
 import utilities.swagger.output.Swagger_Mobile_Connection_Summary;
 import utilities.swagger.output.Swagger_Short_Reference;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -624,9 +622,6 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
             getInstance().idCache().add(this.getClass(), id);
             getInstance().sort_Model_InstanceSnapshot_ids();
         }
-
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Instance.class, getInstance().getProjectId(), getInstanceId()))).start();
-
     }
 
     @Override

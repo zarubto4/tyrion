@@ -14,6 +14,7 @@ import utilities.enums.HomerType;
 import utilities.enums.ProgramType;
 import exceptions.NotFoundException;
 import utilities.logger.Logger;
+import utilities.model.EchoService;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 
@@ -32,8 +33,8 @@ public class Utilities_Demo_data_Controller extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @Inject
-    public Utilities_Demo_data_Controller(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
-        super(ws, formFactory, config, permissionService, notificationService);
+    public Utilities_Demo_data_Controller(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService, EchoService echoService) {
+        super(ws, formFactory, config, permissionService, notificationService, echoService);
     }
 
 // CONTROLLER CONTENT ##################################################################################################

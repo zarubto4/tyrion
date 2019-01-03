@@ -82,6 +82,7 @@ public class NotificationService {
     }
 
     public void subscribe(Portal portal) {
+        logger.info("subscribe - subscribing portal: {} for person: {}", portal.getId(), portal.getPersonId());
         if (!this.subscriptions.containsKey(portal.getPersonId())) {
             this.subscriptions.put(portal.getPersonId(), new ArrayList<>());
         }
@@ -93,11 +94,15 @@ public class NotificationService {
             if (!this.projectSubscriptions.containsKey(project.getId())) {
                 this.projectSubscriptions.put(project.getId(), new ArrayList<>());
             }
-            this.projectSubscriptions.get(project.getId()).add(portal.getPersonId());
+            List<UUID> personIds = this.projectSubscriptions.get(project.getId());
+            if (!personIds.contains(portal.getPersonId())) {
+                personIds.add(portal.getPersonId());
+            }
         });
     }
 
     public void unsubscribe(Portal portal) {
+        logger.info("unsubscribe - removing subscription of portal: {} for person: {}", portal.getId(), portal.getPersonId());
         if (this.subscriptions.containsKey(portal.getPersonId())) {
             this.subscriptions.get(portal.getPersonId()).remove(portal);
 
@@ -108,7 +113,7 @@ public class NotificationService {
 
         Model_Person person = Model_Person.find.byId(portal.getPersonId());
         person.get_user_access_projects().forEach(project -> {
-            if (!this.projectSubscriptions.containsKey(project.getId())) {
+            if (this.projectSubscriptions.containsKey(project.getId())) {
                 this.projectSubscriptions.get(project.getId()).remove(portal.getPersonId());
 
                 if (this.projectSubscriptions.get(project.getId()).isEmpty()) {
@@ -135,29 +140,17 @@ public class NotificationService {
     }
 
     public void modelUpdated(Class<?> cls, UUID id, UUID projectId) {
-        if (projectId != null && this.projectSubscriptions.containsKey(projectId)) {
-            this.projectSubscriptions.get(projectId).forEach(personId -> {
-                if (this.subscriptions.containsKey(personId)) {
-                    this.subscriptions.get(personId).forEach(portal -> portal.send(new WSM_Echo(cls, projectId, id).make_request()));
-                }
-            });
-        }
-    }
-
-    public void modelUpdated(BaseModel model) {
-
-        UUID projectId = null;
-
-        if (model instanceof UnderProject) {
-            try {
-                projectId = ((UnderProject) model).getProject().getId();
-            } catch (NotFoundException|NullPointerException e) {
-                // nothing
+        logger.debug("modelUpdated - send echo for {} with id: {} and project id: {}", cls.getSimpleName(), id, projectId);
+        if (projectId != null) {
+            if (this.projectSubscriptions.containsKey(projectId)) {
+                this.projectSubscriptions.get(projectId).forEach(personId -> {
+                    if (this.subscriptions.containsKey(personId)) {
+                        this.subscriptions.get(personId).forEach(portal -> portal.send(new WSM_Echo(cls, id).make_request()));
+                    }
+                });
             }
-        } else if (model instanceof Model_Project) {
-            projectId = model.getId();
+        } else {
+            this.subscriptions.values().forEach(portals -> portals.forEach(portal -> portal.send(new WSM_Echo(cls, id).make_request())));
         }
-
-        this.modelUpdated(model.getClass(), model.getId(), projectId);
     }
 }

@@ -17,6 +17,7 @@ import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * This interface object is used for every interaction with the physical hardware.
@@ -159,6 +160,21 @@ public class HardwareInterface {
         if (response.isErroneous()) {
             throw new FailedMessageException(response);
         }
+    }
+
+    public void changeUUIDOnServer(String oldId) {
+        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_uuid_converter_cleaner().make_request(this.hardware.id, oldId, this.hardware.full_id)));
+        if (response.isErroneous()) {
+            throw new FailedMessageException(response);
+        }
+    }
+
+    public CompletableFuture<Message> changeUUIDOnServerAsync(UUID oldId) {
+        return CompletableFuture.supplyAsync(() -> this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_uuid_converter_cleaner().make_request(this.hardware.id, oldId, this.hardware.full_id))));
+    }
+
+    public CompletableFuture<Message> changeUUIDOnServerAsync(String oldId) {
+        return CompletableFuture.supplyAsync(() -> this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_uuid_converter_cleaner().make_request(this.hardware.id, oldId, this.hardware.full_id))));
     }
 
     public void removeUUIDOnServer() {

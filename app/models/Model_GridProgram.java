@@ -10,11 +10,9 @@ import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
-import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
 import utilities.swagger.output.Swagger_M_Program_Version_Interface;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -137,31 +135,14 @@ public class Model_GridProgram extends TaggedModel implements Permissible, Under
             grid_project.getGrid_programs_ids();
             grid_project.idCache().add(this.getClass(), id);
         }
-
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, grid_project.get_project_id(), grid_project.id))).start();
-    }
-
-    @JsonIgnore @Override
-    public void update() {
-
-        logger.debug("update :: Update object Id: {}",  this.id);
-
-        super.update();
-
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_GridProgram.class, get_grid_project().get_project_id(), id))).start();
     }
 
     @JsonIgnore @Override
     public boolean delete() {
-        logger.debug("update :: Delete object Id: {} ", this.id);
-
-        super.delete();
 
         get_grid_project().idCache().remove(this.getClass(), id);
 
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_GridProject.class, get_grid_project().get_project_id(), get_grid_project_id()))).start();
-
-        return false;
+        return super.delete();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

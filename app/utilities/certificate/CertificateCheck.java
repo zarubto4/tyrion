@@ -7,6 +7,7 @@ import controllers._BaseFormFactory;
 import play.Environment;
 import play.libs.ws.WSClient;
 import play.mvc.Result;
+import utilities.model.EchoService;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 
@@ -20,8 +21,8 @@ public class CertificateCheck extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @Inject
-    public CertificateCheck(Environment environment, WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
-        super(ws, formFactory, config, permissionService, notificationService);
+    public CertificateCheck(Environment environment, WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService, EchoService echoService) {
+        super(ws, formFactory, config, permissionService, notificationService, echoService);
         this.environment = environment;
     }
 

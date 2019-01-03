@@ -11,10 +11,8 @@ import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.UnderProject;
 import utilities.model.VersionModel;
-import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -91,36 +89,20 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
 
     @JsonIgnore @Override
     public void save() {
-        logger.debug("save::Creating new Object");
 
         super.save();
 
         Model_GridProgram program = getGridProgram();
-
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, program.get_grid_project().get_project_id(), program.id))).start();
-
         program.idCache().add(this.getClass(), this.getId());
         program.sort_Model_Model_GridProgramVersion_ids();
     }
 
     @JsonIgnore @Override
-    public void update() {
-        logger.debug("update::Update object Id: {}",  this.getId());
-        super.update();
-
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_GridProgram.class, getGridProgram().get_grid_project().get_project_id(), id))).start();
-    }
-
-    @JsonIgnore @Override
     public boolean delete() {
-        logger.debug("delete::Delete object Id: {}",  this.getId());
-        super.delete();
 
         getGridProgram().idCache().remove(this.getClass(), this.getId());
 
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_GridProgram.class, getGridProgram().get_grid_project().get_project_id(), get_grid_program_id()))).start();
-
-        return false;
+        return super.delete();
     }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/

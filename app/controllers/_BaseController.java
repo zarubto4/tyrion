@@ -17,6 +17,8 @@ import responses.*;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
 import utilities.model.BaseModel;
+import utilities.model.Echo;
+import utilities.model.EchoService;
 import utilities.model.JsonSerializable;
 import utilities.notifications.NotificationService;
 import utilities.permission.Action;
@@ -51,19 +53,24 @@ public abstract class _BaseController {
     protected final Config config;
     protected final PermissionService permissionService;
     protected final NotificationService notificationService;
+    protected final EchoService echoService;
 
     @Inject
-    public _BaseController(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
+    public _BaseController(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService, EchoService echoService) {
         this.ws = ws;
         this.formFactory = formFactory;
         this.config = config;
         this.permissionService = permissionService;
         this.notificationService = notificationService;
+        this.echoService = echoService;
     }
 
     public Result create(BaseModel model) throws ForbiddenException, NotSupportedException {
         this.permissionService.checkCreate(person(), model);
         model.save();
+        if (model instanceof Echo) {
+            this.echoService.onSaved((Echo) model);
+        }
         return created(model);
     }
 
@@ -81,10 +88,8 @@ public abstract class _BaseController {
         }
         model.update();
 
-        try {
-            this.notificationService.modelUpdated(model);
-        } catch (Exception e) {
-            logger.internalServerError(e);
+        if (model instanceof Echo) {
+            this.echoService.onUpdated((Echo) model);
         }
 
         return ok(model);
@@ -92,7 +97,11 @@ public abstract class _BaseController {
 
     public Result delete(BaseModel model) throws ForbiddenException, NotSupportedException {
         this.permissionService.checkDelete(person(), model);
-        model.delete();
+        if (model instanceof Echo) {
+            this.echoService.delete((Echo) model);
+        } else {
+            model.delete();
+        }
         return ok();
     }
 

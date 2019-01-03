@@ -11,12 +11,10 @@ import utilities.enums.ProgramType;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
-import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
 import utilities.permission.JsonPermission;
 import utilities.permission.Permissible;
 import utilities.swagger.output.Swagger_Short_Reference;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -143,54 +141,6 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Override
-    public void save() {
-
-        super.save();
-
-        Model_Project project = getProject();
-
-        // Call notification about project update
-        if (project != null) new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, project.id, project.id))).start();
-    }
-
-    @JsonIgnore @Override
-    public void update() {
-
-        // Call notification about model update
-        if(publish_type == ProgramType.PRIVATE) {
-            new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, getProjectId(), this.id))).start();
-        }
-
-        super.update();
-    }
-
-    @JsonIgnore @Override
-    public boolean delete() {
-
-        super.delete();
-
-        // Remove from Project Cache
-        if (publish_type == ProgramType.PRIVATE) {
-
-            try {
-                getProject().idCache().remove(this.getClass(), id);
-            } catch (Exception e) {
-                // Nothing
-            }
-
-            new Thread(() -> {
-                try {
-                    EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, getProjectId(), getProjectId()));
-                } catch (Exception e) {
-                    // Nothing
-                }
-            }).start();
-        }
-        
-        return false;
-    }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 

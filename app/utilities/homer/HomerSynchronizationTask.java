@@ -9,6 +9,8 @@ import play.libs.concurrent.HttpExecutionContext;
 import utilities.enums.NetworkStatus;
 import utilities.hardware.DominanceService;
 import utilities.hardware.HardwareEvents;
+import utilities.hardware.HardwareInterface;
+import utilities.hardware.HardwareService;
 import utilities.instance.InstanceService;
 import utilities.logger.Logger;
 import utilities.network.NetworkStatusService;
@@ -33,6 +35,7 @@ public class HomerSynchronizationTask implements Task {
     private final HardwareEvents hardwareEvents;
     private final InstanceService instanceService;
     private final DominanceService dominanceService;
+    private final HardwareService hardwareService;
 
     private Model_HomerServer server;
     private HomerInterface homerInterface;
@@ -41,13 +44,15 @@ public class HomerSynchronizationTask implements Task {
 
     @Inject
     public HomerSynchronizationTask(HomerService homerService, HardwareEvents hardwareEvents, InstanceService instanceService,
-                                    HttpExecutionContext httpExecutionContext, DominanceService dominanceService, NetworkStatusService networkStatusService) {
+                                    HttpExecutionContext httpExecutionContext, DominanceService dominanceService,
+                                    NetworkStatusService networkStatusService, HardwareService hardwareService) {
         this.networkStatusService = networkStatusService;
         this.httpExecutionContext = httpExecutionContext;
         this.homerService = homerService;
         this.hardwareEvents = hardwareEvents;
         this.instanceService = instanceService;
         this.dominanceService = dominanceService;
+        this.hardwareService = hardwareService;
     }
 
     @Override
@@ -60,7 +65,7 @@ public class HomerSynchronizationTask implements Task {
         logger.info("start - synchronization task begins");
         return future = CompletableFuture.runAsync(() -> {
             if (this.server == null || this.homerInterface == null) {
-                throw new RuntimeException("You must set hardware before the task start.");
+                throw new RuntimeException("You must set server before the task start.");
             }
 
             this.synchronizeSettings();
@@ -140,29 +145,40 @@ public class HomerSynchronizationTask implements Task {
                     }
 
                     if (hardware.connected_server_id == null || !hardware.connected_server_id.equals(this.server.id)) {
-                        logger.debug("check_device_on_server:: Device: ID: {} has not set server parameters yet", hardware.id);
+                        logger.debug("synchronizeHardware - setting connected server for hardware,id {}", hardware.id);
                         hardware.connected_server_id = this.server.id;
                         hardware.update();
                     }
 
+                    HardwareInterface hardwareInterface = this.hardwareService.getInterface(hardware);
+
                     // Homer server neměl spojení s Tyrionem a tak dočasně přiřadil uuid jako full id - proto hned zaměním
                     if (pair.uuid.length() < 25) {
-                        logger.warn("check_device_on_server:: Device: ID: {} there is a  same full ID: {} as a UUID {} from Server", hardware.id, pair.full_id, pair.full_id);
-                        logger.warn("check_device_on_server:: Device: ID: {} Its required change pair on homer server", hardware.id);
-                        // TODO board.device_converted_id_clean_switch_on_server(pair.uuid);
+                        logger.warn("synchronizeHardware - homer temporally assigned full id: {} as main id for hardware, id {}", pair.uuid, hardware.id);
+                        hardwareInterface.changeUUIDOnServerAsync(pair.uuid)
+                                .thenAccept(message -> {
+                                    if (pair.online_state) {
+                                        this.hardwareEvents.connected(hardware);
+                                    } else {
+                                        this.networkStatusService.setStatus(hardware, NetworkStatus.OFFLINE);
+                                    }
+                                });
                         continue;
                     }
 
                     // Zařízení má přiřazenou jinou UUID k Full ID než by měl mít
                     if (!hardware.id.equals(UUID.fromString(pair.uuid))) {
-                        logger.warn("check_device_on_server:: Device: ID: {} there is a mistake with pair with full ID: {} and UUID {} from Server", hardware.id, pair.full_id, pair.full_id);
-                        logger.warn("check_device_on_server:: Device: ID: {} Its required change pair on homer server!", hardware.id);
-
-
-                        // TODO board.device_converted_id_clean_switch_on_server(pair.uuid);
+                        logger.warn("synchronizeHardware - homer temporally assigned random id: {} for hardware, id {}", pair.uuid, hardware.id);
+                        hardwareInterface.changeUUIDOnServerAsync(UUID.fromString(pair.uuid))
+                                .thenAccept(message -> {
+                                    if (pair.online_state) {
+                                        this.hardwareEvents.connected(hardware);
+                                    } else {
+                                        this.networkStatusService.setStatus(hardware, NetworkStatus.OFFLINE);
+                                    }
+                                });
                         continue;
                     }
-
 
                     if (pair.online_state) {
                         this.hardwareEvents.connected(hardware);

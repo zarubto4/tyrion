@@ -13,13 +13,11 @@ import exceptions.NotFoundException;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
-import utilities.models_update_echo.EchoHandler;
 import utilities.network.JsonNetworkStatus;
 import utilities.network.Networkable;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
 import utilities.swagger.output.Swagger_Short_Reference;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.*;
@@ -229,19 +227,6 @@ public class Model_Instance extends TaggedModel implements Permissible, UnderPro
             }catch (Exception e) {
                 // Nothing
             }
-        }
-    }
-
-    @Override
-    public void update() {
-
-        logger.trace("update - updating in database, id: {}",  this.id);
-
-        super.update();
-
-        if (getProject() != null) {
-            logger.warn("Sending Update for Instance ID: {}", this.id);
-            new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Instance.class, getProject().id, this.id))).start();
         }
     }
     

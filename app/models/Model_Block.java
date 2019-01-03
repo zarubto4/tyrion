@@ -11,15 +11,14 @@ import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.enums.ProgramType;
 import utilities.logger.Logger;
+import utilities.model.Echo;
 import utilities.model.Publishable;
 import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
-import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
 import utilities.permission.JsonPermission;
 import utilities.permission.Permissible;
 import utilities.swagger.output.Swagger_Short_Reference;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -31,7 +30,7 @@ import java.util.stream.Collectors;
 @Entity
 @ApiModel( value = "Block", description = "Model of Block")
 @Table(name="Block")
-public class Model_Block extends TaggedModel implements Permissible, UnderProject, Publishable {
+public class Model_Block extends TaggedModel implements Permissible, UnderProject, Publishable, Echo {
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/
 
@@ -112,27 +111,13 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
     }
 
     @JsonIgnore
-    public List<UUID> getVersionsId() {
+    public List<UUID> getVersionIds() {
         return Model_BlockVersion.find.query().where().eq("block.id", id).eq("deleted", false).select("id").order("created").findSingleAttributeList();
     }
 
     @JsonIgnore
     public List<Model_BlockVersion> getVersions() {
-        try {
-
-            List<Model_BlockVersion> versions  = new ArrayList<>();
-
-            for (UUID version_id : getVersionsId()) {
-                versions.add(Model_BlockVersion.find.byId(version_id));
-            }
-
-            return versions;
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return new ArrayList<>();
-        }
-
+        return getVersionIds().stream().map(Model_BlockVersion.find::byId).collect(Collectors.toList());
     }
 
     @JsonIgnore
@@ -147,33 +132,16 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
         return isLoaded("producer") ? producer : Model_Producer.find.query().nullable().where().eq("blocks.id", id).findOne();
     }
 
+    @JsonIgnore @Override
+    public Echo getParent() {
+        return this.getProject();
+    }
+
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
-
-    @JsonIgnore @Override
-    public void save() {
-
-        super.save();
-
-        if (project != null) new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, project.id, project.id))).start();
-    }
-
-    @JsonIgnore @Override
-    public void update() {
-
-        super.update();
-
-        // Call notification about model update
-        if (publish_type == ProgramType.PRIVATE) {
-            new Thread(() -> {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, get_project_id(), this.id));
-            }).start();
-        }
-    }
 
     @JsonIgnore @Override
     public boolean delete() {
 
-        logger.debug("delete :: Delete object Id: {} ", this.id);
         super.delete();
 
         // Remove from Project Cache
@@ -187,13 +155,6 @@ public class Model_Block extends TaggedModel implements Permissible, UnderProjec
                 // Nothing
             }
 
-            new Thread(() -> {
-                try {
-                    EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, get_project_id(), get_project_id()));
-                } catch (Exception e) {
-                    // Nothing
-                }
-            }).start();
         }
 
         return false;

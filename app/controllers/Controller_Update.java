@@ -20,6 +20,7 @@ import utilities.hardware.HardwareInterface;
 import utilities.hardware.HardwareService;
 import utilities.hardware.update.UpdateService;
 import utilities.logger.Logger;
+import utilities.model.EchoService;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.input.*;
@@ -46,8 +47,8 @@ public class Controller_Update extends _BaseController {
 
     @Inject
     public Controller_Update(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
-                             NotificationService notificationService, UpdateService updateService,  HardwareService hardwareService) {
-        super(ws, formFactory, config, permissionService, notificationService);
+                             NotificationService notificationService, UpdateService updateService, HardwareService hardwareService, EchoService echoService) {
+        super(ws, formFactory, config, permissionService, notificationService, echoService);
         this.updateService = updateService;
         this.hardwareService = hardwareService;
     }

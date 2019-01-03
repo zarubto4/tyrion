@@ -38,7 +38,7 @@ public class Portal extends Interface {
     }
 
     public UUID getPersonId() {
-        return personId;
+        return this.personId;
     }
 
     @Override

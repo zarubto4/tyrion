@@ -10,10 +10,8 @@ import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
-import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -62,7 +60,8 @@ public class Model_GridProject extends TaggedModel implements Permissible, Under
         return idCache().gets(Model_GridProgram.class) != null ?  idCache().gets(Model_GridProgram.class) : new ArrayList<>();
     }
 
-    @JsonIgnore public List<Model_GridProgram> getGridPrograms() {
+    @JsonIgnore
+    public List<Model_GridProgram> getGridPrograms() {
     try {
 
             List<Model_GridProgram> gridPrograms  = new ArrayList<>();
@@ -79,7 +78,8 @@ public class Model_GridProject extends TaggedModel implements Permissible, Under
         }
     }
 
-    @JsonIgnore @Transient public UUID get_project_id() {
+    @JsonIgnore
+    public UUID get_project_id() {
 
         if (idCache().get(Model_Project.class) == null) {
             idCache().add(Model_Project.class, (UUID) Model_Project.find.query().where().eq("grid_projects.id", id).select("id").findSingleAttribute());
@@ -102,36 +102,17 @@ public class Model_GridProject extends TaggedModel implements Permissible, Under
         super.save();
 
         // If Object Contains Project - add id to cache
-        if (project != null) {
-            project.idCache().add(this.getClass(), id);
+        if (getProject() != null) {
+            getProject().idCache().add(this.getClass(), id);
         }
-
-        // Inform All clients independently
-        if (project != null ) new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, get_project_id(), get_project_id()))).start();
-    }
-
-    @JsonIgnore @Override
-    public void update() {
-
-        logger.debug("update :: Update object Id: {}",  this.id);
-
-        super.update();
-
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_GridProject.class, get_project_id(), id))).start();
     }
 
     @JsonIgnore @Override
     public boolean delete() {
 
-        logger.debug("update :: Delete object Id: {} ", this.id);
-
-        super.delete();
-
         getProject().idCache().remove(this.getClass(), id);
 
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, get_project_id(), get_project_id()))).start();
-
-        return false;
+        return super.delete();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

@@ -12,13 +12,11 @@ import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.UnderProject;
 import utilities.model.VersionModel;
-import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
 import utilities.swagger.input.Swagger_Library_File_Load;
 import utilities.swagger.input.Swagger_Library_Record;
 import utilities.swagger.output.Swagger_Short_Reference;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -97,36 +95,18 @@ public class Model_LibraryVersion extends VersionModel implements Permissible, U
         super.save();
 
         // Add to Cache
-        if(getLibrary() != null) {
+        if (getLibrary() != null) {
             getLibrary().getVersionIds();
             getLibrary().idCache().add(this.getClass(), id);
         }
-
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getLibrary().getProjectId(), getLibraryId()))).start();
-    }
-
-    @JsonIgnore @Override
-    public void update() {
-
-        logger.debug("update::Update object Id: {}",  this.id);
-        super.update();
-
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, getLibrary().getProjectId(), getLibraryId()))).start();
-
     }
 
     @JsonIgnore @Override
     public boolean delete() {
 
-        logger.debug("delete::Delete object Id: {}",  this.id);
-
-        super.delete();
-
         getLibrary().idCache().remove(this.getClass(), id);
 
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Library.class, getLibrary().getProjectId(), getLibraryId()))).start();
-
-        return false;
+        return super.delete();
     }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/

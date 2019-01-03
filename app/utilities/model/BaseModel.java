@@ -2,7 +2,6 @@ package utilities.model;
 
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers._BaseController;
@@ -17,12 +16,9 @@ import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheFinder;
 import utilities.cache.InjectCache;
-import utilities.cache.Cached;
 import utilities.logger.Logger;
-import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
 import utilities.permission.JsonPermission;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
@@ -245,8 +241,6 @@ public abstract class BaseModel extends Model implements JsonSerializable {
             save_author();
         }
 
-        boolean isNew = this.id == null;
-
         if (this.created == null) {
             this.created = new Date();
         }
@@ -259,13 +253,6 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         this.cache(); // Caches the object
 
         logger.trace("save - saved {} to DB, id: {}", this.getClass().getSimpleName(), this.id);
-
-        // Send the echo update
-        if (isNew) {
-            this.echoParent();
-        } else {
-            this.echo();
-        }
     }
 
     @Override
@@ -283,7 +270,6 @@ public abstract class BaseModel extends Model implements JsonSerializable {
         this.invalidate();
         super.delete();
         this.evict(); // Evict the object from cache
-        this.echoParent(); // Send echo update of parent object
 
         return true;
     }
@@ -405,33 +391,6 @@ public abstract class BaseModel extends Model implements JsonSerializable {
             logger.internalServerError(e);
         }
     }
-
-    /**
-     * If this object is under some project, this method will echo
-     * the change of this object to all portals viewing the given project.
-     */
-    public void echo() {
-        if (this instanceof Echo) {
-            Echo echo = (Echo) this;
-            if (echo.hasProject()) {
-                new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(echo))).start();
-            }
-        }
-    }
-
-    /**
-     * If this object is under some project, this method will echo
-     * the change of parent object to all portals viewing the given project.
-     */
-    public void echoParent() {
-        if (this instanceof Echo) {
-            Echo echo = (Echo) this;
-            if (echo.hasProject()) {
-                new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(echo.getParent()))).start();
-            }
-        }
-    }
-
 
 /* Private Support methods  -----------------------------------------------------------------------------------------------*/
 

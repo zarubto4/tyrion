@@ -21,6 +21,7 @@ import utilities.gsm_services.things_mobile.statistic_class.DataSim_overview;
 import utilities.lablel_printer_service.Printer_Api;
 import utilities.lablel_printer_service.labels.Label_62_GSM_thingsmobile_shield_label_Details;
 import utilities.logger.Logger;
+import utilities.model.EchoService;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.input.*;
@@ -42,8 +43,8 @@ public class Controller_GSM extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @Inject
-    public Controller_GSM(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
-        super(ws, formFactory, config, permissionService, notificationService);
+    public Controller_GSM(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService, EchoService echoService) {
+        super(ws, formFactory, config, permissionService, notificationService, echoService);
     }
 
 ///###################################################################################################################*/

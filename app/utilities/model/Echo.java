@@ -1,19 +1,18 @@
 package utilities.model;
 
-import java.util.UUID;
+import common.Identifiable;
+import models.Model_Project;
 
 /**
  * For objects that have relations to project.
  */
-public interface Echo {
+public interface Echo extends Identifiable, Publishable {
 
-    UUID getId();
+    void save();
 
-    /**
-     * Get ID of parent project.
-     * @return UUID id of project
-     */
-    UUID getProjectId();
+    void update();
+
+    boolean delete();
 
     /**
      * Gets the parent object from the project hierarchy.
@@ -21,9 +20,5 @@ public interface Echo {
      */
     Echo getParent();
 
-    /**
-     * For checking - object can be public, thus project can be null.
-     * @return boolean true if object has project
-     */
-    boolean hasProject();
+    Model_Project getProject();
 }

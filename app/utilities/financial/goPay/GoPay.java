@@ -14,6 +14,7 @@ import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.financial.fakturoid.FakturoidService;
 import utilities.logger.Logger;
+import utilities.model.EchoService;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 
@@ -46,8 +47,8 @@ public class GoPay extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @javax.inject.Inject
-    public GoPay(WSClient ws, _BaseFormFactory formFactory, Config config, FakturoidService fakturoid, PermissionService permissionService, NotificationService notificationService) {
-        super(ws, formFactory, config, permissionService, notificationService);
+    public GoPay(WSClient ws, _BaseFormFactory formFactory, Config config, FakturoidService fakturoid, PermissionService permissionService, NotificationService notificationService, EchoService echoService) {
+        super(ws, formFactory, config, permissionService, notificationService, echoService);
         this.fakturoid = fakturoid;
     }
 

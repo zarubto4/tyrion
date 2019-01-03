@@ -10,10 +10,8 @@ import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
-import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -111,38 +109,19 @@ public class Model_BProgram extends TaggedModel implements Permissible, UnderPro
 
         super.save();
 
-        Model_Project project = getProject();
-
-        if(project != null) {
+        if (getProject() != null) {
             project.idCache().add(this.getClass(), this.id);
         }
-
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, project.id, project.id))).start();
-    }
-
-    @JsonIgnore @Override
-    public void update() {
-
-        logger.debug("update - Update object Id: {}",  this.id);
-
-        super.update();
-
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_BProgram.class, getProjectId(), id))).start();
-
     }
 
     @JsonIgnore @Override
     public boolean delete() {
 
-        logger.debug("update :: Delete object Id: {} ", this.id);
-        super.delete();
+        if (getProject() != null) {
+            getProject().idCache().remove(this.getClass(), id);
+        }
 
-        // Remove from Project Cache
-        getProject().idCache().remove(this.getClass(), id);
-
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_Project.class, getProjectId(), getProjectId()))).start();
-
-        return false;
+        return super.delete();
     }
 
 /* BlOB DATA  ---------------------------------------------------------------------------------------------------------*/

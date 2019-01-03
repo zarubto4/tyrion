@@ -103,6 +103,8 @@ public class NetworkStatusService {
 
         this.networkStatusCache.put(networkable.getId(), networkStatus);
 
+        ModelMongo_NetworkStatus.create_record(networkable, networkStatus);
+
         UUID projectId = null;
 
         if (networkable instanceof UnderProject) {

@@ -9,10 +9,8 @@ import utilities.enums.EntityType;
 import utilities.logger.Logger;
 import utilities.model.UnderProject;
 import utilities.model.VersionModel;
-import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -123,15 +121,9 @@ public class Model_BProgramVersion extends VersionModel implements Permissible, 
     @JsonIgnore @Override
     public void save() {
 
-        logger.debug("save :: Creating new Object");
-
         super.save();
 
         Model_BProgram program = getBProgram();
-
-        new Thread(() -> {
-            EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, program.getProjectId(), program.id));
-        }).start();
 
         // Add to Cache
         if (program != null) {
@@ -142,28 +134,11 @@ public class Model_BProgramVersion extends VersionModel implements Permissible, 
     }
 
     @JsonIgnore @Override
-    public void update() {
-
-        logger.debug("update::Update object Id: {}",  this.id);
-        super.update();
-
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, getBProgram().getProjectId(), get_b_program_id()))).start();
-
-    }
-
-    @JsonIgnore @Override
     public boolean delete() {
 
-        logger.debug("delete::Delete object Id: {}",  this.id);
-
-        super.delete();
-
-        // Remove from Cache
         getBProgram().idCache().remove(this.getClass(), id);
 
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_BProgram.class, getBProgram().getProjectId(), get_b_program_id()))).start();
-
-        return false;
+        return super.delete();
     }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/

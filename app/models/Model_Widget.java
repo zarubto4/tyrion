@@ -14,12 +14,10 @@ import utilities.logger.Logger;
 import utilities.model.Publishable;
 import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
-import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
 import utilities.permission.JsonPermission;
 import utilities.permission.Permissible;
 import utilities.swagger.output.Swagger_Short_Reference;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -161,8 +159,6 @@ public class Model_Widget extends TaggedModel implements Permissible, UnderProje
     @JsonIgnore @Override
     public void save() {
 
-        logger.debug("save::Creating new Object");
-
         // Save Object
         super.save();
 
@@ -170,31 +166,12 @@ public class Model_Widget extends TaggedModel implements Permissible, UnderProje
 
         // Add to Cache
         if (project != null) {
-            new Thread(() -> { EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, project.id, project.id)); }).start();
             project.idCache().add(this.getClass(), id);
         }
     }
 
     @JsonIgnore @Override
-    public void update() {
-
-        logger.debug("update::Update object Id: {}",  this.id);
-
-        // Update Object
-        super.update();
-
-        if(publish_type == ProgramType.PRIVATE) {
-            new Thread(() -> {
-                EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getProjectId(), getProjectId()));
-            }).start();
-        }
-
-    }
-
-    @JsonIgnore @Override
     public boolean delete() {
-
-        logger.debug("delete::Delete object Id: {}",  this.id);
 
         // Delete
         super.delete();
@@ -206,14 +183,6 @@ public class Model_Widget extends TaggedModel implements Permissible, UnderProje
             } catch (Exception e) {
                 // Nothing
             }
-
-            new Thread(() -> {
-                try {
-                    EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, getProjectId(), getProjectId()));
-                } catch (Exception e) {
-                    // Nothing
-                }
-            }).start();
         }
 
         return false;

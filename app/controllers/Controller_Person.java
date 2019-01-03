@@ -15,6 +15,7 @@ import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.logger.Logger;
+import utilities.model.EchoService;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.project.ProjectService;
@@ -40,8 +41,8 @@ public class Controller_Person extends _BaseController {
 
     @Inject
     public Controller_Person(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
-                             NotificationService notificationService, ProjectService projectService) {
-        super(ws, formFactory, config, permissionService, notificationService);
+                             NotificationService notificationService, ProjectService projectService, EchoService echoService) {
+        super(ws, formFactory, config, permissionService, notificationService, echoService);
         this.projectService = projectService;
     }
 

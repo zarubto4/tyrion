@@ -1,29 +1,13 @@
 package websocket.messages.homer_hardware_with_tyrion.updates;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.inject.Inject;
 import exceptions.BadRequestException;
-import models.Model_Hardware;
-import models.Model_HardwareUpdate;
-import models.Model_Project;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
-import play.libs.Json;
 import utilities.enums.Enum_HardwareHomerUpdate_state;
-import utilities.enums.FirmwareType;
-import utilities.enums.HardwareUpdateState;
-import utilities.errors.ErrorCode;
-import utilities.hardware.HardwareService;
-import utilities.hardware.update.UpdateService;
-import utilities.homer.HomerService;
-import utilities.models_update_echo.EchoHandler;
-import utilities.notifications.NotificationService;
-import utilities.scheduler.SchedulerService;
 import websocket.messages.common.abstract_class.WS_AbstractMessage_Instance;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 

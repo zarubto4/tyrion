@@ -13,6 +13,7 @@ import utilities.authentication.Authentication;
 import utilities.enums.NotificationImportance;
 import utilities.enums.NotificationState;
 import utilities.logger.Logger;
+import utilities.model.EchoService;
 import utilities.notifications.NotificationConfirmationService;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
@@ -36,8 +37,8 @@ public class Controller_Notification extends _BaseController {
 
     @Inject
     public Controller_Notification(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
-                                   NotificationService notificationService, NotificationConfirmationService notificationConfirmationService) {
-        super(ws, formFactory, config, permissionService, notificationService);
+                                   NotificationService notificationService, NotificationConfirmationService notificationConfirmationService, EchoService echoService) {
+        super(ws, formFactory, config, permissionService, notificationService, echoService);
         this.notificationConfirmationService = notificationConfirmationService;
     }
 

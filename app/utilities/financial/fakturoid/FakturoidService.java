@@ -24,6 +24,7 @@ import utilities.financial.fakturoid.helps_objects.Fakturoid_Invoice;
 import utilities.financial.fakturoid.helps_objects.Fakturoid_InvoiceItem;
 import utilities.financial.fakturoid.helps_objects.Fakturoid_Subject;
 import utilities.logger.Logger;
+import utilities.model.EchoService;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.input.Swagger_Fakturoid_Callback;
@@ -44,8 +45,8 @@ public class FakturoidService extends _BaseController {
     private static final Logger logger = new Logger(FakturoidService.class);
 
     @Inject
-    public FakturoidService(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
-        super(ws, formFactory, config, permissionService, notificationService);
+    public FakturoidService(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService, EchoService echoService) {
+        super(ws, formFactory, config, permissionService, notificationService, echoService);
     }
 
 // PUBLIC CONTROLLERS METHODS ##########################################################################################

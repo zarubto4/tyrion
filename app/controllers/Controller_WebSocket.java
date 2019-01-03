@@ -17,6 +17,7 @@ import responses.Result_InternalServerError;
 import responses.Result_Unauthorized;
 import utilities.authentication.Authentication;
 import utilities.logger.Logger;
+import utilities.model.EchoService;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.output.Swagger_Websocket_Token;
@@ -45,8 +46,8 @@ public class Controller_WebSocket extends _BaseController {
 
     @Inject
     public Controller_WebSocket(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
-                                NotificationService notificationService, WebSocketService webSocketService, Injector injector) {
-        super(ws, formFactory, config, permissionService, notificationService);
+                                NotificationService notificationService, WebSocketService webSocketService, Injector injector, EchoService echoService) {
+        super(ws, formFactory, config, permissionService, notificationService, echoService);
         this.webSocketService = webSocketService;
         this.injector = injector;
     }

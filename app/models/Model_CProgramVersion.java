@@ -16,13 +16,11 @@ import utilities.hardware.update.Updatable;
 import utilities.logger.Logger;
 import utilities.model.UnderProject;
 import utilities.model.VersionModel;
-import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
 import utilities.swagger.input.*;
 import utilities.swagger.output.Swagger_C_Program_Version;
 import utilities.swagger.output.Swagger_Short_Reference;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.*;
@@ -170,41 +168,18 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
     public void save() {
         super.save();
 
-        // Add to Cache
-
         Model_CProgram program = getProgram();
-
-        if(getProgram() != null) {
-            program.getVersionsId();
-            program.idCache().add(this.getClass(), id);
-            program.sort_Model_Model_CProgramVersion_ids();
-        }
-
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, program.getProjectId(), program.id))).start();
-    }
-
-    @JsonIgnore @Override
-    public void update() {
-
-        logger.debug("update::Update object Id: {}",  this.id);
-        super.update();
-
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_CProgram.class, getProgram().getProjectId(), get_c_program_id()))).start();
-
+        program.getVersionsId();
+        program.idCache().add(this.getClass(), id);
+        program.sort_Model_Model_CProgramVersion_ids();
     }
 
     @JsonIgnore @Override
     public boolean delete() {
 
-        logger.debug("delete::Delete object Id: {}",  this.id);
-
-        super.delete();
-
         getProgram().idCache().remove(this.getClass(), id);
 
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Widget.class, getProgram().getProjectId(), get_c_program_id()))).start();
-
-        return false;
+        return super.delete();
     }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/

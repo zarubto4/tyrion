@@ -45,7 +45,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
         který je Byzance schopna obsluhovat. Rozdílem je Typ desky - který může měnit chování některých metod nebo executiv
         procedur.
 
-        Batch je z Tykpepe OfBoards výrobní kolekce, nebo šarže tak aby se dalo trackovat kdo co vyrobil, kdy osadil atd..
+        Batch je výrobní kolekce nebo šarže aby se dalo trackovat, kdo co vyrobil, kdy osadil atd..
      */
 
     /*
@@ -516,42 +516,15 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
     @JsonIgnore
     public Model_Producer getProducer(){
-        try {
-            return Model_Producer.find.byId(getProducerId());
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    @JsonIgnore
-    public UUID getProducerId() {
-        if (idCache().get(Model_Producer.class) == null) {
-            idCache().add(Model_Producer.class, (UUID) Model_Producer.find.query().where().eq("hardware_types.hardware.id", id).select("id").findSingleAttribute());
-        }
-        return idCache().get(Model_Producer.class);
+        return Model_Producer.find.query().where().eq("hardware_types.hardware.id", id).findOne();
     }
 
     @JsonIgnore
     public Model_Instance getInstance(){
-        try {
-
-            if(getInstanceId() != null) {
-                return Model_Instance.find.byId(getInstanceId());
-            }
-
-            return null;
-        }catch (Exception e) {
-            return null;
+        if (this.connected_instance_id != null) {
+            return Model_Instance.find.byId(this.connected_instance_id);
         }
-    }
-
-    @JsonIgnore
-    public UUID getInstanceId(){
-        try {
-           return connected_instance_id;
-        }catch (Exception e) {
-            return null;
-        }
+        return null;
     }
 
     @JsonIgnore

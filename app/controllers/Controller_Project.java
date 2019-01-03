@@ -20,6 +20,7 @@ import utilities.enums.ParticipantStatus;
 import utilities.financial.services.ProductService;
 import utilities.hardware.HardwareService;
 import utilities.logger.Logger;
+import utilities.model.EchoService;
 import utilities.mongo_cloud_api.MongoCloudApi;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
@@ -47,8 +48,8 @@ public class Controller_Project extends _BaseController {
 
     @Inject
     public Controller_Project(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, ProductService productService,
-                              MongoCloudApi mongoApi, NotificationService notificationService, HardwareService hardwareService) {
-        super(ws, formFactory, config, permissionService, notificationService);
+                              MongoCloudApi mongoApi, NotificationService notificationService, HardwareService hardwareService, EchoService echoService) {
+        super(ws, formFactory, config, permissionService, notificationService, echoService);
         this.hardwareService = hardwareService;
         this.productService = productService;
         this.mongoApi = mongoApi;

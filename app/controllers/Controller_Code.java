@@ -22,6 +22,7 @@ import utilities.emails.Email;
 import utilities.enums.*;
 import utilities.hardware.update.UpdateService;
 import utilities.logger.Logger;
+import utilities.model.EchoService;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.input.*;
@@ -49,8 +50,9 @@ public class Controller_Code extends _BaseController {
 
     @Inject
     public Controller_Code(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
-                           NotificationService notificationService, UpdateService updateService, CompilationService compilationService, CompilerService compilerService) {
-        super(ws, formFactory, config, permissionService, notificationService);
+                           NotificationService notificationService, UpdateService updateService, CompilationService compilationService,
+                           CompilerService compilerService, EchoService echoService) {
+        super(ws, formFactory, config, permissionService, notificationService, echoService);
         this.updateService = updateService;
         this.compilationService = compilationService;
         this.compilerService = compilerService;

@@ -13,6 +13,7 @@ import play.mvc.Security;
 import utilities.authentication.Authentication;
 import utilities.enums.*;
 import utilities.logger.Logger;
+import utilities.model.EchoService;
 import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Link;
@@ -35,8 +36,8 @@ public class NotificationTester extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     @Inject
-    public NotificationTester(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService) {
-        super(ws, formFactory, config, permissionService, notificationService);
+    public NotificationTester(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, NotificationService notificationService, EchoService echoService) {
+        super(ws, formFactory, config, permissionService, notificationService, echoService);
     }
 
 /*  VALUES -------------------------------------------------------------------------------------------------------------*/

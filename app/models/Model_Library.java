@@ -11,11 +11,9 @@ import utilities.logger.Logger;
 import utilities.model.Publishable;
 import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
-import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
 import utilities.permission.JsonPermission;
 import utilities.permission.Permissible;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -140,31 +138,17 @@ public class Model_Library extends TaggedModel implements Permissible, UnderProj
 
         super.save();
 
-        if (project != null) {
-            project.idCache().add(this.getClass(),id);
+        if (getProject() != null) {
+            getProject().idCache().add(this.getClass(),id);
         }
     }
 
-    @Override
-    public void update() {
-
-        logger.debug("update :: Update object Id: " + this.id);
-
-        new Thread(() -> EchoHandler.addToQueue(new WSM_Echo( Model_Library.class, getProjectId(), this.id))).start();
-
-        //Database Update
-        super.update();
-    }
-
-    @JsonIgnore @Override public boolean delete() {
-
-        logger.debug("remove :: Update (hide) object Id: " + this.id);
-
-        super.delete();
+    @JsonIgnore @Override
+    public boolean delete() {
 
         getProject().idCache().remove(this.getClass(),id);
 
-        return false;
+        return super.delete();
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/

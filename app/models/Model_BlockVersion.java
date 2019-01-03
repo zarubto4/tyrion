@@ -7,12 +7,11 @@ import utilities.cache.InjectCache;
 import utilities.enums.Approval;
 import utilities.enums.EntityType;
 import utilities.logger.Logger;
+import utilities.model.Echo;
 import utilities.model.UnderProject;
 import utilities.model.VersionModel;
-import utilities.models_update_echo.EchoHandler;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import javax.persistence.*;
 import java.util.Arrays;
@@ -22,7 +21,7 @@ import java.util.UUID;
 @Entity
 @ApiModel( value = "BlockVersion", description = "Model of BlockVersion")
 @Table(name="BlockVersion")
-public class Model_BlockVersion extends VersionModel implements Permissible, UnderProject {
+public class Model_BlockVersion extends VersionModel implements Permissible, UnderProject, Echo {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
@@ -38,7 +37,6 @@ public class Model_BlockVersion extends VersionModel implements Permissible, Und
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
-
 
 /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
@@ -63,6 +61,16 @@ public class Model_BlockVersion extends VersionModel implements Permissible, Und
         return this.getBlock().getProject();
     }
 
+    @JsonIgnore @Override
+    public Echo getParent() {
+        return this.getBlock();
+    }
+
+    @JsonIgnore @Override
+    public boolean isPublic() {
+        return this.getBlock().isPublic();
+    }
+
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
     
     @JsonIgnore @Override
@@ -71,37 +79,14 @@ public class Model_BlockVersion extends VersionModel implements Permissible, Und
         super.save();
 
         // Add to Cache
-        if(getBlock() != null) {
-            getBlock().getVersionsId();
+        if (getBlock() != null) {
+            getBlock().getVersionIds();
             getBlock().idCache().add(this.getClass(), id);
         }
-
-        new Thread(() -> {
-            EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, getBlock().get_project_id(), getBlock().id));
-        }).start();
-
-    }
-
-    @JsonIgnore @Override
-    public void update() {
-
-        super.update();
-
-        new Thread(() -> {
-            EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, getBlock().get_project_id(), getBlock().id));
-        }).start();
-
     }
 
     @JsonIgnore @Override
     public boolean delete() {
-
-
-        new Thread(() -> {
-            EchoHandler.addToQueue(new WSM_Echo(Model_Block.class, getBlock().get_project_id(), getBlock().id));
-        }).start();
-
-
         if (getBlock() != null) {
             getBlock().idCache().remove(this.getClass(), id);
         }

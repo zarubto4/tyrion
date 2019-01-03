@@ -29,6 +29,7 @@ import utilities.lablel_printer_service.labels.Label_62_mm_package;
 import utilities.enums.*;
 import utilities.lablel_printer_service.labels.Label_62_split_mm_Details;
 import utilities.logger.Logger;
+import utilities.model.EchoService;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.Picture2Mb;
@@ -60,8 +61,8 @@ public class Controller_Hardware extends _BaseController {
     @Inject
     public Controller_Hardware(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
                                NotificationService notificationService, HardwareService hardwareService, UpdateService updateService,
-                               HardwareConfigurationService hardwareConfigurationService) {
-        super(ws, formFactory, config, permissionService, notificationService);
+                               HardwareConfigurationService hardwareConfigurationService, EchoService echoService) {
+        super(ws, formFactory, config, permissionService, notificationService, echoService);
         this.hardwareConfigurationService = hardwareConfigurationService;
         this.hardwareService = hardwareService;
         this.updateService = updateService;

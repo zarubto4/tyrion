@@ -17,12 +17,10 @@ import utilities.hardware.HardwareService;
 import utilities.homer.HomerInterface;
 import utilities.homer.HomerService;
 import utilities.logger.Logger;
-import utilities.models_update_echo.EchoHandler;
 import utilities.notifications.NotificationService;
 import utilities.scheduler.JobDefinition;
 import utilities.scheduler.SchedulerService;
 import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
-import websocket.messages.tyrion_with_becki.WSM_Echo;
 
 import java.util.*;
 
@@ -191,7 +189,7 @@ public class UpdateService {
                     update.finished = new Date();
                     update.update();
 
-                    EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, hardware.getProjectId(), hardware.id));
+                    // TODO EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, hardware.getProjectId(), hardware.id));
 
                     return;
                 }

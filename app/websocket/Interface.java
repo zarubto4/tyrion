@@ -176,6 +176,9 @@ public abstract class Interface implements WebSocketInterface {
     @Override
     public void send(ObjectNode message) {
         logger.trace("send - sending: {} ", message.toString());
+        if (!message.has(Message.ID)) {
+            message.put(Message.ID, UUID.randomUUID().toString());
+        }
         this.out.tell(Json.toJson(message), this.out);
     }
 
@@ -241,7 +244,6 @@ public abstract class Interface implements WebSocketInterface {
     @Override
     public void close() {
         logger.trace("close - closing socket, id: {}", this.id);
-        this.onClose();
         this.out.tell(PoisonPill.getInstance(), out);
     }
 
