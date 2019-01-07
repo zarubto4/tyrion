@@ -99,9 +99,7 @@ public class HardwareSynchronizationTask implements Task {
             this.hardware.update();
         }
 
-        if (this.hardwareService.getConfigurator(this.hardware).configure(this.overview)) {
-            this.stop(); // Cancel synchronization device will be restarted
-        }
+        this.hardwareService.getConfigurator(this.hardware).configure(this.overview);
 
         logger.info("synchronizeSettings - ({}) settings for hardware synchronized", this.hardware.full_id);
 

@@ -43,8 +43,16 @@ public class SynchronizationService {
     }
 
     public synchronized void cancel(Task task) {
-        if (this.tasks.containsKey(task.getId())) {
-            this.tasks.get(task.getId()).stop();
+        this.cancel(task.getId());
+    }
+
+    public synchronized void cancel(UUID id) {
+        if (this.tasks.containsKey(id)) {
+            this.tasks.get(id).stop();
         }
+    }
+
+    public Task getTask(UUID id) {
+        return this.tasks.get(id);
     }
 }

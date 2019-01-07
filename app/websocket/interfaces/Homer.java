@@ -326,8 +326,7 @@ public class Homer extends Interface {
             case WS_Message_Hardware_terminal_logger_validation_request.message_type: this.onHardwareLoggerSubscriptionAuthentication(message.as(WS_Message_Hardware_terminal_logger_validation_request.class)); break;
             case WS_Message_Hardware_uuid_converter.message_type: this.onConvertFullIdToUUID(message.as(WS_Message_Hardware_uuid_converter.class)); break;
             case WS_Message_Hardware_set_settings.message_type: this.device_settings_set(message.as(WS_Message_Hardware_set_settings.class)); break;
-
-            case WS_Message_Hardware_UpdateProcedure_Progress.message_type: this.updateService.onUpdateMessage(message.as(WS_Message_Hardware_UpdateProcedure_Progress.class));
+            case WS_Message_Hardware_UpdateProcedure_Progress.message_type: this.updateService.onUpdateMessage(message.as(WS_Message_Hardware_UpdateProcedure_Progress.class)); break;
 
             // Ignor messages - Jde pravděpodobně o zprávy - které přišly s velkým zpožděním - Tyrion je má ignorovat
             case WS_Message_Hardware_command_execute.message_type: {

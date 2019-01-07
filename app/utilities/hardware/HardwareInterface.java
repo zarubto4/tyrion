@@ -1,6 +1,5 @@
 package utilities.hardware;
 
-import exceptions.FailedMessageException;
 import io.ebean.Expr;
 import models.Model_Hardware;
 import models.Model_HardwareUpdate;
@@ -40,10 +39,7 @@ public class HardwareInterface {
      * @param highestPriority if true the command will be executed as soon as possible
      */
     public void command(BoardCommand command, boolean highestPriority) {
-        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_command_execute().make_request(Collections.singletonList(this.hardware.id), command, highestPriority)));
-        if (response.isErroneous()) {
-            throw new FailedMessageException(response);
-        }
+        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_command_execute().make_request(Collections.singletonList(this.hardware.id), command, highestPriority)));
     }
 
     /**
@@ -58,56 +54,27 @@ public class HardwareInterface {
 
     public WS_Message_Hardware_overview_Board getOverview() {
         Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_overview().make_request(Collections.singletonList(this.hardware.getId()))));
-
-        if (response.isSuccessful()) {
-            return response.as(WS_Message_Hardware_overview.class).get_device_from_list(this.hardware.getId());
-        } else if (response.isErroneous()) {
-            throw new FailedMessageException(response);
-        } else {
-            return null;
-        }
+        return response.as(WS_Message_Hardware_overview.class).get_device_from_list(this.hardware.getId());
     }
 
     public void setAlias(String alias) {
-        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), "alias", alias)));
-        if (response.isErroneous()) {
-            throw new FailedMessageException(response);
-        }
-    }
-
-    public void setDatabaseSynchronize(boolean synchronize) {
-        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), "DATABASE_SYNCHRONIZE", synchronize)));
-        if (response.isErroneous()) {
-            throw new FailedMessageException(response);
-        }
+        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), "alias", alias)));
     }
 
     public void setHardwareGroups(List<UUID> groupIds, Enum_type_of_command command) {
-        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_set_hardware_groups().make_request(Collections.singletonList(this.hardware), groupIds, command)));
-        if (response.isErroneous()) {
-            throw new FailedMessageException(response);
-        }
+        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_set_hardware_groups().make_request(Collections.singletonList(this.hardware), groupIds, command)));
     }
 
     public void setParameter(String name, String value) {
-        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), name, value)));
-        if (response.isErroneous()) {
-            throw new FailedMessageException(response);
-        }
+        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), name, value)));
     }
 
     public void setParameter(String name, Boolean value) {
-        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), name, value)));
-        if (response.isErroneous()) {
-            throw new FailedMessageException(response);
-        }
+        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), name, value)));
     }
 
     public void setParameter(String name, Integer value) {
-        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), name, value)));
-        if (response.isErroneous()) {
-            throw new FailedMessageException(response);
-        }
+        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), name, value)));
     }
 
     // TODO rework to something better
@@ -138,10 +105,7 @@ public class HardwareInterface {
             firmware_plans.get(i).update();
         }
 
-        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), "autobackup", true)));
-        if (response.isErroneous()) {
-            throw new FailedMessageException(response);
-        }
+        this.setParameter("autobackup", true);
     }
 
     public void relocate(Model_HomerServer server) {
@@ -149,24 +113,15 @@ public class HardwareInterface {
     }
 
     public void relocate(String mqttHost, String mqttPort) {
-        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_change_server().make_request(mqttHost, mqttPort, Collections.singletonList(this.hardware.id))));
-        if (response.isErroneous()) {
-            throw new FailedMessageException(response);
-        }
+        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_change_server().make_request(mqttHost, mqttPort, Collections.singletonList(this.hardware.id))));
     }
 
     public void changeUUIDOnServer(UUID oldId) {
-        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_uuid_converter_cleaner().make_request(this.hardware.id, oldId, this.hardware.full_id)));
-        if (response.isErroneous()) {
-            throw new FailedMessageException(response);
-        }
+        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_uuid_converter_cleaner().make_request(this.hardware.id, oldId, this.hardware.full_id)));
     }
 
     public void changeUUIDOnServer(String oldId) {
-        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_uuid_converter_cleaner().make_request(this.hardware.id, oldId, this.hardware.full_id)));
-        if (response.isErroneous()) {
-            throw new FailedMessageException(response);
-        }
+        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_uuid_converter_cleaner().make_request(this.hardware.id, oldId, this.hardware.full_id)));
     }
 
     public CompletableFuture<Message> changeUUIDOnServerAsync(UUID oldId) {
@@ -178,16 +133,10 @@ public class HardwareInterface {
     }
 
     public void removeUUIDOnServer() {
-        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_uuid_converter_cleaner().make_request(null, this.hardware.id, this.hardware.full_id)));
-        if (response.isErroneous()) {
-            throw new FailedMessageException(response);
-        }
+        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_uuid_converter_cleaner().make_request(null, this.hardware.id, this.hardware.full_id)));
     }
 
     public void update(Model_HardwareUpdate update) {
-        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_UpdateProcedure_Command().make_request(Collections.singletonList(update.get_brief_for_update_homer_server()))));
-        if (response.isErroneous()) {
-            throw new FailedMessageException(response);
-        }
+        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_UpdateProcedure_Command().make_request(Collections.singletonList(update.get_brief_for_update_homer_server()))));
     }
 }

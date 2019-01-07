@@ -33,10 +33,12 @@ public class HardwareEvents {
 
         this.networkStatusService.setStatus(hardware, NetworkStatus.ONLINE);
 
-        HardwareSynchronizationTask task = this.injector.getInstance(HardwareSynchronizationTask.class);
-        task.setHardware(hardware);
+        if (this.synchronizationService.getTask(hardware.getId()) == null) {
+            HardwareSynchronizationTask task = this.injector.getInstance(HardwareSynchronizationTask.class);
+            task.setHardware(hardware);
 
-        this.synchronizationService.submit(task);
+            this.synchronizationService.submit(task);
+        }
 
         if (hardware.getProject() != null) {
             this.notificationService.send(hardware.getProject(), hardware.notificationOnline());

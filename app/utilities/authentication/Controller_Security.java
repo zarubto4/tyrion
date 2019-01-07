@@ -20,7 +20,6 @@ import utilities.swagger.input.Swagger_EmailAndPassword;
 import utilities.swagger.output.Swagger_Blocko_Token_validation_result;
 import utilities.swagger.output.Swagger_Login_Token;
 import utilities.swagger.output.Swagger_Person_All_Details;
-import utilities.threads.Check_Online_Status_after_user_login;
 import utilities.logger.Logger;
 import utilities.swagger.input.Swagger_Blocko_Token_validation_request;
 
@@ -95,7 +94,6 @@ public class Controller_Security extends _BaseController {
             if (token_type == TokenType.INSTANCE_TOKEN) {
 
                 Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(help.token);
-                if (snapshot == null) return notFound("Token not found");
 
                 result.token = help.token;
                 result.available_requests = FinancialPermission.checkRestApiRequest(snapshot.getProduct(), snapshot.id);
@@ -161,9 +159,6 @@ public class Controller_Security extends _BaseController {
             // Jestli není účet blokován
             if (!person.validated) return notValidated();
             if (person.frozen) return badRequest("Your account has been temporarily suspended");
-
-            // Volání Cache
-            new Check_Online_Status_after_user_login(person.id).run();
 
             // Vytvářim objekt tokenu pro přihlášení (na něj jsou vázány co uživatel kde a jak dělá) - Historie pro využití v MongoDB widgety atd..
             Model_AuthorizationToken token = new Model_AuthorizationToken();
