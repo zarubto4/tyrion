@@ -20,6 +20,7 @@ public class HardwareSynchronizationTask implements Task {
     private final HttpExecutionContext httpExecutionContext;
     private final HardwareService hardwareService;
     private final NotificationService notificationService;
+    private final HardwareOverviewService hardwareOverviewService;
 
     private CompletableFuture<Void> future;
 
@@ -30,10 +31,12 @@ public class HardwareSynchronizationTask implements Task {
     private WS_Message_Hardware_overview_Board overview;
 
     @Inject
-    public HardwareSynchronizationTask(HardwareService hardwareService, HttpExecutionContext httpExecutionContext, NotificationService notificationService) {
+    public HardwareSynchronizationTask(HardwareService hardwareService, HttpExecutionContext httpExecutionContext,
+                                       NotificationService notificationService, HardwareOverviewService hardwareOverviewService) {
         this.httpExecutionContext = httpExecutionContext;
         this.hardwareService = hardwareService;
         this.notificationService = notificationService;
+        this.hardwareOverviewService = hardwareOverviewService;
     }
 
     @Override

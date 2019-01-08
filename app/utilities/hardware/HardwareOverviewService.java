@@ -2,41 +2,44 @@ package utilities.hardware;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import exceptions.FailedMessageException;
 import exceptions.NeverConnectedException;
 import exceptions.ServerOfflineException;
 import models.Model_Hardware;
 import org.ehcache.Cache;
+import play.libs.concurrent.HttpExecutionContext;
 import utilities.cache.CacheService;
 import utilities.logger.Logger;
+import utilities.model.EchoService;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_overview_Board;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Singleton
 public class HardwareOverviewService {
 
     private static final Logger logger = new Logger(HardwareOverviewService.class);
 
+    private final HttpExecutionContext httpExecutionContext;
     private final HardwareService hardwareService;
+    private final EchoService echoService;
+
     private final Cache<UUID, WS_Message_Hardware_overview_Board> cache;
 
     @Inject
-    public HardwareOverviewService(CacheService cacheService, HardwareService hardwareService) {
+    public HardwareOverviewService(CacheService cacheService, HardwareService hardwareService, HttpExecutionContext httpExecutionContext, EchoService echoService) {
         this.cache = cacheService.getCache("HardwareOverview", UUID.class, WS_Message_Hardware_overview_Board.class, 500, 86400, true);
+        this.echoService = echoService;
         this.hardwareService = hardwareService;
+        this.httpExecutionContext = httpExecutionContext;
     }
 
     public synchronized WS_Message_Hardware_overview_Board getOverview(Model_Hardware hardware) {
-        try {
-            if (!this.cache.containsKey(hardware.getId())) {
-                this.cache.put(hardware.getId(), this.hardwareService.getInterface(hardware).getOverview());
-            }
+        logger.debug("getOverview - getting overview for hardware: {}", hardware.getId());
+        if (this.cache.containsKey(hardware.getId())) {
             return this.cache.get(hardware.getId());
-        } catch (FailedMessageException e) {
-            logger.internalServerError(e);
-            return null;
-        } catch (ServerOfflineException | NeverConnectedException e) {
+        } else {
+            this.requestOverview(hardware);
             return null;
         }
     }
@@ -45,5 +48,26 @@ public class HardwareOverviewService {
         this.cache.remove(id);
     }
 
-    // TODO this class should keep cached state of the hardware for frontend usage, think about robust solution (cache invalidation, etc.)
+    private synchronized void setOverview(Model_Hardware hardware, WS_Message_Hardware_overview_Board overview) {
+        if (overview != null) {
+            logger.debug("getOverview - setting overview for hardware: {}", hardware.getId());
+            this.cache.put(hardware.getId(), overview);
+            // TODO this.echoService.onUpdated(hardware);
+        }
+    }
+
+    private void requestOverview(Model_Hardware hardware) {
+        logger.debug("requestOverview - requesting overview for hardware: {}", hardware.getId());
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                return this.hardwareService.getInterface(hardware).getOverview();
+            } catch (ServerOfflineException|NeverConnectedException e) {
+                // nothing
+            } catch (Exception e) {
+                logger.internalServerError(e);
+            }
+
+            return null;
+        }, this.httpExecutionContext.current()).thenAccept(overview -> this.setOverview(hardware, overview));
+    }
 }

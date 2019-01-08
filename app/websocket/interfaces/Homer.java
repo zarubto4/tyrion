@@ -12,6 +12,7 @@ import utilities.Server;
 import utilities.enums.ServerMode;
 import utilities.hardware.DominanceService;
 import utilities.hardware.HardwareEvents;
+import utilities.hardware.HardwareOverviewService;
 import utilities.homer.HomerEvents;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfiguration;
 import utilities.swagger.input.Swagger_InstanceSnapShotConfigurationFile;
@@ -48,18 +49,20 @@ public class Homer extends Interface {
     private final UpdateService updateService;
     private final HomerEvents homerEvents;
     private final DominanceService dominanceService;
+    private final HardwareOverviewService hardwareOverviewService;
 
     private boolean authorized = false;
     private UUID apiKey;
 
     @Inject
-    public Homer(Materializer materializer, _BaseFormFactory formFactory, HardwareEvents hardwareEvents,
-                 UpdateService updateService, HomerEvents homerEvents, DominanceService dominanceService, HttpExecutionContext httpExecutionContext) {
+    public Homer(Materializer materializer, _BaseFormFactory formFactory, HardwareEvents hardwareEvents, UpdateService updateService,
+                 HomerEvents homerEvents, DominanceService dominanceService, HttpExecutionContext httpExecutionContext, HardwareOverviewService hardwareOverviewService) {
         super(httpExecutionContext, materializer, formFactory);
         this.hardwareEvents = hardwareEvents;
         this.updateService = updateService;
         this.homerEvents = homerEvents;
         this.dominanceService = dominanceService;
+        this.hardwareOverviewService = hardwareOverviewService;
     }
 
     @Override
@@ -101,7 +104,7 @@ public class Homer extends Interface {
         switch (message.getType()) {
             case "tyrion_ping": break;
             case WS_Message_Check_homer_server_permission.message_type: this.onHomerAuthenticate(message.as(WS_Message_Check_homer_server_permission.class)); break;
-            case WS_Message_Homer_Token_validation_request.message_type: this.onLoggerSubscriptionAuthenticate(message.as(WS_Message_Homer_Token_validation_request.class));
+            case WS_Message_Homer_Token_validation_request.message_type: this.onLoggerSubscriptionAuthenticate(message.as(WS_Message_Homer_Token_validation_request.class)); break;
             default: logger.warn("onMessageHomer - cannot consume message with id: {}, unknown type: {}", message.getId(), message.getType());
         }
     }
@@ -329,17 +332,11 @@ public class Homer extends Interface {
             case WS_Message_Hardware_UpdateProcedure_Progress.message_type: this.updateService.onUpdateMessage(message.as(WS_Message_Hardware_UpdateProcedure_Progress.class)); break;
 
             // Ignor messages - Jde pravděpodobně o zprávy - které přišly s velkým zpožděním - Tyrion je má ignorovat
-            case WS_Message_Hardware_command_execute.message_type: {
-                logger.warn("WS_Message_Hardware_Restart: A message with a very high delay has arrived.");
-                return;
-            }
-            case WS_Message_Hardware_overview.message_type: {
-                logger.warn("WS_Message_Hardware_overview: A message with a very high delay has arrived.");
-                return;
-            }
+            case WS_Message_Hardware_command_execute.message_type:
+            case WS_Message_Hardware_overview.message_type:
             case WS_Message_Hardware_change_server.message_type: {
-                logger.warn("WS_Message_Hardware_change_server: A message with a very high delay has arrived.");
-                return;
+                logger.warn("onMessageHardware - received unhandled message: {}, probably just delayed response", message.getType());
+                break;
             }
 
             case "ping": {
@@ -619,6 +616,7 @@ public class Homer extends Interface {
         if (settings.key != null) {
             if (settings.uuid != null) {
                 Model_Hardware hardware = Model_Hardware.find.byId(settings.uuid);
+                this.hardwareOverviewService.invalidate(settings.uuid);
                 this.hardwareEvents.configured(hardware, settings.key);
             } else {
                 logger.warn("device_settings_set - got message without 'uuid' property");

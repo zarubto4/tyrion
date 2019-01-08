@@ -13,9 +13,9 @@ import mongo.ModelMongo_Hardware_BackupIncident;
 import play.libs.Json;
 import utilities.cache.CacheFinder;
 import utilities.cache.InjectCache;
-import utilities.cache.Cached;
 import utilities.document_mongo_db.document_objects.*;
 import utilities.enums.*;
+import utilities.hardware.JsonIpAddress;
 import utilities.logger.Logger;
 import utilities.model.TaggedModel;
 import utilities.model.UnderProject;
@@ -121,11 +121,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     @JsonIgnore public UUID connected_server_id;      // Latest know Server ID
     @JsonIgnore public UUID connected_instance_id;    // Latest know Instance ID
 
-/* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
-
-    // For Faster reload
-    @JsonIgnore @Transient @Cached public String cache_latest_know_ip_address;
-
 /* JSON PROPERTY METHOD ------------------------------------------------------------------------------------------------*/
 
     @JsonNetworkStatus @Transient @ApiModelProperty(required = true, value = "Value is cached with asynchronous refresh")
@@ -133,6 +128,9 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
     @JsonLastOnline @Transient @ApiModelProperty(required = true, value = "Value is cached with asynchronous refresh")
     public Long latest_online;
+
+    @JsonIpAddress @Transient @ApiModelProperty(required = true, value = "Value is cached with asynchronous refresh")
+    public String ip_address;
 
     @JsonProperty
     public BackupMode backup_mode() {
@@ -225,49 +223,6 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
         } catch (Exception e) {
             logger.internalServerError(e);
             return null; // Raději true než false aby to uživatel neodpálil další update
-        }
-    }
-
-    @JsonProperty
-    @ApiModelProperty(value = "Optional. Only if the address is cached", required = false)
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public String ip_address() {
-        try {
-
-            if (cache_latest_know_ip_address != null) {
-                return cache_latest_know_ip_address;
-            } else {
-
-                // TODO custom serializer
-                if(online_state == NetworkStatus.ONLINE){
-                    new Thread(() -> {
-                        try {
-
-                            logger.warn("Need ip_address for device ID: {}", this.id);
-                            // TODO WS_Message_Hardware_overview_Board overview_board = this.get_devices_overview();
-
-                            /*
-
-                            if (overview_board.status.equals("success") && overview_board.online_status) {
-                                cache_latest_know_ip_address = overview_board.ip;
-                                EchoHandler.addToQueue(new WSM_Echo(Model_Hardware.class, getProject().id, this.id));
-                            } else {
-                                this.cache_latest_know_ip_address = "";
-                            }*/
-
-                        } catch (Exception e) {
-                            logger.internalServerError(e);
-                        }
-                    }).start();
-                } else {
-                    this.cache_latest_know_ip_address = "";
-                }
-
-                return null;
-            }
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
         }
     }
 

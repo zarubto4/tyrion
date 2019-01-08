@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.google.inject.Inject;
+import utilities.hardware.IpAddressSerializer;
 import utilities.network.LastOnlineSerializer;
 import utilities.network.NetworkStatusSerializer;
 import utilities.permission.PermissionSerializer;
@@ -18,14 +19,17 @@ public class InjectedHandlerInstantiator extends HandlerInstantiator {
     private final NetworkStatusSerializer networkStatusSerializer;
     private final LastOnlineSerializer lastOnlineSerializer;
     private final ProjectStatsSerializer projectStatsSerializer;
+    private final IpAddressSerializer ipAddressSerializer;
 
     @Inject
     public InjectedHandlerInstantiator(PermissionSerializer permissionSerializer, NetworkStatusSerializer networkStatusSerializer,
-                                       LastOnlineSerializer lastOnlineSerializer, ProjectStatsSerializer projectStatsSerializer) {
+                                       LastOnlineSerializer lastOnlineSerializer, ProjectStatsSerializer projectStatsSerializer,
+                                       IpAddressSerializer ipAddressSerializer) {
         this.permissionSerializer = permissionSerializer;
         this.networkStatusSerializer = networkStatusSerializer;
         this.lastOnlineSerializer = lastOnlineSerializer;
         this.projectStatsSerializer = projectStatsSerializer;
+        this.ipAddressSerializer = ipAddressSerializer;
     }
 
     @Override
@@ -55,6 +59,10 @@ public class InjectedHandlerInstantiator extends HandlerInstantiator {
 
         if (serClass == ProjectStatsSerializer.class) {
             return this.projectStatsSerializer;
+        }
+
+        if (serClass == IpAddressSerializer.class) {
+            return this.ipAddressSerializer;
         }
 
         return null;

@@ -16,6 +16,7 @@ import org.reactivestreams.Publisher;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import utilities.logger.Logger;
+import websocket.messages.OutcomingMessage;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -134,6 +135,20 @@ public abstract class Interface implements WebSocketInterface {
         } else {
             throw new RuntimeException("parseMessage - (" + this.getClass().getSimpleName() + ") - id: " + this.id + " received an invalid message: " + message.toString());
         }
+    }
+
+    // TODO
+    private JsonNode prepareMessage(OutcomingMessage message) {
+
+        if (message.getId() == null) {
+            message.setId(UUID.randomUUID());
+        }
+
+        if (message.getChannel() == null) {
+            message.setChannel(this.getDefaultChannel());
+        }
+
+        return Json.toJson(message);
     }
 
     /**
