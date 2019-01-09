@@ -43,6 +43,7 @@ public class Model_Notification extends BaseModel implements Permissible, Person
     @Column(columnDefinition = "TEXT") private String content_string;  // Obsah v podobě Json.toString().
     @Column(columnDefinition = "TEXT") private String buttons_string;
 
+                                       public UUID confirmation_id;
                                        public boolean confirmation_required;
                                        public boolean confirmed;
                                        public boolean was_read;
@@ -297,6 +298,11 @@ public class Model_Notification extends BaseModel implements Permissible, Person
     public Model_Notification setButton(Notification_Button button) {
         this.confirmation_required = true;
         buttons.add(button.element);
+
+        if (this.confirmation_id == null) {
+            this.confirmation_id = UUID.randomUUID();
+        }
+
         return this;
     }
 
@@ -346,6 +352,7 @@ public class Model_Notification extends BaseModel implements Permissible, Person
         notification.notification_importance = this.notification_importance;
         notification.state = this.state;
         notification.confirmation_required = this.confirmation_required;
+        notification.confirmation_id = this.confirmation_id;
         return notification;
     }
 

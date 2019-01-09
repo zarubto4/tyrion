@@ -9,6 +9,7 @@ import utilities.enums.NotificationState;
 import utilities.hardware.HardwareService;
 import utilities.project.ProjectService;
 
+import java.util.List;
 import java.util.UUID;
 
 public class NotificationConfirmationService {
@@ -28,8 +29,11 @@ public class NotificationConfirmationService {
         if (notification.confirmed) {
             throw new BadRequestException("Notification is already confirmed");
         } else {
-            notification.confirm();
-            this.notificationService.send(notification.getPerson(), notification.setState(NotificationState.UPDATED));
+            List<Model_Notification> toConfirm = Model_Notification.find.query().where().eq("confirmation_id", notification.confirmation_id).findList();
+            toConfirm.forEach(notif -> {
+                notif.confirm();
+                this.notificationService.send(notif.getPerson(), notification.setState(NotificationState.UPDATED));
+            });
         }
 
         switch (action) {
