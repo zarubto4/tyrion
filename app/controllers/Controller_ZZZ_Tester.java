@@ -31,6 +31,7 @@ import utilities.model.EchoService;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.scheduler.jobs.Job_ThingsMobile_SimData_Synchronize;
+import websocket.interfaces.Compiler;
 import websocket.WebSocketService;
 import xyz.morphia.annotations.Entity;
 import xyz.morphia.annotations.Id;
@@ -89,96 +90,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
     public Result test1() {
         try {
 
-
-
-            List<ModelMongo_Hardware_RegistrationEntity> olds = ModelMongo_Hardware_RegistrationEntity.find.all();
-
-            System.out.println("Máme " + olds.size());
-
-
-
-            for (ModelMongo_Hardware_RegistrationEntity old : olds) {
-
-
-                // old.update();
-
-                /*
-                ModelMongo_Hardware_BatchCollection n = new ModelMongo_Hardware_BatchCollection();
-
-                n.revision = old.revision;
-                n.production_batch = old.production_batch;
-                n.date_of_assembly = LocalDateTime.now();
-                n.pcb_manufacture_name = old.pcb_manufacture_name;
-                n.pcb_manufacture_id = old.pcb_manufacture_id;
-                n.assembly_manufacture_name = old.assembly_manufacture_name;
-                n.assembly_manufacture_id = old.assembly_manufacture_id;
-                n.customer_product_name = old.customer_product_name;
-                n.customer_company_name = old.customer_company_name;
-                n.customer_company_made_description = old.customer_company_made_description;
-                n.mac_address_start = old.mac_address_start;
-                n.mac_address_end = old.mac_address_end;
-                n.latest_used_mac_address = old.latest_used_mac_address;
-                n.ean_number = old.ean_number;
-                n.description = old.compiler_target_name;
-                n.save();
-                */
-
-
-            }
-
-
-            // new Job_ThingsMobile_SimData_Synchronize().execute(null);
-
-            /*
-            Iterator<QueryResultStats> aggregate = ModelMongo_ThingsMobile_CRD.find
-                    .createAggregation()
-
-                                      .match(
-                                              ModelMongo_ThingsMobile_CRD.find.query()
-                                                      .field("cdr_date_start").greaterThan(LocalDateTime.of(2018, 1, 1, 0, 0, 0, 0))
-                                                      .field("cdr_date_stop").lessThan(LocalDateTime.now())
-
-                                      )
-
-                                      .project(
-                                              Projection.projection("year" ,          Projection.projection("$year",      "cdr_date_start")),
-                                              Projection.projection("month" ,         Projection.projection("$month",     "cdr_date_start")),
-                                              Projection.projection("dayOfMonth" ,    Projection.projection("$dayOfMonth",     "cdr_date_start")),
-                                              Projection.projection("hour" ,          Projection.projection("$hour",       "cdr_date_start")),
-                                              Projection.projection("minute" ,        Projection.projection("$minute",     "cdr_date_start"))
-
-
-
-                    .group(
-                            "msisdn",
-
-                            Group.grouping(
-                                    "consumption_total",
-                                    Group.sum( "cdr_traffic")
-
-                            )
-                    )
-                    .out(
-                            QueryResultStats.class,
-                            AggregationOptions
-                                    .builder()
-                                    .allowDiskUse(false)
-                                    .maxTime( 5000 , TimeUnit.SECONDS)
-                                    .outputMode(AggregationOptions.OutputMode.CURSOR)
-                                    .build()
-                    );
-
-
-
-
-            while (aggregate.hasNext()) {
-
-                QueryResultStats test = aggregate.next();
-                System.out.println("`Agregace: " + test.msisdn);
-
-            }
-            */
-
+            this.webSocketService.create(Compiler.class, UUID.randomUUID(), "wss://echo.websocket.org");
 
         return ok();
 
@@ -192,58 +104,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
     public Result test2() {
         try {
 
-
-            new Job_ThingsMobile_SimData_Synchronize().execute(null);
-
-            /*
-
-            DateTimeFormatter formatter_from_tm = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-
-            LocalDate date = LocalDate.parse("2018-11-14 11:13:47", formatter_from_tm);
-
-
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            Date parsedDate = dateFormat.parse("2018-11-14 11:13:47");
-            Timestamp timestamp = new java.sql.Timestamp(parsedDate.getTime());
-
-
-            System.out.println("Time:" + timestamp.getTime() );
-
-
-            */
-
-            //
-            // new Job_ThingsMobile_SimListOnly_Synchronize().execute(null);
-
-            /*
-            Swagger_GSM_Edit edit = new Swagger_GSM_Edit();
-            edit.daily_traffic_threshold = 2;
-            edit.block_sim_daily = false;
-            edit.monthly_traffic_threshold = 5;
-            edit.block_sim_monthly = false;
-            edit.total_traffic_threshold = 10;
-            edit.block_sim_total = false;
-
-
-            TM_Sim_UpdateTresHold hold = Controller_Things_Mobile.sim_set_tresHolds(882360005424320L, edit);
-
-            if(hold.done) {
-                System.out.println("Povedlo se");
-
-                TM_Sim_Status status = Controller_Things_Mobile.sim_status(882360005424320L);
-
-
-                System.err.println("daily_traffic_threshold: " +  status.dailyTrafficThreshold);
-                System.err.println("monthly_traffic_threshold: " +  status.monthlyTrafficThreshold);
-                System.err.println("total_traffic_threshold: " +  status.totalTrafficThreshold);
-
-
-            } else {
-                System.err.println("Nepovedlo se: " + hold.errorMessage);
-            }
-
-            */
+            this.webSocketService.test();
 
             return ok();
 

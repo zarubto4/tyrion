@@ -18,11 +18,21 @@ public interface WebSocketInterface {
     UUID getId();
 
     /**
+     * Sets the id of the interface.
+     */
+    void setId(UUID id);
+
+    /**
      * Materializes the interface to the flow.
-     * @param webSocketService
      * @return flow
      */
-    Flow<JsonNode, JsonNode, NotUsed> materialize(WebSocketService webSocketService);
+    Flow<JsonNode, JsonNode, NotUsed> jsonFlow();
+
+    /**
+     * Materializes the interface to the flow.
+     * @return flow
+     */
+    Flow<akka.http.javadsl.model.ws.Message, akka.http.javadsl.model.ws.Message, NotUsed> textFlow();
 
     /**
      * Sends a message to the WebSocket interface.

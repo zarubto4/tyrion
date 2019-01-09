@@ -1,9 +1,13 @@
 package websocket;
 
+import akka.Done;
 import akka.NotUsed;
 import akka.actor.ActorRef;
 import akka.actor.PoisonPill;
+import akka.http.javadsl.model.ws.TextMessage;
 import akka.japi.Pair;
+import akka.japi.function.Creator;
+import akka.japi.function.Procedure;
 import akka.stream.Materializer;
 import akka.stream.OverflowStrategy;
 import akka.stream.javadsl.*;
@@ -41,11 +45,6 @@ public abstract class Interface implements WebSocketInterface {
     protected Consumer<Interface> onClose;
 
     /**
-     * Reference to the owning WebSocket service.
-     */
-    protected WebSocketService webSocketService;
-
-    /**
      * Reference for the actor representing the output of the interface.
      */
     private ActorRef out;
@@ -58,6 +57,9 @@ public abstract class Interface implements WebSocketInterface {
     protected final HttpExecutionContext httpExecutionContext;
     protected final Materializer materializer;
     protected final _BaseFormFactory formFactory;
+
+    private boolean json = true;
+    private Instant start;
 
     public Interface(HttpExecutionContext httpExecutionContext, Materializer materializer, _BaseFormFactory formFactory) {
         this.httpExecutionContext = httpExecutionContext;
@@ -77,29 +79,33 @@ public abstract class Interface implements WebSocketInterface {
         return this.id;
     }
 
-    public Flow<JsonNode, JsonNode, NotUsed> materialize(WebSocketService webSocketService) {
-
-        this.webSocketService = webSocketService;
-
-        Pair<ActorRef, Publisher<JsonNode>> both = Source.<JsonNode>actorRef(50, OverflowStrategy.dropNew()).toMat(Sink.asPublisher(AsPublisher.WITH_FANOUT), Keep.both()).run(this.materializer);
-
-        Instant start = Instant.now();
-
-        this.out = both.first();
-        return Flow.fromSinkAndSourceCoupled(Sink.foreach(this::onReceived), Source.fromPublisher(both.second())) // TODO probably foreachParallel
-                .keepAlive(Duration.ofSeconds(60L), this::keepAlive)
-                .watchTermination((notUsed, whenDone) -> {
-                    whenDone.thenAcceptAsync(done -> {
-                        logger.info("watchTermination$lambda - connection lasted for {} s", Instant.now().getEpochSecond() - start.getEpochSecond());
-                        if (this.onClose != null) {
-                            this.onClose.accept(this);
-                        }
-                        this.onClose();
-                    }, httpExecutionContext.current());
-                    return notUsed;
-                });
+    public Flow<JsonNode, JsonNode, NotUsed> jsonFlow() {
+        this.json = true;
+        return this.createFlow(this::onReceived, this::keepAlive);
     }
 
+    public Flow<akka.http.javadsl.model.ws.Message, akka.http.javadsl.model.ws.Message, NotUsed> textFlow() {
+        this.json = false;
+        return this.createFlow(this::onReceived, () -> TextMessage.create(this.keepAlive().toString()));
+    }
+
+    /**
+     * Received a message as {@link akka.http.javadsl.model.ws.Message}.
+     * Get the text from the message and try to parse it as a json.
+     * @param msg
+     */
+    private void onReceived(akka.http.javadsl.model.ws.Message msg) {
+        try {
+            this.onReceived(Json.parse(msg.asTextMessage().getStrictText()));
+        } catch (Exception e) {
+            logger.internalServerError(e);
+        }
+    }
+
+    /**
+     * Received a message as JSON.
+     * @param msg
+     */
     private void onReceived(JsonNode msg) {
         try {
 
@@ -109,9 +115,9 @@ public abstract class Interface implements WebSocketInterface {
 
             UUID messageId = message.getId();
 
-            if (messageBuffer.containsKey(messageId)) {
-                messageBuffer.get(messageId).resolve(message);
-                messageBuffer.remove(messageId);
+            if (this.messageBuffer.containsKey(messageId)) {
+                this.messageBuffer.get(messageId).resolve(message);
+                this.messageBuffer.remove(messageId);
             } else {
                 this.onMessage(message);
             }
@@ -151,6 +157,24 @@ public abstract class Interface implements WebSocketInterface {
         return Json.toJson(message);
     }
 
+    private <In, Out> Flow<In, Out, NotUsed> createFlow(Procedure<In> onReceived, Creator<Out> keepAlive) {
+        this.start = Instant.now();
+        Pair<ActorRef, Publisher<Out>> both = Source.<Out>actorRef(50, OverflowStrategy.dropNew()).toMat(Sink.asPublisher(AsPublisher.WITH_FANOUT), Keep.both()).run(this.materializer);
+        this.out = both.first();
+        return Flow.fromSinkAndSourceCoupled(Sink.foreach(onReceived), Source.fromPublisher(both.second())).watchTermination(this::onTermination).keepAlive(Duration.ofSeconds(60L), keepAlive);
+    }
+
+    private NotUsed onTermination(NotUsed notUsed, CompletionStage<Done> whenDone) {
+        whenDone.thenAcceptAsync(done -> {
+            logger.info("onTermination - connection lasted for {} s", Instant.now().getEpochSecond() - this.start.getEpochSecond());
+            if (this.onClose != null) {
+                this.onClose.accept(this);
+            }
+            this.onClose();
+        }, httpExecutionContext.current());
+        return notUsed;
+    }
+
     /**
      * Creates a simple keep alive message.
      * @return keep alive message
@@ -173,7 +197,7 @@ public abstract class Interface implements WebSocketInterface {
         if (!message.has(Message.ID)) {
             message.put(Message.ID, UUID.randomUUID().toString());
         }
-        this.out.tell(Json.toJson(message), this.out);
+        this.out.tell(this.json ? Json.toJson(message) : TextMessage.create(Json.toJson(message).toString()), this.out);
     }
 
     /**
@@ -185,7 +209,7 @@ public abstract class Interface implements WebSocketInterface {
     @Override
     public Message sendWithResponse(Request request) {
         logger.trace("sendWithResponse - sending request synchronously");
-        messageBuffer.put(request.getId(), request);
+        this.messageBuffer.put(request.getId(), request);
         return request.send(this);
     }
 
@@ -198,7 +222,7 @@ public abstract class Interface implements WebSocketInterface {
     @Override
     public CompletionStage<Message> sendWithResponseAsync(Request request) {
         logger.trace("sendWithResponseAsync - sending request asynchronously");
-        messageBuffer.put(request.getId(), request);
+        this.messageBuffer.put(request.getId(), request);
         return request.sendAsync(this)
                 .whenComplete((r, e) -> this.messageBuffer.remove(request.getId()));
     }

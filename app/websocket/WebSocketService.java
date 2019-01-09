@@ -1,5 +1,13 @@
 package websocket;
 
+import akka.NotUsed;
+import akka.actor.ActorSystem;
+import akka.http.javadsl.Http;
+import akka.http.javadsl.model.StatusCodes;
+import akka.http.javadsl.model.ws.WebSocketRequest;
+import akka.http.javadsl.model.ws.WebSocketUpgradeResponse;
+import akka.japi.Pair;
+import akka.stream.Materializer;
 import akka.stream.javadsl.Flow;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
@@ -7,16 +15,22 @@ import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import play.inject.ApplicationLifecycle;
 import play.libs.Json;
+import utilities.logger.Logger;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Singleton
 public class WebSocketService {
 
+    private static final Logger logger = new Logger(WebSocketService.class);
+
     private final Injector injector;
+    private final ActorSystem actorSystem;
+    private final Materializer materializer;
 
     /**
      * Contains all WebSocket connections.
@@ -24,12 +38,42 @@ public class WebSocketService {
     private Map<UUID, WebSocketInterface> interfaces = new HashMap<>();
 
     @Inject
-    public WebSocketService(Injector injector, ApplicationLifecycle applicationLifecycle) {
+    public WebSocketService(Injector injector, ApplicationLifecycle applicationLifecycle, ActorSystem actorSystem, Materializer materializer) {
         this.injector = injector;
+        this.actorSystem = actorSystem;
+        this.materializer = materializer;
 
         applicationLifecycle.addStopHook(() -> {
             this.close();
             return CompletableFuture.completedFuture(null);
+        });
+    }
+
+    public CompletionStage<Void> create(Class<? extends WebSocketInterface> cls, UUID id, String url) {
+
+        logger.info("create - connecting to: {}", url);
+
+        WebSocketInterface webSocketInterface = this.injector.getInstance(cls);
+        webSocketInterface.setId(id);
+
+        Http http = Http.get(actorSystem);
+
+        Pair<CompletionStage<WebSocketUpgradeResponse>, NotUsed> pair = http.singleWebSocketRequest(
+                WebSocketRequest.create(url),
+                webSocketInterface.textFlow(),
+                this.materializer
+        );
+
+        return pair.first().thenAccept(upgrade -> {
+            if (upgrade.response().status().equals(StatusCodes.SWITCHING_PROTOCOLS)) {
+                logger.info("create - successful connection to: {}", url);
+                this.interfaces.put(webSocketInterface.getId(), webSocketInterface);
+                webSocketInterface.onClose(i -> this.interfaces.remove(i.getId()));
+            } else {
+                int status = upgrade.response().status().intValue();
+                logger.warn("create - request failed with status: {}", status);
+                throw new RuntimeException("Unable to connect to: " + url + " response status: " + status);
+            }
         });
     }
 
@@ -39,7 +83,7 @@ public class WebSocketService {
 
         iface.onClose(i -> this.interfaces.remove(i.getId()));
 
-        return iface.materialize(this);
+        return iface.jsonFlow();
     }
 
     public boolean isRegistered(UUID id) {
