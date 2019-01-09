@@ -74,6 +74,9 @@ public class WebSocketService {
                 logger.warn("create - request failed with status: {}", status);
                 throw new RuntimeException("Unable to connect to: " + url + " response status: " + status);
             }
+        }).exceptionally(e -> {
+            logger.internalServerError(e);
+            return null;
         });
     }
 

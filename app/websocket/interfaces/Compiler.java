@@ -4,8 +4,11 @@ import akka.stream.Materializer;
 import com.google.inject.Inject;
 import controllers._BaseFormFactory;
 import exceptions.FailedMessageException;
+import models.Model_CompilationServer;
 import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
+import utilities.compiler.CompilerService;
+import utilities.enums.NetworkStatus;
 import utilities.logger.Logger;
 import utilities.network.NetworkStatusService;
 import websocket.Interface;
@@ -25,21 +28,20 @@ public class Compiler extends Interface {
     public static final String CHANNEL = "compilation_server";
 
     private final NetworkStatusService networkStatusService;
+    private final CompilerService compilerService;
 
     private Map<UUID, CompletableFuture<WS_Message_Make_compilation>> runningCompilations = new HashMap<>();
 
     @Inject
-    public Compiler(NetworkStatusService networkStatusService, HttpExecutionContext httpExecutionContext, Materializer materializer, _BaseFormFactory formFactory) {
+    public Compiler(NetworkStatusService networkStatusService, HttpExecutionContext httpExecutionContext,
+                    Materializer materializer, _BaseFormFactory formFactory, CompilerService compilerService) {
         super(httpExecutionContext, materializer, formFactory);
         this.networkStatusService = networkStatusService;
+        this.compilerService = compilerService;
     }
 
     public WS_Message_Make_compilation compile(Request request) throws TimeoutException, InterruptedException, ExecutionException {
         Message message = this.sendWithResponse(request);
-        if (message.isErroneous()) {
-            throw new FailedMessageException(message);
-        }
-
         WS_Message_Make_compilation result = message.as(WS_Message_Make_compilation.class);
 
         CompletableFuture<WS_Message_Make_compilation> future = new CompletableFuture<>();
@@ -70,5 +72,12 @@ public class Compiler extends Interface {
         } else {
             logger.warn("onBuildComplete - no compilation with this build id: {} is running", message.build_id);
         }
+    }
+
+    @Override
+    protected void onClose() {
+        super.onClose();
+        this.networkStatusService.setStatus(Model_CompilationServer.find.byId(this.id), NetworkStatus.OFFLINE);
+        this.compilerService.checkAvailability();
     }
 }

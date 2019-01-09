@@ -3,6 +3,9 @@ package utilities.compiler;
 import com.google.inject.Inject;
 import exceptions.ServerOfflineException;
 import models.Model_CompilationServer;
+import org.quartz.SimpleScheduleBuilder;
+import utilities.scheduler.JobDefinition;
+import utilities.scheduler.SchedulerService;
 import websocket.Request;
 import websocket.WebSocketService;
 import websocket.interfaces.Compiler;
@@ -15,10 +18,12 @@ import java.util.UUID;
 public class CompilerService {
 
     private final WebSocketService webSocketService;
+    private final SchedulerService schedulerService;
 
     @Inject
-    public CompilerService(WebSocketService webSocketService) {
+    public CompilerService(WebSocketService webSocketService, SchedulerService schedulerService) {
         this.webSocketService = webSocketService;
+        this.schedulerService = schedulerService;
     }
 
     public CompilerInterface getInterface(Model_CompilationServer server) {
@@ -44,5 +49,14 @@ public class CompilerService {
 
         CompilerInterface compilerInterface = this.getInterface(Model_CompilationServer.find.byId(id));
         return compilerInterface.compile(request);
+    }
+
+    public void checkAvailability() {
+        Long count = this.webSocketService.countOf(iface -> iface instanceof Compiler);
+        if (count == 0 && !this.schedulerService.isScheduled(AvailabilityCheckJob.KEY)) {
+            this.schedulerService.schedule(new JobDefinition(AvailabilityCheckJob.KEY, AvailabilityCheckJob.class).setScheduleBuilder(SimpleScheduleBuilder.repeatSecondlyForever(30)));
+        } else if (count > 0 && this.schedulerService.isScheduled(AvailabilityCheckJob.KEY)) {
+            this.schedulerService.unschedule(AvailabilityCheckJob.KEY);
+        }
     }
 }

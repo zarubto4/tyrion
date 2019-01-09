@@ -103,6 +103,7 @@ public class SchedulerService {
     public Scheduler scheduler;
 
     public void schedule(JobDefinition jobDefinition) {
+        logger.info("schedule - scheduling new job: {}", jobDefinition.getJobKey());
         try {
             this.scheduler.scheduleJob(
                     newJob(jobDefinition.getJob()).withIdentity(jobDefinition.getJobKey()).usingJobData(new JobDataMap(jobDefinition.getDataMap())).build(),
@@ -111,6 +112,24 @@ public class SchedulerService {
             logger.internalServerError(e);
         }
 
+    }
+
+    public void unschedule(String jobKey) {
+        logger.info("unschedule - unscheduling job: {}", jobKey);
+        try {
+            this.scheduler.deleteJob(new JobKey(jobKey));
+        } catch (Exception e) {
+            logger.internalServerError(e);
+        }
+    }
+
+    public boolean isScheduled(String jobKey) {
+        try {
+            return this.scheduler.checkExists(new JobKey(jobKey));
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            return false;
+        }
     }
 
     public void show_all_jobs() throws SchedulerException {

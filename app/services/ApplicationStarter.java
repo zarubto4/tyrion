@@ -18,6 +18,7 @@ import play.inject.ApplicationLifecycle;
 import play.libs.Json;
 import utilities.Server;
 import utilities.cache.CacheService;
+import utilities.compiler.CompilerService;
 import utilities.enums.ServerMode;
 import utilities.logger.ServerLogger;
 import utilities.model.SerializerDate;
@@ -54,7 +55,8 @@ public class ApplicationStarter {
     @Inject
     public ApplicationStarter(Clock clock, ApplicationLifecycle appLifecycle, Config configuration, Injector injector,
                               ApplicationEvolutions applicationEvolutions, ServerLogger serverLogger, CacheService cacheService,
-                              MongoDBConnector mongoDBConnector, SchedulerService schedulerService, PermissionService permissionService) { // These unused parameters are important due to DI - don't remove them!
+                              MongoDBConnector mongoDBConnector, SchedulerService schedulerService,
+                              PermissionService permissionService, CompilerService compilerService) { // These unused parameters are important due to DI - don't remove them!
 
         this.clock = clock;
         this.appLifecycle = appLifecycle;
@@ -72,6 +74,8 @@ public class ApplicationStarter {
                     .setHandlerInstantiator(injector.getInstance(InjectedHandlerInstantiator.class)); // For dependency injected serializers
 
             Server.start(injector);
+
+            compilerService.checkAvailability();
 
         } catch (Exception e) {
             logger.error("Error starting the application", e);
