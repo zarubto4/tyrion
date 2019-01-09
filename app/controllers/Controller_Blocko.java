@@ -451,7 +451,7 @@ public class Controller_Blocko extends _BaseController {
             }
 
             // Nahrání na Azure
-            version.file = Model_Blob.upload(file_content, "blocko.json", version.get_path());
+            version.file = Model_Blob.upload(file_content, "application/octet-stream", "blocko.json", version.get_path());
             version.update();
 
             // Vrácení objektu
@@ -882,7 +882,7 @@ public class Controller_Blocko extends _BaseController {
 
             snapshot.save();
 
-            snapshot.program = Model_Blob.upload(help.json().toString(), "snapshot.json", snapshot.get_path());
+            snapshot.program = Model_Blob.upload(help.json().toString(), "application/octet-stream", "snapshot.json", snapshot.get_path());
 
             snapshot.setTags(help.tags);
             snapshot.update();

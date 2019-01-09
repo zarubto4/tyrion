@@ -683,7 +683,7 @@ public class Controller_Grid extends _BaseController {
             ObjectNode content = Json.newObject();
             content.put("m_code", help.m_code);
 
-            version.file = Model_Blob.upload(content.toString(), "grid_program.json" , gridProgram.get_path());
+            version.file = Model_Blob.upload(content.toString(), "application/octet-stream", "grid_program.json" , gridProgram.get_path());
             version.update();
 
             return created(version);

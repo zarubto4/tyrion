@@ -173,7 +173,7 @@ public class Controller_Library extends _BaseController {
                 // Překopíruji veškerý obsah
                 Model_Blob fileRecord = version.file;
 
-                copy_object.file = Model_Blob.upload(fileRecord.downloadString(), "library.json" , library_new.get_path());
+                copy_object.file = Model_Blob.upload(fileRecord.downloadString(), "application/octet-stream", "library.json" , library_new.get_path());
                 copy_object.update();
             }
 
@@ -520,7 +520,7 @@ public class Controller_Library extends _BaseController {
             Swagger_Library_File_Load library_file_collection = new Swagger_Library_File_Load();
             library_file_collection.files = help.files;
 
-            version.file = Model_Blob.upload(Json.toJson(library_file_collection).toString(), "library.json" , library.get_path());
+            version.file = Model_Blob.upload(Json.toJson(library_file_collection).toString(), "application/octet-stream",  "library.json" , library.get_path());
 
             version.refresh();
             library.refresh();
@@ -739,7 +739,7 @@ public class Controller_Library extends _BaseController {
                 // Překopíruji veškerý obsah
                 Model_Blob fileRecord = version_old.file;
 
-                version.file = Model_Blob.upload(fileRecord.downloadString(), "code.json" , library.get_path());
+                version.file = Model_Blob.upload(fileRecord.downloadString(), "application/octet-stream", "code.json" , library.get_path());
                 version.update();
 
                 // Admin to schválil bez dalších keců

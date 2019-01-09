@@ -393,7 +393,7 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
                     version_program.library_compilation_version = release.tag_name;
 
                     // Content se nahraje na Azur
-                    version.file = Model_Blob.upload(Json.toJson(version_program).toString(), "code.json", c_program.get_path());
+                    version.file = Model_Blob.upload(Json.toJson(version_program).toString(), "application/octet-stream", "code.json", c_program.get_path());
                     version.update();
 
                     // Start with asynchronous compilation

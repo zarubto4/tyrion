@@ -220,7 +220,7 @@ public class CompilationService {
             logger.trace("compile - Body is ok - uploading to Azure");
 
             // Daný soubor potřebuji dostat na Azure a Propojit s verzí
-            compilation.blob = Model_Blob.upload(body, "firmware.bin", compilation.get_path());
+            compilation.blob = Model_Blob.upload(body, "application/octet-stream", "firmware.bin", compilation.get_path());
 
             logger.trace("compile - Body is ok - uploading to Azure was successful");
             compilation.status = CompilationStatus.SUCCESS;

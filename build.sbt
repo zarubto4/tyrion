@@ -34,6 +34,7 @@ libraryDependencies ++= Seq(
   "commons-validator" % "commons-validator" % "1.6", // Kontrola Emailů, URL adres etc
   "com.facebook.business.sdk" % "facebook-java-business-sdk" % "3.0.0",
   "com.restfb" % "restfb" % "2.9.0", // New Login
+  "com.amazonaws" % "aws-java-sdk" % "1.11.479", // Amazon == DigitalOcean!
   evolutions,
   guice,
   ws

@@ -235,7 +235,7 @@ public class Controller_Code extends _BaseController {
                 version.save();
 
                 // Content se nahraje na Azure
-                version.file = Model_Blob.upload(hardwareType.get_main_c_program().default_main_version.file.downloadString(), "code.json", c_program.get_path());
+                version.file = Model_Blob.duplicate(hardwareType.get_main_c_program().default_main_version.file, c_program.get_path());
                 version.update();
 
                 this.compilationService.compileAsync(version, hardwareType.get_main_c_program().default_main_version.getCompilation().firmware_version_lib);
@@ -312,7 +312,7 @@ public class Controller_Code extends _BaseController {
                 // Překopíruji veškerý obsah
                 Model_Blob fileRecord = version.file;
 
-                copy_object.file = Model_Blob.upload(fileRecord.downloadString(), "code.json" , c_program_new.get_path());
+                copy_object.file = Model_Blob.duplicate(fileRecord, copy_object.get_path());
                 copy_object.update();
 
 
@@ -687,7 +687,7 @@ public class Controller_Code extends _BaseController {
             version.save();
 
             // Content se nahraje na Azure
-            version.file = Model_Blob.upload(Json.toJson(help).toString(), "code.json" , c_program.get_path());
+            version.file = Model_Blob.upload(Json.toJson(help).toString(), "application/octet-stream", "code.json" , c_program.get_path());
             version.update();
 
             // Start with asynchronous ccompilation
@@ -766,7 +766,7 @@ public class Controller_Code extends _BaseController {
             }
 
             // Content se nahraje na Azure
-            version.file = Model_Blob.upload(Json.toJson(help).toString(), "code.json" , Model_Blob.get_path_for_bin());
+            version.file = Model_Blob.upload(Json.toJson(help).toString(), "application/octet-stream", "code.json" , Model_Blob.get_path_for_bin());
             version.update();
 
             // Start with asynchronous ccompilation
@@ -998,7 +998,7 @@ public class Controller_Code extends _BaseController {
                 // Překopíruji veškerý obsah
                 Model_Blob fileRecord = version_old.file;
 
-                version.file = Model_Blob.upload(fileRecord.downloadString(), "code.json" , c_program.get_path());
+                version.file = Model_Blob.duplicate(fileRecord, c_program.get_path());
                 version.update();
 
                 this.compilationService.compileAsync(version, version_old.getCompilation().firmware_version_lib);

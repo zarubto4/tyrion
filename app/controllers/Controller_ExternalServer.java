@@ -740,7 +740,7 @@ public class Controller_ExternalServer extends _BaseController {
     @Security.Authenticated(AuthenticationHomer.class)
     public Result cloud_file_get_b_program_version(UUID snapshot_id) {
         try {
-            return redirect(Model_InstanceSnapshot.find.byId(snapshot_id).getBlob().getPublicDownloadLink());
+            return redirect(Model_InstanceSnapshot.find.byId(snapshot_id).getBlob().link);
         } catch (Exception e) {
            return controllerServerError(e);
         }
@@ -773,10 +773,8 @@ public class Controller_ExternalServer extends _BaseController {
                 throw new NotFoundException(Model_Blob.class);
             }
 
-            byte[] bytes = Model_Blob.get_decoded_binary_string_from_Base64(compilation.blob.downloadString());
-
             // Vrátím soubor
-            return file(bytes, "firmware.bin");
+            return redirect(compilation.getBlob().link);
 
         } catch (Exception e) {
            return controllerServerError(e);
@@ -809,7 +807,7 @@ public class Controller_ExternalServer extends _BaseController {
             }
 
             // Přesměruji na link
-            return redirect(compilation.getBlob().getPublicDownloadLink());
+            return redirect(compilation.getBlob().link);
 
         } catch (Exception e) {
            return controllerServerError(e);

@@ -1,5 +1,9 @@
 package controllers;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.Bucket;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
@@ -20,6 +24,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import play.libs.ws.WSClient;
 import play.mvc.Result;
+import utilities.Server;
 import utilities.enums.Currency;
 import utilities.enums.*;
 import utilities.financial.extensions.ExtensionInvoiceItem;
@@ -36,7 +41,9 @@ import websocket.WebSocketService;
 import xyz.morphia.annotations.Entity;
 import xyz.morphia.annotations.Id;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.*;
@@ -90,9 +97,57 @@ public class Controller_ZZZ_Tester extends _BaseController {
     public Result test1() {
         try {
 
-            this.webSocketService.create(Compiler.class, UUID.randomUUID(), "wss://echo.websocket.org");
+            // this.webSocketService.create(Compiler.class, UUID.randomUUID(), "wss://echo.websocket.org");
 
-        return ok();
+            // Migrační script
+
+            // Stažení souboru v separátním vláknu - jinak HTTP stále dokola zkoušelo vyžádat si odpověď od serveru po 30 sekundách
+            new Thread(() -> {
+                Integer size = Model_Blob.find.query().where().eq("storage_type", "AzureBlob").findCount();
+                List<Model_Blob> blobs = Model_Blob.find.query().where().eq("storage_type", "AzureBlob").findList();
+
+                for (int i = 0; i < blobs.size(); i++) {
+
+                    Model_Blob blob = blobs.get(i);
+
+                    //  Model_Blob blob = Model_Blob.find.byId(UUID.fromString("dcb819aa-da57-4db9-89d0-12532986c13b"));
+
+                    System.out.println("Blob downloaded:: size " + blob.downloadString().length() + ". Actual file:: " + (i + 1) + "/" + size) ;
+
+                    // To Bytes
+                    byte[] byteimage = blob.downloadString().getBytes();
+
+                    InputStream is = new ByteArrayInputStream(byteimage);
+                    ObjectMetadata om = new ObjectMetadata();
+                    om.setContentLength(byteimage.length);
+                    om.setContentType("application/octet-stream");
+
+
+                    System.out.println("File Path starého souboru k uložení:: " + blob.path);
+
+                    // Korekční filtr
+                    blob.path = blob.path.replaceAll("bootloader.bin/bootloader.bin", "bootloader.bin");
+
+
+                    System.out.println("File Path starého souboru po korektuře:: " + blob.path);
+                    System.out.println("File link:: " + blob.link);
+                    System.out.println("File Name:: " + blob.name);
+                    System.out.println("Zdroj souboru:: " + blob.storage_type);
+
+                    Server.space.putObject(Server.bucket_name, blob.path, is, om);
+                    Server.space.setObjectAcl(Server.bucket_name, blob.path, CannedAccessControlList.PublicRead);
+                    System.out.println("Link ke stažení souboru: " + Server.space.getUrl(Server.bucket_name, blob.path).toString());
+
+
+                    blob.storage_type = "AWS_DigitalOcean";
+                    blob.link = Server.space.getUrl(Server.bucket_name, blob.path).toString();
+
+                    blob.update();
+
+                }
+            }).start();
+
+            return ok();
 
         } catch (Exception e) {
             logger.internalServerError(e);
