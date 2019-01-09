@@ -238,7 +238,7 @@ public class HomerSynchronizationTask implements Task {
             if (!instances_for_add.isEmpty()) {
                 for (UUID instance_id : instances_for_add) {
                     try {
-                        this.instanceService.deploy(Model_Instance.find.byId(instance_id).current_snapshot());
+                        this.instanceService.deploy(Model_Instance.find.byId(instance_id).current_snapshot(), false);
                     } catch (Exception e) {
                         logger.internalServerError(e);
                     }
