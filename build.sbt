@@ -41,3 +41,5 @@ libraryDependencies ++= Seq(
 
 // Make verbose tests
 testOptions in Test := Seq(Tests.Argument(TestFrameworks.JUnit, "-a", "-v"))
+
+packageName in Universal := "dist"
