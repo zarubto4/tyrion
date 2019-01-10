@@ -7,6 +7,6 @@ RUN ./sbt dist
 WORKDIR ./target/universal
 RUN unzip ./dist.zip
 WORKDIR ./dist/bin
-RUN chomd +x ./tyrion 
+RUN chmod +x ./tyrion 
 EXPOSE 80 443
 CMD ["./tyrion"]
