@@ -27,7 +27,7 @@ public class MainLogger {
 
 /* CONSTRUCTOR  --------------------------------------------------------------------------------------------------------*/
 
-    public MainLogger(Config configuration) {
+    public MainLogger(sun.security.krb5.Config configuration) {
 
         this.configuration = configuration;
 
@@ -61,7 +61,7 @@ public class MainLogger {
         System.out.println("    §§    §§ §§ §§ §§ §§ §§ §§¨¨¨ §§'§_   ¨§§");
         System.out.println("    §§§§§  §§§   §§§   §§§  §§§§§ §§ §§ §§§§'");
         System.out.println();
-        System.out.println("     SETTINGS: Developer");
+        System.out.println("     SETTINGS: " + configuration.get("server.mode"));
         System.out.println();
         System.out.print  ("     GROUPS: ");
 
