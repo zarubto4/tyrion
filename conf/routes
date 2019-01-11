@@ -600,3 +600,5 @@ POST      /admin/tyrion/update                                          controll
 DELETE    /admin/tyrion/update                                          controllers.Controller_Admin.server_scheduleUpdate_remove()
 GET       /admin/tyrion/update                                          controllers.Controller_Admin.server_getUpdates()
 
+# Healt check
+#GET      /health                                                       utilities.authentication.Controller_Security.get_serverstatus_kubernates()
