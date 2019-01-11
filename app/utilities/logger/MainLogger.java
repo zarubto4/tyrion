@@ -27,7 +27,7 @@ public class MainLogger {
 
 /* CONSTRUCTOR  --------------------------------------------------------------------------------------------------------*/
 
-    public MainLogger(sun.security.krb5.Config configuration) {
+    public MainLogger(Config configuration) {
 
         this.configuration = configuration;
 
