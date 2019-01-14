@@ -8,5 +8,5 @@ WORKDIR ./target/universal
 RUN unzip ./dist.zip
 WORKDIR ./dist/bin
 RUN chmod +x ./tyrion 
-EXPOSE 80 443
+EXPOSE 80 443 9000
 CMD ["./tyrion"]
