@@ -37,7 +37,7 @@ public class NotificationService {
 
             if (notification.id == null) {
                 notification1 = notification.copy();
-                if (notification1.notification_importance.equals(NotificationImportance.LOW)) {
+                if (!notification1.notification_importance.equals(NotificationImportance.LOW)) {
                     notification1.person = receiver;
                     notification1.save();
                 }
@@ -63,10 +63,8 @@ public class NotificationService {
 
             if (notification1.id == null) {
                 message.put("id", UUID.randomUUID().toString());
-                message.put("notification_id", UUID.randomUUID().toString());
             } else {
                 message.put("id", notification1.id.toString());
-                message.put("notification_id", notification1.id.toString());
             }
 
             if (this.subscriptions.containsKey(receiver.id)) {

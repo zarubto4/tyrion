@@ -19,54 +19,20 @@ public class Swagger_Project_Valid_unique_name implements Constraints.Validatabl
     @ApiModelProperty(value = "Type", required = true)
     public Enum_UniqueNameObjectType object_type;
 
-
-    @ApiModelProperty(value = "Type", required = false)
-    public UUID project_id;
-
-
-    @ApiModelProperty(value = "Required only if there is control of some Version", required = false)
-    public UUID object_id;
+    @ApiModelProperty("Required only if object_type is not Project")
+    public UUID parent_id;
 
     @Constraints.Required
     public String name;
-
-
-
-
-
-
-    // --------------------------------------------------------------------------------------------------------------------------------
 
     @Override
     public List<ValidationError> validate() {
 
         List<ValidationError> errors = new ArrayList<>();
 
-        if (
-                project_id == null
-                && object_type != Enum_UniqueNameObjectType.Project
-                && object_type != Enum_UniqueNameObjectType.Snapshot
-                && object_type != Enum_UniqueNameObjectType.GridProgram) {
-
-            errors.add(new ValidationError("project_id", "If object_type is not 'Project, Snapshot or GridProgram', project_id is required"));
+        if (parent_id == null && object_type != Enum_UniqueNameObjectType.Project) {
+            errors.add(new ValidationError("parent_id", "Parent id is required, unless the object_type is Project."));
         }
-
-        if (object_type == Enum_UniqueNameObjectType.Snapshot && object_id == null) {
-            errors.add(new ValidationError("object_id", "for Snapshot, you have to set valid object_id (Instance Id). It is required"));
-        }
-
-        if (object_type == Enum_UniqueNameObjectType.GridProgram && object_id == null) {
-            errors.add(new ValidationError("object_id", "for GridProgram, you have to set valid object_id (GridProject Id). It is required"));
-        }
-
-        if (object_type == Enum_UniqueNameObjectType.Project && project_id != null) {
-            errors.add(new ValidationError("project_id", "Must be null if you want to check Project Name"));
-        }
-
-        if (object_type.name().contains("Version") && project_id == null) {
-            errors.add(new ValidationError("object_id", "If object_type is Version of something, object_id is required"));
-        }
-
 
         return errors.isEmpty() ? null : errors;
     }

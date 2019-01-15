@@ -32,7 +32,7 @@ public class NotificationConfirmationService {
             List<Model_Notification> toConfirm = Model_Notification.find.query().where().eq("confirmation_id", notification.confirmation_id).findList();
             toConfirm.forEach(notif -> {
                 notif.confirm();
-                this.notificationService.send(notif.getPerson(), notification.setState(NotificationState.UPDATED));
+                this.notificationService.send(notif.getPerson(), notif.setState(NotificationState.UPDATED));
             });
         }
 

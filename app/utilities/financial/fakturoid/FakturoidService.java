@@ -103,7 +103,7 @@ public class FakturoidService extends _BaseController {
                     invoice.overdue = new Date();
                     invoice.update();
 
-                    invoice.notificationInvoiceOverdue();
+                    this.notificationService.send(invoice.getProduct().notificationReceivers(), invoice.notificationInvoiceOverdue());
                     sendInvoiceReminderEmail(invoice, "Invoice for your product is overdue.");
                     break;
                 default:
@@ -223,7 +223,7 @@ public class FakturoidService extends _BaseController {
             invoice.saveEvent(invoice.issued, ProductEventType.INVOICE_ISSUED);
 
             // send notification and email
-            invoice.notificationInvoiceNew();
+            this.notificationService.send(invoice.getProduct().notificationReceivers(), invoice.notificationInvoiceNew());
             sendInvoiceEmail(invoice, contact.invoice_email);
 
             if(fakturoidProforma.lines == null || fakturoidProforma.lines.size() != invoice.invoice_items.size()) {
@@ -377,11 +377,11 @@ public class FakturoidService extends _BaseController {
             throw new Exception("Invoice: " + invoice.id + ". No proforma received from Fakturoid.");
         }
 
-        if(fakturoidProforma.status == null || !fakturoidProforma.status.equals("paid")) {
+        if (fakturoidProforma.status == null || !fakturoidProforma.status.equals("paid")) {
             return false;
         }
 
-        if(fakturoidProforma.related_id == null) {
+        if (fakturoidProforma.related_id == null) {
             throw new Exception("Invoice: " + invoice.id + ". Proforma paid but no related_id attribute present!");
         }
 
@@ -391,7 +391,7 @@ public class FakturoidService extends _BaseController {
         }
 
         // till now we did not register the payment
-        if(invoice.status != InvoiceStatus.PAID) {
+        if (invoice.status != InvoiceStatus.PAID) {
             invoice.saveEvent(new Date(), ProductEventType.INVOICE_PAYMENT_RECEIVED);
         }
 
@@ -403,7 +403,7 @@ public class FakturoidService extends _BaseController {
         invoice.invoice_number = fakturoidInvoice.number;
         invoice.update();
 
-        invoice.notificationPaymentSuccess();
+        this.notificationService.send(invoice.getProduct().notificationReceivers(), invoice.notificationPaymentSuccess());
         sendInvoiceEmail(invoice, invoice.product.owner.contact.invoice_email);
         logger.debug("Invoice {} was paid and proforma was turned to invoice.", invoice.id);
 

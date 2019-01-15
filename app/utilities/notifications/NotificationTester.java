@@ -25,13 +25,12 @@ import java.util.Date;
 import java.util.Random;
 import java.util.UUID;
 
-
 @Api(value = "Not Documented API - InProgress or Stuck")
 public class NotificationTester extends _BaseController {
 
 /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger terminal_logger = new Logger(NotificationTester.class);
+    private static final Logger logger = new Logger(NotificationTester.class);
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
@@ -51,10 +50,9 @@ public class NotificationTester extends _BaseController {
                 return forbidden();
             }
 
-            terminal_logger.debug("test_chain_notifications - email: {}", mail);
+            logger.debug("test_chain_notifications - email: {}", mail);
 
             Model_Person person = Model_Person.getByEmail(mail);
-            if (person == null) return notFound("Person not found");
 
             Thread notification_test_thread = new Thread() {
 
@@ -68,45 +66,48 @@ public class NotificationTester extends _BaseController {
 
                         if ( rand.nextInt(10) > 5) {
 
-                            Model_Notification notification_start = new Model_Notification();
+                            Model_Notification notification = new Model_Notification();
 
-                            notification_start.setNotificationId(id)
+                            notification.setNotificationId(id)
                                     .setChainType(NotificationType.CHAIN_START)
                                     .setImportance(NotificationImportance.LOW)
                                     .setLevel(NotificationLevel.INFO);
 
-                            notification_start.setText(new Notification_Text().setText("CHAIN TEST:: Yes thats all!!!!"))
-                                    .send(person);
+                            notification.setText(new Notification_Text().setText("CHAIN TEST:: Yes thats all!!!!"));
+
+                            notificationService.send(person, notification);
 
                         } else {
 
-                            Model_Notification notification_start = new Model_Notification();
+                            Model_Notification notification = new Model_Notification();
 
-                            notification_start.setNotificationId(id)
+                            notification.setNotificationId(id)
                                     .setChainType(NotificationType.CHAIN_UPDATE)
                                     .setImportance(NotificationImportance.LOW)
                                     .setLevel(NotificationLevel.INFO);
 
-                            notification_start.setText(new Notification_Text().setText("CHAIN TEST:: Shit! This Test not send CHAIN_START notification parameter but first message is CHAIN_UPDATE !!!!"))
-                                    .send(person);
+                            notification.setText(new Notification_Text().setText("CHAIN TEST:: Shit! This Test not send CHAIN_START notification parameter but first message is CHAIN_UPDATE !!!!"));
+
+                            notificationService.send(person, notification);
                         }
 
                         sleep(4000);
                         
                         for (int i = 0; i <= 100; i = i+8) {
 
-                            Model_Notification notification_progress = new Model_Notification();
+                            Model_Notification notification = new Model_Notification();
 
-                            notification_progress.setNotificationId(id)
+                            notification.setNotificationId(id)
                                     .setChainType(NotificationType.CHAIN_UPDATE)
                                     .setImportance( NotificationImportance.LOW)
                                     .setLevel( NotificationLevel.INFO);
 
-                            notification_progress
+                            notification
                                     .setText(new Notification_Text().setText("CHAIN TEST:: This is message about progress on Board " + i + "%" + " Actual time is:: "))
                                     .setDate( new Date())
-                                    .setText(new Notification_Text().setText(". Thanks Pepa!"))
-                                    .send(person);
+                                    .setText(new Notification_Text().setText(". Thanks Pepa!"));
+
+                            notificationService.send(person, notification);
 
                             sleep(400);
                         }
@@ -115,31 +116,33 @@ public class NotificationTester extends _BaseController {
 
                         if (rand.nextInt(10) > 5) {
 
-                            Model_Notification notification_finish = new Model_Notification();
+                            Model_Notification notification = new Model_Notification();
 
-                            notification_finish.setNotificationId(id)
+                            notification.setNotificationId(id)
                                     .setChainType(NotificationType.CHAIN_UPDATE)
                                     .setImportance( NotificationImportance.LOW)
                                     .setLevel( NotificationLevel.INFO);
 
-                            notification_finish.setText(new Notification_Text().setText("CHAIN TEST:: Shit... This test not send CHAIN_END parameter - Do you know what to do? " ))
-                                    .send(person);
+                            notification.setText(new Notification_Text().setText("CHAIN TEST:: Shit... This test not send CHAIN_END parameter - Do you know what to do? " ));
+
+                            notificationService.send(person, notification);
 
                             return;
                         }
 
-                        Model_Notification notification_finish = new Model_Notification();
+                        Model_Notification notification = new Model_Notification();
 
-                        notification_finish.setNotificationId(id)
+                        notification.setNotificationId(id)
                                 .setChainType(NotificationType.CHAIN_END)
                                 .setImportance( NotificationImportance.LOW)
                                 .setLevel( NotificationLevel.INFO);
 
-                        notification_finish.setText(new Notification_Text().setText("CHAIN TEST:: Yes thats all!!!!" ))
-                                .send(person);
+                        notification.setText(new Notification_Text().setText("CHAIN TEST:: Yes thats all!!!!" ));
+
+                        notificationService.send(person, notification);
 
                     } catch (Exception e) {
-                        terminal_logger.internalServerError(e);
+                        logger.internalServerError(e);
                     }
                 }
             };
@@ -162,16 +165,15 @@ public class NotificationTester extends _BaseController {
                 return forbidden();
             }
 
-            terminal_logger.debug("test_notifications - test");
+            logger.debug("test_notifications - test");
 
             // Get and Validate Object
             Swagger_Notification_Test help  = formFromRequestWithValidation(Swagger_Notification_Test.class);
 
 
             Model_Person person = Model_Person.getByEmail(help.mail);
-            if (person == null) return notFound("Person not found");
 
-            test_notification(person, help.level, help.importance, help.type, help.buttons);
+            this.test_notification(person, help.level, help.importance, help.type, help.buttons);
             return ok();
 
         } catch (Exception e) {
@@ -179,7 +181,7 @@ public class NotificationTester extends _BaseController {
         }
     }
 
-    public static void test_notification(Model_Person person, String level, String importance, String type, String buttons) {
+    public void test_notification(Model_Person person, String level, String importance, String type, String buttons) {
 
         NotificationLevel lvl;
 
@@ -239,7 +241,7 @@ public class NotificationTester extends _BaseController {
                         cProgram.save();
                         cProgram.refresh();
 
-                        terminal_logger.info("Setting new C Program");
+                        logger.info("Setting new C Program");
                     }
 
                     notification.setObject(cProgram);
@@ -256,7 +258,7 @@ public class NotificationTester extends _BaseController {
                         version.save();
                         version.refresh();
 
-                        terminal_logger.info("Setting new C Program Version");
+                        logger.info("Setting new C Program Version");
 
                     } else {
                         version = cProgram.getVersions().get(0);
@@ -276,7 +278,7 @@ public class NotificationTester extends _BaseController {
                         bProgram.save();
                         bProgram.refresh();
 
-                        terminal_logger.info("Setting new B Program");
+                        logger.info("Setting new B Program");
                     }
 
                     notification.setObject(bProgram);
@@ -293,7 +295,7 @@ public class NotificationTester extends _BaseController {
                         b_version.save();
                         b_version.refresh();
 
-                        terminal_logger.info("Setting new B Program Version");
+                        logger.info("Setting new B Program Version");
 
                     } else {
                         b_version = bProgram.getVersions().get(0);
@@ -359,6 +361,6 @@ public class NotificationTester extends _BaseController {
                 break;}
         }
 
-        notification.send(person);
+        this.notificationService.send(person, notification);
     }
 }

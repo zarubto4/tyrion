@@ -208,6 +208,7 @@ public class CompilationService {
 
             CompletionStage<? extends WSResponse> responsePromise = wsClient.url(compilationResult.build_url)
                     .setContentType("undefined")
+                    .setFollowRedirects(true)
                     .setRequestTimeout(Duration.ofMillis(7500))
                     .get();
 

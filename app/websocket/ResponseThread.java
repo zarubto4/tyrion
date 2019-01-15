@@ -34,7 +34,11 @@ public class ResponseThread implements Supplier<Message> {
     @Override
     public Message get() {
         try {
-            sleep(this.delay);
+
+            if (this.delay > 0) {
+                sleep(this.delay);
+            }
+
             while (!resolved && this.retries > 0) {
 
                 logger.trace("get - sending message with response, message_id: {}, message_type: {}, retries: {}, timeout: {} ", id, message.get("message_type").asText(), retries, timeout);
@@ -46,17 +50,17 @@ public class ResponseThread implements Supplier<Message> {
                 sleep(this.timeout);
             }
 
-            if (resolved) {
-                return null;
-            }
-
-            logger.warn("get - timeout, responding with error, id: {}", id);
-            throw new RequestTimeoutException();
-
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
         }
+
+        if (resolved) {
+            return null;
+        }
+
+        logger.warn("get - timeout, responding with error, id: {}", id);
+        throw new RequestTimeoutException();
     }
 
     public void setSender(Interface sender) {

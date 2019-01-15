@@ -320,27 +320,18 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient
-    public void notification_project_invitation(Model_Person person, Model_Invitation invitation) {
-        try {
-            Model_Person owner = _BaseController.person();
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.NORMAL)
-                    .setLevel(NotificationLevel.INFO)
-                    .setText(new Notification_Text().setText("User "))
-                    .setObject(owner)
-                    .setText(new Notification_Text().setText(" invited you into the project "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText(". Do you accept the invitation?"))
-                    .setButton(new Notification_Button().setAction(NotificationAction.ACCEPT_PROJECT_INVITATION).setPayload(invitation.id.toString()).setColor(Becki_color.byzance_green).setText("Yes"))
-                    .setButton(new Notification_Button().setAction(NotificationAction.REJECT_PROJECT_INVITATION).setPayload(invitation.id.toString()).setColor(Becki_color.byzance_red).setText("No"))
-                    .send(person);
-        } catch (NotFoundException e){
-            logger.error("notification_project_invitation::Result_Error_NotFound::Person Not Found");
-        } catch (Exception e){
-            logger.internalServerError(e);
-        }
+    @JsonIgnore
+    public Model_Notification notificationInvitation(Model_Person person, Model_Invitation invitation) {
+        return new Model_Notification()
+                .setImportance(NotificationImportance.NORMAL)
+                .setLevel(NotificationLevel.INFO)
+                .setText(new Notification_Text().setText("User "))
+                .setObject(person)
+                .setText(new Notification_Text().setText(" invited you into the project "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(". Do you accept the invitation?"))
+                .setButton(new Notification_Button().setAction(NotificationAction.ACCEPT_PROJECT_INVITATION).setPayload(invitation.id.toString()).setColor(Becki_color.byzance_green).setText("Yes"))
+                .setButton(new Notification_Button().setAction(NotificationAction.REJECT_PROJECT_INVITATION).setPayload(invitation.id.toString()).setColor(Becki_color.byzance_red).setText("No"));
     }
 
     @JsonIgnore

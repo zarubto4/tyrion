@@ -97,91 +97,66 @@ public class Model_BootLoader extends NamedModel implements Permissible, Updatab
 
     // Bootloader
     @JsonIgnore
-    public static void notification_bootloader_procedure_first_information_single(Model_HardwareUpdate plan) {
-        try {
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.LOW)
-                    .setLevel(NotificationLevel.WARNING)
-                    .setChainType(NotificationType.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
-                    .setNotificationId(plan.id)
-                    .setText(new Notification_Text().setText("Attention. You have entered the bootloader update command for Bootloader version "))
-                    .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plan.getBootloader().version_identifier + " "))
-                    .setText(new Notification_Text().setText(" for device "))
-                    .setObject(plan.getHardware())
-                    .setText(new Notification_Text().setText(". "))
-                    .setText(new Notification_Text().setText("Bootloader update is a critical action. " +
-                            "Do not disconnect the device from the power supply during the update. " +
-                            "The critical time to update is 3 seconds on average. Wait for confirmation of the notification please! "))
-                    .setNewLine()
-                    .setText(new Notification_Text().setText("We show you in hardware overview only what's currently on the device. " +
-                            "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
-                            "In the details of the instance or hardware overview, you can see the status of each procedures. " +
-                            "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
-                    .send_under_project(plan.getHardware().getProjectId());
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
+    public static Model_Notification notification_bootloader_procedure_first_information_single(Model_HardwareUpdate plan) {
+        return new Model_Notification()
+                .setImportance(NotificationImportance.LOW)
+                .setLevel(NotificationLevel.WARNING)
+                .setChainType(NotificationType.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
+                .setNotificationId(plan.id)
+                .setText(new Notification_Text().setText("Attention. You have entered the bootloader update command for Bootloader version "))
+                .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plan.getBootloader().version_identifier + " "))
+                .setText(new Notification_Text().setText(" for device "))
+                .setObject(plan.getHardware())
+                .setText(new Notification_Text().setText(". "))
+                .setText(new Notification_Text().setText("Bootloader update is a critical action. " +
+                        "Do not disconnect the device from the power supply during the update. " +
+                        "The critical time to update is 3 seconds on average. Wait for confirmation of the notification please! "))
+                .setNewLine()
+                .setText(new Notification_Text().setText("We show you in hardware overview only what's currently on the device. " +
+                        "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
+                        "In the details of the instance or hardware overview, you can see the status of each procedures. " +
+                        "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."));
     }
 
     // Bootloader
     @JsonIgnore
-    public static void notification_bootloader_procedure_success_information_single(Model_HardwareUpdate plan) {
-        try {
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.LOW)
-                    .setLevel(NotificationLevel.SUCCESS)
-                    .setChainType(NotificationType.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
-                    .setNotificationId(plan.id)
-                    .setText(new Notification_Text().setText("Success! Bootloader version "))
-                    .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plan.getBootloader().version_identifier + " "))
-                    .setText(new Notification_Text().setText("  is done for device "))
-                    .setObject(plan.getHardware())
-                    .setText(new Notification_Text().setText(". "))
-                    .setText(new Notification_Text().setText("Have a nice Day!"))
-                    .send_under_project(plan.getHardware().getProjectId());
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
+    public static Model_Notification notification_bootloader_procedure_success_information_single(Model_HardwareUpdate plan) {
+        return new Model_Notification()
+                .setImportance(NotificationImportance.LOW)
+                .setLevel(NotificationLevel.SUCCESS)
+                .setChainType(NotificationType.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
+                .setNotificationId(plan.id)
+                .setText(new Notification_Text().setText("Success! Bootloader version "))
+                .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plan.getBootloader().version_identifier + " "))
+                .setText(new Notification_Text().setText("  is done for device "))
+                .setObject(plan.getHardware())
+                .setText(new Notification_Text().setText(". "))
+                .setText(new Notification_Text().setText("Have a nice Day!"));
     }
 
     @JsonIgnore
-    public static void notification_bootloader_procedure_first_information_list(List<Model_HardwareUpdate> plans) {
-        try {
+    public static Model_Notification notification_bootloader_procedure_first_information_list(List<Model_HardwareUpdate> plans) {
 
-            new Thread(() -> {
-
-                if ( plans.size() == 0 )  throw new IllegalArgumentException("notification_set_static_backup_procedure_first_information_list:: List is empty! ");
-                if ( plans.size() == 1 ) {
-                    notification_bootloader_procedure_first_information_single(plans.get(0));
-                    return;
-                }
-
-                new Model_Notification()
-                        .setImportance(NotificationImportance.LOW)
-                        .setLevel(NotificationLevel.WARNING)
-                        .setChainType(NotificationType.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
-                        .setNotificationId(plans.get(0).getId())
-                        .setText(new Notification_Text().setText("Attention. I have entered the bootloader update command for Bootloader version "))
-                        .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plans.get(0).getBootloader().version_identifier + " "))
-                        .setText(new Notification_Text().setText("for " + plans.size() + " devices. "))
-                        .setText(new Notification_Text().setText("Bootloader update is a critical action. " +
-                                "Do not disconnect the device from the power supply during the update. " +
-                                "The critical time to update is 3 seconds on average. Wait for confirmation of the notification please! " +
-                                "We show you in hardware overview only what's currently on the device. " +
-                                "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
-                                "In the details of the instance or hardware overview, you can see the status of each procedure. " +
-                                "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."))
-                        .send_under_project(plans.get(0).getHardware().getProjectId());
-
-            }).start();
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
+        if ( plans.size() == 0 )  throw new IllegalArgumentException("notification_bootloader_procedure_first_information_list:: List is empty! ");
+        if ( plans.size() == 1 ) {
+            return notification_bootloader_procedure_first_information_single(plans.get(0));
         }
+
+        return new Model_Notification()
+                .setImportance(NotificationImportance.LOW)
+                .setLevel(NotificationLevel.WARNING)
+                .setChainType(NotificationType.CHAIN_START)   // Deliberately -> chain notification for the reason that the user has to clicked on himself for removal .
+                .setNotificationId(plans.get(0).getId())
+                .setText(new Notification_Text().setText("Attention. I have entered the bootloader update command for Bootloader version "))
+                .setText(new Notification_Text().setBoldText().setColor(Becki_color.byzance_red).setText(plans.get(0).getBootloader().version_identifier + " "))
+                .setText(new Notification_Text().setText("for " + plans.size() + " devices. "))
+                .setText(new Notification_Text().setText("Bootloader update is a critical action. " +
+                        "Do not disconnect the device from the power supply during the update. " +
+                        "The critical time to update is 3 seconds on average. Wait for confirmation of the notification please! " +
+                        "We show you in hardware overview only what's currently on the device. " +
+                        "Each update is assigned to the queue of tasks and will be made as soon as possible or according to schedule. " +
+                        "In the details of the instance or hardware overview, you can see the status of each procedure. " +
+                        "If the update command was not time-specific (immediately) and the device is online, the data transfer may have already begun."));
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/

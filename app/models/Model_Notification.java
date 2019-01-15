@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import exceptions.NotSupportedException;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import play.libs.Json;
@@ -331,17 +330,6 @@ public class Model_Notification extends BaseModel implements Permissible, Person
         }
     }
 
-    @Override
-    public boolean delete() {
-        try {
-            this.state = NotificationState.DELETED;
-            this.send();
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-        return super.delete();
-    }
-
     @JsonIgnore
     public Model_Notification copy() {
         Model_Notification notification = new Model_Notification();
@@ -367,27 +355,6 @@ public class Model_Notification extends BaseModel implements Permissible, Person
         this.confirmed = true;
         this.was_read = true;
         this.update();
-    }
-
-    @Deprecated @JsonIgnore
-    public void send(List<Model_Person> receivers) {
-        throw new NotSupportedException("Use notification service for this.");
-    }
-
-    @Deprecated @JsonIgnore
-    public void send_under_project(UUID project_id) {
-        throw new NotSupportedException("Use notification service for this.");
-    }
-
-    @Deprecated @JsonIgnore
-    public void send(Model_Person person) {
-        throw new NotSupportedException("Use notification service for this.");
-    }
-
-    // Pro opětovné odeslání, když už notifikace obsahuje person
-    @Deprecated @JsonIgnore
-    public void send() {
-        throw new NotSupportedException("Use notification service for this.");
     }
 
     @Override

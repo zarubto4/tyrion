@@ -228,77 +228,77 @@ public class Controller_Project extends _BaseController {
                 }
 
                 case BProgram: {
-                    return Model_BProgram.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                    return Model_BProgram.find.query().where().eq("project.id", help.parent_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
                 case BProgramVersion: {
-                    return Model_BProgramVersion.find.query().where().eq("b_program.id", help.object_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                    return Model_BProgramVersion.find.query().where().eq("b_program.id", help.parent_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 
                 case CProgram: {
-                    return Model_CProgram.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                    return Model_CProgram.find.query().where().eq("project.id", help.parent_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
                 case CProgramVersion: {
-                    return Model_CProgramVersion.find.query().where().eq("c_program.id", help.object_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                    return Model_CProgramVersion.find.query().where().eq("c_program.id", help.parent_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 
                 case GridProject: {
-                    return Model_GridProject.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                    return Model_GridProject.find.query().where().eq("project.id", help.parent_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
                 case GridProgram: {
-                    return Model_GridProgram.find.query().where().eq("grid_project.id", help.object_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                    return Model_GridProgram.find.query().where().eq("grid_project.id", help.parent_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
                 case GridProgramVersion: {
-                    return Model_GridProgramVersion.find.query().where().eq("grid_program.id", help.object_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                    return Model_GridProgramVersion.find.query().where().eq("grid_program.id", help.parent_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 
                 case Hardware: {
-                    return Model_Hardware.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                    return Model_Hardware.find.query().where().eq("project.id", help.parent_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 
                 case HardwareGroup: {
-                    return Model_HardwareGroup.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                    return Model_HardwareGroup.find.query().where().eq("project.id", help.parent_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 
                 case GSM: {
-                    return Model_GSM.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                    return Model_GSM.find.query().where().eq("project.id", help.parent_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 
                 case Role: {
-                    return Model_Role.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                    return Model_Role.find.query().where().eq("project.id", help.parent_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 
                 case Instance: {
-                    return Model_Instance.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                    return Model_Instance.find.query().where().eq("project.id", help.parent_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 
                 case Block: {
-                    return Model_Block.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                    return Model_Block.find.query().where().eq("project.id", help.parent_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 
                 case BlockVersion: {
-                    return Model_BlockVersion.find.query().where().eq("block.id", help.object_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                    return Model_BlockVersion.find.query().where().eq("block.id", help.parent_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 
                 case Widget: {
-                    return Model_Widget.find.query().where().eq("project.id", help.project_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                    return Model_Widget.find.query().where().eq("project.id", help.parent_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 
                 case WidgetVersion: {
-                    return Model_WidgetVersion.find.query().where().eq("widget.id", help.object_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                    return Model_WidgetVersion.find.query().where().eq("widget.id", help.parent_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 
                 case Snapshot: {
-                    return Model_InstanceSnapshot.find.query().where().eq("instance.id", help.object_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
+                    return Model_InstanceSnapshot.find.query().where().eq("instance.id", help.parent_id).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 
 
                 case Database: {
-                    UUID productID = Model_Project.find.byId(help.project_id).getProduct().id;
+                    UUID productID = Model_Project.find.byId(help.parent_id).getProduct().id;
                     return Model_ProductExtension.find.query().where().eq("product.id", productID).eq("type", ExtensionType.DATABASE).eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 
                 case DatabaseCollection: {
-                    Model_ProductExtension extension = Model_ProductExtension.find.query().where().eq("id", help.object_id).eq("type", ExtensionType.DATABASE).findOne();
+                    Model_ProductExtension extension = Model_ProductExtension.find.query().where().idEq(help.parent_id).eq("type", ExtensionType.DATABASE).findOne();
                     return !mongoApi.getCollections(extension.id.toString()).contains(help.name) ? ok() : badRequest();
                 }
 
@@ -519,7 +519,7 @@ public class Controller_Project extends _BaseController {
                     logger.internalServerError(e);
                 }
 
-                project.notification_project_invitation(person, invitation);
+                this.notificationService.send(person, project.notificationInvitation(person(), invitation));
             }
 
             // Uložení do DB

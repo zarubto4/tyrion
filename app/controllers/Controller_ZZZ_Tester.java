@@ -29,6 +29,8 @@ import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_Status;
 import utilities.logger.Logger;
 import utilities.model.EchoService;
 import utilities.notifications.NotificationService;
+import utilities.notifications.helps_objects.Notification_Button;
+import utilities.notifications.helps_objects.Notification_Text;
 import utilities.permission.PermissionService;
 import utilities.scheduler.jobs.Job_ThingsMobile_SimData_Synchronize;
 import websocket.interfaces.Compiler;
@@ -90,7 +92,15 @@ public class Controller_ZZZ_Tester extends _BaseController {
     public Result test1() {
         try {
 
-            this.webSocketService.create(Compiler.class, UUID.randomUUID(), "wss://echo.websocket.org");
+            Model_Notification notification = new Model_Notification()
+                    .setLevel(NotificationLevel.WARNING)
+                    .setImportance(NotificationImportance.HIGH)
+                    .setChainType(NotificationType.INDIVIDUAL)
+                    .setText(new Notification_Text().setText("Confirm me!"))
+                    .setButton(new Notification_Button().setText("Yes").setAction(NotificationAction.CONFIRM_NOTIFICATION))
+                    .setButton(new Notification_Button().setText("No").setAction(NotificationAction.CONFIRM_NOTIFICATION));
+
+            this.notificationService.send(Model_Person.find.all(), notification);
 
         return ok();
 

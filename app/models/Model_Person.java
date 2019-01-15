@@ -219,15 +219,13 @@ public class Model_Person extends BaseModel implements Permissible {
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
-    @Transient @JsonIgnore
-    public void notification_error(String text) {
-
-        new Model_Notification()
+    @JsonIgnore
+    public Model_Notification notificationError(String text) {
+        return new Model_Notification()
                 .setImportance(NotificationImportance.NORMAL)
                 .setLevel(NotificationLevel.ERROR)
                 .setText(new Notification_Text().setText(text))
-                .setButton( new Notification_Button().setAction(NotificationAction.CONFIRM_NOTIFICATION).setPayload("null").setColor(Becki_color.byzance_blue).setText("OK")  )
-                .send(this);
+                .setButton( new Notification_Button().setAction(NotificationAction.CONFIRM_NOTIFICATION).setPayload("null").setColor(Becki_color.byzance_blue).setText("OK"));
     }
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/

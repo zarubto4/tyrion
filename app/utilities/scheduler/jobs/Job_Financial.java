@@ -15,6 +15,7 @@ import utilities.enums.PaymentWarning;
 import utilities.financial.fakturoid.FakturoidService;
 import utilities.financial.goPay.GoPay;
 import utilities.logger.Logger;
+import utilities.notifications.NotificationService;
 import utilities.scheduler.Scheduled;
 
 
@@ -46,12 +47,14 @@ public class Job_Financial implements Job {
     private Config config;
     private FakturoidService fakturoid;
     private GoPay goPay;
+    private NotificationService notificationService;
 
     @Inject
-    public Job_Financial(Config config, FakturoidService fakturoid, GoPay goPay) {
+    public Job_Financial(Config config, FakturoidService fakturoid, GoPay goPay, NotificationService notificationService) {
         this.config = config;
         this.fakturoid = fakturoid;
         this.goPay = goPay;
+        this.notificationService = notificationService;
     }
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -195,7 +198,7 @@ public class Job_Financial implements Job {
                                 "Credit is gone and no payment details set, but error occurred when we tried to deactivate the product.");
                     }
 
-                    product.notificationDeactivation("No remaining credit. Payment method missing.");
+                    notificationService.send(product.notificationReceivers(), product.notificationDeactivation("No remaining credit. Payment method missing."));
                     product.emailDeactivation();
 
                     return;
@@ -205,8 +208,8 @@ public class Job_Financial implements Job {
                         && ((notInvoicedPrice.doubleValue() - newSpending.doubleValue()) < product.credit.doubleValue() * 0.90)) {
                     logger.debug("Less than 90 % credit, warn customer.");
 
-                    product.notificationLowCredit(notInvoicedPrice);
-                    product.notificationPaymentDetails();
+                    notificationService.send(product.notificationReceivers(), product.notificationLowCredit(notInvoicedPrice));
+                    notificationService.send(product.notificationReceivers(), product.notificationPaymentDetails());
                     product.emailLowCredit(notInvoicedPrice);
                     return;
                 }
@@ -215,8 +218,8 @@ public class Job_Financial implements Job {
                         && ((notInvoicedPrice.doubleValue() - newSpending.doubleValue()) < product.credit.doubleValue() * 0.5)) {
                     logger.debug("Less than 50 % credit, warn customer.");
 
-                    product.notificationLowCredit(notInvoicedPrice);
-                    product.notificationPaymentDetails();
+                    notificationService.send(product.notificationReceivers(), product.notificationLowCredit(notInvoicedPrice));
+                    notificationService.send(product.notificationReceivers(), product.notificationPaymentDetails());
                     product.emailLowCredit(notInvoicedPrice);
                     return;
                 }
@@ -234,7 +237,7 @@ public class Job_Financial implements Job {
                         && ((notInvoicedPrice.doubleValue() - newSpending.doubleValue()) < product.credit.doubleValue() * 50))
                         || (notInvoicedPrice.doubleValue() > product.credit.doubleValue() * 0.90
                         && ((notInvoicedPrice.doubleValue() - newSpending.doubleValue()) < product.credit.doubleValue() * 0.90))) {
-                    product.notificationLowCredit(notInvoicedPrice);
+                    notificationService.send(product.notificationReceivers(), product.notificationLowCredit(notInvoicedPrice));
                 }
 
                 // we still have credit to run, do not create invoice even if we have end of the month
@@ -291,7 +294,7 @@ public class Job_Financial implements Job {
                         invoice.warning = PaymentWarning.FIRST;
                         invoice.update();
 
-                        invoice.notificationInvoiceReminder("Your product will be deactivated soon.");
+                        notificationService.send(invoice.getProduct().notificationReceivers(), invoice.notificationInvoiceReminder("Your product will be deactivated soon."));
                         fakturoid.sendInvoiceReminderEmail(invoice, null);
                     }
 
@@ -301,7 +304,7 @@ public class Job_Financial implements Job {
                         invoice.warning = PaymentWarning.SECOND;
                         invoice.update();
 
-                        invoice.notificationInvoiceReminder("Your product will be deactivated soon.");
+                        notificationService.send(invoice.getProduct().notificationReceivers(), invoice.notificationInvoiceReminder("Your product will be deactivated soon."));
                         fakturoid.sendInvoiceReminderEmail(invoice, null);
                     }
 
@@ -319,11 +322,9 @@ public class Job_Financial implements Job {
                                     "We did not receive payment for invoice " + invoice + ", but error occurred when we tried to deactivate the product.");
                         }
 
-                        invoice.notificationInvoiceReminder("Product was deactivated.");
-                        product.notificationDeactivation("Despite multiple warnings, we did not receive the payment.");
+                        notificationService.send(product.notificationReceivers(), invoice.notificationInvoiceReminder("Product was deactivated."));
+                        notificationService.send(product.notificationReceivers(), product.notificationDeactivation("Despite multiple warnings, we did not receive the payment."));
                         product.emailDeactivation();
-
-
                     }
                 }
             }

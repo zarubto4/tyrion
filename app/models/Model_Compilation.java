@@ -82,6 +82,7 @@ public class Model_Compilation extends BaseModel implements Updatable {
         WSClient ws = Server.injector.getInstance(WSClient.class);
         CompletionStage<? extends WSResponse> responsePromise = ws.url(compilation_Result.build_url)
                 .setContentType("undefined")
+                .setFollowRedirects(true)
                 .setRequestTimeout(Duration.ofMillis(7500))
                 .get();
 

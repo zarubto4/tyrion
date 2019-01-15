@@ -29,7 +29,7 @@ public class Controller_Notification extends _BaseController {
 
 // LOGGER ##############################################################################################################
 
-  private static final Logger logger = new Logger(Controller_Notification.class);
+    private static final Logger logger = new Logger(Controller_Notification.class);
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
@@ -44,183 +44,161 @@ public class Controller_Notification extends _BaseController {
 
 // PUBLIC CONTROLLER METHODS ###########################################################################################
 
-  @ApiOperation(value = "get Notification latest",
-          tags = {"Notifications"},
-          notes = "Get list of latest user notifications. Server return maximum 25 latest objects. \n\n " +
-                  "For get another page (next 25 notifications) call this api with \"page_number\" path parameter. \n\n " +
-                  "May missing or you can insert Integer values from page[1,2...,n] in Json" +
-                  "Notification body cannot by documented through swagger. Visit wiki.byzance.cz",
-          produces = "application/json",
-          protocols = "https"
-  )
-  @ApiResponses({
-          @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Notification_List.class),
-          @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-          @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
-  })
-  @Security.Authenticated(Authentication.class)
-  public Result notification_getByFilter(@ApiParam(value = "page_number is Integer. Contain  1,2... " + " For first call, use 1", required = false) Integer page_number) {
-     try {
-
+    @ApiOperation(value = "get Notification latest",
+            tags = {"Notifications"},
+            notes = "Get list of latest user notifications. Server return maximum 25 latest objects. \n\n " +
+                    "For get another page (next 25 notifications) call this api with \"page_number\" path parameter. \n\n " +
+                    "May missing or you can insert Integer values from page[1,2...,n] in Json" +
+                    "Notification body cannot by documented through swagger. Visit wiki.byzance.cz",
+            produces = "application/json",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",               response = Swagger_Notification_List.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Authentication.class)
+    public Result notification_getByFilter(@ApiParam(value = "page_number is Integer. Contain  1,2... " + " For first call, use 1", required = false) Integer page_number) {
         Query<Model_Notification> query =  Model_Notification.find.query().where().eq("person.id", _BaseController.personId()).eq("deleted", false).order().desc("created");
 
         Swagger_Notification_List result = new Swagger_Notification_List(query, page_number);
 
         return ok(result);
-
-     } catch (Exception e) {
-       return controllerServerError(e);
-     }
-  }
-
-  @ApiOperation(value = "delete Notification",
-          tags = {"Notifications"},
-          notes = "remove notification by id",
-          produces = "application/json",
-          consumes = "text/html",
-          protocols = "https"
-  )
-  @ApiResponses({
-          @ApiResponse(code = 200, message = "Delete Successful",       response = Result_Ok.class),
-          @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-          @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-          @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
-          @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
-  })
-  @Security.Authenticated(Authentication.class)
-  public Result notification_delete(UUID notification_id) {
-    try {
-      return delete(Model_Notification.find.byId(notification_id));
-    } catch (Exception e) {
-      return controllerServerError(e);
     }
-  }
 
-  @ApiOperation(value = "mark Notifications as read",
-          tags = {"Notifications"},
-          notes = "Mark notifications as read. Send list with ids",
-          produces = "application/json",
-          protocols = "https",
-          code = 200
-  )
-  @ApiImplicitParams(
-          {
-                  @ApiImplicitParam(
-                          name = "body",
-                          dataType = "utilities.swagger.input.Swagger_Notification_Read",
-                          required = true,
-                          paramType = "body",
-                          value = "Contains Json with values"
-                  )
-          }
-  )
-  @ApiResponses({
-          @ApiResponse(code = 200, message = "Successfully marked as read", response = Result_Ok.class),
-          @ApiResponse(code = 400, message = "Invalid body",                response = Result_InvalidBody.class),
-          @ApiResponse(code = 401, message = "Unauthorized request",        response = Result_Unauthorized.class),
-          @ApiResponse(code = 500, message = "Server side Error",           response = Result_InternalServerError.class)
-  })
-  @Security.Authenticated(Authentication.class)
-  public Result notification_read() {
-    try {
+    @ApiOperation(value = "delete Notification",
+            tags = {"Notifications"},
+            notes = "remove notification by id",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Delete Successful",       response = Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Authentication.class)
+    public Result notification_delete(UUID notification_id) {
+        Model_Notification notification = Model_Notification.find.byId(notification_id);
+        notification.state = NotificationState.DELETED;
+        this.notificationService.send(notification.getPerson(), notification);
+        return delete(notification);
+    }
+
+    @ApiOperation(value = "mark Notifications as read",
+            tags = {"Notifications"},
+            notes = "Mark notifications as read. Send list with ids",
+            produces = "application/json",
+            protocols = "https",
+            code = 200
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_Notification_Read",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Successfully marked as read", response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Invalid body",                response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",        response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",           response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Authentication.class)
+    public Result notification_read() {
 
         // Get and Validate Object
         Swagger_Notification_Read help = formFromRequestWithValidation(Swagger_Notification_Read.class);
 
         List<Model_Notification> notifications = Model_Notification.find.query().where().idIn(help.notification_id).findList();
 
-        // TODO permissions
-
         for (Model_Notification notification : notifications) {
+
+            this.checkUpdatePermission(notification);
 
             notification.set_read();
             notification.state = NotificationState.UPDATED;
-            notification.send();
+            this.notificationService.send(notification.getPerson(), notification);
         }
 
         return ok();
-
-    } catch (Exception e) {
-      return controllerServerError(e);
     }
-  }
 
-  @ApiOperation(value = "get Notifications unconfirmed",
-          tags = {"Notifications"},
-          notes = "This API should by called right after user logs in. Sends notifications which require confirmation via websocket.",
-          produces = "application/json",
-          consumes = "text/html",
-          protocols = "https"
-  )
-  @ApiResponses({
-          @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
-          @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-          @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
-  })
-  @Security.Authenticated(Authentication.class)
-  public Result notifications_getUnconfirmed() {
-    try {
+    @ApiOperation(value = "get Notifications unconfirmed",
+            tags = {"Notifications"},
+            notes = "This API should by called right after user logs in. Sends notifications which require confirmation via websocket.",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Authentication.class)
+    public Result notifications_getUnconfirmed() {
 
-      List<Model_Notification> notifications = Model_Notification.find.query().where().eq("person.id", _BaseController.personId()).eq("notification_importance", NotificationImportance.HIGH).eq("confirmed", false).findList();
-      if (notifications.isEmpty()) return ok("No new notifications");
+        List<Model_Notification> notifications = Model_Notification.find.query().where().eq("person.id", personId()).eq("notification_importance", NotificationImportance.HIGH).eq("confirmed", false).findList();
+        if (notifications.isEmpty()) return ok("No new notifications");
 
-      for (Model_Notification notification : notifications) {
-          notification.state = NotificationState.UNCONFIRMED;
-          notification.send();
-      }
+        for (Model_Notification notification : notifications) {
+            notification.state = NotificationState.UNCONFIRMED;
+            this.notificationService.send(notification.getPerson(), notification);
+        }
 
-      return ok("Notifications were sent again");
-
-    } catch (Exception e) {
-      return controllerServerError(e);
+        return ok("Notifications were sent again");
     }
-  }
 
-  @ApiOperation(value = "confirm Notification",
-          tags = {"Notifications"},
-          notes = "Confirms notification",
-          produces = "application/json",
-          consumes = "text/html",
-          protocols = "https"
-  )
-  @ApiImplicitParams(
-          {
-                  @ApiImplicitParam(
-                          name = "body",
-                          dataType = "utilities.swagger.input.Swagger_Notification_Confirm",
-                          required = true,
-                          paramType = "body",
-                          value = "Contains Json with values"
-                  )
-          }
-  )
-  @ApiResponses({
-          @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
-          @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
-          @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
-          @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
-          @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
-          @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
-          @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
-  })
-  @Security.Authenticated(Authentication.class)
-  public Result notification_confirm(UUID notification_id) {
-      try {
+    @ApiOperation(value = "confirm Notification",
+            tags = {"Notifications"},
+            notes = "Confirms notification",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https"
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_Notification_Confirm",
+                            required = true,
+                            paramType = "body",
+                            value = "Contains Json with values"
+                    )
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",               response = Result_Ok.class),
+            @ApiResponse(code = 400, message = "Invalid body",            response = Result_InvalidBody.class),
+            @ApiResponse(code = 400, message = "Something is wrong",      response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",    response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",        response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",       response = Result_InternalServerError.class)
+    })
+    @Security.Authenticated(Authentication.class)
+    public Result notification_confirm(UUID notification_id) {
 
-          // Get and Validate Object
-          Swagger_Notification_Confirm help = formFromRequestWithValidation(Swagger_Notification_Confirm.class);
+        // Get and Validate Object
+        Swagger_Notification_Confirm help = formFromRequestWithValidation(Swagger_Notification_Confirm.class);
 
-          // Kontrola objektu
-          Model_Notification notification = Model_Notification.find.byId(notification_id);
+        // Kontrola objektu
+        Model_Notification notification = Model_Notification.find.byId(notification_id);
 
-          this.checkUpdatePermission(notification);
+        this.checkUpdatePermission(notification);
 
-          this.notificationConfirmationService.confirm(notification, help.action, help.payload);
+        this.notificationConfirmationService.confirm(notification, help.action, help.payload);
 
-          return ok();
-      } catch (Exception e) {
-          return controllerServerError(e);
-      }
-  }
-
+        return ok();
+    }
 }

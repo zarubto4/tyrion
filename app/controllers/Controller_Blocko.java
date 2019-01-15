@@ -1615,7 +1615,8 @@ public class Controller_Blocko extends _BaseController {
             notes = "clone Block for private",
             produces = "application/json",
             consumes = "application/json",
-            protocols = "https"
+            protocols = "https",
+            code = 201
     )
     @ApiImplicitParams(
             {

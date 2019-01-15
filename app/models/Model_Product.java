@@ -531,111 +531,88 @@ public class Model_Product extends NamedModel implements Permissible, UnderCusto
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public void notificationActivation() {
-        try {
+    public Model_Notification notificationActivation() {
+        return new Model_Notification()
+                .setImportance(NotificationImportance.NORMAL)
+                .setLevel(NotificationLevel.SUCCESS)
+                .setText(new Notification_Text().setText("Your product "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" was activated."));
+    }
 
-            new Model_Notification()
+    @JsonIgnore
+    public Model_Notification notificationDeactivation(String... args) {
+
+        Model_Notification notification = new Model_Notification()
+                .setImportance(NotificationImportance.NORMAL)
+                .setLevel(NotificationLevel.WARNING)
+                .setText(new Notification_Text().setText("Your product "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" was deactivated."));
+
+        for (String message : args) {
+            notification.setText(new Notification_Text().setText(message));
+        }
+
+        return notification;
+    }
+
+    @JsonIgnore
+    public Model_Notification notificationLowCredit(BigDecimal notInvoicedCredit) {
+
+        BigDecimal remainingCredit = credit.subtract(notInvoicedCredit)
+                .setScale(Server.financial_price_scale, Server.financial_price_rounding);
+
+        return new Model_Notification()
+                .setImportance(NotificationImportance.NORMAL)
+                .setLevel(NotificationLevel.INFO)
+                .setText(new Notification_Text().setText("Remaining credit: " + remainingCredit.toPlainString() + "."))
+                .setObject(this);
+    }
+
+    @JsonIgnore
+    public Model_Notification notificationPaymentDetails() {
+        String text = null;
+        if (owner.contact == null) {
+            text = "Fill in payment details, otherwise your product will be deactivated soon.";
+
+        } else if (owner.contact.fakturoid_subject_id == null) {
+            text = "Payment details are probably invalid. Check provided info or contact support.";
+        }
+
+        if (text != null) {
+            return new Model_Notification()
+                    .setImportance(NotificationImportance.HIGH)
+                    .setLevel(NotificationLevel.WARNING)
+                    .setText(new Notification_Text().setText(text).setBoldText())
+                    .setObject(this);
+        }
+
+        return null;
+    }
+
+    @JsonIgnore
+    public Model_Notification notificationTerminateOnDemand(boolean success) {
+        Model_Notification notification = new Model_Notification();
+
+        if (success) {
+            notification
                     .setImportance(NotificationImportance.NORMAL)
                     .setLevel(NotificationLevel.SUCCESS)
-                    .setText(new Notification_Text().setText("Your product "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText(" was activated."))
-                    .send(notificationReceivers());
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    @JsonIgnore
-    public void notificationDeactivation(String... args) {
-        try {
-
-            Model_Notification notification = new Model_Notification()
-                    .setImportance(NotificationImportance.NORMAL)
-                    .setLevel(NotificationLevel.WARNING)
-                    .setText(new Notification_Text().setText("Your product "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText(" was deactivated."));
-
-            for (String message : args) {
-                notification.setText(new Notification_Text().setText(message));
-            }
-
-            notification.send(notificationReceivers());
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    @JsonIgnore
-    public void notificationLowCredit(BigDecimal notInvoicedCredit) {
-        try {
-            BigDecimal remainingCredit = credit.subtract(notInvoicedCredit)
-                    .setScale(Server.financial_price_scale, Server.financial_price_rounding);
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.NORMAL)
-                    .setLevel(NotificationLevel.INFO)
-                    .setText(new Notification_Text().setText("Remaining credit: " + remainingCredit.toPlainString() + "."))
-                    .setObject(this)
-                    .send(notificationReceivers());
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    @JsonIgnore
-    public void notificationPaymentDetails() {
-        try {
-            String text = null;
-            if (owner.contact == null) {
-                text = "Fill in payment details, otherwise your product will be deactivated soon.";
-
-            } else if (owner.contact.fakturoid_subject_id == null) {
-                text = "Payment details are probably invalid. Check provided info or contact support.";
-            }
-
-            if (text != null) {
-                new Model_Notification()
-                        .setImportance(NotificationImportance.HIGH)
-                        .setLevel(NotificationLevel.WARNING)
-                        .setText(new Notification_Text().setText(text).setBoldText())
-                        .setObject(this)
-                        .send(notificationReceivers());
-            }
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
-    }
-
-    @JsonIgnore
-    public void notificationTerminateOnDemand(boolean success) {
-        try {
-
-            Model_Notification notification = new Model_Notification();
-
-            if (success) {
-                notification
-                        .setImportance(NotificationImportance.NORMAL)
-                        .setLevel(NotificationLevel.SUCCESS)
-                        .setText(new Notification_Text().setText("On demand payments were canceled on your product "));
-            } else {
-                notification
-                        .setImportance(NotificationImportance.HIGH)
-                        .setLevel(NotificationLevel.ERROR)
-                        .setText(new Notification_Text().setText("Failed to cancel on demand payments on your product "));
-            }
-
+                    .setText(new Notification_Text().setText("On demand payments were canceled on your product "));
+        } else {
             notification
-                    .setObject(this)
-                    .setText(new Notification_Text().setText("."))
-                    .send(notificationReceivers());
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
+                    .setImportance(NotificationImportance.HIGH)
+                    .setLevel(NotificationLevel.ERROR)
+                    .setText(new Notification_Text().setText("Failed to cancel on demand payments on your product "));
         }
+
+        notification
+                .setObject(this)
+                .setText(new Notification_Text().setText("."));
+
+        return notification;
+
     }
 
 /* EMAILS --------------------------------------------------------------------------------------------------------------*/

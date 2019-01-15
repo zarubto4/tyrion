@@ -1051,7 +1051,7 @@ public class Controller_Finance extends _BaseController {
                 Model_Project.find.evict(id);
             }
 
-            product.notificationDeactivation();
+            this.notificationService.send(product.notificationReceivers(), product.notificationDeactivation());
 
             // Vrácení potvrzení
             return ok(product);
@@ -1088,7 +1088,7 @@ public class Controller_Finance extends _BaseController {
             // Aktivování
             product.setActive(true);
 
-            product.notificationActivation();
+            this.notificationService.send(product.notificationReceivers(), product.notificationActivation());
 
             // Vrácení potvrzení
             return ok(product);

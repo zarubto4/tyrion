@@ -345,79 +345,50 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderCustom
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public void notificationInvoiceNew() {
-        try {
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.NORMAL)
-                    .setLevel(NotificationLevel.INFO)
-                    .setText(new Notification_Text().setText("See new invoice "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText(" for your product "))
-                    .setObject(this.getProduct())
-                    .setText(new Notification_Text().setText("."))
-                    .send(this.getProduct().notificationReceivers());
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
+    public Model_Notification notificationInvoiceNew() {
+        return new Model_Notification()
+                .setImportance(NotificationImportance.NORMAL)
+                .setLevel(NotificationLevel.INFO)
+                .setText(new Notification_Text().setText("See new invoice "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" for your product "))
+                .setObject(this.getProduct())
+                .setText(new Notification_Text().setText("."));
     }
 
     @JsonIgnore
-    public void notificationInvoiceReminder(String message) {
-        try {
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.HIGH)
-                    .setLevel(NotificationLevel.WARNING)
-                    .setText(new Notification_Text().setText("Payment for this product "))
-                    .setObject(this.getProduct())
-                    .setText(new Notification_Text().setText(" was not received. See this invoice "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText(" and resolve it. "))
-                    .setText(new Notification_Text().setText(message))
-                    .send(this.getProduct().notificationReceivers());
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
+    public Model_Notification notificationInvoiceReminder(String message) {
+        return new Model_Notification()
+                .setImportance(NotificationImportance.HIGH)
+                .setLevel(NotificationLevel.WARNING)
+                .setText(new Notification_Text().setText("Payment for this product "))
+                .setObject(this.getProduct())
+                .setText(new Notification_Text().setText(" was not received. See this invoice "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" and resolve it. "))
+                .setText(new Notification_Text().setText(message));
     }
 
     @JsonIgnore
-    public void notificationInvoiceOverdue() {
-        try {
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.HIGH)
-                    .setLevel(NotificationLevel.WARNING)
-                    .setText(new Notification_Text().setText("Invoice "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText(" for this product "))
-                    .setObject(this.getProduct())
-                    .setText(new Notification_Text().setText(" is overdue."))
-                    .send(this.getProduct().notificationReceivers());
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
+    public Model_Notification notificationInvoiceOverdue() {
+        return new Model_Notification()
+                .setImportance(NotificationImportance.HIGH)
+                .setLevel(NotificationLevel.WARNING)
+                .setText(new Notification_Text().setText("Invoice "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" for this product "))
+                .setObject(this.getProduct())
+                .setText(new Notification_Text().setText(" is overdue."));
     }
 
     @JsonIgnore
-    public void notificationPaymentSuccess() {
-        try {
-            double amount = total_price_with_vat();
-
-            new Model_Notification()
-                    .setImportance(NotificationImportance.NORMAL)
-                    .setLevel(NotificationLevel.SUCCESS)
-                    .setText(new Notification_Text().setText("Payment $" + amount + " for invoice "))
-                    .setObject(this)
-                    .setText(new Notification_Text().setText(" was successful."))
-                    .send(this.getProduct().notificationReceivers());
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
+    public Model_Notification notificationPaymentSuccess() {
+        return new Model_Notification()
+                .setImportance(NotificationImportance.NORMAL)
+                .setLevel(NotificationLevel.SUCCESS)
+                .setText(new Notification_Text().setText("Payment $" + total_price_with_vat() + " for invoice "))
+                .setObject(this)
+                .setText(new Notification_Text().setText(" was successful."));
     }
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/

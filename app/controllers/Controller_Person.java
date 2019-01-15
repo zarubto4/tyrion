@@ -129,7 +129,7 @@ public class Controller_Person extends _BaseController {
                     }
 
                 } catch (IllegalArgumentException e) {
-                    person.notification_error(e.getMessage());
+                    this.notificationService.send(person, person.notificationError(e.getMessage()));
                 } catch (Exception e) {
                     logger.internalServerError(e);
                 }
