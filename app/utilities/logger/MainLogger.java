@@ -61,7 +61,7 @@ public class MainLogger {
         System.out.println("    §§    §§ §§ §§ §§ §§ §§ §§¨¨¨ §§'§_   ¨§§");
         System.out.println("    §§§§§  §§§   §§§   §§§  §§§§§ §§ §§ §§§§'");
         System.out.println();
-        System.out.println("     SETTINGS: Developer");
+        System.out.println("     SETTINGS: " + configuration.getString("server.mode"));
         System.out.println();
         System.out.print  ("     GROUPS: ");
 
