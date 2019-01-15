@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: tyrion-ingress
+  annotations:  
+    kubernetes.io/ingress.class: nginx
+    certmanager.k8s.io/cluster-issuer: ltsncrpt-tyrion-prod
+spec:
+  tls:
+  - hosts:
+    - tyrion.stage.cloud.byzance.cz
+    secretName: ltsncrpt-tyrion-prod
+  rules:
+  - host: tyrion.stage.cloud.byzance.cz
+    http:
+      paths:
+      - backend:
+          serviceName: tyrion
+          servicePort: 80
