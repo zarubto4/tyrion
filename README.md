@@ -7,6 +7,14 @@
   
   This server knows all wanted states that **Hardware** or **Instances** should be in and gives directives if it is needed.
   
+  ### Deployment ###
+  
+  - [kubectl] (https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+    save configuration file for cluster in `/.kube/config`. Configuration file expires every 7 days so you need to update it manually.
+  - run `kubectl set image deployment/tyrion tyrion=byzancedocker/tyrion:release-{version_number}` substituting version number with tag you want to roll out e.g. `kubectl set image deployment/tyrion tyrion=byzancedocker/tyrion:release-2.3.2`
+  - `release-{version_number}` can be substituted with any tag in dockerhub repo
+  - if new tag is same as new (eg its set to tyrion:latest, you push new code to master without version tag and try to set image to latest again) nothing will happen - you will have to delete deployment manually and roll out a new one
+  
   ### DEV mode ###
   #### Prerequisites ####
   
