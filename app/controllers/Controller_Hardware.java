@@ -38,10 +38,13 @@ import utilities.swagger.output.filter_results.Swagger_HardwareGroup_List;
 import utilities.swagger.output.filter_results.Swagger_Hardware_List;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Help_Hardware_Pair;
 
+import java.io.File;
 import java.nio.charset.IllegalCharsetNameException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
+
+import static play.mvc.Controller.request;
 
 @Api(value = "Not Documented API - InProgress or Stuck")  // Záměrně takto zapsané - Aby ve swaggru nezdokumentované API byly v jedné sekci
 @Security.Authenticated(Authentication.class)
@@ -729,8 +732,6 @@ public class Controller_Hardware extends _BaseController {
             // Get and Validate Object
             Swagger_BASE64_FILE help = formFromRequestWithValidation(Swagger_BASE64_FILE.class);
 
-            final byte[] utf8Bytes = help.file.getBytes("UTF-8");
-
             // Kontrola objektu
             Model_HardwareType hardwareType = Model_HardwareType.find.byId(hardware_type_id);
 
@@ -750,22 +751,8 @@ public class Controller_Hardware extends _BaseController {
                 blob.delete();
             }
 
-            //  data:image/png;base64,
-            String[] parts = help.file.split(",");
-            String[] type = parts[0].split(":");
-            String[] dataType = type[1].split(";");
 
-            logger.debug("hardwareType_uploadPicture - Type     :: " + dataType[0]);
-            logger.debug("hardwareType_uploadPicture - Data     :: " + parts[1].substring(0, 10) + "......");
-
-            String file_name =  UUID.randomUUID().toString() + ".png";
-            String file_path =  hardwareType.get_path() + "/" + file_name;
-
-
-            logger.debug("hardwareType_uploadPicture - File Name:: " + file_name );
-            logger.debug("hardwareType_uploadPicture - File Path:: " + file_path );
-
-            hardwareType.picture  = Model_Blob.upload( parts[1], dataType[0], file_name , file_path);
+            hardwareType.picture = Model_Blob.upload_picture(help.file , hardwareType.get_path() );
             hardwareType.update();
             
             return ok();
@@ -1134,13 +1121,8 @@ public class Controller_Hardware extends _BaseController {
                 // Nothing
             }
 
-            String file_name =  UUID.randomUUID().toString() + "." + "bin";
-            String file_path =  boot_loader.get_path() + "/" +file_name;
 
-            logger.debug("bootLoader_uploadFile::  File Name " + file_name );
-            logger.debug("bootLoader_uploadFile::  File Path " + file_path );
-
-            boot_loader.file = Model_Blob.upload( parts[1], content_type[0], file_name, file_path);
+            boot_loader.file = Model_Blob.upload_bin_file(help.file, boot_loader.get_path());
             boot_loader.update();
 
             // Vracím seznam
@@ -1904,23 +1886,12 @@ public class Controller_Hardware extends _BaseController {
             if (hardware.picture != null) {
                 logger.debug("hardware_uploadPicture - removing previous picture");
                 Model_Blob blob = hardware.picture;
+                blob.delete();
                 hardware.picture = null;
                 hardware.update();
-                blob.delete();
             }
 
-            //  data:image/png;base64,
-            String[] parts = help.file.split(",");
-            String[] type = parts[0].split(":");
-            String[] dataType = type[1].split(";");
-
-            logger.debug("hardware_uploadPicture - type:" + dataType[0]);
-            logger.debug("hardware_uploadPicture - data:" + parts[1].substring(0, 10));
-
-            String file_name = UUID.randomUUID().toString() + ".png";
-            String file_path = hardware.getPath() + "/" + file_name;
-
-            hardware.picture = Model_Blob.upload(parts[1], dataType[0], file_name , file_path);
+            hardware.picture = Model_Blob.upload_picture( help.file, hardware.getPath());
             hardware.update();
 
             return ok(hardware);

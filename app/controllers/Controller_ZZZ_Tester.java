@@ -186,12 +186,18 @@ public class Controller_ZZZ_Tester extends _BaseController {
 
             // 7db0ab84-ae29-4c2d-9792-10fa0155b1aa
 
-            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId("7db0ab84-ae29-4c2d-9792-10fa0155b1aa");
-            System.out.println("cloud_file_get_b_program_version: snapshot found with link: " +  snapshot.name);
-            System.out.println("cloud_file_get_b_program_version: File Name: " +  snapshot.getBlob().name);
-            System.out.println("cloud_file_get_b_program_version: link?" +  snapshot.getBlob().link);
+           // Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId("7db0ab84-ae29-4c2d-9792-10fa0155b1aa");
+           // System.out.println("cloud_file_get_b_program_version: snapshot found with link: " +  snapshot.name);
+           // System.out.println("cloud_file_get_b_program_version: File Name: " +  snapshot.getBlob().name);
+           // System.out.println("cloud_file_get_b_program_version: link?" +  snapshot.getBlob().link);
 
-            return redirect(snapshot.getBlob().link);
+            // return redirect(snapshot.getBlob().link);
+
+
+
+            Model_Blob blob = Model_Blob.find.query().where().eq("hardware.id", UUID.fromString("e7311716-c638-4555-afc2-0c7ba7993301")).findOne();
+
+            return redirect(blob.link);
 
             /*
             List<Model_Person> persons = Model_Person.find.all();

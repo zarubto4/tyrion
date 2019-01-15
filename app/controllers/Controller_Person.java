@@ -1050,12 +1050,6 @@ public class Controller_Person extends _BaseController {
                 blob.delete();
             }
 
-            // Pokud link není, vygeneruje se nový, unikátní
-            if (person.alternative_picture_link == null || person.alternative_picture_link.equals("")) {
-                person.alternative_picture_link = person.get_path() + "/" + UUID.randomUUID().toString() + ".png";
-                person.update();
-            }
-
             // Pouze pro případy, kdy se uživatel registroval skrze sociální síť a Tyrion používá obrázek daného uživatele
             // Z konrkétní sociální sítě - pak chybí soubor, ale existuje cesta k souboru, kterou zaslí tyrion do Becki
             // Například:: https://avatars1.githubusercontent.com/u/16296782?v=3
@@ -1065,13 +1059,8 @@ public class Controller_Person extends _BaseController {
                 person.update();
             }
 
-            String file_name =  UUID.randomUUID().toString() + ".jpg";
-            String file_path =  person.get_path() + "/" +file_name;
-
-            logger.debug("person_uploadPicture - File Name " + file_name );
-            logger.debug("person_uploadPicture - File Path " + file_path );
-
-            person.picture = Model_Blob.upload( parts[1], content_type[0], file_name, file_path);
+            person.picture = Model_Blob.upload_picture( help.file, person.get_path());
+            person.alternative_picture_link =  person.picture.link;
             person.update();
 
             return ok("Picture successfully uploaded");

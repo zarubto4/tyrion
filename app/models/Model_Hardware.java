@@ -440,10 +440,8 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
         try {
 
             if (this.idCache().get(Model_Blob.class) == null) {
-                Model_Blob blob = Model_Blob.find.query().nullable().where().eq("hardware.id",id).findOne();
-                if (blob != null) {
-                    this.idCache().add(Model_Blob.class,  blob.id);
-                }
+                Model_Blob blob = Model_Blob.find.query().where().eq("hardware.id",id).findOne();
+                this.idCache().add(Model_Blob.class,  blob.id);
             }
 
             if (this.idCache().get(Model_Blob.class) != null) {
@@ -453,6 +451,9 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
             return null;
 
+        } catch (NotFoundException e) {
+            // nothing
+            return null;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -785,7 +786,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
     @JsonIgnore
     public String getPath() {
-        return getProject().getPath() + "/hardware";
+        return getProject().getPath() + "/hardware/" + this.id;
     }
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/

@@ -59,7 +59,7 @@ public class ResponseThread implements Supplier<Message> {
             return null;
         }
 
-        logger.warn("get - timeout, responding with error, id: {}", id);
+        logger.warn("get - timeout, responding with error, id: {}, message type", id, this.message.get("message_type").asText());
         throw new RequestTimeoutException();
     }
 
