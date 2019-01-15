@@ -1052,7 +1052,7 @@ public class Controller_Person extends _BaseController {
 
             // Pokud link není, vygeneruje se nový, unikátní
             if (person.alternative_picture_link == null || person.alternative_picture_link.equals("")) {
-                person.alternative_picture_link = person.get_Container().getName() + "/" + UUID.randomUUID().toString() + ".png";
+                person.alternative_picture_link = person.get_path() + "/" + UUID.randomUUID().toString() + ".png";
                 person.update();
             }
 
@@ -1066,7 +1066,7 @@ public class Controller_Person extends _BaseController {
             }
 
             String file_name =  UUID.randomUUID().toString() + ".jpg";
-            String file_path =  person.get_Container().getName() + "/" +file_name;
+            String file_path =  person.get_path() + "/" +file_name;
 
             logger.debug("person_uploadPicture - File Name " + file_name );
             logger.debug("person_uploadPicture - File Path " + file_path );

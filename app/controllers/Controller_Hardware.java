@@ -249,7 +249,7 @@ public class Controller_Hardware extends _BaseController {
             code = 200
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_File_Content.class),
+            @ApiResponse(code = 303, message = "Automatic Redirect To another URL"),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
@@ -265,7 +265,7 @@ public class Controller_Hardware extends _BaseController {
             content.file_in_base64 = boot_loader.getBlob().downloadString();
 
             // Vracím content
-            return ok(content);
+            return redirect(boot_loader.getBlob().link);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -281,7 +281,7 @@ public class Controller_Hardware extends _BaseController {
             code = 200
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_File_Content.class),
+            @ApiResponse(code = 303, message = "Automatic Redirect To another URL"),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
             @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
             @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
@@ -293,12 +293,8 @@ public class Controller_Hardware extends _BaseController {
             // Kontrola validity objektu
             Model_CProgramVersion version = Model_CProgramVersion.find.byId(version_id);
 
-            // Swagger_File_Content - Zástupný dokumentační objekt
-            Swagger_File_Content content = new Swagger_File_Content();
-            content.file_in_base64 = version.getCompilation().getBlob().downloadString();
-
             // Vracím content
-            return ok(content);
+            return redirect(version.getCompilation().getBlob().link);
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -763,7 +759,7 @@ public class Controller_Hardware extends _BaseController {
             logger.debug("hardwareType_uploadPicture - Data     :: " + parts[1].substring(0, 10) + "......");
 
             String file_name =  UUID.randomUUID().toString() + ".png";
-            String file_path =  hardwareType.get_Container().getName() + "/" + file_name;
+            String file_path =  hardwareType.get_path() + "/" + file_name;
 
 
             logger.debug("hardwareType_uploadPicture - File Name:: " + file_name );
@@ -1139,7 +1135,7 @@ public class Controller_Hardware extends _BaseController {
             }
 
             String file_name =  UUID.randomUUID().toString() + "." + "bin";
-            String file_path =  boot_loader.get_Container().getName() + "/" +file_name;
+            String file_path =  boot_loader.get_path() + "/" +file_name;
 
             logger.debug("bootLoader_uploadFile::  File Name " + file_name );
             logger.debug("bootLoader_uploadFile::  File Path " + file_path );

@@ -448,7 +448,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
             if (this.idCache().get(Model_Blob.class) != null) {
                 Model_Blob record = Model_Blob.find.byId(this.idCache().get(Model_Blob.class));
-                return record.getPublicDownloadLink();
+                return record.link;
             }
 
             return null;

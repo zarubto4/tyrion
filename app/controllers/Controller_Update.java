@@ -108,7 +108,7 @@ public class Controller_Update extends _BaseController {
                 } else {
 
                     Model_Compilation compilation = new Model_Compilation();
-                    compilation.blob = Model_Blob.upload( help.file_base_64, "blob", help.firmware_type + ".bin", hardware.getPath());
+                    compilation.blob = Model_Blob.upload( help.file_base_64, "application/octet-stream", help.firmware_type + ".bin", hardware.getPath());
                     compilation.firmware_build_id = help.firmware_build_id;
                     compilation.firmware_version_lib = "Manual Update"; // TODO https://youtrack.byzance.cz/youtrack/issue/HW-1375
                     compilation.firmware_build_datetime = new Date(); // TODO https://youtrack.byzance.cz/youtrack/issue/HW-1375
@@ -174,7 +174,7 @@ public class Controller_Update extends _BaseController {
             logger.debug("hardwareType_uploadBin- File Name:: " + file_name );
 
             // Create File - its not owned by any other model object - and there is a Cron Job witch remove this file after 24 hours.
-            Model_Blob file = Model_Blob.upload(help.file, "bin", file_name , Model_Blob.get_path_for_bin());
+            Model_Blob file = Model_Blob.upload(help.file, "application/octet-stream", file_name , Model_Blob.get_path_for_bin());
 
             String build_id = "dasfsdfsdfsd TODO";
 

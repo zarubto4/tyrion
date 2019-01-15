@@ -42,19 +42,12 @@ public class Model_GridProgramVersion extends VersionModel implements Permissibl
 
 /* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @Transient public String program_version() {
+    @JsonProperty @Transient public String program_version_link() {
         try {
 
             Model_Blob fileRecord = Model_Blob.find.query().nullable().where().eq("grid_program_version.id", id).eq("name", "grid_program.json").findOne();
+            return fileRecord.link;
 
-            if (fileRecord != null) {
-
-                JsonNode json = Json.parse(fileRecord.downloadString());
-               return json.get("m_code").asText();
-
-            }
-
-            return null;
 
         } catch (Exception e){
             logger.internalServerError(e);

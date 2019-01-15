@@ -94,7 +94,7 @@ public class Model_Person extends BaseModel implements Permissible {
                 cache_picture_link = alternative_picture_link;  // Its probably link from GitHub or profile picture from facebook
             }
             else if (picture != null) {
-                cache_picture_link = picture.get_file_path_for_direct_download();
+                cache_picture_link = picture.link;
             }
             return cache_picture_link;
 
@@ -152,14 +152,9 @@ public class Model_Person extends BaseModel implements Permissible {
         return BCrypt.checkpw(password, this.password);
     }
 
-    @JsonIgnore
-    public CloudBlobContainer get_Container() {
-        try {
-            return Server.blobClient.getContainerReference("pictures");
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            throw new NullPointerException();
-        }
+    @JsonIgnore @Transient
+    public String get_path() {
+        return "pictures_persons" + "/" + this.id;
     }
 
 /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/

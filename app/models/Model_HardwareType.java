@@ -98,8 +98,8 @@ public class Model_HardwareType extends NamedModel implements Permissible, Publi
         try {
 
             if (cache_picture_link == null) {
-                Model_Blob file = Model_Blob.find.query().where().eq("hardware_type.id", id).findOne();
-                cache_picture_link = file.get_file_path_for_direct_download();
+                Model_Blob file = Model_Blob.find.query().nullable().where().eq("hardware_type.id", id).findOne();
+                cache_picture_link = file.link;
             }
 
             return cache_picture_link;
@@ -268,16 +268,12 @@ public class Model_HardwareType extends NamedModel implements Permissible, Publi
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Transient
-    public CloudBlobContainer get_Container() {
-        try {
-            return Server.blobClient.getContainerReference("pictures");
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            throw new NullPointerException();
-        }
+    public String get_path() {
+        return "pictures_hardware_type" + "/" + this.id;
     }
 
-/* PERMISSION ----------------------------------------------------------------------------------------------------------*/
+
+    /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore @Override
     public EntityType getEntityType() {

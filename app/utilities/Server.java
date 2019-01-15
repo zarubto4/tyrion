@@ -1,5 +1,11 @@
 package utilities;
 
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.google.inject.Injector;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
@@ -9,14 +15,6 @@ import io.intercom.api.Intercom;
 import models.*;
 import utilities.enums.ProgramType;
 import utilities.enums.ServerMode;
-import xyz.morphia.Datastore;
-import xyz.morphia.Morphia;
-import xyz.morphia.annotations.Entity;
-import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
 import utilities.grid_support.utils.IP_Founder;
 import utilities.homer_auto_deploy.DigitalOceanThreadRegister;
 import utilities.logger.Logger;
@@ -48,6 +46,10 @@ public class Server {
     public static CloudStorageAccount storageAccount;
     public static CloudBlobClient blobClient;
     public static String azure_blob_Link;
+
+    public static AWSCredentialsProvider awscp;
+    public static AmazonS3 space;
+    public static String bucket_name;
 
     public static String becki_mainUrl;
     public static String becki_redirectOk;
@@ -209,6 +211,23 @@ public class Server {
         azure_blob_Link = configuration.getString("blob." + mode + ".url");
         storageAccount  = CloudStorageAccount.parse(configuration.getString("blob." + mode + ".secret"));
         blobClient      = storageAccount.createCloudBlobClient();
+
+
+
+        // AWS - DigitalOcean Config ------------------------------------------------------------------------------------------------------------
+        awscp = new AWSStaticCredentialsProvider( new BasicAWSCredentials(configuration.getString("digitalOcean.space.access_key"), configuration.getString("digitalOcean.space.secret_key")));
+        space = AmazonS3ClientBuilder
+                .standard()
+                .withCredentials(awscp)
+                .withEndpointConfiguration(
+                        new AwsClientBuilder.EndpointConfiguration("https://ams3.digitaloceanspaces.com", "ams3")
+                )
+                .build();
+
+        bucket_name = configuration.getString("digitalOcean.space.bucket_name");
+        if(!space.doesBucketExistV2("space-byzance-tyrion-stage") ){
+            space.createBucket("space-byzance-tyrion-stage");
+        }
 
         slack_webhook_url_channel_servers = configuration.getString("Slack.servers");
         slack_webhook_url_channel_hardware = configuration.getString("Slack.hardware");

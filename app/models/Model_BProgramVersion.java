@@ -3,6 +3,7 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import utilities.cache.CacheFinder;
 import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
@@ -44,12 +45,12 @@ public class Model_BProgramVersion extends VersionModel implements Permissible, 
 
 /* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty
+    @JsonProperty @ApiModelProperty(value = "Program Link")
     public String program() {
         try {
 
             Model_Blob blob = Model_Blob.find.query().where().eq("b_program_version.id", id).eq("name", "blocko.json").findOne();
-            return blob.getPublicDownloadLink();
+            return blob.link;
 
         } catch (Exception e) {
             logger.internalServerError(e);

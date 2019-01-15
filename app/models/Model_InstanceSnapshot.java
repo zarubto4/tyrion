@@ -248,11 +248,11 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
         }
     }
 
-    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(value = "only if snapshot is main")
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(value = "File Link, only if snapshot is main")
     public String program() {
         try {
             if (getBlob() != null) {
-                return getBlob().getPublicDownloadLink();
+                return getBlob().link;
             }
         } catch (Exception e) {
             logger.internalServerError(e);

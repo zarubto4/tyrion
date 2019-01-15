@@ -67,7 +67,7 @@ public class Model_Compilation extends BaseModel implements Updatable {
     @JsonProperty
     public String file_path() {
         try {
-            return getBlob().getPublicDownloadLink();
+            return getBlob().link;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -104,7 +104,7 @@ public class Model_Compilation extends BaseModel implements Updatable {
         compilation.save();
 
         // Daný soubor potřebuji dostat na Azure a Propojit s verzí
-        compilation.blob = Model_Blob.upload(body, "firmware.bin", get_path_for_bin());
+        compilation.blob = Model_Blob.upload(body, "application/octet-stream", "firmware.bin", get_path_for_bin());
 
         logger.trace("compile_program_procedure:: Body is ok - uploading to Azure was successful");
         compilation.status = CompilationStatus.SUCCESS;

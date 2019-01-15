@@ -658,20 +658,9 @@ public class Model_Product extends NamedModel implements Permissible, UnderCusto
 
 /* BlOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-
-    @JsonIgnore @Transient
-    public CloudBlobContainer get_Container() {
-        try {
-            return Server.blobClient.getContainerReference("product");
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            throw new NullPointerException();
-        }
-    }
-
     @JsonIgnore @Transient
     public String get_path() {
-       return get_Container().getName() + "/" + UUID.randomUUID().toString();
+       return "product" + "/" + UUID.randomUUID().toString();
     }
 
 /* PERMISSION Description ----------------------------------------------------------------------------------------------*/

@@ -58,7 +58,7 @@ public class Model_BootLoader extends NamedModel implements Permissible, Updatab
     @JsonProperty
     public String  file_path() {
         try {
-            return getBlob().getPublicDownloadLink();
+            return getBlob().link;
         } catch (Exception e) {
             logger.internalServerError(e);
             return null;
@@ -189,22 +189,10 @@ public class Model_BootLoader extends NamedModel implements Permissible, Updatab
     @JsonIgnore  private String azure_product_link;
 
     @JsonIgnore
-    public CloudBlobContainer get_Container() {
-        try {
-
-            return Server.blobClient.getContainerReference("bootloaders"); // Jméno kontejneru
-
-        } catch (Exception e) {
-            logger.internalServerError(e);
-            return null;
-        }
-    }
-
-    @JsonIgnore
     public String get_path() {
 
         if (azure_product_link == null) {
-            this.azure_product_link = get_Container().getName() + "/" + this.id;
+            this.azure_product_link = "bootloaders";
             this.update();
         }
 
