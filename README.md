@@ -9,7 +9,7 @@
   
   ### Deployment ###
   
-  - [kubectl] (https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+  - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
     save configuration file for cluster in `/.kube/config`. Configuration file expires every 7 days so you need to update it manually.
   - run `kubectl set image deployment/tyrion tyrion=byzancedocker/tyrion:release-{version_number}` substituting version number with tag you want to roll out e.g. `kubectl set image deployment/tyrion tyrion=byzancedocker/tyrion:release-2.3.2`
   - `release-{version_number}` can be substituted with any tag in dockerhub repo
