@@ -70,6 +70,7 @@ public class YouTrack {
             logger.debug("report - unsuccessful, status: {}, body: {}", response.getStatus(), response.getBody());
 
         } catch (Exception e) {
+            logger.error("Youtrack error");
             logger.internalServerError(e);
         }
 

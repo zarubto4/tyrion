@@ -740,7 +740,12 @@ public class Controller_ExternalServer extends _BaseController {
     @Security.Authenticated(AuthenticationHomer.class)
     public Result cloud_file_get_b_program_version(UUID snapshot_id) {
         try {
-            return redirect(Model_InstanceSnapshot.find.byId(snapshot_id).getBlob().link);
+
+            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(snapshot_id);
+            logger.trace("cloud_file_get_b_program_version: snapshot found with link: ", snapshot.getBlob().link);
+
+            return redirect(snapshot.getBlob().link);
+
         } catch (Exception e) {
            return controllerServerError(e);
         }

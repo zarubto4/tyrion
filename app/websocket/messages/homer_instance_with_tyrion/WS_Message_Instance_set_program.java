@@ -36,7 +36,7 @@ public class WS_Message_Instance_set_program extends WS_AbstractMessage_Instance
         update.program_version_id = version.id;
         update.program_version_name = version.name;
         update.b_program_id = version.get_b_program_id();
-        update.b_program_name = version.getBProgram().name;
+        update.link = version.link_to_download();
         request_list.add(update);
 
         ObjectNode request = Json.newObject();
@@ -59,6 +59,7 @@ public class WS_Message_Instance_set_program extends WS_AbstractMessage_Instance
 
         public UUID b_program_id;
         public String b_program_name;
+        public String link;
 
     }
 

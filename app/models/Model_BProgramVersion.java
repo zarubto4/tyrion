@@ -46,7 +46,7 @@ public class Model_BProgramVersion extends VersionModel implements Permissible, 
 /* JSON PROPERTY VALUES -------------------------------------------------------------------------------------------------*/
 
     @JsonProperty @ApiModelProperty(value = "Program Link")
-    public String program() {
+    public String link_to_download() {
         try {
 
             Model_Blob blob = Model_Blob.find.query().where().eq("b_program_version.id", id).eq("name", "blocko.json").findOne();
