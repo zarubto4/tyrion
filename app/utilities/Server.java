@@ -40,7 +40,6 @@ public class Server {
     public static String ip;
     public static String httpAddress;
     public static String clearAddress;
-    public static String wsAddress;
 
     // Azure - Blob
     public static CloudStorageAccount storageAccount;
@@ -50,15 +49,6 @@ public class Server {
     public static AWSCredentialsProvider awscp;
     public static AmazonS3 space;
     public static String bucket_name;
-
-    public static String becki_mainUrl;
-    public static String becki_redirectOk;
-    public static String becki_redirectFail;
-    public static String becki_accountAuthorizedSuccessful;
-    public static String becki_accountAuthorizedFailed;
-    public static String becki_passwordReset;
-    public static String becki_invitationToCollaborate;
-    public static String becki_propertyChangeFailed;
 
     public static String grid_app_main_url;
 
@@ -81,12 +71,6 @@ public class Server {
     public static String PrintNode_apiKey;
 
     public static String link_api_swagger;
-
-    // Slack
-
-    public static String slack_webhook_url_channel_servers;
-    public static String slack_webhook_url_channel_homer;
-    public static String slack_webhook_url_channel_hardware;
 
     // Financial
 
@@ -145,8 +129,6 @@ public class Server {
 
             ip = IP_Founder.getLocalHostLANAddress().getHostAddress();
             httpAddress = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
-            wsAddress   = "ws://"   + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":9000";
-            becki_mainUrl = "http://" + IP_Founder.getLocalHostLANAddress().getHostAddress() + ":8080";
 
             logger.info("setConstants - local URL: {}", ip);
 
@@ -156,29 +138,14 @@ public class Server {
 
         // Nastavení pro Tyrion Adresy - pokud není developer je automaticky wss a httms
         if(httpAddress == null) httpAddress = "https://" + configuration.getString("server." + mode);
-        if(wsAddress == null)   wsAddress   = "wss://" + configuration.getString("server." + mode);
         if(clearAddress == null)   clearAddress  = configuration.getString("server." + mode);
 
         // Nastavení adresy, kde běží Grid APP
         if(grid_app_main_url == null) grid_app_main_url = "https://" + configuration.getString("Grid_App." + mode + ".mainUrl");
 
-        // Nastavení pro Becki Adresy
-        if(becki_mainUrl == null) becki_mainUrl           = "https://" + configuration.getString("Becki." + mode + ".mainUrl");
-
         // Swagger URL Redirect - Actual Rest Api docu
         link_api_swagger = "http://swagger.byzance.cz/?url=" + httpAddress + "/swagger.json";
 
-        //financial_spendDailyPeriod = checkPeriod(configuration.getInt("Financial." + mode + ".spendDailyPeriod"));
-
-        //  Becki Config -------------------------------------------------------------------------------------------------------------
-
-        becki_redirectOk                    = configuration.getString("Becki.redirectOk");
-        becki_redirectFail                  = configuration.getString("Becki.redirectFail");
-        becki_accountAuthorizedSuccessful   = configuration.getString("Becki.accountAuthorizedSuccessful");
-        becki_accountAuthorizedFailed       = configuration.getString("Becki.accountAuthorizedFailed");
-        becki_passwordReset                 = configuration.getString("Becki.passwordReset ");
-        becki_invitationToCollaborate       = configuration.getString("Becki.invitationToCollaborate");
-        becki_propertyChangeFailed          = configuration.getString("Becki.redirectFail");
 
         //  Facturoid Config -------------------------------------------------------------------------------------------------------------
 
@@ -228,10 +195,6 @@ public class Server {
         if(!space.doesBucketExistV2("space-byzance-tyrion-stage") ){
             space.createBucket("space-byzance-tyrion-stage");
         }
-
-        slack_webhook_url_channel_servers = configuration.getString("Slack.servers");
-        slack_webhook_url_channel_hardware = configuration.getString("Slack.hardware");
-        slack_webhook_url_channel_homer = configuration.getString("Slack.homer");
 
         // Set token to InterCom
         Intercom.setToken(configuration.getString("Intercom.token"));

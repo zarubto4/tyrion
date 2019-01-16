@@ -2,6 +2,7 @@ package controllers;
 
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
+import common.PortalConfig;
 import exceptions.BadRequestException;
 import io.swagger.annotations.*;
 import models.*;
@@ -12,7 +13,6 @@ import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
-import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.enums.ExtensionType;
@@ -45,14 +45,16 @@ public class Controller_Project extends _BaseController {
     private final HardwareService hardwareService;
     private final MongoCloudApi mongoApi;
     private final ProductService productService;
+    private final PortalConfig portalConfig;
 
     @Inject
     public Controller_Project(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, ProductService productService,
-                              MongoCloudApi mongoApi, NotificationService notificationService, HardwareService hardwareService, EchoService echoService) {
+                              MongoCloudApi mongoApi, NotificationService notificationService, HardwareService hardwareService, EchoService echoService, PortalConfig portalConfig) {
         super(ws, formFactory, config, permissionService, notificationService, echoService);
         this.hardwareService = hardwareService;
         this.productService = productService;
         this.mongoApi = mongoApi;
+        this.portalConfig = portalConfig;
     }
 
 
@@ -473,7 +475,7 @@ public class Controller_Project extends _BaseController {
                     invitation.save();
                 }
 
-                String link = Server.becki_mainUrl + "/" +  Server.becki_invitationToCollaborate + URLEncoder.encode(mail, "UTF-8");
+                String link = this.portalConfig.getInvitationUrl() + URLEncoder.encode(mail, "UTF-8");
 
                 // Odeslání emailu s linkem pro registraci
                 try {
@@ -511,7 +513,7 @@ public class Controller_Project extends _BaseController {
 
                     new Email()
                             .text("User " + Email.bold(full_name) + " invites you to collaborate on the project ")
-                            .link(project.name, Server.becki_mainUrl + "/projects")
+                            .link(project.name, this.portalConfig.getMainUrl() + "/projects")
                             .text(". If you would like to participate in it, log in to your Byzance account.")
                             .send(person.email, "Invitation to Collaborate");
 

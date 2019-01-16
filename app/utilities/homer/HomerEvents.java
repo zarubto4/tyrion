@@ -2,14 +2,13 @@ package utilities.homer;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import common.ServerConfig;
 import models.Model_Hardware;
 import models.Model_HomerServer;
 import models.Model_Instance;
-import utilities.Server;
 import utilities.enums.NetworkStatus;
-import utilities.enums.ServerMode;
 import utilities.network.NetworkStatusService;
-import utilities.slack.Slack;
+import utilities.slack.SlackService;
 import utilities.synchronization.SynchronizationService;
 
 import java.util.List;
@@ -17,12 +16,16 @@ import java.util.List;
 public class HomerEvents {
 
     private final Injector injector;
+    private final ServerConfig serverConfig;
+    private final SlackService slackService;
     private final NetworkStatusService networkStatusService;
     private final SynchronizationService synchronizationService;
 
     @Inject
-    public HomerEvents(Injector injector, NetworkStatusService networkStatusService, SynchronizationService synchronizationService) {
+    public HomerEvents(Injector injector, NetworkStatusService networkStatusService, SynchronizationService synchronizationService, ServerConfig serverConfig, SlackService slackService) {
         this.injector = injector;
+        this.serverConfig = serverConfig;
+        this.slackService = slackService;
         this.networkStatusService = networkStatusService;
         this.synchronizationService = synchronizationService;
     }
@@ -39,8 +42,8 @@ public class HomerEvents {
     public void disconnected(Model_HomerServer server) {
         this.networkStatusService.setStatus(server, NetworkStatus.OFFLINE);
 
-        if (Server.mode == ServerMode.STAGE) {
-            Slack.homer_server_offline(server); // TODO injection
+        if (!this.serverConfig.isDevelopment()) {
+            this.slackService.postHomerChannel("Homer server: " + server.name + " is offline.");
         }
 
         List<Model_Instance> instances = Model_Instance.find.query().where().eq("server_main.id", server.id).isNotNull("current_snapshot_id").findList();

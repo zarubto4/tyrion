@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
+import common.ServerConfig;
 import io.swagger.annotations.*;
 import models.*;
 import org.quartz.Trigger;
@@ -54,16 +55,18 @@ public class Controller_Admin extends _BaseController {
     private final WebSocketService webSocketService;
     private final YouTrack youTrack;
     private final SchedulerService schedulerService;
+    private final ServerConfig serverConfig;
 
     @Inject
     public Controller_Admin(Environment environment, WSClient ws, _BaseFormFactory formFactory, YouTrack youTrack, Config config,
                             SchedulerService schedulerService, PermissionService permissionService, WebSocketService webSocketService,
-                            NotificationService notificationService, EchoService echoService) {
+                            NotificationService notificationService, EchoService echoService, ServerConfig serverConfig) {
         super(ws, formFactory, config, permissionService, notificationService, echoService);
         this.environment = environment;
         this.webSocketService = webSocketService;
         this.youTrack = youTrack;
         this.schedulerService = schedulerService;
+        this.serverConfig = serverConfig;
     }
 
 
@@ -474,7 +477,7 @@ public class Controller_Admin extends _BaseController {
 
                 logger.debug("server_getUpdates - filtering depending on mode, release: {}", Json.toJson(release));
 
-                switch (Server.mode) {
+                switch (serverConfig.getMode()) {
                     case DEVELOPER: {
                         Pattern pattern = Pattern.compile("^(v)(\\d+\\.)(\\d+\\.)(\\d+)(-(.)*)?$");
                         Matcher matcher = pattern.matcher(release.tag_name);

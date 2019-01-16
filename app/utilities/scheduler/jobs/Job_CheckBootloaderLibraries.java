@@ -14,7 +14,7 @@ import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
 import utilities.logger.Logger;
 import utilities.scheduler.Scheduled;
-import utilities.slack.Slack;
+import utilities.slack.SlackService;
 import utilities.swagger.input.Swagger_GitHubReleases;
 import utilities.swagger.input.Swagger_GitHubReleases_Asset;
 
@@ -34,10 +34,12 @@ public class Job_CheckBootloaderLibraries extends _GitHubZipHelper implements Jo
 
 //**********************************************************************************************************************
 
+    private final SlackService slackService;
 
     @Inject
-    public Job_CheckBootloaderLibraries(WSClient ws, Config config, _BaseFormFactory formFactory) {
+    public Job_CheckBootloaderLibraries(WSClient ws, Config config, _BaseFormFactory formFactory, SlackService slackService) {
         super(ws, config, formFactory);
+        this.slackService = slackService;
     }
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -87,13 +89,15 @@ public class Job_CheckBootloaderLibraries extends _GitHubZipHelper implements Jo
 
                         if (subStrings_main_parts[0] == null) {
                             logger.error("Required Part in Release Tag name for Booloader missing): Type Of Board (compiler_target_name) ");
-                            Slack.post_invalid_bootloader(release);
+                            slackService.postHardwareChannel("Toto je automatická zpráva kterou vygeneroval všemocný Tyrion Server. \n  Podle GitHubu *" + release.author.login +
+                                    "* vytvořil Bootloader release *" + release.tag_name + "* bez požadovaných parametrů. \n Například soubor (dist.zip)");
                             continue;
                         }
 
                         if (subStrings_main_parts[1] == null) {
                             logger.error("Required Part in Release Tag name for Booloader missing): Version (v1.0.1)");
-                            Slack.post_invalid_bootloader(release);
+                            slackService.postHardwareChannel("Toto je automatická zpráva kterou vygeneroval všemocný Tyrion Server. \n  Podle GitHubu *" + release.author.login +
+                                    "* vytvořil Bootloader release *" + release.tag_name + "* bez požadovaných parametrů. \n Například soubor (dist.zip)");
                             continue;
                         }
 

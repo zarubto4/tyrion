@@ -227,7 +227,7 @@ public class FakturoidService extends _BaseController {
             sendInvoiceEmail(invoice, contact.invoice_email);
 
             if(fakturoidProforma.lines == null || fakturoidProforma.lines.size() != invoice.invoice_items.size()) {
-                invoice.sendMessageToAdmin("Number items in our invoice and Fakturoid does not fit!");
+                // TODO invoice.sendMessageToAdmin("Number items in our invoice and Fakturoid does not fit!");
             }
 
             return true;

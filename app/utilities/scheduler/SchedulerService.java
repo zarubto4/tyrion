@@ -2,6 +2,7 @@ package utilities.scheduler;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import common.ServerConfig;
 import models.Model_InstanceSnapshot;
 import org.quartz.*;
 import org.quartz.impl.matchers.GroupMatcher;
@@ -37,7 +38,7 @@ public class SchedulerService {
 
     @Inject
     @SuppressWarnings("unchecked")
-    public SchedulerService(Scheduler scheduler, ApplicationLifecycle appLifecycle, ServerLogger serverLogger) {
+    public SchedulerService(Scheduler scheduler, ApplicationLifecycle appLifecycle, ServerConfig serverConfig, ServerLogger serverLogger) {
         this.scheduler = scheduler;
 
         appLifecycle.addStopHook(() -> {

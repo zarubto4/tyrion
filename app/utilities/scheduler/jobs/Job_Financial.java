@@ -3,13 +3,13 @@ package utilities.scheduler.jobs;
 
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
+import common.PortalConfig;
 import models.Model_ExtensionFinancialEvent;
 import models.Model_Invoice;
 import models.Model_Product;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import utilities.enums.PaymentMethod;
 import utilities.enums.InvoiceStatus;
 import utilities.enums.PaymentWarning;
 import utilities.financial.fakturoid.FakturoidService;
@@ -17,6 +17,7 @@ import utilities.financial.goPay.GoPay;
 import utilities.logger.Logger;
 import utilities.notifications.NotificationService;
 import utilities.scheduler.Scheduled;
+import utilities.slack.SlackService;
 
 
 import java.math.BigDecimal;
@@ -28,7 +29,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -48,13 +48,17 @@ public class Job_Financial implements Job {
     private FakturoidService fakturoid;
     private GoPay goPay;
     private NotificationService notificationService;
+    private final SlackService slackService;
+    private final PortalConfig portalConfig;
 
     @Inject
-    public Job_Financial(Config config, FakturoidService fakturoid, GoPay goPay, NotificationService notificationService) {
+    public Job_Financial(Config config, FakturoidService fakturoid, GoPay goPay, NotificationService notificationService, SlackService slackService, PortalConfig portalConfig) {
         this.config = config;
         this.fakturoid = fakturoid;
         this.goPay = goPay;
         this.notificationService = notificationService;
+        this.slackService = slackService;
+        this.portalConfig = portalConfig;
     }
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -176,6 +180,8 @@ public class Job_Financial implements Job {
         private void spendingSaas(Model_Product product) {
             logger.debug("Spending update for product {} (id: {}).", product.name, product.id);
 
+            String productURL = portalConfig.getMainUrl() + "/financial/" + product.getId();
+
             // calculate new spending
             List<Model_ExtensionFinancialEvent> newEvents = product.updateHistory(false);
             BigDecimal newSpending = Model_ExtensionFinancialEvent.getTotalPrice(newEvents);
@@ -192,10 +198,10 @@ public class Job_Financial implements Job {
 
                     try {
                         product.setActive(false);
-                        product.sendMessageToAdmin("No payment details set, no credit, product was deactivated. ");
+                        slackService.post("No payment details set, no credit, product was deactivated. \n Link: " + productURL);
                     } catch (Exception e) {
-                        product.sendMessageToAdmin("Error while deactivating product " + product.id +"! " +
-                                "Credit is gone and no payment details set, but error occurred when we tried to deactivate the product.");
+                        slackService.post("Error while deactivating product " + product.id +"! " +
+                                "Credit is gone and no payment details set, but error occurred when we tried to deactivate the product. \n Link: " + productURL);
                     }
 
                     notificationService.send(product.notificationReceivers(), product.notificationDeactivation("No remaining credit. Payment method missing."));
@@ -315,11 +321,10 @@ public class Job_Financial implements Job {
 
                         try {
                             product.setActive(false);
-                            product.sendMessageToAdmin("No payment received, product was deactivated. ");
-
+                            slackService.post("No payment received, product was deactivated. \n Link: " + productURL);
                         } catch (Exception e) {
-                            product.sendMessageToAdmin("Error while deactivating product " + product.id +"! " +
-                                    "We did not receive payment for invoice " + invoice + ", but error occurred when we tried to deactivate the product.");
+                            slackService.post("Error while deactivating product " + product.id +"! " +
+                                    "We did not receive payment for invoice " + invoice + ", but error occurred when we tried to deactivate the product. \n Link: " + productURL);
                         }
 
                         notificationService.send(product.notificationReceivers(), invoice.notificationInvoiceReminder("Product was deactivated."));
@@ -336,7 +341,7 @@ public class Job_Financial implements Job {
                     .collect(Collectors.toList());
 
             for (Model_Invoice unfinished: unfinishedInvoices) {
-                unfinished.sendMessageToAdmin("We have UNFINISHED invoice waiting (not register by Fakturoid)! ");
+                slackService.post("We have UNFINISHED invoice waiting! (not registered by Fakturoid) \n Link: " + portalConfig.getMainUrl() + "/financial/" + product.getId() + "/invoices/" + unfinished.getId());
             }
 
             // If some invoice needs to be confirmed my admin and is older than one day, send an reminder.
@@ -345,7 +350,7 @@ public class Job_Financial implements Job {
                     .collect(Collectors.toList());
 
             for (Model_Invoice unconfirmed: unconfirmedInvoices) {
-                unconfirmed.sendMessageToAdmin("We have UNCONFIRMED invoice waiting (limit of money for the invoice was reached)! ");
+                slackService.post("We have UNCONFIRMED invoice waiting! (limit of money for the invoice was reached) \n Link: " + portalConfig.getMainUrl() + "/financial/" + product.getId() + "/invoices/" + unconfirmed.getId());
             }
         }
     };

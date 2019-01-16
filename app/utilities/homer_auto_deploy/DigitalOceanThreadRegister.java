@@ -16,7 +16,6 @@ import utilities.Server;
 import utilities.enums.NetworkStatus;
 import utilities.homer_auto_deploy.models.service.Swagger_BlueOcean;
 import utilities.logger.Logger;
-import utilities.slack.Slack;
 
 import java.time.Duration;
 import java.util.UUID;
@@ -151,7 +150,7 @@ public class DigitalOceanThreadRegister extends Thread {
                                     slack_echo += "Homer Serve ID: " + homer_server_id + ", Name:" + server.name + "\n";
                                     slack_echo += "Droplet rul: " + server.server_url + ", Api URL:" + server.server_url + ":" + server.rest_api_port + " <---\n";
                                     slack_echo += "Tyrion Server Type: " + Server.mode + ", Tyrion URL: " + Server.httpAddress + "\n";
-                                    Slack.post_error(slack_echo, Server.slack_webhook_url_channel_homer);
+                                    // Slack.post_error(slack_echo, Server.slack_webhook_url_channel_homer); // TODO injection
                                     server.idCache().removeAll(DigitalOceanThreadRegister.class);
 
                                     break thr1;

@@ -1,13 +1,9 @@
 package utilities.scheduler.jobs;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
+import common.ServerConfig;
 import controllers._BaseFormFactory;
-import io.ebean.Expr;
-import models.Model_Blob;
-import models.Model_CProgram;
-import models.Model_CProgramVersion;
 import models.Model_HardwareType;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -15,28 +11,15 @@ import org.quartz.JobExecutionException;
 import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
-import play.libs.ws.WSResponse;
-import utilities.Server;
-import utilities.enums.ProgramType;
-import utilities.enums.ServerMode;
 import utilities.logger.Logger;
-import utilities.scheduler.Restrict;
 import utilities.scheduler.Scheduled;
-import utilities.swagger.input.Swagger_C_Program_Version_New;
 import utilities.swagger.input.Swagger_CompilationLibrary;
 import utilities.swagger.input.Swagger_GitHubReleases;
-import utilities.swagger.input.Swagger_GitHub_ExampleFile;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import static utilities.enums.ServerMode.STAGE;
 
 /**
  * This job synchronizes compilation libraries from GitHub releases.
@@ -50,9 +33,12 @@ public class Job_GetCompilationLibraries extends _GitHubZipHelper implements Job
 
 //**********************************************************************************************************************
 
+    private final ServerConfig serverConfig;
+
     @Inject
-    public Job_GetCompilationLibraries(WSClient ws, Config config, _BaseFormFactory formFactory) {
+    public Job_GetCompilationLibraries(WSClient ws, Config config, _BaseFormFactory formFactory, ServerConfig serverConfig) {
         super(ws, config, formFactory);
+        this.serverConfig = serverConfig;
     }
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -135,11 +121,11 @@ public class Job_GetCompilationLibraries extends _GitHubZipHelper implements Job
 
 
                         Pattern pattern = null;
-                        if (Server.mode == ServerMode.PRODUCTION) {
+                        if (serverConfig.isProduction()) {
                             pattern = Pattern.compile(regex_beta);                          // Záměrně - uživatelům to umožnujeme průběžně řešit
-                        } else if (Server.mode == ServerMode.STAGE) {
+                        } else if (serverConfig.isStage()) {
                             pattern = Pattern.compile(regex_beta);
-                        } else if (Server.mode == ServerMode.DEVELOPER) {
+                        } else if (serverConfig.isDevelopment()) {
                             pattern = Pattern.compile(regex_apha_beta);
                         }
 

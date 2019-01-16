@@ -3,6 +3,8 @@ package controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
+import common.PortalConfig;
+import exceptions.NotFoundException;
 import io.swagger.annotations.*;
 import models.*;
 import play.libs.ws.WSClient;
@@ -38,12 +40,14 @@ public class Controller_Person extends _BaseController {
 // CONTROLLER CONFIGURATION ############################################################################################
 
     private final ProjectService projectService;
+    private final PortalConfig portalConfig;
 
     @Inject
     public Controller_Person(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
-                             NotificationService notificationService, ProjectService projectService, EchoService echoService) {
+                             NotificationService notificationService, ProjectService projectService, EchoService echoService, PortalConfig portalConfig) {
         super(ws, formFactory, config, permissionService, notificationService, echoService);
         this.projectService = projectService;
+        this.portalConfig = portalConfig;
     }
 
 
@@ -160,17 +164,17 @@ public class Controller_Person extends _BaseController {
 
             Model_ValidationToken validationToken = Model_ValidationToken.find.query().where().eq("token", auth_token).findOne();
 
-            if (validationToken == null) return redirect(Server.becki_mainUrl + "/" + Server.becki_redirectOk  );
+            if (validationToken == null) return redirect(this.portalConfig.getRedirectSuccessUrl());
 
-            Model_Person person = Model_Person.find.query().where().eq("email", validationToken.email).findOne();
-            if (person == null) return redirect( Server.becki_mainUrl + "/" + Server.becki_redirectFail  );
+            Model_Person person = Model_Person.find.query().nullable().where().eq("email", validationToken.email).findOne();
+            if (person == null) return redirect(this.portalConfig.getRedirectFailUrl());
 
             person.validated = true;
             person.update();
 
             validationToken.delete();
 
-            return redirect( Server.becki_mainUrl + "/" + Server.becki_accountAuthorizedSuccessful );
+            return redirect(this.portalConfig.getRedirectSuccessUrl());
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -283,9 +287,9 @@ public class Controller_Person extends _BaseController {
                 passwordRecoveryToken.person = person;
                 passwordRecoveryToken.save();
 
-                link = Server.becki_mainUrl + "/" +  Server.becki_passwordReset + "/" + passwordRecoveryToken.password_recovery_token;
+                link = this.portalConfig.getPasswordResetUrl() + "/" + passwordRecoveryToken.password_recovery_token;
             } else {
-                link = Server.becki_mainUrl + "/" +  Server.becki_passwordReset + "/" + previousToken.password_recovery_token;
+                link = this.portalConfig.getPasswordResetUrl() + "/" + previousToken.password_recovery_token;
             }
             try {
 
@@ -917,62 +921,65 @@ public class Controller_Person extends _BaseController {
     public Result person_authorizePropertyChange(UUID token) {
         try {
             Model_ChangePropertyToken changePropertyToken = Model_ChangePropertyToken.find.byId(token);
-            if (changePropertyToken == null) return redirect(Server.becki_mainUrl + "/" + Server.becki_propertyChangeFailed);
+            if (changePropertyToken == null) return redirect(this.portalConfig.getPropertyChangeFailUrl());
 
             if (((new Date()).getTime() - changePropertyToken.created.getTime()) > 14400000 ) {
                 changePropertyToken.delete();
-                return redirect(Server.becki_mainUrl + "/" + Server.becki_propertyChangeFailed);
+                return redirect(this.portalConfig.getPropertyChangeFailUrl());
             }
 
-            Model_Person person = Model_Person.find.byId(changePropertyToken.person.id);
-            if (person == null) return redirect(Server.becki_mainUrl + "/" +  Server.becki_propertyChangeFailed);
+            try {
+                Model_Person person = Model_Person.find.byId(changePropertyToken.person.id);
 
-            switch (changePropertyToken.property) {
+                switch (changePropertyToken.property) {
 
-                case "password":{
-                    // Úprava objektu
-                    person.setPassword(changePropertyToken.value);
-                    person.update();
-                    break;
-                }
-
-                case "email":{
-
-                    // Úprava objektu
-                    person.email = changePropertyToken.value;
-                    person.validated = false;
-                    person.update();
-
-                    // Vytvoření validačního tokenu
-                    Model_ValidationToken validationToken = Model_ValidationToken.find.query().where().eq("email",person.email).findOne();
-                    if (validationToken!=null) validationToken.delete();
-                    validationToken = new Model_ValidationToken().setValidation(person.email);
-
-                    String link = Server.httpAddress + "/person/mail_authentication/" + validationToken.token;
-
-                    // Odeslání emailu
-                    try {
-                        new Email()
-                                .text("Email verification is needed to complete your registration.")
-                                .divider()
-                                .link("Verify your email address",link)
-                                .send(validationToken.email, "Email Verification");
-
-                    } catch (Exception e) {
-                        logger.internalServerError(e);
+                    case "password":{
+                        // Úprava objektu
+                        person.setPassword(changePropertyToken.value);
+                        person.update();
+                        break;
                     }
-                    break;
+
+                    case "email":{
+
+                        // Úprava objektu
+                        person.email = changePropertyToken.value;
+                        person.validated = false;
+                        person.update();
+
+                        // Vytvoření validačního tokenu
+                        Model_ValidationToken validationToken = Model_ValidationToken.find.query().where().eq("email",person.email).findOne();
+                        if (validationToken != null) validationToken.delete();
+                        validationToken = new Model_ValidationToken().setValidation(person.email);
+
+                        String link = Server.httpAddress + "/person/mail_authentication/" + validationToken.token;
+
+                        // Odeslání emailu
+                        try {
+                            new Email()
+                                    .text("Email verification is needed to complete your registration.")
+                                    .divider()
+                                    .link("Verify your email address",link)
+                                    .send(validationToken.email, "Email Verification");
+
+                        } catch (Exception e) {
+                            logger.internalServerError(e);
+                        }
+                        break;
+                    }
                 }
+            } catch (NotFoundException e) {
+                return redirect(this.portalConfig.getPropertyChangeFailUrl());
             }
 
             // Odhlášení uživatele všude
-            for ( Model_AuthorizationToken floatingPersonToken : Model_AuthorizationToken.find.query().where().eq("person.id",  personId()).findList()) {
+            for (Model_AuthorizationToken floatingPersonToken : Model_AuthorizationToken.find.query().where().eq("person.id",  personId()).findList()) {
                 floatingPersonToken.delete();
             }
 
             changePropertyToken.delete();
 
-            return redirect(Server.becki_mainUrl);
+            return redirect(this.portalConfig.getMainUrl());
 
         } catch (Exception e) {
             return controllerServerError(e);

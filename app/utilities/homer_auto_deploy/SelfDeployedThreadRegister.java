@@ -2,8 +2,6 @@ package utilities.homer_auto_deploy;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
-import com.myjeeva.digitalocean.pojo.Droplet;
-import com.myjeeva.digitalocean.pojo.Network;
 import controllers._BaseFormFactory;
 import models.Model_HomerServer;
 import play.api.Play;
@@ -13,14 +11,11 @@ import play.libs.ws.WSResponse;
 import utilities.Server;
 import utilities.enums.NetworkStatus;
 import utilities.enums.ServerMode;
-import utilities.homer_auto_deploy.models.service.Swagger_BlueOcean;
 import utilities.logger.Logger;
-import utilities.slack.Slack;
 
 import java.time.Duration;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 public class SelfDeployedThreadRegister extends Thread {
 
@@ -111,7 +106,7 @@ public class SelfDeployedThreadRegister extends Thread {
                         slack_echo += "Homer Serve ID: " + homer_server_id + ", Name:" + server.name + "\n";
                         slack_echo += "Droplet rul: " + server.server_url + ", Api URL:" + server.server_url + ":" + server.rest_api_port + " <---\n";
                         slack_echo += "Tyrion Server Type: " + Server.mode + ", Tyrion URL: " + Server.httpAddress + "\n";
-                        Slack.post_error(slack_echo, Server.slack_webhook_url_channel_servers);
+                        // Slack.post_error(slack_echo, Server.slack_webhook_url_channel_servers); // TODO injection
 
                         break thr1;
 

@@ -3,15 +3,12 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import exceptions.NotFoundException;
 import io.ebean.Expr;
 import io.ebean.ExpressionList;
 import io.ebean.PagedList;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import play.libs.Json;
 import play.db.ebean.Transactional;
 import utilities.Server;
 import utilities.cache.CacheFinder;
@@ -21,16 +18,13 @@ import utilities.enums.*;
 import utilities.enums.Currency;
 import exceptions.BadRequestException;
 import utilities.financial.extensions.ExtensionInvoiceItem;
-import utilities.financial.extensions.configurations.Configuration;
 import utilities.financial.extensions.consumptions.ResourceConsumption;
-import utilities.financial.products.ConfigurationProduct;
 import utilities.logger.Logger;
 import utilities.model.NamedModel;
 import utilities.model.UnderCustomer;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
-import utilities.slack.Slack;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -314,7 +308,7 @@ public class Model_Product extends NamedModel implements Permissible, UnderCusto
         invoice.saveEvent(invoice.created, ProductEventType.INVOICE_CREATED, "{status: " + invoice.status + "}");
 
         if(invoice.status == InvoiceStatus.UNCONFIRMED) {
-            invoice.sendMessageToAdmin("New invoice created with spending greater than limit! Please check and confirm.");
+            // TODO invoice.sendMessageToAdmin("New invoice created with spending greater than limit! Please check and confirm.");
         }
 
         return invoice;
@@ -519,14 +513,6 @@ public class Model_Product extends NamedModel implements Permissible, UnderCusto
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
-
-/* MESSAGE FOR ADMIN  ---------------------------------------------------------------------------------------------------*/
-    public void sendMessageToAdmin(String message) {
-        String productURL = Server.becki_mainUrl + "/financial/" + id;
-        String fullMessage = message + "\nLink: " + productURL + " .";
-        logger.debug(fullMessage);
-        Slack.post(fullMessage);
-    }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 

@@ -3,6 +3,7 @@ package utilities.network;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
+import common.ServerConfig;
 import exceptions.NeverConnectedException;
 import exceptions.NotSupportedException;
 import exceptions.ServerOfflineException;
@@ -44,10 +45,13 @@ public class NetworkStatusService {
     private final Provider<InstanceService> instanceServiceProvider;
     private final CompilerService compilerService;
     private final HomerService homerService;
+    private final ServerConfig serverConfig;
 
     @Inject
-    public NetworkStatusService(CacheService cacheService, Provider<HardwareService> hardwareServiceProvider, Provider<InstanceService> instanceServiceProvider,
-                                CompilerService compilerService, HomerService homerService, NotificationService notificationService, HttpExecutionContext httpExecutionContext) {
+    public NetworkStatusService(CacheService cacheService, Provider<HardwareService> hardwareServiceProvider,
+                                Provider<InstanceService> instanceServiceProvider, CompilerService compilerService,
+                                HomerService homerService, NotificationService notificationService,
+                                HttpExecutionContext httpExecutionContext, ServerConfig serverConfig) {
 
         this.networkStatusCache = cacheService.getCache("NetworkStatusCache", UUID.class, NetworkStatus.class, 1000, 3600, true);
         this.lastOnlineCache = cacheService.getCache("LastOnlineCache", UUID.class, LocalDateTime.class, 1000, 3600, true);
@@ -58,6 +62,7 @@ public class NetworkStatusService {
         this.instanceServiceProvider = instanceServiceProvider;
         this.compilerService = compilerService;
         this.homerService = homerService;
+        this.serverConfig = serverConfig;
     }
 
     /**
@@ -91,7 +96,7 @@ public class NetworkStatusService {
             CompletableFuture.runAsync(() -> {
                 ModelMongo_NetworkStatus mongoNetworkStatus = ModelMongo_NetworkStatus.find.query()
                         .field("networkable_id").equal(networkable.getId().toString())
-                        .field("server_type").equal(Server.mode)
+                        .field("server_type").equal(this.serverConfig.getMode())
                         .order("created").get(new FindOptions().batchSize(1));
 
                 if (mongoNetworkStatus != null && mongoNetworkStatus.status.equals(NetworkStatus.ONLINE) && !networkStatus.equals(NetworkStatus.ONLINE)) {
@@ -181,7 +186,7 @@ public class NetworkStatusService {
             try {
                 ModelMongo_LastOnline lastOnline = ModelMongo_LastOnline.find.query()
                         .field("networkable_id").equal(networkable.getId().toString())
-                        .field("server_type").equal(Server.mode)
+                        .field("server_type").equal(this.serverConfig.getMode())
                         .order("created").get(new FindOptions().batchSize(1));
 
                 if (lastOnline != null) {

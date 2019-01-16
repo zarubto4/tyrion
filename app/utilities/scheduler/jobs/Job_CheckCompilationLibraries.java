@@ -3,6 +3,7 @@ package utilities.scheduler.jobs;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
+import common.ServerConfig;
 import controllers._BaseFormFactory;
 import io.ebean.Expr;
 import models.*;
@@ -13,23 +14,19 @@ import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
-import utilities.Server;
 import utilities.compiler.CompilationService;
 import utilities.enums.ProgramType;
-import utilities.enums.ServerMode;
 import utilities.logger.Logger;
 import utilities.scheduler.Restrict;
 import utilities.scheduler.Scheduled;
-import utilities.slack.Slack;
+import utilities.slack.SlackService;
 import utilities.swagger.input.*;
 
 import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import static utilities.enums.ServerMode.PRODUCTION;
 import static utilities.enums.ServerMode.STAGE;
 
 /**
@@ -46,10 +43,15 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
 //**********************************************************************************************************************
 
     private CompilationService compilationService;
+    private final ServerConfig serverConfig;
+    private final SlackService slackService;
 
     @Inject
-    public Job_CheckCompilationLibraries(WSClient ws, Config config, _BaseFormFactory formFactory, CompilationService compilationService) {
+    public Job_CheckCompilationLibraries(WSClient ws, Config config, _BaseFormFactory formFactory, ServerConfig serverConfig,
+                                         CompilationService compilationService, SlackService slackService) {
         super(ws, config, formFactory);
+        this.serverConfig = serverConfig;
+        this.slackService = slackService;
     }
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -128,11 +130,11 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
 
 
                         Pattern pattern = null;
-                        if (Server.mode == ServerMode.PRODUCTION) {
+                        if (serverConfig.isProduction()) {
                             pattern = Pattern.compile(regex_beta);                          // Záměrně - uživatelům to umožnujeme průběžně řešit
-                        } else if (Server.mode == ServerMode.STAGE) {
+                        } else if (serverConfig.isStage()) {
                             pattern = Pattern.compile(regex_beta);
-                        } else if (Server.mode == ServerMode.DEVELOPER) {
+                        } else if (serverConfig.isDevelopment()) {
                             pattern = Pattern.compile(regex_apha_beta);
                         }
 
@@ -402,11 +404,10 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
             }
 
 
-            if(Server.mode == STAGE && error_for_slack.length() > 0) {
+            if (serverConfig.isStage() && error_for_slack.length() > 0) {
 
-                error_for_slack = "Toto je automatická zpráva kterou vygeneroval všemocný Tyrion Server. \n Podle GitHubu *" + release.author.login + "* vytvořil firmware release *" + release.tag_name + "* s následujícíma chybama:." + error_for_slack;
-                Slack.post_error(error_for_slack, Server.slack_webhook_url_channel_hardware);
-
+                error_for_slack = "Toto je automatická zpráva kterou vygeneroval všemocný Tyrion Server. \n Podle GitHubu *" + release.author.login + "* vytvořil firmware release *" + release.tag_name + "* s následujícími chybami:." + error_for_slack;
+                slackService.postHardwareChannel(error_for_slack);
                 return;
             }
 

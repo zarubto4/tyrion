@@ -2,14 +2,13 @@ package websocket.interfaces;
 
 import akka.stream.Materializer;
 import com.google.inject.Inject;
+import common.ServerConfig;
 import controllers._BaseFormFactory;
 import exceptions.NotFoundException;
 import models.*;
 import mongo.ModelMongo_Hardware_RegistrationEntity;
 import org.mindrot.jbcrypt.BCrypt;
 import play.libs.concurrent.HttpExecutionContext;
-import utilities.Server;
-import utilities.enums.ServerMode;
 import utilities.hardware.DominanceService;
 import utilities.hardware.HardwareEvents;
 import utilities.hardware.HardwareOverviewService;
@@ -45,6 +44,7 @@ public class Homer extends Interface {
 
     public static HashMap<UUID, Homer> apiKeys = new HashMap<>(); // TODO use DI instead of static field
 
+    private final ServerConfig serverConfig;
     private final HardwareEvents hardwareEvents;
     private final UpdateService updateService;
     private final HomerEvents homerEvents;
@@ -55,9 +55,10 @@ public class Homer extends Interface {
     private UUID apiKey;
 
     @Inject
-    public Homer(Materializer materializer, _BaseFormFactory formFactory, HardwareEvents hardwareEvents, UpdateService updateService,
+    public Homer(Materializer materializer, _BaseFormFactory formFactory, HardwareEvents hardwareEvents, UpdateService updateService, ServerConfig serverConfig,
                  HomerEvents homerEvents, DominanceService dominanceService, HttpExecutionContext httpExecutionContext, HardwareOverviewService hardwareOverviewService) {
         super(httpExecutionContext, materializer, formFactory);
+        this.serverConfig = serverConfig;
         this.hardwareEvents = hardwareEvents;
         this.updateService = updateService;
         this.homerEvents = homerEvents;
@@ -475,7 +476,7 @@ public class Homer extends Interface {
 
                         if ((BCrypt.checkpw(request.password, hw.mqtt_password) && BCrypt.checkpw(request.user_name, hw.mqtt_username))
                                 || (BCrypt.checkpw(request.user_name, hw.mqtt_password) && BCrypt.checkpw(request.password, hw.mqtt_username))
-                                || (Server.mode == ServerMode.DEVELOPER && request.user_name.equals("user") && request.password.equals("pass"))) {
+                                || (this.serverConfig.isDevelopment() && request.user_name.equals("user") && request.password.equals("pass"))) {
 
                             logger.debug("onHardwareMQTTAuthentication - found hardware with same credentials, access allowed, id: {}", request.full_id);
                             UUID randomId = this.dominanceService.rememberNondominant(request.full_id, this.id);
@@ -498,7 +499,7 @@ public class Homer extends Interface {
 
                         if ((BCrypt.checkpw(request.password, entity.mqtt_password) && BCrypt.checkpw(request.user_name, entity.mqtt_username))
                                 || (BCrypt.checkpw( request.user_name, entity.mqtt_password) && BCrypt.checkpw(request.password, entity.mqtt_username))
-                                || (Server.mode == ServerMode.DEVELOPER && request.user_name.equals("user") && request.password.equals("pass"))) {
+                                || (this.serverConfig.isDevelopment() && request.user_name.equals("user") && request.password.equals("pass"))) {
 
                             UUID randomId = this.dominanceService.rememberNondominant(request.full_id, this.id);
                             this.send(request.get_result(true,  randomId, null, false));
@@ -523,7 +524,7 @@ public class Homer extends Interface {
 
                 if ((BCrypt.checkpw(request.password, hardware.mqtt_password) && BCrypt.checkpw(request.user_name, hardware.mqtt_username))
                         || (BCrypt.checkpw( request.user_name, hardware.mqtt_password) && BCrypt.checkpw(request.password, hardware.mqtt_username))
-                        || (Server.mode == ServerMode.DEVELOPER && request.user_name.equals("user") && request.password.equals("pass"))) {
+                        || (this.serverConfig.isDevelopment() && request.user_name.equals("user") && request.password.equals("pass"))) {
 
                     this.send(request.get_result(true, hardware.id, null, true));
                     return;
@@ -537,7 +538,7 @@ public class Homer extends Interface {
 
             logger.internalServerError(e);
 
-            if (Server.mode == ServerMode.DEVELOPER) {
+            if (this.serverConfig.isDevelopment()) {
                 logger.error("onHardwareMQTTAuthentication - hardware has not permission to connect, but it is allowed DEV mode");
                 this.send(request.get_result(true, null, null, true));
             } else {

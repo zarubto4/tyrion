@@ -334,14 +334,6 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderCustom
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
-/* MESSAGE FOR ADMIN  ---------------------------------------------------------------------------------------------------*/
-    public void sendMessageToAdmin(String message) {
-        String invoiceURL = Server.becki_mainUrl + "/financial/" + product.id + "/invoices/" + id;
-        String fullMessage = message + "\nLink: " + invoiceURL + " .";
-        logger.debug(fullMessage);
-//        Slack.post(fullMessage); TODO uncomment line for production
-    }
-
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore

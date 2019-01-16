@@ -1,7 +1,9 @@
 package utilities.financial.goPay;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
+import common.PortalConfig;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
 import models.Model_Product;
@@ -10,7 +12,6 @@ import play.libs.ws.WSClient;
 import play.mvc.BodyParser;
 import play.mvc.Result;
 import play.mvc.Security;
-import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.financial.fakturoid.FakturoidService;
 import utilities.logger.Logger;
@@ -43,13 +44,16 @@ public class GoPay extends _BaseController {
     private Date last_refresh;
 
     private FakturoidService fakturoid;
+    private final PortalConfig portalConfig;
 
 // CONTROLLER CONFIGURATION ############################################################################################
 
-    @javax.inject.Inject
-    public GoPay(WSClient ws, _BaseFormFactory formFactory, Config config, FakturoidService fakturoid, PermissionService permissionService, NotificationService notificationService, EchoService echoService) {
+    @Inject
+    public GoPay(WSClient ws, _BaseFormFactory formFactory, Config config, FakturoidService fakturoid, PermissionService permissionService,
+                 NotificationService notificationService, EchoService echoService, PortalConfig portalConfig) {
         super(ws, formFactory, config, permissionService, notificationService, echoService);
         this.fakturoid = fakturoid;
+        this.portalConfig = portalConfig;
     }
 
 
@@ -691,11 +695,10 @@ public class GoPay extends _BaseController {
 
             this.checkPayment(id);
 
-            return redirect(Server.becki_mainUrl);
-
         } catch (Exception e) {
             logger.internalServerError(e);
-            return redirect(Server.becki_mainUrl);
         }
+
+        return redirect(this.portalConfig.getMainUrl());
     }
 }
