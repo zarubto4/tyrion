@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import exceptions.InvalidBodyException;
 import exceptions.NotFoundException;
 import io.ebean.Expr;
 import io.swagger.annotations.ApiModel;
@@ -282,6 +283,8 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     public DM_Board_Bootloader_DefaultConfig bootloader_core_configuration() {
         try {
 
+            System.out.println("DM_Board_Bootloader_DefaultConfig:: Device ID: " + this.id + " bootloader_core_configuration == JSOM: " + json_bootloader_core_configuration);
+
             if (json_bootloader_core_configuration == null || json_bootloader_core_configuration.equals("{}") || json_bootloader_core_configuration.equals("null") || json_bootloader_core_configuration.length() == 0) {
                 json_bootloader_core_configuration = DM_Board_Bootloader_DefaultConfig.generateConfig().json().toString();
                 this.update();
@@ -295,14 +298,25 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
             return config;
 
-        } catch (Exception e) {
-            logger.internalServerError(e);
+        } catch (InvalidBodyException e) {
+
+            json_bootloader_core_configuration = DM_Board_Bootloader_DefaultConfig.generateConfig().json().toString();
+            this.update();
+            return bootloader_core_configuration();
+
+
+        } catch (NullPointerException e) {
 
             // Set new Default config! The old one is broken!
             json_bootloader_core_configuration = DM_Board_Bootloader_DefaultConfig.generateConfig().json().toString();
             this.update();
-
             return bootloader_core_configuration();
+
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            logger.error("bootloader_core_configuration:: actual JSON:: {} ", json_bootloader_core_configuration);
+
+            return null;
         }
     }
 

@@ -16,6 +16,7 @@ import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.emails.Email;
 import utilities.enums.ExtensionType;
+import utilities.enums.HomerType;
 import utilities.enums.ParticipantStatus;
 import utilities.financial.services.ProductService;
 import utilities.hardware.HardwareService;
@@ -225,6 +226,27 @@ public class Controller_Project extends _BaseController {
                     // Find Ids Where to check Project Name
                     List<UUID> product_ids = Model_Product.find.query().where().eq("owner.employees.person.id", personId()).findIds();
                     return  Model_Project.find.query().where().eq("name", help.name).in("product.id", product_ids).findCount() == 0 ? ok() : badRequest();
+                }
+
+                case HomerServer: {
+                    // Find Ids Where to check Project Name
+
+                    if(help.parent_id != null) {
+                        List<UUID> product_ids = Model_Product.find.query().where().eq("owner.employees.person.id", personId()).findIds();
+                        return Model_HomerServer.find.query().where().eq("name", help.name).in("project.product.id", product_ids).findCount() == 0 ? ok() : badRequest();
+                    } else {
+                         if( !isAdmin()){
+                             return badRequest();
+                         }
+                        return Model_HomerServer.find.query().where().eq("name", help.name).eq("server_type", HomerType.PUBLIC).findCount() == 0 ? ok() : badRequest();
+                    }
+                }
+
+                case CodeServer: {
+                    if( !isAdmin()){
+                        return badRequest();
+                    }
+                    return Model_CompilationServer.find.query().where().eq("name", help.name).findCount() == 0 ? ok() : badRequest();
                 }
 
                 case BProgram: {

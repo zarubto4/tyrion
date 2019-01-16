@@ -61,7 +61,7 @@ public class WS_Message_Hardware_overview_Board extends _Swagger_Abstract_Defaul
         List<ValidationError> errors = new ArrayList<>();
         if (error_message != null && error_message.equals("ERROR_HARDWARE_COMMAND_OFFLINE_DEVICE")) {
             System.out.println("WS_Message_Hardware_overview_Board: validate - > ERROR_HARDWARE_COMMAND_OFFLINE_DEVICE");
-            return null;
+            return new ArrayList<>();
         } else  {
 
             if (ip == null) {
@@ -72,6 +72,6 @@ public class WS_Message_Hardware_overview_Board extends _Swagger_Abstract_Defaul
             }
         }
 
-        return errors.isEmpty() ? null : errors;
+        return errors.isEmpty() ? new ArrayList<>() : errors;
     }
 }

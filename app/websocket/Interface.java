@@ -24,6 +24,7 @@ import websocket.messages.OutcomingMessage;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -109,20 +110,31 @@ public abstract class Interface implements WebSocketInterface {
     private void onReceived(JsonNode msg) {
         try {
 
-            logger.trace("onReceived - incoming message: {}", msg);
+           // logger.trace("onReceived - incoming message: {}", msg);
 
             Message message = this.parseMessage(msg);
 
             UUID messageId = message.getId();
 
+            logger.trace("onReceived - incoming Message_ID: {}, time:: {} message: {}", messageId, new Date(), msg);
+
+
             if (this.messageBuffer.containsKey(messageId)) {
+
+                logger.trace("onReceived - this.messageBuffer contains message id {} ", messageId);
+
                 this.messageBuffer.get(messageId).resolve(message);
                 this.messageBuffer.remove(messageId);
+
             } else {
+
+                logger.trace("onReceived - this message with id {} is not in buffer ", messageId);
                 this.onMessage(message);
             }
 
         } catch (InvalidBodyException e) {
+
+            System.err.println("Message is broken");
             // Response is, there is a change that it will response to something, that dont recognize message and also response to this server with error message...
             // Just ignore it
         } catch (Exception e) {
@@ -197,6 +209,8 @@ public abstract class Interface implements WebSocketInterface {
         if (!message.has(Message.ID)) {
             message.put(Message.ID, UUID.randomUUID().toString());
         }
+
+        message.put("sending_time", new Date().toString());
         this.out.tell(this.json ? Json.toJson(message) : TextMessage.create(Json.toJson(message).toString()), this.out);
     }
 
@@ -208,7 +222,7 @@ public abstract class Interface implements WebSocketInterface {
      */
     @Override
     public Message sendWithResponse(Request request) {
-        logger.trace("sendWithResponse - sending request synchronously");
+        logger.trace("sendWithResponse - sending request synchronously id {} type {} ", request.getId(), request.getMessageType());
         this.messageBuffer.put(request.getId(), request);
         return request.send(this);
     }
@@ -221,7 +235,7 @@ public abstract class Interface implements WebSocketInterface {
      */
     @Override
     public CompletionStage<Message> sendWithResponseAsync(Request request) {
-        logger.trace("sendWithResponseAsync - sending request asynchronously");
+        logger.trace("sendWithResponseAsync - sending request asynchronously id {} type {}", request.getId(), request.getMessageType());
         this.messageBuffer.put(request.getId(), request);
         return request.sendAsync(this)
                 .whenComplete((r, e) -> this.messageBuffer.remove(request.getId()));

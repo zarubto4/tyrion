@@ -27,7 +27,7 @@ public class Model_Invitation extends BaseModel {
 
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_Person owner;
     @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)  public Model_Project project;
-    @JsonIgnore @Constraints.Email                  public String email;
+    @Constraints.Email                              public String email;
     @JsonIgnore                                     public UUID notification_id;
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/

@@ -18,6 +18,7 @@ public class Request {
 /* PUBLIC API ----------------------------------------------------------------------------------------------------------*/
 
     private UUID id;
+    private String message_type;
 
     public Request(ObjectNode message) {
         this(message, 0, 7500, 3);
@@ -27,6 +28,7 @@ public class Request {
 
         if (!message.has(Message.ID)) {
             this.id =  UUID.randomUUID();
+            this.message_type = message.get("message_type").asText();
             message.put(Message.ID, id.toString());
         } else {
             this.id = UUID.fromString(message.get(Message.ID).asText());
@@ -75,6 +77,9 @@ public class Request {
         return this.id;
     }
 
+    public String getMessageType() {
+        return this.message_type;
+    }
 /* PRIVATE API ---------------------------------------------------------------------------------------------------------*/
 
     private ResponseThread responseThread;

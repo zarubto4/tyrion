@@ -646,6 +646,7 @@ public class Controller_ExternalServer extends _BaseController {
 
             // Upravím objekt
             server.personal_server_name = help.personal_server_name;
+            server.server_url = help.server_url;
 
             return update(server);
 
@@ -669,7 +670,7 @@ public class Controller_ExternalServer extends _BaseController {
     @Security.Authenticated(Authentication.class)
     public Result compilation_server_get_all() {
         try {
-            return ok(Model_CompilationServer.find.all());
+            return ok(Model_CompilationServer.find.query().where().eq("deleted", false).order("personal_server_name").findList());
         } catch (Exception e) {
            return controllerServerError(e);
         }

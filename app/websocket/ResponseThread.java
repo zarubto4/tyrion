@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import exceptions.RequestTimeoutException;
 import utilities.logger.Logger;
 
+import java.util.Date;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -41,7 +42,7 @@ public class ResponseThread implements Supplier<Message> {
 
             while (!resolved && this.retries > 0) {
 
-                logger.trace("get - sending message with response, message_id: {}, message_type: {}, retries: {}, timeout: {} ", id, message.get("message_type").asText(), retries, timeout);
+                logger.trace("get - sending message with response, message_id: {}, message_type: {}, retries: {}, timeout: {} , actual Time:: {}", id, message.get("message_type").asText(), retries, timeout, new Date());
 
                 this.sender.send(this.message);
 

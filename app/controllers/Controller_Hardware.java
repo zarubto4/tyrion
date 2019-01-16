@@ -249,7 +249,7 @@ public class Controller_Hardware extends _BaseController {
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
-            code = 200
+            code = 303
     )
     @ApiResponses({
             @ApiResponse(code = 303, message = "Automatic Redirect To another URL"),
@@ -277,11 +277,11 @@ public class Controller_Hardware extends _BaseController {
 
     @ApiOperation(value = "get CProgram_Version FileRecord",
             tags = { "File" , "Garfield"},
-            notes = "",     //TODO
+            notes = "",
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
-            code = 200
+            code = 303
     )
     @ApiResponses({
             @ApiResponse(code = 303, message = "Automatic Redirect To another URL"),

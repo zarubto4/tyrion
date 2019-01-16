@@ -34,6 +34,18 @@ public class Swagger_Project_Valid_unique_name implements Constraints.Validatabl
             errors.add(new ValidationError("parent_id", "Parent id is required, unless the object_type is Project."));
         }
 
+        if (parent_id == null && object_type == Enum_UniqueNameObjectType.HomerServer) {
+            errors.add(new ValidationError("parent_id", "Parent id is required, unless the object_type is Project."));
+        }
+
+        if (parent_id != null && object_type == Enum_UniqueNameObjectType.HomerServer) {
+            errors.add(new ValidationError("parent_id", "Parent id is required, unless the object_type is Project."));
+        }
+
+        if (parent_id != null && object_type == Enum_UniqueNameObjectType.CodeServer) {
+            errors.add(new ValidationError("parent_id", "Parent id must be null!"));
+        }
+
         return errors.isEmpty() ? null : errors;
     }
 }

@@ -4,6 +4,9 @@ public enum Enum_UniqueNameObjectType {
 
     Project,
 
+    HomerServer,
+    CodeServer,
+
     BProgram,
     BProgramVersion,
 

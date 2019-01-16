@@ -27,8 +27,8 @@ public class DM_Board_Bootloader_DefaultConfig extends _Swagger_Abstract_Default
     @ApiModelProperty(required = true, readOnly = true)                        public String  lowpan_credentials;       // Default 30         // user configurable
 
 
-    @JsonIgnore @ApiModelProperty(required = false, readOnly = true, value = "Not possible to change!", hidden = true) public String imsi;  // Null if its ton directly set form _Hardware
-    @JsonIgnore @ApiModelProperty(required = false, readOnly = true, value = "Not possible to change!", hidden = true) public String iccid; // Null if its ton directly set form _Hardware
+    @ApiModelProperty(required = false, readOnly = true, value = "Not possible to change!", hidden = true) public String imsi;  // Null if its ton directly set form _Hardware
+    @ApiModelProperty(required = false, readOnly = true, value = "Not possible to change!", hidden = true) public String iccid; // Null if its ton directly set form _Hardware
 
 
     public List<String> pending = new ArrayList<>();
