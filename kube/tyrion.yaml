@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tyrion
+spec:
+  ports:
+  - port: 80
+    targetPort: 9000
+  selector:
+    app: tyrion
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tyrion
+spec:
+  selector:
+    matchLabels:
+      app: tyrion
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: tyrion
+    spec:
+      containers:
+      - name: tyrion
+        image: byzancedocker/tyrion:latest
+        env:
+        - name: SECRETKEY
+          value: "pqKMfKvlRamSWQh5RogtO0E0H4zb9nqpHNSOQ7zbBalLuqxqDmHvAebsqzyUnQKt" 
+        - name: SERVERMODE
+          value: "STAGE"
+        - name: DATABASEURL
+          value: "jdbc:postgresql://db.stage.byzance.cz:5432/byzance"
+        - name: DATABASEUSR
+          value: "tyrion"
+        - name: DATABASEPASS
+          value: "nZvLkpqNG=a?37GFEiHq"
+        - name: SECURED
+          value: "N"
+        ports:
+        - containerPort: 80
+      imagePullSecrets:
+      - name: byzancesecret

@@ -332,4 +332,17 @@ public class Controller_Security extends _BaseController {
     public Result optionLink(String url) {
         return Controller.ok();
     }
+
+// HEALT CHECK KUBE ####################################################################################################
+@ApiOperation(value = "health check", hidden = true)
+public Result get_serverstatus_kubernates() {
+    try {
+
+        return ok(config.getString("server.mode"));
+
+    } catch (Exception e) {
+        return controllerServerError(e);
+    }
+}
+
 }

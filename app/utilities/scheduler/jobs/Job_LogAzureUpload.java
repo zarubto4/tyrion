@@ -48,7 +48,7 @@ public class Job_LogAzureUpload implements Job {
 
                 String file_name = new Date().toString();
 
-                Model_Blob.upload(file, "application/octet-stream", file_name, "logs/" + file_name);
+                Model_Blob.upload(file, "application/octet-stream", file_name, "logs");
 
                 logger.debug("Job_LogAzureUpload:: log_upload_thread: log successfully uploaded");
 

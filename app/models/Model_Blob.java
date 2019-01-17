@@ -6,6 +6,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.microsoft.azure.storage.blob.*;
+import exceptions.BadRequestException;
 import io.swagger.annotations.ApiModel;
 import org.apache.http.annotation.Obsolete;
 import org.ehcache.Cache;
@@ -78,6 +79,10 @@ public class Model_Blob extends BaseModel {
                 String container_name = path.substring(0, slash);
                 String real_file_path = path.substring(slash + 1);
 
+                System.out.println("AzureBlob file ID:: " + this.id);
+                System.out.println("AzureBlob container_name:: " + container_name);
+                System.out.println("AzureBlob real_file_path:: " + real_file_path);
+
                 CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
                 CloudBlockBlob blob = container.getBlockBlobReference(real_file_path);
                 String file = blob.downloadText();
@@ -97,6 +102,50 @@ public class Model_Blob extends BaseModel {
         }
     }
 
+
+    public static Model_Blob upload_picture(String b64ImageData, String path) throws Exception {
+
+        String[] base64Components = b64ImageData.split(",");
+
+        if (base64Components.length != 2) {
+            throw new BadRequestException("Invalid base64 data: " + b64ImageData);
+        }
+
+
+        String base64Data = base64Components[0];
+        String file_type = base64Data.substring(base64Data.indexOf('/') + 1, base64Data.indexOf(';'));
+        String file_name = UUID.randomUUID().toString() + "." + file_type;
+
+        if (!(file_type.equals("jpg") ||  file_type.equals("jpeg") ||  file_type.equals("png"))) {
+            throw new BadRequestException("Invalid file type: " + file_type);
+        }
+
+        byte[] binary_data = org.apache.commons.codec.binary.Base64.decodeBase64((b64ImageData.substring(b64ImageData.indexOf(",")+1)).getBytes());
+
+        return upload(binary_data, file_type, file_name, path);
+    }
+
+    public static Model_Blob upload_bin_file(String bin_file, String path) throws Exception {
+
+        String[] base64Components = bin_file.split(",");
+
+        if (base64Components.length != 2) {
+            throw new BadRequestException("Invalid base64 data: " + bin_file);
+        }
+
+
+        String base64Data = base64Components[0];
+        String file_type = base64Data.substring(base64Data.indexOf('/') + 1, base64Data.indexOf(';'));
+        String file_name = UUID.randomUUID().toString() + "." + file_type;
+
+        if (!(file_type.equals("bin"))) {
+            throw new BadRequestException("Invalid file type: " + file_type);
+        }
+
+        byte[] binary_data = org.apache.commons.codec.binary.Base64.decodeBase64((bin_file.substring(bin_file.indexOf(",")+1)).getBytes());
+
+        return upload(binary_data, file_type, file_name, path);
+    }
 
 
     @JsonIgnore
@@ -139,13 +188,14 @@ public class Model_Blob extends BaseModel {
         Model_Blob fileRecord = new Model_Blob();
         fileRecord.name = name;
         fileRecord.path = path + "/" + name;
-        fileRecord.link = Server.space.getUrl(Server.bucket_name, path + "/" + name).toString();
+        fileRecord.link = Server.space.getUrl(Server.bucket_name, fileRecord.path).toString();
 
         // Save Model
         fileRecord.save();
 
         logger.trace("SpaceDigitalOcean save total path: " +  fileRecord.path);
         logger.trace("SpaceDigitalOcean save total path: " +  fileRecord.link);
+        logger.trace("SpaceDigitalOcean save idh: " +  fileRecord.id);
 
         return fileRecord;
     }
@@ -188,22 +238,25 @@ public class Model_Blob extends BaseModel {
     @Override
     public void save() {
         storage_type = "AWS_DigitalOcean";
+        super.save();
     }
 
     @Override
     public boolean delete() {
         try {
+
             logger.debug("delete - removing file from blob server, id: {}", this.id);
 
-            cache_public_link.remove(this.id);
-            cache_string_file.remove(this.id);
+            if(cache_string_file.containsKey(this.id)) cache_string_file.remove(this.id);
 
             Server.space.deleteObject(Server.bucket_name, this.path);
-        } catch (Exception e) {
-            logger.internalServerError(e);
-        }
 
-        return super.delete();
+            return super.delete();
+
+        } catch (Exception e) {
+            // logger.internalServerError(e);
+            return false;
+        }
     }
 
 /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
@@ -222,9 +275,6 @@ public class Model_Blob extends BaseModel {
 /* PERMISSION ----------------------------------------------------------------------------------------------------------*/
 
 /* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-    @InjectCache(value = String.class, duration = InjectCache.DayCacheConstant, maxElements = 1000, automaticProlonging = false, name = "Model_Blob_Link")
-    public static Cache<UUID, String> cache_public_link;
 
     @InjectCache(value = String.class, duration = InjectCache.DayCacheConstant, maxElements = 500, name = "Model_Blob_File")
     public static Cache<UUID, String> cache_string_file;

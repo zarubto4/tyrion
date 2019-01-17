@@ -111,38 +111,46 @@ public class Controller_ZZZ_Tester extends _BaseController {
                     Model_Blob blob = blobs.get(i);
 
                     //  Model_Blob blob = Model_Blob.find.byId(UUID.fromString("dcb819aa-da57-4db9-89d0-12532986c13b"));
+                    try {
 
-                    System.out.println("Blob downloaded:: size " + blob.downloadString().length() + ". Actual file:: " + (i + 1) + "/" + size) ;
+                        System.out.println("Blob downloaded:: size " + blob.downloadString().length() + ". Actual file:: " + (i + 1) + "/" + size);
 
-                    // To Bytes
-                    byte[] byteimage = blob.downloadString().getBytes();
+                        // To Bytes
+                        byte[] byteimage = blob.downloadString().getBytes();
 
-                    InputStream is = new ByteArrayInputStream(byteimage);
-                    ObjectMetadata om = new ObjectMetadata();
-                    om.setContentLength(byteimage.length);
-                    om.setContentType("application/octet-stream");
-
-
-                    System.out.println("File Path starého souboru k uložení:: " + blob.path);
-
-                    // Korekční filtr
-                    blob.path = blob.path.replaceAll("bootloader.bin/bootloader.bin", "bootloader.bin");
+                        InputStream is = new ByteArrayInputStream(byteimage);
+                        ObjectMetadata om = new ObjectMetadata();
+                        om.setContentLength(byteimage.length);
+                        om.setContentType("application/octet-stream");
 
 
-                    System.out.println("File Path starého souboru po korektuře:: " + blob.path);
-                    System.out.println("File link:: " + blob.link);
-                    System.out.println("File Name:: " + blob.name);
-                    System.out.println("Zdroj souboru:: " + blob.storage_type);
+                        System.out.println("File Path starého souboru k uložení:: " + blob.path);
 
-                    Server.space.putObject(Server.bucket_name, blob.path, is, om);
-                    Server.space.setObjectAcl(Server.bucket_name, blob.path, CannedAccessControlList.PublicRead);
-                    System.out.println("Link ke stažení souboru: " + Server.space.getUrl(Server.bucket_name, blob.path).toString());
+                        // Korekční filtr
+                        blob.path = blob.path.replaceAll("bootloader.bin/bootloader.bin", "bootloader.bin");
 
 
-                    blob.storage_type = "AWS_DigitalOcean";
-                    blob.link = Server.space.getUrl(Server.bucket_name, blob.path).toString();
+                        System.out.println("File Path starého souboru po korektuře:: " + blob.path);
+                        System.out.println("File link:: " + blob.link);
+                        System.out.println("File Name:: " + blob.name);
+                        System.out.println("Zdroj souboru:: " + blob.storage_type);
 
-                    blob.update();
+                        Server.space.putObject(Server.bucket_name, blob.path, is, om);
+                        Server.space.setObjectAcl(Server.bucket_name, blob.path, CannedAccessControlList.PublicRead);
+                        System.out.println("Link ke stažení souboru: " + Server.space.getUrl(Server.bucket_name, blob.path).toString());
+
+
+                        blob.storage_type = "AWS_DigitalOcean";
+                        blob.link = Server.space.getUrl(Server.bucket_name, blob.path).toString();
+
+                        blob.update();
+
+                    } catch (Exception e) {
+                        System.out.println("Nepovedlo se to :(( u  " + blob.id);
+
+                        blob.storage_type = "Broken";
+                        blob.update();
+                    }
 
                 }
             }).start();
@@ -173,8 +181,23 @@ public class Controller_ZZZ_Tester extends _BaseController {
     public Result test3() {
         try {
 
-            TM_Sim_Status status = Controller_Things_Mobile.sim_status(882360002156971L);
-            System.out.print("Sim Status:: \n" + status.prettyPrint());
+            // TM_Sim_Status status = Controller_Things_Mobile.sim_status(882360002156971L);
+            // System.out.print("Sim Status:: \n" + status.prettyPrint());
+
+            // 7db0ab84-ae29-4c2d-9792-10fa0155b1aa
+
+           // Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId("7db0ab84-ae29-4c2d-9792-10fa0155b1aa");
+           // System.out.println("cloud_file_get_b_program_version: snapshot found with link: " +  snapshot.name);
+           // System.out.println("cloud_file_get_b_program_version: File Name: " +  snapshot.getBlob().name);
+           // System.out.println("cloud_file_get_b_program_version: link?" +  snapshot.getBlob().link);
+
+            // return redirect(snapshot.getBlob().link);
+
+
+
+            Model_Blob blob = Model_Blob.find.query().where().eq("hardware.id", UUID.fromString("e7311716-c638-4555-afc2-0c7ba7993301")).findOne();
+
+            return redirect(blob.link);
 
             /*
             List<Model_Person> persons = Model_Person.find.all();
@@ -193,7 +216,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
             */
 
 
-            return ok();
+          //  return ok();
         } catch (Exception e) {
             e.printStackTrace();
             return badRequest(e.toString());

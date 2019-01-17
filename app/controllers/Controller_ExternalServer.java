@@ -646,6 +646,7 @@ public class Controller_ExternalServer extends _BaseController {
 
             // Upravím objekt
             server.personal_server_name = help.personal_server_name;
+            server.server_url = help.server_url;
 
             return update(server);
 
@@ -669,7 +670,7 @@ public class Controller_ExternalServer extends _BaseController {
     @Security.Authenticated(Authentication.class)
     public Result compilation_server_get_all() {
         try {
-            return ok(Model_CompilationServer.find.all());
+            return ok(Model_CompilationServer.find.query().where().eq("deleted", false).order("personal_server_name").findList());
         } catch (Exception e) {
            return controllerServerError(e);
         }
@@ -740,7 +741,12 @@ public class Controller_ExternalServer extends _BaseController {
     @Security.Authenticated(AuthenticationHomer.class)
     public Result cloud_file_get_b_program_version(UUID snapshot_id) {
         try {
-            return redirect(Model_InstanceSnapshot.find.byId(snapshot_id).getBlob().link);
+
+            Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(snapshot_id);
+            logger.trace("cloud_file_get_b_program_version: snapshot found with link: ", snapshot.getBlob().link);
+
+            return redirect(snapshot.getBlob().link);
+
         } catch (Exception e) {
            return controllerServerError(e);
         }

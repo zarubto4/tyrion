@@ -377,6 +377,7 @@ public abstract class _BaseController {
      * @return 303 result
      */
     public static Result redirect(String url) {
+        if(url == null) throw new NotFoundException(Result.class, "Redirect Parameter not found");
         return Controller.redirect(url);
     }
 

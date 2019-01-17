@@ -98,7 +98,7 @@ public class Model_HardwareType extends NamedModel implements Permissible, Publi
         try {
 
             if (cache_picture_link == null) {
-                Model_Blob file = Model_Blob.find.query().nullable().where().eq("hardware_type.id", id).findOne();
+                Model_Blob file = Model_Blob.find.query().where().eq("hardware_type.id", id).findOne();
                 cache_picture_link = file.link;
             }
 
