@@ -7,7 +7,7 @@ import akka.actor.PoisonPill;
 import akka.http.javadsl.model.ws.TextMessage;
 import akka.japi.Pair;
 import akka.japi.function.Creator;
-import akka.japi.function.Procedure;
+import akka.japi.function.Function;
 import akka.stream.Materializer;
 import akka.stream.OverflowStrategy;
 import akka.stream.javadsl.*;
@@ -27,6 +27,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
@@ -94,19 +95,21 @@ public abstract class Interface implements WebSocketInterface {
      * Get the text from the message and try to parse it as a json.
      * @param msg
      */
-    private void onReceived(akka.http.javadsl.model.ws.Message msg) {
+    private CompletionStage<Void> onReceived(akka.http.javadsl.model.ws.Message msg) {
         try {
             this.onReceived(Json.parse(msg.asTextMessage().getStrictText()));
         } catch (Exception e) {
             logger.internalServerError(e);
         }
+
+        return CompletableFuture.completedFuture(null);
     }
 
     /**
      * Received a message as JSON.
      * @param msg
      */
-    private void onReceived(JsonNode msg) {
+    private CompletionStage<Void> onReceived(JsonNode msg) {
         try {
 
             logger.trace("onReceived - incoming message: {}", msg);
@@ -128,6 +131,8 @@ public abstract class Interface implements WebSocketInterface {
         } catch (Exception e) {
             logger.internalServerError(e);
         }
+
+        return CompletableFuture.completedFuture(null);
     }
 
     /**
@@ -157,11 +162,11 @@ public abstract class Interface implements WebSocketInterface {
         return Json.toJson(message);
     }
 
-    private <In, Out> Flow<In, Out, NotUsed> createFlow(Procedure<In> onReceived, Creator<Out> keepAlive) {
+    private <In, Out> Flow<In, Out, NotUsed> createFlow(Function<In, CompletionStage<Void>> onReceived, Creator<Out> keepAlive) {
         this.start = Instant.now();
         Pair<ActorRef, Publisher<Out>> both = Source.<Out>actorRef(50, OverflowStrategy.dropNew()).toMat(Sink.asPublisher(AsPublisher.WITH_FANOUT), Keep.both()).run(this.materializer);
         this.out = both.first();
-        return Flow.fromSinkAndSourceCoupled(Sink.foreach(onReceived), Source.fromPublisher(both.second())).watchTermination(this::onTermination).keepAlive(Duration.ofSeconds(60L), keepAlive);
+        return Flow.fromSinkAndSourceCoupled(Sink.foreachAsync(10, onReceived), Source.fromPublisher(both.second())).watchTermination(this::onTermination).keepAlive(Duration.ofSeconds(60L), keepAlive);
     }
 
     private NotUsed onTermination(NotUsed notUsed, CompletionStage<Done> whenDone) {
