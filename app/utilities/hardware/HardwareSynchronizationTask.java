@@ -105,13 +105,6 @@ public class HardwareSynchronizationTask implements Task {
         this.hardwareService.getConfigurator(this.hardware).configure(this.overview);
 
         logger.info("synchronizeSettings - ({}) settings for hardware synchronized", this.hardware.full_id);
-
-        // TODO make it work somehow
-        /*// Uložení do Cache paměti // PORT je synchronizován v následujícím for cyklu
-        if (cache_latest_know_ip_address == null || !cache_latest_know_ip_address.equals(overview.ip)) {
-            logger.warn("check_settings nastavuju jí do cache ");
-            cache_latest_know_ip_address = this.overview.ip;
-        }*/
     }
 
     private void synchronizeFirmware() {
@@ -120,9 +113,22 @@ public class HardwareSynchronizationTask implements Task {
 
         if (this.hardware.getCurrentFirmware() != null && !this.hardware.getCurrentFirmware().getCompilation().firmware_build_id.equals(this.overview.binaries.firmware.build_id)) {
             Model_CProgramVersion version = Model_CProgramVersion.find.query().nullable().where().eq("compilation.firmware_build_id", this.overview.binaries.firmware.build_id).findOne();
-            if (version != null && version.getProject().getId().equals(this.hardware.getProjectId())) { // TODO better permission check than same project
+            if (version != null) {
                 this.hardware.actual_c_program_version = version;
                 this.hardware.update();
+
+                Model_Project project = version.getProject();
+                if (project != null) {
+
+                } else {
+
+                }
+
+                if (version.getProject().getId().equals(this.hardware.getProjectId())) { // TODO better permission check than same project
+
+                } else  if (this.hardware.getProject() != null) {
+                    // TODO send notification
+                }
             } else if (this.hardware.getProject() != null) {
                 this.notificationService.send(this.hardware.getProject(), this.hardware.notificationUnknownFirmware());
             }

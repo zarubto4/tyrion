@@ -1,12 +1,9 @@
 package controllers;
 
 import com.google.inject.Inject;
-import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.typesafe.config.Config;
 import exceptions.BadRequestException;
-import io.ebeaninternal.server.core.Message;
-import io.minio.errors.InvalidArgumentException;
 import io.swagger.annotations.*;
 import models.Model_Product;
 import models.Model_ProductExtension;
@@ -16,7 +13,6 @@ import play.libs.ws.WSClient;
 import play.mvc.Result;
 import play.mvc.Security;
 import responses.*;
-import utilities.Server;
 import utilities.authentication.Authentication;
 import utilities.enums.ExtensionType;
 import utilities.financial.extensions.configurations.Configuration_Database;
@@ -33,12 +29,10 @@ import utilities.swagger.input.Swagger_Database_New;
 import utilities.swagger.input.Swagger_NameAndDescription;
 import utilities.swagger.input.Swagger_ProductExtension_New;
 import utilities.swagger.output.Swagger_Database;
-import utilities.swagger.output.Swagger_DatabaseCollectionList;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Security.Authenticated(Authentication.class)
