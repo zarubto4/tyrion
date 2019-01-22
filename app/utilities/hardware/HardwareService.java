@@ -7,6 +7,7 @@ import exceptions.NeverConnectedException;
 import exceptions.ServerOfflineException;
 import models.Model_Hardware;
 import models.Model_HomerServer;
+import play.libs.concurrent.HttpExecutionContext;
 import utilities.logger.Logger;
 import utilities.synchronization.SynchronizationService;
 import websocket.WebSocketService;
@@ -18,13 +19,16 @@ public class HardwareService {
     private static final Logger logger = new Logger(HardwareService.class);
 
     private final SynchronizationService synchronizationService;
+    private final HttpExecutionContext httpExecutionContext;
     private final WebSocketService webSocketService;
     private final DominanceService dominanceService;
     private final Injector injector;
 
     @Inject
-    public HardwareService(Injector injector, SynchronizationService synchronizationService, WebSocketService webSocketService, DominanceService dominanceService) {
+    public HardwareService(Injector injector, SynchronizationService synchronizationService, WebSocketService webSocketService,
+                           DominanceService dominanceService, HttpExecutionContext httpExecutionContext) {
         this.synchronizationService = synchronizationService;
+        this.httpExecutionContext = httpExecutionContext;
         this.webSocketService = webSocketService;
         this.dominanceService = dominanceService;
         this.injector = injector;
@@ -35,7 +39,7 @@ public class HardwareService {
         if (server != null) {
             Homer homer = this.webSocketService.getInterface(server.id);
             if (homer != null) {
-                return new HardwareInterface(hardware, homer);
+                return new HardwareInterface(hardware, homer, this.httpExecutionContext);
             } else {
                 throw new ServerOfflineException();
             }

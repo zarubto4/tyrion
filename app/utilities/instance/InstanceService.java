@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import exceptions.NotFoundException;
 import exceptions.ServerOfflineException;
 import models.*;
+import play.libs.concurrent.HttpExecutionContext;
 import utilities.enums.FirmwareType;
 import utilities.enums.NetworkStatus;
 import utilities.enums.UpdateType;
@@ -28,15 +29,17 @@ public class InstanceService {
     private final UpdateService updateService;
     private final NetworkStatusService networkStatusService;
     private final NotificationService notificationService;
+    private final HttpExecutionContext httpExecutionContext;
 
     @Inject
     public InstanceService(WebSocketService webSocketService, HomerService homerService, UpdateService updateService,
-                           NetworkStatusService networkStatusService, NotificationService notificationService) {
+                           NetworkStatusService networkStatusService, NotificationService notificationService, HttpExecutionContext httpExecutionContext) {
         this.webSocketService = webSocketService;
         this.homerService = homerService;
         this.updateService = updateService;
         this.networkStatusService = networkStatusService;
         this.notificationService = notificationService;
+        this.httpExecutionContext = httpExecutionContext;
     }
 
     public InstanceInterface getInterface(Model_Instance instance) {
@@ -44,7 +47,7 @@ public class InstanceService {
 
         Homer homer = this.webSocketService.getInterface(server.id);
         if (homer != null) {
-            return new InstanceInterface(instance, homer);
+            return new InstanceInterface(instance, homer, this.httpExecutionContext);
         } else {
             throw new ServerOfflineException();
         }

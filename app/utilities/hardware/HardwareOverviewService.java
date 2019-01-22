@@ -58,16 +58,13 @@ public class HardwareOverviewService {
 
     private void requestOverview(Model_Hardware hardware) {
         logger.debug("requestOverview - requesting overview for hardware: {}", hardware.getId());
-        CompletableFuture.supplyAsync(() -> {
-            try {
-                return this.hardwareService.getInterface(hardware).getOverview();
-            } catch (ServerOfflineException|NeverConnectedException e) {
-                // nothing
-            } catch (Exception e) {
-                logger.internalServerError(e);
-            }
-
-            return null;
-        }, this.httpExecutionContext.current()).thenAccept(overview -> this.setOverview(hardware, overview));
+        try {
+            this.hardwareService.getInterface(hardware).getOverviewAsync()
+                    .thenAccept(overview -> this.setOverview(hardware, overview));
+        } catch (ServerOfflineException|NeverConnectedException e) {
+            // nothing
+        } catch (Exception e) {
+            logger.internalServerError(e);
+        }
     }
 }

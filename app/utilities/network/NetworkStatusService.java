@@ -71,9 +71,7 @@ public class NetworkStatusService {
             logger.trace("getStatus - getting status from cache");
             return this.networkStatusCache.get(networkable.getId());
         } else {
-            this.networkStatusCache.put(networkable.getId(), NetworkStatus.SYNCHRONIZATION_IN_PROGRESS);
-            this.requestStatus(networkable);
-            return NetworkStatus.SYNCHRONIZATION_IN_PROGRESS;
+            return this.requestStatus(networkable);
         }
     }
 
@@ -126,52 +124,75 @@ public class NetworkStatusService {
         }
     }
 
-    private void requestStatus(Networkable networkable) {
+    private NetworkStatus requestStatus(Networkable networkable) {
         logger.debug("requestStatus - requesting status for: {}, id: {}", networkable.getEntityType(), networkable.getId());
-        CompletableFuture
-                .supplyAsync(() -> {
-                    try {
-                        switch (networkable.getEntityType()) {
-                            case HARDWARE: {
-                                if (!((Model_Hardware) networkable).dominant_entity) {
-                                    return NetworkStatus.FREEZED;
-                                }
-                                return this.hardwareServiceProvider.get().getInterface((Model_Hardware) networkable).getNetworkStatus();
-                            }
-                            case INSTANCE: {
-                                if (((Model_Instance) networkable).current_snapshot_id == null) {
-                                    return NetworkStatus.SHUT_DOWN;
-                                }
-                                return this.instanceServiceProvider.get().getInterface((Model_Instance) networkable).getNetworkStatus();
-                            }
-                            case COMPILER: {
-                                try {
-                                    this.compilerService.getInterface((Model_CompilationServer) networkable);
-                                    return NetworkStatus.ONLINE;
-                                } catch (ServerOfflineException e) {
-                                    return NetworkStatus.OFFLINE;
-                                }
-                            }
-                            case HOMER: {
-                                try {
-                                    this.homerService.getInterface((Model_HomerServer) networkable);
-                                    return NetworkStatus.ONLINE;
-                                } catch (ServerOfflineException e) {
-                                    return NetworkStatus.OFFLINE;
-                                }
-                            }
-                            default: throw new NotSupportedException();
-                        }
-                    } catch (ServerOfflineException e) {
-                        return NetworkStatus.UNKNOWN_LOST_CONNECTION_WITH_SERVER;
-                    } catch (NeverConnectedException e) {
-                        return NetworkStatus.NOT_YET_FIRST_CONNECTED;
-                    } catch (Exception e) {
-                        logger.internalServerError(e);
-                        return NetworkStatus.UNKNOWN_LOST_CONNECTION_WITH_SERVER;
+
+        NetworkStatus networkStatus = NetworkStatus.SYNCHRONIZATION_IN_PROGRESS;
+
+        try {
+            switch (networkable.getEntityType()) {
+                case HARDWARE: {
+                    if (!((Model_Hardware) networkable).dominant_entity) {
+                        networkStatus = NetworkStatus.FREEZED;
+                    } else {
+                        this.hardwareServiceProvider.get().getInterface((Model_Hardware) networkable).getNetworkStatusAsync()
+                                .whenComplete((status, exception) -> {
+                                    if (exception != null) {
+                                        logger.internalServerError(exception);
+                                    } else {
+                                        this.setStatus(networkable, status);
+                                    }
+                                });
                     }
-                }, this.httpExecutionContext.current())
-                .thenAccept(status -> this.setStatus(networkable, status));
+                    break;
+                }
+                case INSTANCE: {
+                    if (((Model_Instance) networkable).current_snapshot_id == null) {
+                        networkStatus = NetworkStatus.SHUT_DOWN;
+                    } else {
+                        this.instanceServiceProvider.get().getInterface((Model_Instance) networkable).getNetworkStatusAsync()
+                                .whenComplete((status, exception) -> {
+                                    if (exception != null) {
+                                        logger.internalServerError(exception);
+                                    } else {
+                                        this.setStatus(networkable, status);
+                                    }
+                                });
+                    }
+                    break;
+                }
+                case COMPILER: {
+                    try {
+                        this.compilerService.getInterface((Model_CompilationServer) networkable);
+                        networkStatus = NetworkStatus.ONLINE;
+                    } catch (ServerOfflineException e) {
+                        networkStatus = NetworkStatus.OFFLINE;
+                    }
+                    break;
+                }
+                case HOMER: {
+                    try {
+                        this.homerService.getInterface((Model_HomerServer) networkable);
+                        networkStatus = NetworkStatus.ONLINE;
+                    } catch (ServerOfflineException e) {
+                        networkStatus = NetworkStatus.OFFLINE;
+                    }
+                    break;
+                }
+                default: throw new NotSupportedException();
+            }
+        } catch (ServerOfflineException e) {
+            logger.warn("requestStatus - server is offline");
+            networkStatus = NetworkStatus.UNKNOWN_LOST_CONNECTION_WITH_SERVER;
+        } catch (NeverConnectedException e) {
+            networkStatus = NetworkStatus.NOT_YET_FIRST_CONNECTED;
+        } catch (Exception e) {
+            logger.internalServerError(e);
+            networkStatus = NetworkStatus.UNKNOWN_LOST_CONNECTION_WITH_SERVER;
+        }
+
+        this.networkStatusCache.put(networkable.getId(), networkStatus);
+        return networkStatus;
     }
 
     private void requestLastOnline(Networkable networkable) {

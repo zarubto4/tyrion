@@ -4,6 +4,7 @@ import io.ebean.Expr;
 import models.Model_Hardware;
 import models.Model_HardwareUpdate;
 import models.Model_HomerServer;
+import play.libs.concurrent.HttpExecutionContext;
 import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import utilities.enums.*;
 import utilities.logger.Logger;
@@ -17,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 /**
  * This interface object is used for every interaction with the physical hardware.
@@ -27,10 +29,12 @@ public class HardwareInterface {
 
     private final Model_Hardware hardware;
     private final WebSocketInterface webSocketInterface;
+    private final HttpExecutionContext httpExecutionContext;
 
-    public HardwareInterface(Model_Hardware hardware, WebSocketInterface webSocketInterface) {
+    public HardwareInterface(Model_Hardware hardware, WebSocketInterface webSocketInterface, HttpExecutionContext httpExecutionContext) {
         this.hardware = hardware;
         this.webSocketInterface = webSocketInterface;
+        this.httpExecutionContext = httpExecutionContext;
     }
 
     /**
@@ -52,9 +56,22 @@ public class HardwareInterface {
         return response.is_device_online(hardware.getId()) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
     }
 
+    public CompletionStage<NetworkStatus> getNetworkStatusAsync() {
+        return this.webSocketInterface.sendWithResponseAsync(new Request(new WS_Message_Hardware_online_status().make_request(Collections.singletonList(this.hardware.getId()))))
+                .thenApplyAsync(message -> {
+                    WS_Message_Hardware_online_status response = message.as(WS_Message_Hardware_online_status.class);
+                    return response.is_device_online(hardware.getId()) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
+                }, this.httpExecutionContext.current());
+    }
+
     public WS_Message_Hardware_overview_Board getOverview() {
         Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_overview().make_request(Collections.singletonList(this.hardware.getId()))));
         return response.as(WS_Message_Hardware_overview.class).get_device_from_list(this.hardware.getId());
+    }
+
+    public CompletionStage<WS_Message_Hardware_overview_Board> getOverviewAsync() {
+        return this.webSocketInterface.sendWithResponseAsync(new Request(new WS_Message_Hardware_overview().make_request(Collections.singletonList(this.hardware.getId()))))
+                .thenApplyAsync(message -> message.as(WS_Message_Hardware_overview.class).get_device_from_list(this.hardware.getId()), this.httpExecutionContext.current());
     }
 
     public void setAlias(String alias) {
