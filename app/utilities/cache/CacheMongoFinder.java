@@ -1,9 +1,7 @@
 package utilities.cache;
 
 import com.google.api.client.util.store.DataStore;
-import com.mongodb.DBCollection;
-import com.mongodb.MongoClient;
-import com.mongodb.WriteResult;
+import com.mongodb.*;
 import exceptions.NotFoundException;
 import org.bson.types.ObjectId;
 import org.ehcache.Cache;
@@ -122,6 +120,18 @@ public class CacheMongoFinder<T extends _Abstract_MongoModel> implements ModelCa
      */
     public Query<T> query() {
         return this.datastore.createQuery(entityType).disableValidation();
+    }
+
+    /**
+     * Select documents in collection and get a cursor to the selected documents.
+     *
+     * @param query the selection criteria using query operators. Omit the query parameter or pass an empty document to return all documents
+     *              in the collection.
+     * @return A cursor to the documents that match the query criteria
+     * @mongodb.driver.manual tutorial/query-documents/ Querying
+     */
+    public DBCursor find(final DBObject query){
+        return this.datastore.getCollection(entityType).find(query);
     }
 
     public AggregationPipeline createAggregation() {

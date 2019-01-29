@@ -30,7 +30,7 @@ public class DefaultFilter extends EssentialFilter {
         return EssentialAction.of(request ->
                 next.apply(request).map(result -> result.withHeaders(
                         "Byzance-Api-Version", Server.version,
-                        "Access-Control-Allow-Origin", "*",
+                        "Access-Control-Allow-Origin", "localhost:4200",
                         "Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS",
                         "Access-Control-Max-Age", "72000",
                         "Access-Control-Allow-Headers", "Access-Control-Allow-Origin, Content-Type, X-Auth-Token, Becki-Version"

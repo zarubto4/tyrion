@@ -28,6 +28,9 @@ libraryDependencies ++= Seq(
   "org.mockito" % "mockito-core" % "2.18.3" % Test,
   "org.apache.poi" % "poi" % "3.17", // Excel support for report P&G
   "org.apache.poi" % "poi-ooxml" % "3.17",
+  "org.mongodb" % "mongodb-driver-reactivestreams" % "1.10.0",
+  "org.mongodb" % "mongodb-driver" % "3.9.1",
+  "org.mongodb" % "mongodb-driver-async" % "3.9.1",
   "xyz.morphia.morphia" % "core" % "1.4.0",
   "com.facebook.business.sdk" % "facebook-java-business-sdk" % "3.0.0",
   "com.sendgrid" % "sendgrid-java" % "4.0.1",
@@ -35,6 +38,7 @@ libraryDependencies ++= Seq(
   "com.facebook.business.sdk" % "facebook-java-business-sdk" % "3.0.0",
   "com.restfb" % "restfb" % "2.9.0", // New Login
   "com.amazonaws" % "aws-java-sdk" % "1.11.479", // Amazon == DigitalOcean!
+
   evolutions,
   guice,
   ws

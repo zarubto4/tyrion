@@ -79,7 +79,9 @@ public class Controller_Person extends _BaseController {
             // Get and Validate Object
             Swagger_Person_New help = formFromRequestWithValidation(Swagger_Person_New.class);
 
-            if (Model_Person.find.query().where().eq("nick_name", help.nick_name).findOne() != null)
+            System.out.println("Create Person");
+
+            if (Model_Person.getByNickName(help.nick_name) != null)
                 return badRequest("nick name is used");
             if (Model_Person.getByEmail(help.email) != null)
                 return badRequest("Email is registered");
@@ -95,7 +97,7 @@ public class Controller_Person extends _BaseController {
             person.setPassword(help.password);
             person.save();
 
-            List<Model_Invitation> invitations = Model_Invitation.find.query().where().eq("email", person.email).findList();
+            List<Model_Invitation> invitations = Model_Invitation.find.query().nullable().where().eq("email", person.email).findList();
 
             if (invitations.isEmpty()) {
 

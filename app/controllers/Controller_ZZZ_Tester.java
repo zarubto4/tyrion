@@ -98,13 +98,13 @@ public class Controller_ZZZ_Tester extends _BaseController {
         try {
 
             // this.webSocketService.create(Compiler.class, UUID.randomUUID(), "wss://echo.websocket.org");
-
+            System.out.println("Blob downloaded:: size ");
             // Migrační script
 
             // Stažení souboru v separátním vláknu - jinak HTTP stále dokola zkoušelo vyžádat si odpověď od serveru po 30 sekundách
             new Thread(() -> {
-                Integer size = Model_Blob.find.query().where().eq("storage_type", "AzureBlob").findCount();
-                List<Model_Blob> blobs = Model_Blob.find.query().where().eq("storage_type", "AzureBlob").findList();
+                Integer size = Model_Blob.find.query().where().eq("storage_type", "AzureBlob").setIncludeSoftDeletes().findCount();
+                List<Model_Blob> blobs = Model_Blob.find.query().where().eq("storage_type", "AzureBlob").setIncludeSoftDeletes().findList();
 
                 for (int i = 0; i < blobs.size(); i++) {
 

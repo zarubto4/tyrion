@@ -242,8 +242,12 @@ public class Model_Person extends BaseModel implements Permissible {
     @InjectCache(value = UUID.class, duration = 3600, maxElements = 200, name = "Model_Person_Token")
     public static Cache<UUID, UUID> token_cache;
 
+    public static Model_Person getByNickName(String nick_name) {
+        return find.query().nullable().where().eq("nick_name", nick_name).setIncludeSoftDeletes().findOne();
+    }
+
     public static Model_Person getByEmail(String email) {
-        return find.query().where().eq("email", email).findOne();
+        return find.query().nullable().where().eq("email", email).setIncludeSoftDeletes().findOne();
     }
 
     public static Model_Person getByAuthToken(UUID token) throws NotFoundException {
