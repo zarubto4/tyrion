@@ -669,12 +669,10 @@ public class Controller_Code extends _BaseController {
 
             this.checkUpdatePermission(c_program);
 
-            UUID working_copy_version_id = Model_CProgramVersion.find.query().where().eq("c_program.id", c_program_id).ne("deleted", true).eq("working_copy", true).select("id").findSingleAttribute();
-
-            // If the is not working copy - make it
-            if(working_copy_version_id != null) {
-                Model_CProgramVersion version = Model_CProgramVersion.find.byId(working_copy_version_id);
-                version.delete();
+            Model_CProgramVersion workingCopy = Model_CProgramVersion.find.query().nullable().where().eq("c_program.id", c_program_id).eq("working_copy", true).findOne();
+            if (workingCopy != null) {
+                logger.trace("c_program_version_create - found working copy - deleting");
+                workingCopy.delete();
             }
 
             // První nová Verze

@@ -124,6 +124,12 @@ public class NetworkStatusService {
         }
     }
 
+    /**
+     * Method returns the status immediately, if it is known.
+     * Or it does an async call for the status and returns status SYNCHRONIZATION_IN_PROGRESS
+     * @param networkable object for which the status is requested
+     * @return {@link NetworkStatus}
+     */
     private NetworkStatus requestStatus(Networkable networkable) {
         logger.debug("requestStatus - requesting status for: {}, id: {}", networkable.getEntityType(), networkable.getId());
 
@@ -188,7 +194,7 @@ public class NetworkStatusService {
             networkStatus = NetworkStatus.NOT_YET_FIRST_CONNECTED;
         } catch (Exception e) {
             logger.internalServerError(e);
-            networkStatus = NetworkStatus.UNKNOWN_LOST_CONNECTION_WITH_SERVER;
+            return NetworkStatus.UNKNOWN_LOST_CONNECTION_WITH_SERVER;
         }
 
         this.networkStatusCache.put(networkable.getId(), networkStatus);

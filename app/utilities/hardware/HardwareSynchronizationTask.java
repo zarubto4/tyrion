@@ -77,12 +77,6 @@ public class HardwareSynchronizationTask implements Task {
         }
     }
 
-    /**
-     * Zde se kontroluje jestli je na HW to co na něm reálně být má.
-     * Pokud některý parametr je jiný než se očekává, metoda ho změní (for cyklus), jenže je nutné zařízení restartovat,
-     * protože může teoreticky dojít k tomu, že se register změní, ale na zařízení se to neprojeví.
-     * Například změna portu www stránky pro vývojáře. Proto se vrací TRUE pokud vše sedí a připojovací procedura muže pokračovat nebo false, protože device byl restartován.
-     */
     // TODO rework to something better
     private void synchronizeSettings() {
 

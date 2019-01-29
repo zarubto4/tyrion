@@ -130,7 +130,8 @@ public class HomerSynchronizationTask implements Task {
             WS_Message_Homer_Hardware_list hardwareList = this.homerInterface.getHardwareList();
 
             List<WS_Message_Homer_Hardware_ID_UUID_Pair> device_ids_on_server = hardwareList.list;
-            logger.info("4. Number of registered or connected Devices on Server:: {} ", device_ids_on_server.size());
+
+            List<Model_Hardware> localHardwareList = Model_Hardware.find.query().where().eq("connected_server_id", this.server.getId()).eq("dominant_entity", true).findList();
 
             for (WS_Message_Homer_Hardware_ID_UUID_Pair pair : device_ids_on_server) {
                 try {
@@ -143,6 +144,8 @@ public class HomerSynchronizationTask implements Task {
                         logger.info("synchronizeHardware - dominant hardware for id: {} not found", pair.full_id);
                         continue;
                     }
+
+                    localHardwareList.removeIf(hw -> hw.getId().equals(hardware.getId()));
 
                     if (hardware.connected_server_id == null || !hardware.connected_server_id.equals(this.server.id)) {
                         logger.debug("synchronizeHardware - setting connected server for hardware,id {}", hardware.id);
@@ -190,6 +193,8 @@ public class HomerSynchronizationTask implements Task {
                     logger.internalServerError(e);
                 }
             }
+
+            localHardwareList.forEach(hw -> this.networkStatusService.setStatus(hw, NetworkStatus.OFFLINE));
 
         } catch (FailedMessageException e) {
             logger.warn("synchronizeHardware - got error response: {}", e.getFailedMessage().getMessage());
