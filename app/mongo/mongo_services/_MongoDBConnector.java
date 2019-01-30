@@ -1,11 +1,10 @@
-package mongo;
+package mongo.mongo_services;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientURI;
-import com.mongodb.client.MongoDatabase;
 import com.typesafe.config.Config;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
@@ -26,9 +25,9 @@ import java.util.ArrayList;
 import java.util.Set;
 
 @Singleton
-public class MongoDBConnector {
+public class _MongoDBConnector {
 
-    private static final Logger logger = new Logger(MongoDBConnector.class);
+    private static final Logger logger = new Logger(_MongoDBConnector.class);
 
     private Config config;
     private String mode;
@@ -36,7 +35,7 @@ public class MongoDBConnector {
 
     private MongoClient mongoClient;
     @Inject
-    public MongoDBConnector(Config config, ServerLogger serverLogger) {
+    public _MongoDBConnector(Config config, ServerLogger serverLogger) {
 
         // SET Values
         this.mode = config.getEnum(ServerMode.class, "server.mode").name().toLowerCase();

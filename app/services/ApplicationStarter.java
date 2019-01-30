@@ -12,7 +12,8 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.typesafe.config.Config;
-import mongo.MongoDBConnector;
+import mongo.mongo_services._MongoDBConnector;
+import mongo.mongo_services._MongoNativeConnector;
 import play.api.db.evolutions.ApplicationEvolutions;
 import play.inject.ApplicationLifecycle;
 import play.libs.Json;
@@ -55,7 +56,7 @@ public class ApplicationStarter {
     @Inject
     public ApplicationStarter(Clock clock, ApplicationLifecycle appLifecycle, Config configuration, Injector injector,
                               ApplicationEvolutions applicationEvolutions, ServerLogger serverLogger, CacheService cacheService,
-                              MongoDBConnector mongoDBConnector, SchedulerService schedulerService,
+                              _MongoDBConnector mongoDBConnector, _MongoNativeConnector mongoNativConnector, SchedulerService schedulerService,
                               PermissionService permissionService, CompilerService compilerService) { // These unused parameters are important due to DI - don't remove them!
 
         this.clock = clock;

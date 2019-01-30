@@ -1,7 +1,7 @@
 package mongo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import mongo.mongo_services.InjectStore;
 import org.bson.types.ObjectId;
 import xyz.morphia.annotations.Entity;
 import xyz.morphia.annotations.Field;
@@ -64,7 +64,8 @@ public class ModelMongo_ThingsMobile_Daily_Overview extends _Abstract_MongoModel
         return find;
     }
 
-    @InjectStore @InjectCache(value = ModelMongo_ThingsMobile_Daily_Overview.class, keyType = ObjectId.class)
+    @InjectStore
+    @InjectCache(value = ModelMongo_ThingsMobile_Daily_Overview.class, keyType = ObjectId.class)
     public static CacheMongoFinder<ModelMongo_ThingsMobile_Daily_Overview> find = new CacheMongoFinder<>(ModelMongo_ThingsMobile_Daily_Overview.class);
 
 }

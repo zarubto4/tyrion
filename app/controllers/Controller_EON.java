@@ -1,63 +1,23 @@
 package controllers;
 
 
-import com.mongodb.MongoClientOptions;
-import com.mongodb.MongoClientURI;
-import com.mongodb.reactivestreams.client.MongoClient;
-import com.mongodb.reactivestreams.client.MongoClients;
-import com.mongodb.reactivestreams.client.MongoCollection;
-import com.mongodb.reactivestreams.client.MongoDatabase;
-import com.mongodb.reactivestreams.client.Success;
-import com.mongodb.ServerAddress;
-import com.mongodb.async.client.MongoClientSettings;
-import com.mongodb.bulk.BulkWriteResult;
-import com.mongodb.client.model.BulkWriteOptions;
-import com.mongodb.client.model.DeleteOneModel;
-import com.mongodb.client.model.InsertOneModel;
-import com.mongodb.client.model.ReplaceOneModel;
-import com.mongodb.client.model.UpdateOneModel;
-import com.mongodb.client.model.WriteModel;
-import com.mongodb.client.result.DeleteResult;
-import com.mongodb.client.result.UpdateResult;
-import com.mongodb.connection.ClusterSettings;
-import com.mongodb.connection.SslSettings;
-import com.mongodb.connection.netty.NettyStreamFactoryFactory;
-import com.mongodb.reactivestreams.client.MongoClients;
-import com.mongodb.reactivestreams.client.MongoCollection;
-import com.mongodb.reactivestreams.client.MongoDatabase;
-import com.mongodb.reactivestreams.client.Success;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
+import com.mongodb.client.model.*;
+import mongo.mongo_services._MongoNativeCollection;
+import mongo.mongo_services._MongoNativeConnector;
 import org.bson.Document;
 
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.*;
 
-import static com.mongodb.client.model.Filters.and;
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.exists;
-import static com.mongodb.client.model.Filters.gt;
-import static com.mongodb.client.model.Filters.gte;
-import static com.mongodb.client.model.Filters.lt;
-import static com.mongodb.client.model.Filters.lte;
-import static com.mongodb.client.model.Projections.excludeId;
+import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Sorts.descending;
-import static java.util.Arrays.asList;
-import org.bson.Document;
-import utilities.enums.*;
-import utilities.logger.Logger;
-import utilities.model.Publishable;
-import utilities.model.TaggedModel;
-import utilities.model.UnderProject;
-import utilities.network.JsonNetworkStatus;
-import utilities.network.Networkable;
-import utilities.permission.Action;
-import utilities.permission.Permissible;
-import utilities.permission.WithPermission;
-import utilities.swagger.output.Swagger_Short_Reference;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.bson.conversions.Bson;
+import play.libs.concurrent.HttpExecutionContext;
+import utilities.logger.Logger;
+
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.swagger.annotations.*;
@@ -68,10 +28,8 @@ import play.mvc.Result;
 import utilities.model.EchoService;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
-import static mongo._SubscriberHelpers.ObservableSubscriber;
-import static mongo._SubscriberHelpers.OperationSubscriber;
-import static mongo._SubscriberHelpers.PrintDocumentSubscriber;
-import static mongo._SubscriberHelpers.PrintSubscriber;
+
+import static mongo.mongo_services._SubscriberHelpers.ObservableSubscriber;
 
 
 // @Security.Authenticated(Authentication.class)
@@ -79,78 +37,76 @@ import static mongo._SubscriberHelpers.PrintSubscriber;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class Controller_EON extends _BaseController {
 
+    private HttpExecutionContext httpExecutionContext;
+
 // LOGGER ##############################################################################################################
 
-    private static final Logger logger = new Logger(Controller_Database.class);
+    private static final Logger logger = new Logger(Controller_EON.class);
 
     @Inject
     public Controller_EON(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
-                               NotificationService notificationService, EchoService echoService) {
+                          NotificationService notificationService, EchoService echoService, _MongoNativeConnector mongoNativConnector, HttpExecutionContext httpExecutionContext) {
         super(ws, formFactory, config, permissionService, notificationService, echoService);
-
+        this.httpExecutionContext = httpExecutionContext;
     }
 
-    /**
-     * K předělání po vzru MongoDBCOnnector
-     * @param cll
-     * @return
-     */
-    public MongoCollection<Document> getDatabase(String cll) {
 
-        // SET Values
-        String mode = config.getEnum(ServerMode.class, "server.mode").name().toLowerCase();
-        String url = config.getString("MongoDB." + mode + ".url"); // Cluster
 
-        ClusterSettings clusterSettings = ClusterSettings.builder()
-                .hosts(asList(new ServerAddress(url)))
-                .build();
-        MongoClientSettings settings = MongoClientSettings.builder()
-                .clusterSettings(clusterSettings).build();
-
-        MongoClient mongoClient = MongoClients.create(settings);
-
-        MongoDatabase database = mongoClient.getDatabase("EON_LOCAL_TEST");
-        MongoCollection<Document> collection = database.getCollection(cll);
-
-        return collection;
-    }
 
     public Result get_data() {
         try {
 
 
-            MongoCollection<Document> collection = getDatabase("TEST10");
+            _MongoNativeCollection collection = new _MongoNativeCollection("EON_LOCAL_TEST", "TEST9");
 
             /*
-            // drop all the data in it
-            ObservableSubscriber subscriber = new ObservableSubscriber<Success>();
-            collection.drop().subscribe(subscriber);
-            subscriber.await();
+            Bson b = and(gt("i", 4), lte("i", 10));
 
-            // make a document and insert it
-            Document doc = new Document("name", "MongoDB")
-                    .append("type", "database")
-                    .append("count", 1)
-                    .append("info", new Document("x", 203).append("y", 102));
+            ObservableSubscriber<Document> o = collection.getDocumentNonBlocking(b);
+            List<Document> documents1 = o.await().getReceived();
+            System.out.println("documents " + documents1.size());
 
-            collection.insertOne(doc).subscribe(new OperationSubscriber<Success>());
 
-            // get it (since it's the only one in there since we dropped the rest earlier on)
-            collection.find().first().subscribe(new PrintDocumentSubscriber());
+            ObservableSubscriber<Document> o2 = collection.getDocumentNonBlocking(b);
+            List<Document> documents2 = o2.get(4000, TimeUnit.SECONDS);
 
-            // now, lets add lots of little documents to the collection so we can explore queries and cursors
-            List<Document> documents = new ArrayList<Document>();
-            for (int i = 0; i < 100; i++) {
-                documents.add(new Document("i", i));
-            }
+            System.out.println("documents " + documents2.size());
+            */
 
-            subscriber = new ObservableSubscriber<Success>();
-            collection.insertMany(documents).subscribe(subscriber);
-            subscriber.await();
 
-            collection.countDocuments()
-                    .subscribe(new PrintSubscriber<Long>("total # of documents after inserting 100 small ones (should be 101): %s"));
+            LocalDateTime datetime = LocalDateTime.now();
+            Integer interValue = 15*1000*60;
 
+
+            ObservableSubscriber subscriber = new ObservableSubscriber<Document>();
+            collection.getCollection()
+                    .aggregate(
+                            Arrays.asList(
+                                    Aggregates.match(
+                                            and(
+                                                eq("obic_code","1.0.1.8.0.255"),
+                                                eq("matter_id","0A014C4F4700044AA26C"),
+                                                    gte("timestamp",LocalDateTime.now().minusMonths(1)),
+                                                    lte("timestamp", LocalDateTime.now() )
+                                            )
+                                    ),
+                                    Aggregates.group("_id",
+                                            Accumulators.avg("comsuption", "$value"),
+                                            Accumulators.avg("time", "$timestamp")
+                                    ),
+                                    Aggregates.project(
+                                            Projections.include("matter_id", "comsuption", "time")
+                                    )
+                            ))
+                    .subscribe(subscriber);
+
+            List<Document> documents3 = subscriber.get(4000, TimeUnit.SECONDS);
+
+
+            return ok_mongo(documents3);
+
+
+            /*
             subscriber = new PrintDocumentSubscriber();
             collection.find().first().subscribe(subscriber);
             subscriber.await();
@@ -158,7 +114,9 @@ public class Controller_EON extends _BaseController {
             subscriber = new PrintDocumentSubscriber();
             collection.find().subscribe(subscriber);
             subscriber.await();
+            */
 
+            /*
             // Query Filters
             // now use a query to get 1 document out
             collection.find(eq("i", 71)).first().subscribe(new PrintDocumentSubscriber());
@@ -195,6 +153,9 @@ public class Controller_EON extends _BaseController {
             collection.drop().subscribe(subscriber);
             subscriber.await();
 
+            */
+
+            /*
             // ordered bulk writes
             List<WriteModel<Document>> writes = new ArrayList<WriteModel<Document>>();
             writes.add(new InsertOneModel<Document>(new Document("_id", 4)));
@@ -204,7 +165,7 @@ public class Controller_EON extends _BaseController {
             writes.add(new DeleteOneModel<Document>(new Document("_id", 2)));
             writes.add(new ReplaceOneModel<Document>(new Document("_id", 3), new Document("_id", 3).append("x", 4)));
 
-            subscriber = new PrintSubscriber<BulkWriteResult>("Bulk write results: %s");
+            ObservableSubscriber subscriber = new PrintSubscriber<BulkWriteResult>("Bulk write results: %s");
             collection.bulkWrite(writes).subscribe(subscriber);
             subscriber.await();
 
@@ -227,9 +188,8 @@ public class Controller_EON extends _BaseController {
 
             // release resources
             // mongoClient.close();
-            */
 
-            return ok();
+            */
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             return badRequest();

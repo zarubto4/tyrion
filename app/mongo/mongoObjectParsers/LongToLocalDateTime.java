@@ -1,4 +1,4 @@
-package mongo;
+package mongo.mongoObjectParsers;
 
 import com.mongodb.DBObject;
 import xyz.morphia.converters.SimpleValueConverter;

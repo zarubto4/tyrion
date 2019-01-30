@@ -3,7 +3,7 @@ package controllers;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import io.swagger.annotations.*;
-import mongo._ModelMongo_Example;
+import mongo.mongo_services._ModelMongo_Example;
 import play.libs.ws.WSClient;
 import play.mvc.Result;
 import responses.*;

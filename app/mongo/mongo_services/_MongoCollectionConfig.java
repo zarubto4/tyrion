@@ -1,4 +1,4 @@
-package mongo;
+package mongo.mongo_services;
 
 import java.lang.annotation.*;
 

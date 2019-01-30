@@ -2,6 +2,7 @@ package mongo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
+import mongo.mongo_services.InjectStore;
 import org.bson.types.ObjectId;
 import org.ehcache.Cache;
 import xyz.morphia.annotations.Entity;
@@ -70,6 +71,7 @@ public class ModelMongo_FacebookProfile extends _Abstract_MongoModel {
         return find;
     }
 
-    @InjectStore @InjectCache(value = ModelMongo_FacebookProfile.class, keyType = ObjectId.class)
+    @InjectStore
+    @InjectCache(value = ModelMongo_FacebookProfile.class, keyType = ObjectId.class)
     public static CacheMongoFinder<ModelMongo_FacebookProfile> find = new CacheMongoFinder<>(ModelMongo_FacebookProfile.class);
 }

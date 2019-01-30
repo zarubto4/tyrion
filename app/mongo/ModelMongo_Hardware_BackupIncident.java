@@ -1,28 +1,14 @@
 package mongo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
 import models.Model_Hardware;
-import models.Model_HardwareType;
+import mongo.mongo_services.InjectStore;
 import org.bson.types.ObjectId;
-import org.ehcache.Cache;
 import xyz.morphia.annotations.*;
-import play.data.validation.Constraints;
-import utilities.Server;
 import utilities.cache.CacheMongoFinder;
 import utilities.cache.InjectCache;
-import utilities.enums.EntityType;
-import utilities.enums.ServerMode;
 import utilities.logger.Logger;
-import utilities.model.Publishable;
 import utilities.model._Abstract_MongoModel;
-import utilities.permission.Action;
-import utilities.permission.Permissible;
-
-import java.nio.charset.IllegalCharsetNameException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
 
 
 @Entity("Hardware_BackupIncident")
@@ -89,7 +75,8 @@ public class ModelMongo_Hardware_BackupIncident extends _Abstract_MongoModel {
     @Override @JsonIgnore
     public CacheMongoFinder<?> getFinder() { return find; }
 
-    @JsonIgnore @InjectStore @InjectCache(value = ModelMongo_Hardware_BackupIncident.class, keyType = ObjectId.class)
+    @JsonIgnore @InjectStore
+    @InjectCache(value = ModelMongo_Hardware_BackupIncident.class, keyType = ObjectId.class)
     public static CacheMongoFinder<ModelMongo_Hardware_BackupIncident> find = new CacheMongoFinder<>(ModelMongo_Hardware_BackupIncident.class);
 
 }

@@ -5,32 +5,26 @@ import com.google.inject.Inject;
 import com.mongodb.client.MongoIterable;
 import com.typesafe.config.Config;
 import controllers._BaseFormFactory;
-import io.ebeaninternal.server.core.Message;
-import mongo.MongoDBConnector;
+import mongo.mongo_services._MongoDBConnector;
 import play.libs.ws.WSAuthScheme;
 import play.libs.ws.WSClient;
-import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
 import io.swagger.util.Json;
-import utilities.Server;
 
-import java.lang.reflect.Array;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class MongoCloudApi {
 
     private final WSClient ws;
     private final _BaseFormFactory formFactory;
     private final Config config;
-    private final MongoDBConnector mongoDBConnector;
+    private final _MongoDBConnector mongoDBConnector;
 
     @Inject
-    public MongoCloudApi(WSClient ws, _BaseFormFactory formFactory, Config config, MongoDBConnector mongoDBConnector) {
+    public MongoCloudApi(WSClient ws, _BaseFormFactory formFactory, Config config, _MongoDBConnector mongoDBConnector) {
         this.ws = ws;
         this.formFactory = formFactory;
         this.config = config;

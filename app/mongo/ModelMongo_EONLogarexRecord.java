@@ -1,6 +1,8 @@
 package mongo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import mongo.mongo_services.InjectStore;
+import mongo.mongo_services._MongoCollectionConfig;
 import org.bson.types.ObjectId;
 import utilities.cache.CacheMongoFinder;
 import utilities.cache.InjectCache;
@@ -66,7 +68,8 @@ public class ModelMongo_EONLogarexRecord extends _Abstract_MongoModel {
         return find;
     }
 
-    @InjectStore @InjectCache(value = ModelMongo_EONLogarexRecord.class, keyType = ObjectId.class)
+    @InjectStore
+    @InjectCache(value = ModelMongo_EONLogarexRecord.class, keyType = ObjectId.class)
     public static CacheMongoFinder<ModelMongo_EONLogarexRecord> find = new CacheMongoFinder<>(ModelMongo_EONLogarexRecord.class);
 
 }

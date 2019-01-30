@@ -1,4 +1,4 @@
-package mongo;
+package mongo.mongo_services;
 
 
 import com.mongodb.MongoTimeoutException;
@@ -105,6 +105,7 @@ public final class _SubscriberHelpers {
         @Override
         public void onSubscribe(final Subscription s) {
             super.onSubscribe(s);
+            System.out.println("OperationSubscriber:: Subscription s");
             s.request(Integer.MAX_VALUE);
         }
     }
@@ -141,7 +142,7 @@ public final class _SubscriberHelpers {
         @Override
         public void onNext(final Document document) {
             super.onNext(document);
-            System.out.println(document.toJson());
+            System.out.println("PrintDocumentSubscriber: " + document.toJson());
         }
     }
 
