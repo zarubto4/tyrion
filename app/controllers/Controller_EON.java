@@ -12,12 +12,14 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Sorts.descending;
 
 import org.bson.conversions.Bson;
 import play.libs.concurrent.HttpExecutionContext;
+import responses.*;
 import utilities.logger.Logger;
 
 import com.google.inject.Inject;
@@ -32,6 +34,7 @@ import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
 import utilities.swagger.input.Swagger_EON_data_request;
 import utilities.swagger.input.Swagger_NameAndDescription;
+import utilities.swagger.output.Swagger_EON_data_values;
 
 import static mongo.mongo_services._SubscriberHelpers.ObservableSubscriber;
 
@@ -71,6 +74,14 @@ public class Controller_EON extends _BaseController {
                     )
             }
     )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Swagger_EON_data_values.class, responseContainer = "List"),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
     public Result getValues(){
         try {
             Swagger_EON_data_request request = formFromRequestWithValidation(Swagger_EON_data_request.class);
@@ -81,8 +92,8 @@ public class Controller_EON extends _BaseController {
                             .append("$match", new Document()
                                     .append("obic_code", request.obis_code) // TODO Fixnout chybu v obic_code na obis_code
                                     .append("timestamp", new Document()
-                                            .append("$gte", request.startDate)
-                                            .append("$lte", request.endDate)
+                                            .append("$gte", new Date(request.startDate))
+                                            .append("$lte", new Date(request.endDate))
                                     )
                                     .append("metter_id", new Document()
                                             .append("$in", request.hardwares)
@@ -121,8 +132,17 @@ public class Controller_EON extends _BaseController {
 
             List<Document> documents3 = subscriber.get(4000, TimeUnit.SECONDS);
 
+            List<Swagger_EON_data_values> res = documents3.stream().map(document -> {
+                Swagger_EON_data_values result = new Swagger_EON_data_values();
+                Document id = document.get("_id", Document.class);
+                result.avg = document.getDouble("avg");
+                result.date = id.getDate("date");
+                result.hardware = id.getString("hardware");
+                return result;
+            }).collect(Collectors.toList());
 
-            return ok_mongo(documents3);
+
+            return ok(res);
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             return badRequest();

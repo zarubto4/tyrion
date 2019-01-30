@@ -11,10 +11,10 @@ import java.util.List;
 public class Swagger_EON_data_request {
 
     @ApiModelProperty(value = "begin of time range", required = true)
-    public Date startDate;
+    public Long startDate;
 
     @ApiModelProperty(value = "end of time range", required = true)
-    public Date endDate;
+    public Long endDate;
 
     @ApiModelProperty(value = "code of value",required = true)
     public String obis_code;
