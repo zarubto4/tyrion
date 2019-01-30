@@ -6,8 +6,10 @@ import mongo.mongo_services._MongoNativeCollection;
 import mongo.mongo_services._MongoNativeConnector;
 import org.bson.Document;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -28,6 +30,8 @@ import play.mvc.Result;
 import utilities.model.EchoService;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
+import utilities.swagger.input.Swagger_EON_data_request;
+import utilities.swagger.input.Swagger_NameAndDescription;
 
 import static mongo.mongo_services._SubscriberHelpers.ObservableSubscriber;
 
@@ -51,6 +55,79 @@ public class Controller_EON extends _BaseController {
     }
 
 
+    @ApiOperation(
+            value = "get grouped values",
+            tags = {"EON"},
+            notes = "values in given date range, from given hardware, averaged inside time intervals given in minutes"
+    )
+    @ApiImplicitParams(
+            {
+                    @ApiImplicitParam(
+                            name = "body",
+                            dataType = "utilities.swagger.input.Swagger_EON_data_request",
+                            required = true,
+                            paramType = "body",
+                            value = "constraints for query"
+                    )
+            }
+    )
+    public Result getValues(){
+        try {
+            Swagger_EON_data_request request = formFromRequestWithValidation(Swagger_EON_data_request.class);
+            _MongoNativeCollection collection = new _MongoNativeCollection("EON_LOCAL_TEST", "TEST9");
+
+            List<? extends Bson> pipeline = Arrays.asList(
+                    new Document()
+                            .append("$match", new Document()
+                                    .append("obic_code", request.obic_code)
+                                    .append("timestamp", new Document()
+                                            .append("$gte", request.startDate)
+                                            .append("$lte", request.endDate)
+                                    )
+                                    .append("metter_id", new Document()
+                                            .append("$in", request.hardwares)
+                                    )
+                            ),
+                    new Document()
+                            .append("$group", new Document()
+                                    .append("_id", new Document()
+                                            .append("hardware", "$metter_id")
+                                            .append("date", new Document()
+                                                    .append("$toDate", new Document()
+                                                            .append("$subtract", Arrays.asList(
+                                                                    new Document()
+                                                                            .append("$toLong", "$timestamp"),
+                                                                    new Document()
+                                                                            .append("$mod", Arrays.asList(
+                                                                                    new Document()
+                                                                                            .append("$toLong", "$timestamp"),
+                                                                                    request.interval*60*1000            // minutes to miliseconds
+                                                                                    )
+                                                                            )
+                                                                    )
+                                                            )
+                                                    )
+                                            )
+                                    )
+                                    .append("avg", new Document()
+                                            .append("$avg", "$value")
+                                    )
+                            )
+            );
+            ObservableSubscriber subscriber = new ObservableSubscriber<Document>();
+            collection.getCollection()
+                    .aggregate(pipeline)
+                    .subscribe(subscriber);
+
+            List<Document> documents3 = subscriber.get(4000, TimeUnit.SECONDS);
+
+
+            return ok_mongo(documents3);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+            return badRequest();
+        }
+    }
 
 
     public Result get_data() {
@@ -77,27 +154,33 @@ public class Controller_EON extends _BaseController {
             LocalDateTime datetime = LocalDateTime.now();
             Integer interValue = 15*1000*60;
 
+            List<? extends Bson> pipeline = Arrays.asList(
+                    new Document()
+                            .append("$match", new Document()
+                                    .append("obic_code", "1.0.1.8.0.255")
+                            ),
+                    new Document()
+                            .append("$group", new Document()
+                                    .append("_id", new Document()
+                                            .append("year", new Document()
+                                                    .append("$year", "$timestamp")
+                                            )
+                                            .append("dayOfYear", new Document()
+                                                    .append("$dayOfYear", "$timestamp")
+                                            )
+                                            .append("hour", new Document()
+                                                    .append("$hour", "$timestamp")
+                                            )
+                                    )
+                                    .append("avg", new Document()
+                                            .append("$avg", "$value")
+                                    )
+                            )
+            );
 
             ObservableSubscriber subscriber = new ObservableSubscriber<Document>();
             collection.getCollection()
-                    .aggregate(
-                            Arrays.asList(
-                                    Aggregates.match(
-                                            and(
-                                                eq("obic_code","1.0.1.8.0.255"),
-                                                eq("matter_id","0A014C4F4700044AA26C"),
-                                                    gte("timestamp",LocalDateTime.now().minusMonths(1)),
-                                                    lte("timestamp", LocalDateTime.now() )
-                                            )
-                                    ),
-                                    Aggregates.group("_id",
-                                            Accumulators.avg("comsuption", "$value"),
-                                            Accumulators.avg("time", "$timestamp")
-                                    ),
-                                    Aggregates.project(
-                                            Projections.include("matter_id", "comsuption", "time")
-                                    )
-                            ))
+                    .aggregate(pipeline)
                     .subscribe(subscriber);
 
             List<Document> documents3 = subscriber.get(4000, TimeUnit.SECONDS);
