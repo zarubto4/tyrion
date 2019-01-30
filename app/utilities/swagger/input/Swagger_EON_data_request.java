@@ -17,9 +17,9 @@ public class Swagger_EON_data_request {
     public Date endDate;
 
     @ApiModelProperty(value = "code of value",required = true)
-    public String obic_code;
+    public String obis_code;
 
-    @ApiModelProperty(value = "interval in minutes",required = true)
+    @ApiModelProperty(value = "interval in seconds",required = true)
     public Integer interval;
 
     @ApiModelProperty(value = "list of hardwares", required = true)

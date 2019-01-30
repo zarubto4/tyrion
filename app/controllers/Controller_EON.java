@@ -79,7 +79,7 @@ public class Controller_EON extends _BaseController {
             List<? extends Bson> pipeline = Arrays.asList(
                     new Document()
                             .append("$match", new Document()
-                                    .append("obic_code", request.obic_code)
+                                    .append("obic_code", request.obis_code) // TODO Fixnout chybu v obic_code na obis_code
                                     .append("timestamp", new Document()
                                             .append("$gte", request.startDate)
                                             .append("$lte", request.endDate)
@@ -101,7 +101,7 @@ public class Controller_EON extends _BaseController {
                                                                             .append("$mod", Arrays.asList(
                                                                                     new Document()
                                                                                             .append("$toLong", "$timestamp"),
-                                                                                    request.interval*60*1000            // minutes to miliseconds
+                                                                                    request.interval*1000            // minutes to miliseconds
                                                                                     )
                                                                             )
                                                                     )
