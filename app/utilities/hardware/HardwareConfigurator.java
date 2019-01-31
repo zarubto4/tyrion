@@ -5,9 +5,11 @@ import models.Model_Hardware;
 import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import utilities.logger.Logger;
 import utilities.swagger.input.Swagger_Board_Developer_parameters;
+import websocket.Message;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_overview_Board;
 
 import java.lang.reflect.Field;
+import java.util.concurrent.CompletionStage;
 
 public class HardwareConfigurator {
 
@@ -57,16 +59,24 @@ public class HardwareConfigurator {
                         if (this.hardwareInterface != null) {
                             Class type = reportedField.getType();
 
+                            CompletionStage<Message> response;
+
                             if (type.equals(Boolean.class)) {
-                                this.hardwareInterface.setParameter(configFieldName, (Boolean) configField.get(configuration));
+                                response = this.hardwareInterface.setParameter(configFieldName, (Boolean) configField.get(configuration));
                             } else if (type.equals(String.class)) {
-                                this.hardwareInterface.setParameter(configFieldName, (String) configField.get(configuration));
+                                response = this.hardwareInterface.setParameter(configFieldName, (String) configField.get(configuration));
                             } else if (type.equals(Integer.class)) {
-                                this.hardwareInterface.setParameter(configFieldName, (Integer) configField.get(configuration));
+                                response = this.hardwareInterface.setParameter(configFieldName, (Integer) configField.get(configuration));
                             } else {
                                 logger.warn("configure - unknown parameter: {}", configFieldName);
                                 continue;
                             }
+
+                            response.whenComplete((message, exception) -> {
+                                if (exception != null) {
+                                    logger.internalServerError(exception);
+                                }
+                            });
 
                             changeSettings = true;
                             changeConfig = true;
@@ -108,15 +118,26 @@ public class HardwareConfigurator {
             this.checkSpecial(parameter, value);
 
             if (this.hardwareInterface != null) {
+
+                CompletionStage<Message> response;
+
                 if (value instanceof String) {
-                    this.hardwareInterface.setParameter(parameter, (String) value);
+                    response = this.hardwareInterface.setParameter(parameter, (String) value);
                 } else if (value instanceof Boolean) {
-                    this.hardwareInterface.setParameter(parameter, (Boolean) value);
+                    response = this.hardwareInterface.setParameter(parameter, (Boolean) value);
                 } else if (value instanceof Integer) {
-                    this.hardwareInterface.setParameter(parameter, (Integer) value);
+                    response = this.hardwareInterface.setParameter(parameter, (Integer) value);
                 } else {
                     throw new NotSupportedException("unknown parameter: " + parameter);
                 }
+
+                response.whenComplete((message, exception) -> {
+                    if (exception != null) {
+                        logger.internalServerError(exception);
+                    } else {
+                        logger.debug("configure - successfully configured {} = {}", parameter, value);
+                    }
+                });
             }
         } catch (Exception e) {
             logger.internalServerError(e);

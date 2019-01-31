@@ -2,7 +2,6 @@ package utilities.hardware;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import exceptions.FailedMessageException;
 import exceptions.NeverConnectedException;
 import exceptions.ServerOfflineException;
 import models.Model_Hardware;
@@ -66,12 +65,15 @@ public class HardwareService {
         if (this.dominanceService.setDominant(hardware)) {
             if (record != null) {
                 try {
-                    HardwareInterface hardwareInterface = this.getInterface(hardware);
-                    hardwareInterface.changeUUIDOnServer(record.random_temporary_hardware_id);
+                    this.getInterface(hardware).changeUUIDOnServer(record.random_temporary_hardware_id)
+                            .whenComplete((message, exception) -> {
+                                if (exception != null) {
+                                    logger.internalServerError(exception);
+                                }
+                            });
+
                 } catch (NeverConnectedException|ServerOfflineException e) {
                     // nothing
-                } catch (FailedMessageException e) {
-                    logger.warn("activate - server responded with error: {}", e.getFailedMessage().getErrorMessage());
                 }
             }
 
@@ -106,7 +108,13 @@ public class HardwareService {
         this.dominanceService.setNondominant(hardware);
 
         HardwareInterface hardwareInterface = this.getInterface(hardware);
-        hardwareInterface.removeUUIDOnServer();
+        hardwareInterface.removeUUIDOnServer().whenComplete((message, exception) -> {
+            if (exception != null) {
+                logger.internalServerError(exception);
+            } else {
+                logger.info("deactivate - id removed from homer server");
+            }
+        });
         // TODO send echo
         // TODO remove from network status service
     }

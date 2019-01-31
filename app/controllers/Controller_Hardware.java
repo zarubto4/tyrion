@@ -1977,7 +1977,14 @@ public class Controller_Hardware extends _BaseController {
 
                 Model_HomerServer server = Model_HomerServer.find.byId(help.server_id);
 
-                hardwareInterface.relocate(server);
+                hardwareInterface.relocate(server)
+                        .whenComplete((message, exception) -> {
+                            if (exception != null) {
+                                logger.internalServerError(exception);
+                            } else {
+                                logger.info("hardware_redirect_to_server - successfully redirected");
+                            }
+                        });
 
             // Jedná se o server mimo náš svět - například z dev na stage, nebo z produkce na dev
             } else {
@@ -1985,11 +1992,15 @@ public class Controller_Hardware extends _BaseController {
                 if (help.server_port == null || help.server_url == null) {
                     return badRequest("its required send server_id  or server_url + server_port ");
                 }
-                try {
-                    hardwareInterface.relocate(help.server_url, help.server_port);
-                } catch (FailedMessageException e) {
-                    return badRequest("Cloud Device Execution Error: " + e.getFailedMessage().getErrorMessage());
-                }
+
+                hardwareInterface.relocate(help.server_url, help.server_port)
+                        .whenComplete((message, exception) -> {
+                            if (exception != null) {
+                                logger.internalServerError(exception);
+                            } else {
+                                logger.info("hardware_redirect_to_server - successfully redirected");
+                            }
+                        });
             }
 
             return ok();
@@ -2035,7 +2046,13 @@ public class Controller_Hardware extends _BaseController {
             this.checkUpdatePermission(hardware);
 
             HardwareInterface hardwareInterface = this.hardwareService.getInterface(hardware);
-            hardwareInterface.command(help.command, true);
+            hardwareInterface.command(help.command, true).whenComplete((message, exception) -> {
+                if (exception != null) {
+                    logger.internalServerError(exception);
+                } else {
+                    logger.info("hardware_command_execution - command {} was successful", help.command);
+                }
+            });
 
             return ok();
         } catch (Exception e) {
@@ -2525,7 +2542,14 @@ public class Controller_Hardware extends _BaseController {
                     }
                 }
 
-                hardwareInterface.setHardwareGroups(hardware.get_hardware_group_ids(), Enum_type_of_command.SET);
+                hardwareInterface.setHardwareGroups(hardware.get_hardware_group_ids(), Enum_type_of_command.SET)
+                        .whenComplete((message, exception) -> {
+                            if (exception != null) {
+                                logger.internalServerError(exception);
+                            } else {
+                                logger.info("board_group_update_device_list - successfully set groups");
+                            }
+                        });
 
                 hardware.idCache().removeAll(Model_HardwareGroup.class);
                 hardware.update();
@@ -2589,7 +2613,6 @@ public class Controller_Hardware extends _BaseController {
             return ok();
 
         } catch (Exception e) {
-            e.printStackTrace();
             return controllerServerError(e);
         }
     }

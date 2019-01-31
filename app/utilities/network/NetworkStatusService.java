@@ -141,7 +141,7 @@ public class NetworkStatusService {
                     if (!((Model_Hardware) networkable).dominant_entity) {
                         networkStatus = NetworkStatus.FREEZED;
                     } else {
-                        this.hardwareServiceProvider.get().getInterface((Model_Hardware) networkable).getNetworkStatusAsync()
+                        this.hardwareServiceProvider.get().getInterface((Model_Hardware) networkable).getNetworkStatus()
                                 .whenComplete((status, exception) -> {
                                     if (exception != null) {
                                         logger.internalServerError(exception);
@@ -156,7 +156,7 @@ public class NetworkStatusService {
                     if (((Model_Instance) networkable).current_snapshot_id == null) {
                         networkStatus = NetworkStatus.SHUT_DOWN;
                     } else {
-                        this.instanceServiceProvider.get().getInterface((Model_Instance) networkable).getNetworkStatusAsync()
+                        this.instanceServiceProvider.get().getInterface((Model_Instance) networkable).getNetworkStatus()
                                 .whenComplete((status, exception) -> {
                                     if (exception != null) {
                                         logger.internalServerError(exception);

@@ -22,7 +22,7 @@ public class HardwareSynchronizationTask implements Task {
     private final NotificationService notificationService;
     private final HardwareOverviewService hardwareOverviewService;
 
-    private CompletableFuture<Void> future;
+    private CompletionStage<Void> future;
 
     private Model_Hardware hardware;
 
@@ -48,24 +48,29 @@ public class HardwareSynchronizationTask implements Task {
     public CompletionStage<Void> start() {
 
         logger.info("start - synchronization task begins");
-        return future = CompletableFuture.runAsync(() -> {
-            if (this.hardware == null || this.hardwareInterface == null) {
-                throw new RuntimeException("You must set hardware before the task start.");
-            }
 
-            this.overview = this.hardwareInterface.getOverview();
+        if (this.hardware == null || this.hardwareInterface == null) {
+            throw new RuntimeException("You must set hardware before the task start.");
+        }
 
-            this.synchronizeSettings();
-            this.synchronizeFirmware();
-            this.synchronizeBackup();
-            this.synchronizeBootloader();
+        return future = this.hardwareInterface.getOverview()
+                .thenCompose((overview) -> {
 
-        }, this.httpExecutionContext.current());
+                    this.overview = overview;
+
+                    // TODO may be better
+                    return CompletableFuture.runAsync(() -> {
+                        this.synchronizeSettings();
+                        this.synchronizeFirmware();
+                        this.synchronizeBackup();
+                        this.synchronizeBootloader();
+                    }, this.httpExecutionContext.current());
+                });
     }
 
     @Override
     public void stop() {
-        this.future.cancel(true);
+        this.future.toCompletableFuture().cancel(true);
     }
 
     public void setHardware(Model_Hardware hardware) {
@@ -86,7 +91,14 @@ public class HardwareSynchronizationTask implements Task {
         for (UUID hardware_group_id : this.hardware.get_hardware_group_ids()) {
             // Pokud neobsahuje přidám - ale abych si ušetřil čas - nastavím rovnou celý seznam - Homer si s tím poradí
             if (overview.hardware_group_ids == null || overview.hardware_group_ids.isEmpty() || !overview.hardware_group_ids.contains(hardware_group_id)) {
-                this.hardwareInterface.setHardwareGroups(this.hardware.get_hardware_group_ids(), Enum_type_of_command.SET);
+                this.hardwareInterface.setHardwareGroups(this.hardware.get_hardware_group_ids(), Enum_type_of_command.SET)
+                        .whenComplete((message, exception) -> {
+                            if (exception != null) {
+                                logger.internalServerError(exception);
+                            } else {
+                                logger.info("synchronizeSettings - successfully set groups");
+                            }
+                        });
                 break;
             }
         }
@@ -124,7 +136,7 @@ public class HardwareSynchronizationTask implements Task {
                     // TODO send notification
                 }
             } else if (this.hardware.getProject() != null) {
-                this.notificationService.send(this.hardware.getProject(), this.hardware.notificationUnknownFirmware());
+                // this.notificationService.send(this.hardware.getProject(), this.hardware.notificationUnknownFirmware()); TODO uncomment when ready
             }
         }
     }

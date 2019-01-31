@@ -17,7 +17,6 @@ import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 /**
@@ -42,56 +41,37 @@ public class HardwareInterface {
      * @param command to execute
      * @param highestPriority if true the command will be executed as soon as possible
      */
-    public void command(BoardCommand command, boolean highestPriority) {
-        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_command_execute().make_request(Collections.singletonList(this.hardware.id), command, highestPriority)));
+    public CompletionStage<Message> command(BoardCommand command, boolean highestPriority) {
+        return this.webSocketInterface.ask(new Request(new WS_Message_Hardware_command_execute().make_request(Collections.singletonList(this.hardware.id), command, highestPriority)));
     }
 
-    /**
-     * Gets the network status of the hardware.
-     * @return
-     */
-    public NetworkStatus getNetworkStatus() {
-        Message message = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_online_status().make_request(Collections.singletonList(hardware.getId()))));
-        WS_Message_Hardware_online_status response = message.as(WS_Message_Hardware_online_status.class);
-        return response.is_device_online(hardware.getId()) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
-    }
-
-    public CompletionStage<NetworkStatus> getNetworkStatusAsync() {
-        return this.webSocketInterface.sendWithResponseAsync(new Request(new WS_Message_Hardware_online_status().make_request(Collections.singletonList(this.hardware.getId()))))
+    public CompletionStage<NetworkStatus> getNetworkStatus() {
+        return this.webSocketInterface.ask(new Request(new WS_Message_Hardware_online_status().make_request(Collections.singletonList(this.hardware.getId()))))
                 .thenApplyAsync(message -> {
                     WS_Message_Hardware_online_status response = message.as(WS_Message_Hardware_online_status.class);
                     return response.is_device_online(hardware.getId()) ? NetworkStatus.ONLINE : NetworkStatus.OFFLINE;
                 }, this.httpExecutionContext.current());
     }
 
-    public WS_Message_Hardware_overview_Board getOverview() {
-        Message response = this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_overview().make_request(Collections.singletonList(this.hardware.getId()))));
-        return response.as(WS_Message_Hardware_overview.class).get_device_from_list(this.hardware.getId());
-    }
-
-    public CompletionStage<WS_Message_Hardware_overview_Board> getOverviewAsync() {
-        return this.webSocketInterface.sendWithResponseAsync(new Request(new WS_Message_Hardware_overview().make_request(Collections.singletonList(this.hardware.getId()))))
+    public CompletionStage<WS_Message_Hardware_overview_Board> getOverview() {
+        return this.webSocketInterface.ask(new Request(new WS_Message_Hardware_overview().make_request(Collections.singletonList(this.hardware.getId()))))
                 .thenApplyAsync(message -> message.as(WS_Message_Hardware_overview.class).get_device_from_list(this.hardware.getId()), this.httpExecutionContext.current());
     }
 
-    public void setAlias(String alias) {
-        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), "alias", alias)));
+    public CompletionStage<Message> setHardwareGroups(List<UUID> groupIds, Enum_type_of_command command) {
+        return this.webSocketInterface.ask(new Request(new WS_Message_Hardware_set_hardware_groups().make_request(Collections.singletonList(this.hardware), groupIds, command)));
     }
 
-    public void setHardwareGroups(List<UUID> groupIds, Enum_type_of_command command) {
-        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_set_hardware_groups().make_request(Collections.singletonList(this.hardware), groupIds, command)));
+    public CompletionStage<Message> setParameter(String name, String value) {
+        return this.webSocketInterface.ask(new Request(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), name, value)));
     }
 
-    public void setParameter(String name, String value) {
-        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), name, value)));
+    public CompletionStage<Message> setParameter(String name, Boolean value) {
+        return this.webSocketInterface.ask(new Request(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), name, value)));
     }
 
-    public void setParameter(String name, Boolean value) {
-        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), name, value)));
-    }
-
-    public void setParameter(String name, Integer value) {
-        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), name, value)));
+    public CompletionStage<Message> setParameter(String name, Integer value) {
+        return this.webSocketInterface.ask(new Request(new WS_Message_Hardware_set_settings().make_request(Collections.singletonList(this.hardware), name, value)));
     }
 
     // TODO rework to something better
@@ -113,7 +93,6 @@ public class HardwareInterface {
                 .eq("firmware_type", FirmwareType.BACKUP.name())
                 // TODO .lt("actualization_procedure.date_of_planing", new Date())
                 // TODO .order().desc("actualization_procedure.date_of_planing")
-                .select("id")
                 .findList();
 
         // Zaloha kdyby byly stále platné aktualizace na backup
@@ -125,35 +104,27 @@ public class HardwareInterface {
         this.setParameter("autobackup", true);
     }
 
-    public void relocate(Model_HomerServer server) {
-        this.relocate(server.server_url, server.mqtt_port.toString());
+    public CompletionStage<Message> relocate(Model_HomerServer server) {
+        return this.relocate(server.server_url, server.mqtt_port.toString());
     }
 
-    public void relocate(String mqttHost, String mqttPort) {
-        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_change_server().make_request(mqttHost, mqttPort, Collections.singletonList(this.hardware.id))));
+    public CompletionStage<Message> relocate(String mqttHost, String mqttPort) {
+        return this.webSocketInterface.ask(new Request(new WS_Message_Hardware_change_server().make_request(mqttHost, mqttPort, Collections.singletonList(this.hardware.id))));
     }
 
-    public void changeUUIDOnServer(UUID oldId) {
-        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_uuid_converter_cleaner().make_request(this.hardware.id, oldId, this.hardware.full_id)));
+    public CompletionStage<Message> changeUUIDOnServer(UUID oldId) {
+        return this.webSocketInterface.ask(new Request(new WS_Message_Hardware_uuid_converter_cleaner().make_request(this.hardware.id, oldId, this.hardware.full_id)));
     }
 
-    public void changeUUIDOnServer(String oldId) {
-        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_uuid_converter_cleaner().make_request(this.hardware.id, oldId, this.hardware.full_id)));
+    public CompletionStage<Message> changeUUIDOnServer(String oldId) {
+        return this.webSocketInterface.ask(new Request(new WS_Message_Hardware_uuid_converter_cleaner().make_request(this.hardware.id, oldId, this.hardware.full_id)));
     }
 
-    public CompletableFuture<Message> changeUUIDOnServerAsync(UUID oldId) {
-        return CompletableFuture.supplyAsync(() -> this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_uuid_converter_cleaner().make_request(this.hardware.id, oldId, this.hardware.full_id))));
+    public CompletionStage<Message> removeUUIDOnServer() {
+        return this.webSocketInterface.ask(new Request(new WS_Message_Hardware_uuid_converter_cleaner().make_request(null, this.hardware.id, this.hardware.full_id)));
     }
 
-    public CompletableFuture<Message> changeUUIDOnServerAsync(String oldId) {
-        return CompletableFuture.supplyAsync(() -> this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_uuid_converter_cleaner().make_request(this.hardware.id, oldId, this.hardware.full_id))));
-    }
-
-    public void removeUUIDOnServer() {
-        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_uuid_converter_cleaner().make_request(null, this.hardware.id, this.hardware.full_id)));
-    }
-
-    public void update(Model_HardwareUpdate update) {
-        this.webSocketInterface.sendWithResponse(new Request(new WS_Message_Hardware_UpdateProcedure_Command().make_request(Collections.singletonList(update.get_brief_for_update_homer_server()))));
+    public CompletionStage<Message> update(Model_HardwareUpdate update) {
+        return this.webSocketInterface.ask(new Request(new WS_Message_Hardware_UpdateProcedure_Command().make_request(Collections.singletonList(update.get_brief_for_update_homer_server()))));
     }
 }

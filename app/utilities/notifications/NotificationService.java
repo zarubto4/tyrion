@@ -2,14 +2,11 @@ package utilities.notifications;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Singleton;
-import exceptions.NotFoundException;
 import models.*;
 import play.libs.Json;
 import utilities.enums.NetworkStatus;
 import utilities.enums.NotificationImportance;
 import utilities.logger.Logger;
-import utilities.model.BaseModel;
-import utilities.model.UnderProject;
 import websocket.interfaces.Portal;
 import websocket.messages.tyrion_with_becki.WSM_Echo;
 import websocket.messages.tyrion_with_becki.WS_Message_Online_Change_status;
@@ -68,7 +65,7 @@ public class NotificationService {
             }
 
             if (this.subscriptions.containsKey(receiver.id)) {
-                this.subscriptions.get(receiver.id).forEach(portal -> portal.send(message));
+                this.subscriptions.get(receiver.id).forEach(portal -> portal.tell(message));
             }
         });
     }
@@ -125,12 +122,12 @@ public class NotificationService {
     public synchronized void networkStatusChanged(Class<?> cls, UUID id, NetworkStatus status, UUID projectId) {
         logger.info("networkStatusChanged - send status {} for {}, id: {}, project id: {}", status, cls.getSimpleName(), id, projectId);
         if (projectId == null) {
-            this.subscriptions.values().forEach(portals -> portals.forEach(portal -> portal.send(new WS_Message_Online_Change_status(cls, id, status).make_request())));
+            this.subscriptions.values().forEach(portals -> portals.forEach(portal -> portal.tell(new WS_Message_Online_Change_status(cls, id, status).make_request())));
         } else {
             if (this.projectSubscriptions.containsKey(projectId)) {
                 this.projectSubscriptions.get(projectId).forEach(personId -> {
                     if (this.subscriptions.containsKey(personId)) {
-                        this.subscriptions.get(personId).forEach(portal -> portal.send(new WS_Message_Online_Change_status(cls, id, status).make_request()));
+                        this.subscriptions.get(personId).forEach(portal -> portal.tell(new WS_Message_Online_Change_status(cls, id, status).make_request()));
                     }
                 });
             }
@@ -143,12 +140,12 @@ public class NotificationService {
             if (this.projectSubscriptions.containsKey(projectId)) {
                 this.projectSubscriptions.get(projectId).forEach(personId -> {
                     if (this.subscriptions.containsKey(personId)) {
-                        this.subscriptions.get(personId).forEach(portal -> portal.send(new WSM_Echo(cls, id).make_request()));
+                        this.subscriptions.get(personId).forEach(portal -> portal.tell(new WSM_Echo(cls, id).make_request()));
                     }
                 });
             }
         } else {
-            this.subscriptions.values().forEach(portals -> portals.forEach(portal -> portal.send(new WSM_Echo(cls, id).make_request())));
+            this.subscriptions.values().forEach(portals -> portals.forEach(portal -> portal.tell(new WSM_Echo(cls, id).make_request())));
         }
     }
 }

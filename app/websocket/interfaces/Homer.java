@@ -21,6 +21,7 @@ import utilities.hardware.update.UpdateService;
 import utilities.logger.Logger;
 import websocket.Interface;
 import websocket.Message;
+import websocket.TimeOut;
 import websocket.messages.homer_hardware_with_tyrion.*;
 import websocket.messages.homer_hardware_with_tyrion.updates.WS_Message_Hardware_UpdateProcedure_Progress;
 import websocket.messages.homer_instance_with_tyrion.WS_Message_Instance_set_hardware;
@@ -55,9 +56,9 @@ public class Homer extends Interface {
     private UUID apiKey;
 
     @Inject
-    public Homer(Materializer materializer, _BaseFormFactory formFactory, HardwareEvents hardwareEvents, UpdateService updateService,
+    public Homer(Materializer materializer, _BaseFormFactory formFactory, HardwareEvents hardwareEvents, UpdateService updateService, TimeOut timeOut,
                  HomerEvents homerEvents, DominanceService dominanceService, HttpExecutionContext httpExecutionContext, HardwareOverviewService hardwareOverviewService) {
-        super(httpExecutionContext, materializer, formFactory);
+        super(httpExecutionContext, materializer, formFactory, timeOut);
         this.hardwareEvents = hardwareEvents;
         this.updateService = updateService;
         this.homerEvents = homerEvents;
@@ -122,17 +123,17 @@ public class Homer extends Interface {
 
                 this.authorized = true;
 
-                this.send(new WS_Message_Homer_Verification_result().make_request(true, this.apiKey.toString()).put("message_id", message.message_id));
+                this.tell(new WS_Message_Homer_Verification_result().make_request(true, this.apiKey.toString()).put("message_id", message.message_id));
                 
                 this.homerEvents.connected(server);
 
             } else {
-                this.send(new WS_Message_Homer_Verification_result().make_request(false, null).put("message_id", message.message_id));
+                this.tell(new WS_Message_Homer_Verification_result().make_request(false, null).put("message_id", message.message_id));
             }
 
         } catch (Exception e) {
             logger.internalServerError(e);
-            this.send(new WS_Message_Homer_Verification_result().make_request(false, null).put("message_id", message.message_id));
+            this.tell(new WS_Message_Homer_Verification_result().make_request(false, null).put("message_id", message.message_id));
         }
     }
 
@@ -145,19 +146,19 @@ public class Homer extends Interface {
                 if (!server.isPublic()) {
                     Model_Person person = authorizationToken.getPerson();
                     if (Model_Project.find.query().where().eq("servers.id", server.id).eq("persons.id", person.id).findCount() == 0) {
-                        this.send(message.get_result(false));
+                        this.tell(message.get_result(false));
                         return;
                     }
                 }
 
-                this.send(message.get_result(true));
+                this.tell(message.get_result(true));
                 return;
             }
         } catch (NotFoundException e) {
             logger.warn("onLoggerSubscriptionAuthenticate - not found");
         }
 
-        this.send(message.get_result(false));
+        this.tell(message.get_result(false));
     }
 
 /* INSTANCE MESSAGES ---------------------------------------------------------------------------------------------------*/
@@ -222,25 +223,25 @@ public class Homer extends Interface {
 
                     case PUBLIC: {
 
-                        this.send(message.get_result(true));
+                        this.tell(message.get_result(true));
                         return;
                     }
 
                     case PROJECT: {
 
-                        this.send(message.get_result(false));
+                        this.tell(message.get_result(false));
                         return;
                     }
 
                     case TESTING:{
 
-                        this.send(message.get_result(false));
+                        this.tell(message.get_result(false));
                         return;
                     }
 
                     default: {
 
-                        this.send(message.get_result(false));
+                        this.tell(message.get_result(false));
                     }
                 }
             } else {
@@ -258,10 +259,10 @@ public class Homer extends Interface {
 
                     if (Model_Instance.find.query().where().eq("id", message.instance_id).findCount() > 0) {
                         logger.trace("cloud_verification_token_GRID:: Permission found");
-                        this.send(message.get_result(true));
+                        this.tell(message.get_result(true));
                     } else {
                         logger.trace("cloud_verification_token_GRID:: Permission not found");
-                        this.send(message.get_result(false));
+                        this.tell(message.get_result(false));
                     }
 
                 } else {
@@ -273,10 +274,10 @@ public class Homer extends Interface {
                             // .or(Expr.eq("project.participants.person.id", terminal.person.id), Expr.eq("actual_instance.version.public_version", true)) TODO find grid access settings
                             .findCount() > 0) {
                         logger.trace("cloud_verification_token_GRID:: Permission found");
-                        this.send(message.get_result(true));
+                        this.tell(message.get_result(true));
                     } else {
                         logger.trace("cloud_verification_token_GRID:: Permission not found");
-                        this.send(message.get_result(false));
+                        this.tell(message.get_result(false));
                     }
                 }
             }
@@ -298,22 +299,22 @@ public class Homer extends Interface {
                 Model_Person person = authorizationToken.getPerson();
                 if (!server.isPublic()) {
                     if (Model_Project.find.query().where().eq("servers.id", server.id).eq("persons.id", person.id).findCount() == 0) {
-                        this.send(message.get_result(false));
+                        this.tell(message.get_result(false));
                         return;
                     }
                 } else if (Model_Instance.find.query().where().eq("id", message.instance_id).eq("b_program.project.persons.id", authorizationToken.get_person_id()).findCount() == 0) {
-                    this.send(message.get_result(false));
+                    this.tell(message.get_result(false));
                     return;
                 }
 
-                this.send(message.get_result(true));
+                this.tell(message.get_result(true));
                 return;
             }
         } catch (NotFoundException e) {
             logger.warn("onRemoteViewVerify - not found");
         }
 
-        this.send(message.get_result(false));
+        this.tell(message.get_result(false));
     }
 
 /* HARDWARE MESSAGES ---------------------------------------------------------------------------------------------------*/
@@ -347,7 +348,7 @@ public class Homer extends Interface {
             default: {
                 logger.error("onMessageHardware - incoming message not recognized: {}", message.getMessage().toString());
                 if (!message.isErroneous()) {
-                    this.send(message.getMessage().put("error_message", "message_type not recognized").put("error_code", 400));
+                    this.tell(message.getMessage().put("error_message", "message_type not recognized").put("error_code", 400));
                 }
             }
         }
@@ -479,14 +480,14 @@ public class Homer extends Interface {
 
                             logger.debug("onHardwareMQTTAuthentication - found hardware with same credentials, access allowed, id: {}", request.full_id);
                             UUID randomId = this.dominanceService.rememberNondominant(request.full_id, this.id);
-                            this.send(request.get_result(true,  randomId, null, false));
+                            this.tell(request.get_result(true,  randomId, null, false));
                             return;
                         }
                     }
 
                     if (!historical.isEmpty()) {
                         logger.debug("onHardwareMQTTAuthentication - did not find any hardware with same credentials, access denied, id: {}", request.full_id);
-                        this.send(request.get_result(false,  null, null, false));
+                        this.tell(request.get_result(false,  null, null, false));
                         return;
                     }
 
@@ -501,19 +502,19 @@ public class Homer extends Interface {
                                 || (Server.mode == ServerMode.DEVELOPER && request.user_name.equals("user") && request.password.equals("pass"))) {
 
                             UUID randomId = this.dominanceService.rememberNondominant(request.full_id, this.id);
-                            this.send(request.get_result(true,  randomId, null, false));
+                            this.tell(request.get_result(true,  randomId, null, false));
                             return;
                         }
                     }
 
                     logger.debug("onHardwareMQTTAuthentication - did not find the hardware with same credentials anywhere, access denied, id: {}", request.full_id);
-                    this.send(request.get_result(false,  null, null, false));
+                    this.tell(request.get_result(false,  null, null, false));
 
                 } else {
 
                     // TODO Find public server and redirect Hardware:
                     logger.debug("onHardwareMQTTAuthentication - non-dominant hardware is on private server, redirecting to a public server - TODO!");
-                    this.send(request.get_result(false, null, "redirect_url", false));
+                    this.tell(request.get_result(false, null, "redirect_url", false));
                 }
                 return;
             } else {
@@ -525,13 +526,13 @@ public class Homer extends Interface {
                         || (BCrypt.checkpw( request.user_name, hardware.mqtt_password) && BCrypt.checkpw(request.password, hardware.mqtt_username))
                         || (Server.mode == ServerMode.DEVELOPER && request.user_name.equals("user") && request.password.equals("pass"))) {
 
-                    this.send(request.get_result(true, hardware.id, null, true));
+                    this.tell(request.get_result(true, hardware.id, null, true));
                     return;
                 }
             }
 
             logger.debug("onHardwareMQTTAuthentication - hardware was not found or it has bad credentials, access denied, id {}", hardware.full_id);
-            this.send(request.get_result(false,  hardware.id, null, false));
+            this.tell(request.get_result(false,  hardware.id, null, false));
 
         } catch (Exception e) {
 
@@ -539,9 +540,9 @@ public class Homer extends Interface {
 
             if (Server.mode == ServerMode.DEVELOPER) {
                 logger.error("onHardwareMQTTAuthentication - hardware has not permission to connect, but it is allowed DEV mode");
-                this.send(request.get_result(true, null, null, true));
+                this.tell(request.get_result(true, null, null, true));
             } else {
-                this.send(request.get_result(false, null, null, true));
+                this.tell(request.get_result(false, null, null, true));
             }
         }
     }
@@ -554,20 +555,20 @@ public class Homer extends Interface {
             if (hardware == null) {
                 if (this.dominanceService.hasNondominant(request.full_id)) {
                     UUID randomId = this.dominanceService.rememberNondominant(request.full_id, this.id);
-                    this.send(request.get_result(randomId, request.full_id));
+                    this.tell(request.get_result(randomId, request.full_id));
                 } else {
                     ModelMongo_Hardware_RegistrationEntity entity = ModelMongo_Hardware_RegistrationEntity.getbyFull_id(request.full_id);
                     if (entity != null) {
                         UUID randomId = this.dominanceService.rememberNondominant(request.full_id, this.id);
-                        this.send(request.get_result(randomId, request.full_id));
+                        this.tell(request.get_result(randomId, request.full_id));
                     } else {
                         logger.debug("onConvertFullIdToUUID - hardware was not recognized");
-                        this.send(request.get_result_error());
+                        this.tell(request.get_result_error());
                     }
                 }
             } else {
                 logger.debug("onConvertFullIdToUUID - found dominant");
-                this.send(request.get_result(hardware.id, hardware.full_id));
+                this.tell(request.get_result(hardware.id, hardware.full_id));
             }
             return;
         }
@@ -575,14 +576,14 @@ public class Homer extends Interface {
         if (request.uuid != null) {
             try {
                 Model_Hardware hardware1 = Model_Hardware.find.byId(request.uuid);
-                this.send(request.get_result(hardware1.id, hardware1.full_id));
+                this.tell(request.get_result(hardware1.id, hardware1.full_id));
             } catch (NotFoundException e) {
                 // nothing
             }
         }
 
         logger.debug("onConvertFullIdToUUID - hardware was not recognized");
-        this.send(request.get_result_error());
+        this.tell(request.get_result_error());
     }
 
     private void onHardwareLoggerSubscriptionAuthentication(WS_Message_Hardware_terminal_logger_validation_request request) {
@@ -595,18 +596,18 @@ public class Homer extends Interface {
                     Model_Hardware hardware = Model_Hardware.find.byId(id);
                     Model_Project project = hardware.getProject();
                     if (project == null || !project.isParticipant(person)) {
-                        this.send(request.get_result(false));
+                        this.tell(request.get_result(false));
                         return;
                     }
                 }
 
-                this.send(request.get_result(true));
+                this.tell(request.get_result(true));
             }
 
-            this.send(request.get_result(false));
+            this.tell(request.get_result(false));
 
         } catch (NotFoundException e) {
-            this.send(request.get_result(false));
+            this.tell(request.get_result(false));
         } catch (Exception e) {
             logger.internalServerError(e);
         }

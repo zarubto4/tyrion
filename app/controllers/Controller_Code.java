@@ -126,7 +126,7 @@ public class Controller_Code extends _BaseController {
                 }
             }
 
-            WS_Message_Make_compilation compilation_result = this.compilerService.compile(new Request(new WS_Message_Make_compilation().make_request( hardwareType , help.library_compilation_version, UUID.randomUUID(), help.main, includes)));
+            WS_Message_Make_compilation compilation_result = this.compilerService.compile(new Request(new WS_Message_Make_compilation().make_request( hardwareType , help.library_compilation_version, UUID.randomUUID(), help.main, includes))).toCompletableFuture().get();
 
             // V případě úspěšného buildu obsahuje příchozí JsonNode build_url
             if (compilation_result.build_url != null) {

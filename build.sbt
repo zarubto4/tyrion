@@ -1,6 +1,6 @@
 name := """tyrion"""
 
-version := "2.3.5"
+version := "2.3.6"
 
 packageName in Universal := "v" + version.value
 
@@ -28,7 +28,7 @@ libraryDependencies ++= Seq(
   "org.apache.poi" % "poi-ooxml" % "3.17",
   "xyz.morphia.morphia" % "core" % "1.4.0",
   "com.restfb" % "restfb" % "2.9.0", // New Login
-  "com.amazonaws" % "aws-java-sdk" % "1.11.479", // Amazon == DigitalOcean!
+  "com.amazonaws" % "aws-java-sdk-s3" % "1.11.490", // Amazon == DigitalOcean!
   evolutions,
   guice,
   ws

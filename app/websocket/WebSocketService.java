@@ -108,7 +108,7 @@ public class WebSocketService {
 
     public void test() {
         this.interfaces.forEach((key, value) -> {
-            value.send(Json.newObject().put("test", "sadasdasdas").put("message_id", UUID.randomUUID().toString()));
+            value.tell(Json.newObject().put("test", "sadasdasdas").put("message_id", UUID.randomUUID().toString()));
         });
     }
 

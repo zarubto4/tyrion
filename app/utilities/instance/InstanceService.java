@@ -19,6 +19,7 @@ import websocket.interfaces.Homer;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Message_Homer_Hardware_ID_UUID_Pair;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class InstanceService {
 
@@ -68,72 +69,82 @@ public class InstanceService {
 
             HomerInterface homerInterface = this.homerService.getInterface(instance.getServer());
 
-            if(!homerInterface.getInstanceList().instance_ids.contains(instance.id)) {
-                homerInterface.addInstance(instance);
-            }
-
-
-            this.networkStatusService.setStatus(instance, NetworkStatus.ONLINE);
-
-            InstanceInterface instanceInterface = this.getInterface(instance);
-            instanceInterface.setProgram();
-
-            List<Model_Hardware> hardware = snapshot.getRequiredHardware();
-
-            List<WS_Message_Homer_Hardware_ID_UUID_Pair> pairs = new ArrayList<>();
-
-            hardware.forEach(hw -> {
-                WS_Message_Homer_Hardware_ID_UUID_Pair pair = new WS_Message_Homer_Hardware_ID_UUID_Pair();
-                pair.full_id = hw.full_id;
-                pair.uuid = hw.id.toString(); // Must be string!
-                pairs.add(pair);
-            });
-
-            instanceInterface.setHardware(pairs);
-            // TODO instanceInterface.setTerminals();
-
-            // TODO think if this code shouldn't be elsewhere
-            if (forceHardwareUpdate && snapshot.getProgram().interfaces.size() > 0) {
-                Map<UUID, List<Model_Hardware>> updates = new HashMap<>();
-
-                snapshot.getProgram().interfaces.forEach(iface -> {
-                    if (!updates.containsKey(iface.interface_id)) {
-                        updates.put(iface.interface_id, new ArrayList<>());
-                    }
-
-                    if (iface.type.equals("hardware")) {
-                        try {
-                            Model_Hardware hw = Model_Hardware.find.byId(iface.target_id);
-                            if (!updates.get(iface.interface_id).contains(hw)) {
-                                updates.get(iface.interface_id).add(hw);
-                            }
-                        } catch (NotFoundException e) {
-                            logger.warn("deploy - not found hw, id: {}", iface.target_id);
+            homerInterface.getInstanceList()
+                    .thenCompose(instanceList -> {
+                        if (!instanceList.instance_ids.contains(instance.id)) {
+                            return homerInterface.addInstance(instance);
+                        } else {
+                            return CompletableFuture.completedFuture(null);
                         }
-                    } else if (iface.type.equals("group")) {
-                        try {
-                            Model_HardwareGroup group = Model_HardwareGroup.find.byId(iface.target_id);
-                            group.getHardware().forEach(hw -> {
-                                if (!updates.get(iface.interface_id).contains(hw)) {
-                                    updates.get(iface.interface_id).add(hw);
-                                }
-                            });
-                        } catch (NotFoundException e) {
-                            logger.warn("deploy - not found hw group, id: {}", iface.target_id);
-                        }
-                    }
-                });
+                    })
+                    .thenAccept(notUsed -> {
+                        this.networkStatusService.setStatus(instance, NetworkStatus.ONLINE);
 
-                updates.keySet().forEach(interfaceId -> {
-                    try {
-                        Model_CProgramVersion version = Model_CProgramVersion.find.byId(interfaceId);
+                        InstanceInterface instanceInterface = this.getInterface(instance);
 
-                        this.updateService.bulkUpdate(updates.get(interfaceId), version, FirmwareType.FIRMWARE, UpdateType.MANUALLY_BY_INSTANCE, snapshot.getId());
-                    } catch (NotFoundException e) {
-                        logger.warn("deploy - not found firmware version, id: {}, skipping update", interfaceId);
-                    }
-                });
-            }
+                        instanceInterface.setProgram()
+                                .thenCompose(notUsed1 -> {
+                                    List<Model_Hardware> hardware = snapshot.getRequiredHardware();
+
+                                    List<WS_Message_Homer_Hardware_ID_UUID_Pair> pairs = new ArrayList<>();
+
+                                    hardware.forEach(hw -> {
+                                        WS_Message_Homer_Hardware_ID_UUID_Pair pair = new WS_Message_Homer_Hardware_ID_UUID_Pair();
+                                        pair.full_id = hw.full_id;
+                                        pair.uuid = hw.id.toString(); // Must be string!
+                                        pairs.add(pair);
+                                    });
+
+                                    return instanceInterface.setHardware(pairs);
+                                })
+                                .thenAccept(notUsed2 -> {
+
+                                    // TODO instanceInterface.setTerminals();
+
+                                    // TODO think if this code shouldn't be elsewhere
+                                    if (forceHardwareUpdate && snapshot.getProgram().interfaces.size() > 0) {
+                                        Map<UUID, List<Model_Hardware>> updates = new HashMap<>();
+
+                                        snapshot.getProgram().interfaces.forEach(iface -> {
+                                            if (!updates.containsKey(iface.interface_id)) {
+                                                updates.put(iface.interface_id, new ArrayList<>());
+                                            }
+
+                                            if (iface.type.equals("hardware")) {
+                                                try {
+                                                    Model_Hardware hw = Model_Hardware.find.byId(iface.target_id);
+                                                    if (!updates.get(iface.interface_id).contains(hw)) {
+                                                        updates.get(iface.interface_id).add(hw);
+                                                    }
+                                                } catch (NotFoundException e) {
+                                                    logger.warn("deploy - not found hw, id: {}", iface.target_id);
+                                                }
+                                            } else if (iface.type.equals("group")) {
+                                                try {
+                                                    Model_HardwareGroup group = Model_HardwareGroup.find.byId(iface.target_id);
+                                                    group.getHardware().forEach(hw -> {
+                                                        if (!updates.get(iface.interface_id).contains(hw)) {
+                                                            updates.get(iface.interface_id).add(hw);
+                                                        }
+                                                    });
+                                                } catch (NotFoundException e) {
+                                                    logger.warn("deploy - not found hw group, id: {}", iface.target_id);
+                                                }
+                                            }
+                                        });
+
+                                        updates.keySet().forEach(interfaceId -> {
+                                            try {
+                                                Model_CProgramVersion version = Model_CProgramVersion.find.byId(interfaceId);
+
+                                                this.updateService.bulkUpdate(updates.get(interfaceId), version, FirmwareType.FIRMWARE, UpdateType.MANUALLY_BY_INSTANCE, snapshot.getId());
+                                            } catch (NotFoundException e) {
+                                                logger.warn("deploy - not found firmware version, id: {}, skipping update", interfaceId);
+                                            }
+                                        });
+                                    }
+                                });
+                    });
 
         } catch (ServerOfflineException e) {
             this.notificationService.send(snapshot.getProject(), snapshot.notificationServerOffline());
@@ -142,7 +153,7 @@ public class InstanceService {
 
     public void shutdown(Model_Instance instance) {
 
-        if(instance.current_snapshot() != null) {
+        if (instance.current_snapshot() != null) {
             instance.current_snapshot().getRequiredHardware().forEach(hardware -> {
                 hardware.connected_instance_id = null;
                 hardware.update();
@@ -155,9 +166,14 @@ public class InstanceService {
 
         try {
             HomerInterface homerInterface = this.homerService.getInterface(instance.getServer());
-            homerInterface.removeInstance(Collections.singletonList(instance.id));
+            homerInterface.removeInstance(Collections.singletonList(instance.id))
+                    .whenComplete((response, exception) -> {
+                        if (exception != null) {
+                            logger.internalServerError(exception);
+                        }
 
-            this.networkStatusService.setStatus(instance, NetworkStatus.OFFLINE);
+                        this.networkStatusService.setStatus(instance, NetworkStatus.OFFLINE);
+                    });
 
         } catch (ServerOfflineException e) {
             // nothing - sever is offline

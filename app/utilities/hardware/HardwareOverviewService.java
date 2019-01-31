@@ -13,7 +13,6 @@ import utilities.model.EchoService;
 import websocket.messages.homer_hardware_with_tyrion.WS_Message_Hardware_overview_Board;
 
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @Singleton
 public class HardwareOverviewService {
@@ -59,7 +58,7 @@ public class HardwareOverviewService {
     private void requestOverview(Model_Hardware hardware) {
         logger.debug("requestOverview - requesting overview for hardware: {}", hardware.getId());
         try {
-            this.hardwareService.getInterface(hardware).getOverviewAsync()
+            this.hardwareService.getInterface(hardware).getOverview()
                     .thenAccept(overview -> this.setOverview(hardware, overview));
         } catch (ServerOfflineException|NeverConnectedException e) {
             // nothing

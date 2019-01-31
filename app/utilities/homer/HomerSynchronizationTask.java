@@ -17,6 +17,7 @@ import utilities.network.NetworkStatusService;
 import utilities.synchronization.Task;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Message_Homer_Hardware_ID_UUID_Pair;
 import websocket.messages.homer_with_tyrion.WS_Message_Homer_Hardware_list;
+import websocket.messages.homer_with_tyrion.WS_Message_Homer_Instance_list;
 import websocket.messages.homer_with_tyrion.configuration.WS_Message_Homer_Get_homer_server_configuration;
 
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class HomerSynchronizationTask implements Task {
     private Model_HomerServer server;
     private HomerInterface homerInterface;
 
-    private CompletableFuture<Void> future;
+    private CompletionStage<Void> future;
 
     @Inject
     public HomerSynchronizationTask(HomerService homerService, HardwareEvents hardwareEvents, InstanceService instanceService,
@@ -63,21 +64,29 @@ public class HomerSynchronizationTask implements Task {
     @Override
     public CompletionStage<Void> start() {
         logger.info("start - synchronization task begins");
-        return future = CompletableFuture.runAsync(() -> {
-            if (this.server == null || this.homerInterface == null) {
-                throw new RuntimeException("You must set server before the task start.");
-            }
 
-            this.synchronizeSettings();
-            this.synchronizeHardware();
-            this.synchronizeInstances();
+        if (this.server == null || this.homerInterface == null) {
+            throw new RuntimeException("You must set server before the task start.");
+        }
 
-        }, this.httpExecutionContext.current());
+        return future = this.homerInterface.getOverview()
+                .thenCompose(overview -> {
+                    this.synchronizeSettings(overview);
+                    return this.homerInterface.getHardwareList();
+                })
+                .thenCompose(hardwareList -> {
+                    this.synchronizeHardware(hardwareList);
+                    return this.homerInterface.getInstanceList();
+                })
+                .thenCompose(instanceList -> {
+                    this.synchronizeInstances(instanceList);
+                    return CompletableFuture.completedFuture(null);
+                });
     }
 
     @Override
     public void stop() {
-        this.future.cancel(true);
+        this.future.toCompletableFuture().cancel(true);
     }
 
     public void setServer(Model_HomerServer server) {
@@ -89,12 +98,10 @@ public class HomerSynchronizationTask implements Task {
         }
     }
 
-    private void synchronizeSettings() {
+    private void synchronizeSettings(WS_Message_Homer_Get_homer_server_configuration overview) {
         try {
 
             logger.info("synchronizeSettings - synchronizing settings for server: {}", this.server.name);
-
-            WS_Message_Homer_Get_homer_server_configuration overview = this.homerInterface.getOverview();
 
             if (server.mqtt_port != overview.mqtt_port || server.grid_port != overview.grid_port || server.web_view_port != overview.web_view_port ||  server.hardware_logger_port != overview.hw_logger_port ||  server.rest_api_port != overview.rest_api_port) {
                 server.mqtt_port = overview.mqtt_port;   // 1881
@@ -122,12 +129,10 @@ public class HomerSynchronizationTask implements Task {
         }
     }
 
-    private void synchronizeHardware() {
+    private void synchronizeHardware(WS_Message_Homer_Hardware_list hardwareList) {
         try {
 
             logger.info("synchronizeHardware - synchronizing hardware on server: {}", this.server.name);
-
-            WS_Message_Homer_Hardware_list hardwareList = this.homerInterface.getHardwareList();
 
             List<WS_Message_Homer_Hardware_ID_UUID_Pair> device_ids_on_server = hardwareList.list;
 
@@ -158,7 +163,7 @@ public class HomerSynchronizationTask implements Task {
                     // Homer server neměl spojení s Tyrionem a tak dočasně přiřadil uuid jako full id - proto hned zaměním
                     if (pair.uuid.length() < 25) {
                         logger.warn("synchronizeHardware - homer temporally assigned full id: {} as main id for hardware, id {}", pair.uuid, hardware.id);
-                        hardwareInterface.changeUUIDOnServerAsync(pair.uuid)
+                        hardwareInterface.changeUUIDOnServer(pair.uuid)
                                 .thenAccept(message -> {
                                     if (pair.online_state) {
                                         this.hardwareEvents.connected(hardware);
@@ -172,7 +177,7 @@ public class HomerSynchronizationTask implements Task {
                     // Zařízení má přiřazenou jinou UUID k Full ID než by měl mít
                     if (!hardware.id.equals(UUID.fromString(pair.uuid))) {
                         logger.warn("synchronizeHardware - homer temporally assigned random id: {} for hardware, id {}", pair.uuid, hardware.id);
-                        hardwareInterface.changeUUIDOnServerAsync(UUID.fromString(pair.uuid))
+                        hardwareInterface.changeUUIDOnServer(UUID.fromString(pair.uuid))
                                 .thenAccept(message -> {
                                     if (pair.online_state) {
                                         this.hardwareEvents.connected(hardware);
@@ -203,7 +208,7 @@ public class HomerSynchronizationTask implements Task {
         }
     }
 
-    private void synchronizeInstances() {
+    private void synchronizeInstances(WS_Message_Homer_Instance_list instanceList) {
         try {
 
             logger.info("synchronizeInstances - synchronizing instances on server: {}", this.server.name);
@@ -215,7 +220,7 @@ public class HomerSynchronizationTask implements Task {
                     .select("id")
                     .findSingleAttributeList();
 
-            List<UUID> instances_actual_on_server = this.homerInterface.getInstanceList().instance_ids;
+            List<UUID> instances_actual_on_server = instanceList.instance_ids;
 
             List<UUID> instances_for_removing = new ArrayList<>();
             List<UUID> instances_for_add = new ArrayList<>();
@@ -233,11 +238,13 @@ public class HomerSynchronizationTask implements Task {
             }
 
             if (!instances_for_removing.isEmpty()) {
-                try {
-                    this.homerInterface.removeInstance(instances_for_removing);
-                } catch (FailedMessageException e) {
-                    logger.warn("synchronizeInstances - failed to remove instances");
-                }
+
+                this.homerInterface.removeInstance(instances_for_removing)
+                        .whenComplete((response, exception) -> {
+                            if (exception != null) {
+                                logger.internalServerError(exception);
+                            }
+                        });
             }
 
             if (!instances_for_add.isEmpty()) {
