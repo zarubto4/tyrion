@@ -1,4 +1,4 @@
-package utilities.swagger.input;
+package _projects.eon.swagger_model.in;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

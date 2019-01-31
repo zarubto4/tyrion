@@ -1,4 +1,4 @@
-package utilities.swagger.output;
+package _projects.eon.swagger_model.out;
 
 import java.util.Date;
 

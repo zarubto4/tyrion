@@ -21,8 +21,11 @@ GET       /demodata                                                     utilitie
 ### EON ############ EON ############### EON ################ EON ###################################################################################################
 ###################################################################################f#################################################################################
 
-PUT      /eon/data                                                      controllers.Controller_EON.get_data()
-PUT      /eon/grouped_values                                            controllers.Controller_EON.getValues()
+
+PUT      /eon/grouped_values                                            _projects.eon.Controller_EON.getValues()
+PUT      /eon/electricity_meters/:page_number                           _projects.eon.Controller_EON.get_electricity_meters(page_number: Integer)
+PUT      /eon/gateway_filter/:page_number                               _projects.eon.Controller_EON.gateway_getByFilter(page_number: Integer)
+POST     /eon/electricity_meter                                         _projects.eon.Controller_EON.create_electro_metters()
 
 ### WEBSOCKET ############ WEBSOCKET ############### WEBSOCKET ################ WEBSOCKET ###########################################################################
 ###################################################################################f#################################################################################
