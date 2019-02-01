@@ -357,6 +357,7 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     @JsonProperty @ApiModelProperty(value = "Can be null, if device is not in Instance")
     public Swagger_Short_Reference actual_instance() {
         try {
+
             Model_Instance i = getInstance();
 
             if (i != null){
@@ -491,9 +492,16 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
 
     @JsonIgnore
     public Model_Instance getInstance(){
-        if (this.connected_instance_id != null) {
-            return Model_Instance.find.byId(this.connected_instance_id);
+
+        try {
+            if (this.connected_instance_id != null) {
+                return Model_Instance.find.byId(this.connected_instance_id);
+            }
+        } catch (NotFoundException e) {
+            this.connected_instance_id = null;
+            this.update();
         }
+
         return null;
     }
 

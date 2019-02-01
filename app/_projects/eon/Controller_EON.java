@@ -175,7 +175,7 @@ public class Controller_EON extends _BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "eon.swagger_model.in.Swagger_EON_Electricity_meter_filter",
+                            dataType = "_projects.eon.swagger_model.in.Swagger_EON_Electricity_meter_filter",
                             required = true,
                             paramType = "body",
                             value = "constraints for query"
@@ -352,7 +352,7 @@ public class Controller_EON extends _BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "eon.swagger_model.in.Swagger_EON_Electricity_meter_create_edit",
+                            dataType = "_projects.eon.swagger_model.in.Swagger_EON_Electricity_meter_create_edit",
                             required = true,
                             paramType = "body",
                             value = "constraints for query"

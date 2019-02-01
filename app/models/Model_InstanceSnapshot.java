@@ -248,7 +248,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
         }
     }
 
-    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(value = "File Link, only if snapshot is main")
+    @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) @ApiModelProperty(value = "File Link")
     public String link_to_download() {
         try {
             if (getBlob() != null) {
@@ -264,12 +264,12 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
 
     @JsonIgnore
     public Model_Blob getBlob() {
-        return isLoaded("program") ? program : Model_Blob.find.query().where().eq("snapshot.id", id).findOne();
+        return isLoaded("program") ? program : Model_Blob.find.query().nullable().where().eq("snapshot.id", id).findOne();
     }
 
     @JsonIgnore
     public Model_BProgramVersion getBProgramVersion() {
-        return isLoaded("b_program_version") ? b_program_version : Model_BProgramVersion.find.query().where().eq("instances.id", id).findOne();
+        return isLoaded("b_program_version") ? b_program_version : Model_BProgramVersion.find.query().nullable().where().eq("instances.id", id).findOne();
     }
 
     @JsonIgnore
@@ -289,8 +289,8 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
 
     @JsonIgnore
     public List<UUID> getHardwareIds() {
-
         try {
+
             List<UUID> list = new ArrayList<>();
 
             for (Swagger_InstanceSnapshot_JsonFile_Interface interface_hw : this.getProgram().interfaces) {
@@ -348,8 +348,14 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
     public List<Model_Hardware> getRequiredHardware() {
         List<Model_Hardware> hardwareList = new ArrayList<>();
 
+        logger.debug("getRequiredHardware: this.getProgram: ", Json.toJson(this.getProgram()));
+
+
         this.getProgram().interfaces.forEach(iface -> {
+
             if (iface.type.equals("hardware")) {
+
+                logger.debug("getRequiredHardware: this.getProgram interface Hardware: ", iface.target_id);
                 try {
                     if (hardwareList.stream().noneMatch(hw -> hw.id == iface.target_id)) {
                         hardwareList.add(Model_Hardware.find.byId(iface.target_id));
@@ -357,10 +363,20 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
                 } catch (NotFoundException e) {
                     logger.warn("getRequiredHardware - hardware from added interfaces was not found, id: {}", iface.target_id);
                 }
+
             } else if (iface.type.equals("group")) {
                 try {
+
+                    logger.debug("getRequiredHardware: this.getProgram interface Group: {} ", iface.target_id);
                     Model_HardwareGroup group = Model_HardwareGroup.find.byId(iface.target_id);
+
+
+                    logger.debug("getRequiredHardware: this.getProgram interface Group size: {} ",  group.getHardware().size());
+
                     group.getHardware().forEach(hardware -> {
+
+                        logger.debug("getRequiredHardware: this.getProgram interface Group add Device ", hardware.name);
+
                         if (!hardwareList.contains(hardware)) {
                             hardwareList.add(hardware);
                         }

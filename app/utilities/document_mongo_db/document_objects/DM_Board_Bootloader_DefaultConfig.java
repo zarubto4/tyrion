@@ -31,6 +31,12 @@ public class DM_Board_Bootloader_DefaultConfig extends _Swagger_Abstract_Default
     @ApiModelProperty(required = false, readOnly = true, value = "Not possible to change!", hidden = true) public String iccid; // Null if its ton directly set form _Hardware
 
 
+    /**
+     * HardwareSynchronizationTask.synchronizeFirmware
+     */
+    @ApiModelProperty(required = false, readOnly = true)   public Boolean  decision_for_default_firmware;  // If user set, that not to update to know Firmware
+
+
     public List<String> pending = new ArrayList<>();
 
     @JsonIgnore @Transient
