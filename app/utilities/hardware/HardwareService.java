@@ -11,6 +11,8 @@ import models.Model_HardwareType;
 import models.Model_HomerServer;
 import play.libs.concurrent.HttpExecutionContext;
 import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
+import utilities.enums.FirmwareType;
+import utilities.enums.UpdateType;
 import utilities.hardware.update.UpdateService;
 import utilities.logger.Logger;
 import utilities.synchronization.SynchronizationService;
