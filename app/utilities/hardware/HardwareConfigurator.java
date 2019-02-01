@@ -17,12 +17,14 @@ public class HardwareConfigurator {
 
     private final Model_Hardware hardware;
     private final HardwareInterface hardwareInterface;
+    private final HardwareService hardwareService;
 
     private DM_Board_Bootloader_DefaultConfig configuration;
 
-    public HardwareConfigurator(Model_Hardware hardware, HardwareInterface hardwareInterface) {
+    public HardwareConfigurator(Model_Hardware hardware, HardwareInterface hardwareInterface, HardwareService hardwareService) {
         this.hardware = hardware;
         this.hardwareInterface = hardwareInterface;
+        this.hardwareService = hardwareService;
 
         this.configuration = hardware.bootloader_core_configuration();
     }
@@ -169,11 +171,20 @@ public class HardwareConfigurator {
 
     // TODO this is just temporary, rework
     private void checkSpecial(String parameter, Object value) {
+
+        // Je nutné myslet na to, že dominantí je vždy Tyrion pro případ Aliasu (HW ho nenastavuje)
         if (parameter.equals("alias")) {
-            if (value instanceof String && !this.hardware.name.equals(value)) {
+
+            if(this.hardware.name == null && value instanceof String ) {
                 this.hardware.name = (String) value;
                 this.hardware.update();
+                return;
             }
+
+            if (this.hardware.name != null && ( !this.hardware.name.equals(value) )) {
+                this.hardwareService.getConfigurator(hardware).configure("alias", this.hardware.name);
+            }
+
         } else if (parameter.equals("autobackup")) {
             if (value instanceof Boolean && this.hardware.backup_mode != (Boolean) value) {
                 this.hardware.backup_mode = (Boolean) value;

@@ -1,4 +1,4 @@
-package mongo;
+package mongo.mongo_services;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mongodb.BasicDBObject;

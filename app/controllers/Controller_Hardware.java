@@ -2653,20 +2653,23 @@ public class Controller_Hardware extends _BaseController {
 
             query.where().eq("deleted", false);
 
-            // Pokud JSON obsahuje project_id filtruji podle projektu
-            if (help.project_id != null) {
 
-                Model_Project.find.byId(help.project_id);
-                query.where().eq("project.id", help.project_id);
-            }
-            if (help.project_id == null) {
-                query.where().isNull("project.id");
-            }
+            System.out.println("hardwareGroup_get_filter:: help.project_id != null ");
+
+            // Pokud JSON obsahuje project_id filtruji podle projektu
+            query.where().eq("project.id", help.project_id);
 
             if (help.instance_snapshots != null && !help.instance_snapshots.isEmpty()) {
 
+                System.out.println("hardwareGroup_get_filter::instance_snapshots:" + help.instance_snapshots);
                 List<UUID> list_ids = new ArrayList<>();
                 for (UUID snapshost_ids : help.instance_snapshots) {
+
+
+                    Model_InstanceSnapshot snapshot = Model_InstanceSnapshot.find.byId(snapshost_ids);
+                    System.out.println("hardwareGroup_get_filter::snapshot name: " + snapshot.name);
+                    System.out.println("hardwareGroup_get_filter::groupIDs: " + snapshot.getHardwareGroupIds());
+
                     list_ids.addAll( Model_InstanceSnapshot.find.byId(snapshost_ids).getHardwareGroupIds());
                 }
 

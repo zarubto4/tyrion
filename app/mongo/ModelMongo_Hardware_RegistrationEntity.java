@@ -1,29 +1,22 @@
 package mongo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.mongodb.BasicDBObject;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import models.Model_Hardware;
 import models.Model_HardwareType;
-import org.bson.Document;
+import mongo.mongo_services.InjectStore;
 import org.bson.types.ObjectId;
 import xyz.morphia.annotations.*;
 import play.data.validation.Constraints;
-import play.libs.Json;
 import utilities.cache.CacheMongoFinder;
 import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
 import utilities.logger.Logger;
-import utilities.model.Publishable;
 import utilities.model._Abstract_MongoModel;
 import utilities.permission.Action;
 import utilities.permission.Permissible;
 
-import java.io.IOException;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
@@ -211,7 +204,8 @@ public class ModelMongo_Hardware_RegistrationEntity extends _Abstract_MongoModel
     }
 
     @JsonIgnore
-    @InjectStore @InjectCache(value = ModelMongo_Hardware_RegistrationEntity.class, keyType = ObjectId.class)
+    @InjectStore
+    @InjectCache(value = ModelMongo_Hardware_RegistrationEntity.class, keyType = ObjectId.class)
     public static CacheMongoFinder<ModelMongo_Hardware_RegistrationEntity> find = new CacheMongoFinder<>(ModelMongo_Hardware_RegistrationEntity.class);
 
 }

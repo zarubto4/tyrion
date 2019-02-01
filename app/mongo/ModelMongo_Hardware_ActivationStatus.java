@@ -3,20 +3,16 @@ package mongo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import models.Model_Hardware;
+import mongo.mongo_services.InjectStore;
 import org.bson.types.ObjectId;
-import org.ehcache.Cache;
 import xyz.morphia.annotations.Entity;
 import xyz.morphia.annotations.Field;
 import xyz.morphia.annotations.Index;
 import xyz.morphia.annotations.Indexes;
-import utilities.Server;
 import utilities.cache.CacheMongoFinder;
 import utilities.cache.InjectCache;
-import utilities.enums.ServerMode;
 import utilities.logger.Logger;
 import utilities.model._Abstract_MongoModel;
-
-import java.util.UUID;
 
 @ApiModel( // Swagger annotation
         value = "HardwareOnlineStatus",
@@ -87,6 +83,7 @@ public class ModelMongo_Hardware_ActivationStatus extends _Abstract_MongoModel {
         return find;
     }
 
-    @InjectStore @InjectCache(value = ModelMongo_Hardware_ActivationStatus.class, keyType = ObjectId.class)
+    @InjectStore
+    @InjectCache(value = ModelMongo_Hardware_ActivationStatus.class, keyType = ObjectId.class)
     public static CacheMongoFinder<ModelMongo_Hardware_ActivationStatus> find = new CacheMongoFinder<>(ModelMongo_Hardware_ActivationStatus.class);
 }

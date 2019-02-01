@@ -2,6 +2,7 @@ package mongo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
+import mongo.mongo_services.InjectStore;
 import org.bson.types.ObjectId;
 import xyz.morphia.annotations.Entity;
 import utilities.cache.CacheMongoFinder;
@@ -71,6 +72,7 @@ public class ModelMongo_LastOnline extends _Abstract_MongoModel {
         return find;
     }
 
-    @InjectStore @InjectCache(value = ModelMongo_LastOnline.class, keyType = ObjectId.class)
+    @InjectStore
+    @InjectCache(value = ModelMongo_LastOnline.class, keyType = ObjectId.class)
     public static CacheMongoFinder<ModelMongo_LastOnline> find = new CacheMongoFinder<>(ModelMongo_LastOnline.class);
 }

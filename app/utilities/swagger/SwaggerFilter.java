@@ -10,6 +10,7 @@ import io.swagger.models.properties.Property;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class SwaggerFilter implements SwaggerSpecFilter {
 
     public boolean isOperationAllowed(Operation operation, ApiDescription api, Map<String, List<String>> params, Map<String, String> cookies, Map<String, List<String>> headers) {

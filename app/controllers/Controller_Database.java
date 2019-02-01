@@ -7,7 +7,7 @@ import exceptions.BadRequestException;
 import io.swagger.annotations.*;
 import models.Model_Product;
 import models.Model_ProductExtension;
-import mongo.MongoDBConnector;
+import mongo.mongo_services._MongoDBConnector;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.Result;
@@ -41,7 +41,7 @@ public class Controller_Database extends _BaseController {
 
     private final MongoCloudApi mongoApi;
     private final ProductService productService;
-    private final MongoDBConnector mongoDBConnector;
+    private final _MongoDBConnector mongoDBConnector;
 
 // LOGGER ##############################################################################################################
 
@@ -52,7 +52,7 @@ public class Controller_Database extends _BaseController {
     @Inject
     public Controller_Database(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
                                NotificationService notificationService, ProductService productService, MongoCloudApi mongoApi,
-                               MongoDBConnector mongoDBConnector, EchoService echoService) {
+                               _MongoDBConnector mongoDBConnector, EchoService echoService) {
         super(ws, formFactory, config, permissionService, notificationService, echoService);
         this.productService = productService;
         this.mongoApi = mongoApi;
@@ -118,6 +118,9 @@ public class Controller_Database extends _BaseController {
             if ( configuration.mongoDatabaseUserPassword == null || configuration.mongoDatabaseUserPassword.isEmpty()) { // if user not exist in database
 
                 user = mongoApi.createUser(info.product_id, extension.id.toString());
+                mongoApi.addRole(user.username, extension.id.toString());
+
+
                 configuration.mongoDatabaseUserPassword = user.password;
                 product.configuration = Json.toJson(configuration).toString();
                 product.update();

@@ -118,25 +118,17 @@ public class HardwareSynchronizationTask implements Task {
         logger.info("synchronizeFirmware - checking firmware for hardware, id: {}, full_id: {}", this.hardware.id, this.hardware.full_id);
 
         if (this.hardware.getCurrentFirmware() != null && !this.hardware.getCurrentFirmware().getCompilation().firmware_build_id.equals(this.overview.binaries.firmware.build_id)) {
+
             Model_CProgramVersion version = Model_CProgramVersion.find.query().nullable().where().eq("compilation.firmware_build_id", this.overview.binaries.firmware.build_id).findOne();
-            if (version != null) {
+
+
+            if (version != null && version.getProject().getId().equals(this.hardware.getProjectId())) { // TODO better permission check than same project
+
                 this.hardware.actual_c_program_version = version;
                 this.hardware.update();
 
-                Model_Project project = version.getProject();
-                if (project != null) {
-
-                } else {
-
-                }
-
-                if (version.getProject().getId().equals(this.hardware.getProjectId())) { // TODO better permission check than same project
-
-                } else  if (this.hardware.getProject() != null) {
-                    // TODO send notification
-                }
-            } else if (this.hardware.getProject() != null) {
-                // this.notificationService.send(this.hardware.getProject(), this.hardware.notificationUnknownFirmware()); TODO uncomment when ready
+            } else if (this.hardware.getProject() != null && this.hardware.bootloader_core_configuration().decision_for_default_firmware == null) {
+                this.notificationService.send(this.hardware.getProject(), this.hardware.notificationUnknownFirmware());
             }
         }
     }

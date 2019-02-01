@@ -6,6 +6,7 @@ import com.typesafe.config.Config;
 import exceptions.*;
 import io.swagger.annotations.ApiModel;
 import models.Model_Person;
+import org.bson.Document;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
@@ -40,6 +41,7 @@ import static play.mvc.Controller.request;
  * This class provides some common API for Tyrion REST Controller.
  * Creates results with given content.
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class _BaseController {
 
 // LOGGER ##############################################################################################################
@@ -322,6 +324,16 @@ public abstract class _BaseController {
      */
     public static Result ok(InputStream stream, long content_length) {
         return Controller.ok(stream, content_length);
+    }
+
+
+    /**
+     * Return native Mongo Objects
+     * @param documents
+     * @return
+     */
+    public static Result ok_mongo(List<Document> documents) {
+        return Controller.ok(Json.toJson(documents));
     }
 
     /**

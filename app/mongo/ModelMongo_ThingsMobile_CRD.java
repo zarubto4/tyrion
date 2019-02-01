@@ -3,20 +3,15 @@ package mongo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
+import mongo.mongo_services.InjectStore;
 import org.bson.types.ObjectId;
 import xyz.morphia.annotations.Entity;
-import xyz.morphia.annotations.Field;
-import xyz.morphia.annotations.Index;
-import xyz.morphia.annotations.Indexes;
 import utilities.cache.CacheMongoFinder;
 import utilities.cache.InjectCache;
 import utilities.logger.Logger;
 import utilities.model._Abstract_MongoModel;
 
-import java.beans.Transient;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 @Entity("ThingsMobile_CDR")
 public class ModelMongo_ThingsMobile_CRD extends _Abstract_MongoModel {
@@ -80,7 +75,8 @@ public class ModelMongo_ThingsMobile_CRD extends _Abstract_MongoModel {
         return find;
     }
 
-    @InjectStore @InjectCache(value = ModelMongo_ThingsMobile_CRD.class, keyType = ObjectId.class)
+    @InjectStore
+    @InjectCache(value = ModelMongo_ThingsMobile_CRD.class, keyType = ObjectId.class)
     public static CacheMongoFinder<ModelMongo_ThingsMobile_CRD> find = new CacheMongoFinder<>(ModelMongo_ThingsMobile_CRD.class);
 
 }

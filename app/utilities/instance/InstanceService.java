@@ -153,11 +153,15 @@ public class InstanceService {
 
     public void shutdown(Model_Instance instance) {
 
-        if (instance.current_snapshot() != null) {
-            instance.current_snapshot().getRequiredHardware().forEach(hardware -> {
-                hardware.connected_instance_id = null;
-                hardware.update();
-            });
+        if(instance.current_snapshot() != null) {
+            try {
+                instance.current_snapshot().getRequiredHardware().forEach(hardware -> {
+                    hardware.connected_instance_id = null;
+                    hardware.update();
+                });
+            } catch (Exception e) {
+                logger.error("shutdown_error", e);
+            }
         }
 
         instance.current_snapshot_id = null;

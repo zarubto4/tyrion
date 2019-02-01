@@ -97,14 +97,22 @@ public class Controller_ZZZ_Tester extends _BaseController {
     public Result test1() {
         try {
 
-            // this.webSocketService.create(Compiler.class, UUID.randomUUID(), "wss://echo.websocket.org");
 
+
+            Integer c = Model_Widget.find.query().where().eq("id", UUID.fromString("00000000-0000-0000-0000-000000000001")).findCount();
+
+
+            System.out.println("Počet Widgetů? " + c);
+
+            /*
+            // this.webSocketService.create(Compiler.class, UUID.randomUUID(), "wss://echo.websocket.org");
+            System.out.println("Blob downloaded:: size ");
             // Migrační script
 
             // Stažení souboru v separátním vláknu - jinak HTTP stále dokola zkoušelo vyžádat si odpověď od serveru po 30 sekundách
             new Thread(() -> {
-                Integer size = Model_Blob.find.query().where().eq("storage_type", "AzureBlob").findCount();
-                List<Model_Blob> blobs = Model_Blob.find.query().where().eq("storage_type", "AzureBlob").findList();
+                Integer size = Model_Blob.find.query().where().eq("storage_type", "AzureBlob").setIncludeSoftDeletes().findCount();
+                List<Model_Blob> blobs = Model_Blob.find.query().where().eq("storage_type", "AzureBlob").setIncludeSoftDeletes().findList();
 
                 for (int i = 0; i < blobs.size(); i++) {
 
@@ -155,6 +163,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
                 }
             }).start();
 
+            */
             return ok();
 
         } catch (Exception e) {

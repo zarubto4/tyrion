@@ -1,4 +1,4 @@
-package mongo;
+package mongo.mongo_services;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,46 +1,50 @@
 package mongo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import models.Model_Hardware;
 import mongo.mongo_services.InjectStore;
+import mongo.mongo_services._MongoCollectionConfig;
 import org.bson.types.ObjectId;
-import xyz.morphia.annotations.*;
 import utilities.cache.CacheMongoFinder;
 import utilities.cache.InjectCache;
 import utilities.logger.Logger;
 import utilities.model._Abstract_MongoModel;
+import xyz.morphia.annotations.Entity;
+import xyz.morphia.annotations.Field;
+import xyz.morphia.annotations.Index;
+import xyz.morphia.annotations.Indexes;
 
+import java.time.LocalDateTime;
 
-@Entity("Hardware_BackupIncident")
+@Entity("TEST9")
 @Indexes({
         @Index(
                 fields = {
-                        @Field("hardware_id")
+                        @Field("msisdn")
                 }
         )
 })
-public class ModelMongo_Hardware_BackupIncident extends _Abstract_MongoModel {
+@_MongoCollectionConfig(database_name="EON_LOCAL_TEST")
+public class ModelMongo_EONLogarexRecord extends _Abstract_MongoModel {
+
 
     /* LOGGER  -------------------------------------------------------------------------------------------------------------*/
 
-    private static final Logger logger = new Logger(ModelMongo_Hardware_BackupIncident.class);
+    private static final Logger logger = new Logger(ModelMongo_FacebookProfile.class);
 
     /* DATABASE VALUE  -----------------------------------------------------------------------------------------------------*/
 
-    @Indexed
-    public String hardware_id;
-
+    public String gateway_id;
+    public String metter_id;
+    public String obic_code;
+    public String server_type;
+    public LocalDateTime timestamp;
+    public Long value;
 
     /* JSON PROPERTY METHOD && VALUES --------------------------------------------------------------------------------------*/
 
     /* JSON IGNORE METHOD && VALUES ----------------------------------------------------------------------------------------*/
 
     /* SAVE && UPDATE && DELETE --------------------------------------------------------------------------------------------*/
-
-    @Override
-    public void save() {
-        super.save();
-    }
 
     /* HELP CLASSES --------------------------------------------------------------------------------------------------------*/
 
@@ -54,29 +58,18 @@ public class ModelMongo_Hardware_BackupIncident extends _Abstract_MongoModel {
 
     /* SPECIAL QUERY -------------------------------------------------------------------------------------------------------*/
 
+    /* CACHE ---------------------------------------------------------------------------------------------------------------*/
 
+    /* FINDER --------------------------------------------------------------------------------------------------------------*/
+
+    @Override
     @JsonIgnore
-    public static ModelMongo_Hardware_BackupIncident create_record(Model_Hardware hardware) {
-
-        ModelMongo_Hardware_BackupIncident status = new ModelMongo_Hardware_BackupIncident();
-        status.hardware_id = hardware.id.toString();
-
-        status.save();
-        return status;
+    public CacheMongoFinder<?> getFinder() {
+        return find;
     }
 
-/* CACHE ---------------------------------------------------------------------------------------------------------------*/
-
-
-
-/* FINDER --------------------------------------------------------------------------------------------------------------*/
-
-
-    @Override @JsonIgnore
-    public CacheMongoFinder<?> getFinder() { return find; }
-
-    @JsonIgnore @InjectStore
-    @InjectCache(value = ModelMongo_Hardware_BackupIncident.class, keyType = ObjectId.class)
-    public static CacheMongoFinder<ModelMongo_Hardware_BackupIncident> find = new CacheMongoFinder<>(ModelMongo_Hardware_BackupIncident.class);
+    @InjectStore
+    @InjectCache(value = ModelMongo_EONLogarexRecord.class, keyType = ObjectId.class)
+    public static CacheMongoFinder<ModelMongo_EONLogarexRecord> find = new CacheMongoFinder<>(ModelMongo_EONLogarexRecord.class);
 
 }

@@ -1,5 +1,6 @@
 package utilities.cache;
 
+import com.mongodb.*;
 import com.mongodb.DBCollection;
 import com.mongodb.WriteResult;
 import exceptions.NotFoundException;
@@ -11,7 +12,6 @@ import xyz.morphia.aggregation.AggregationPipeline;
 import xyz.morphia.query.Query;
 import utilities.logger.Logger;
 import utilities.model._Abstract_MongoModel;
-
 import java.util.List;
 
 public class CacheMongoFinder<T extends _Abstract_MongoModel> implements ModelCache<ObjectId, T> {
@@ -117,6 +117,18 @@ public class CacheMongoFinder<T extends _Abstract_MongoModel> implements ModelCa
      */
     public Query<T> query() {
         return this.datastore.createQuery(entityType).disableValidation();
+    }
+
+    /**
+     * Select documents in collection and get a cursor to the selected documents.
+     *
+     * @param query the selection criteria using query operators. Omit the query parameter or pass an empty document to return all documents
+     *              in the collection.
+     * @return A cursor to the documents that match the query criteria
+     * @mongodb.driver.manual tutorial/query-documents/ Querying
+     */
+    public DBCursor find(final DBObject query){
+        return this.datastore.getCollection(entityType).find(query);
     }
 
     public AggregationPipeline createAggregation() {

@@ -1,6 +1,6 @@
 name := """tyrion"""
 
-version := "2.3.6"
+version := "2.3.7"
 
 packageName in Universal := "v" + version.value
 
@@ -26,7 +26,14 @@ libraryDependencies ++= Seq(
   "org.mockito" % "mockito-core" % "2.18.3" % Test,
   "org.apache.poi" % "poi" % "3.17", // Excel support for report P&G
   "org.apache.poi" % "poi-ooxml" % "3.17",
+  "org.mongodb" % "mongodb-driver-reactivestreams" % "1.10.0",
+  "org.mongodb" % "mongodb-driver" % "3.9.1",
+  "org.mongodb" % "mongodb-driver-async" % "3.9.1",
   "xyz.morphia.morphia" % "core" % "1.4.0",
+  "com.facebook.business.sdk" % "facebook-java-business-sdk" % "3.0.0",
+  "com.sendgrid" % "sendgrid-java" % "4.0.1",
+  "commons-validator" % "commons-validator" % "1.6", // Kontrola Emailů, URL adres etc
+  "com.facebook.business.sdk" % "facebook-java-business-sdk" % "3.0.0",
   "com.restfb" % "restfb" % "2.9.0", // New Login
   "com.amazonaws" % "aws-java-sdk-s3" % "1.11.490", // Amazon == DigitalOcean!
   evolutions,

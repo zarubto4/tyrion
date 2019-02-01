@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import controllers._BaseController;
 import exceptions.InvalidBodyException;
 import io.swagger.annotations.ApiModelProperty;
-import mongo.LongToLocalDateTime;
+import mongo.mongoObjectParsers.LongToLocalDateTime;
 import org.bson.types.ObjectId;
 import xyz.morphia.annotations.*;
 import play.data.validation.Constraints;

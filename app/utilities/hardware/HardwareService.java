@@ -2,11 +2,18 @@ package utilities.hardware;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.google.inject.Provider;
+import exceptions.FailedMessageException;
 import exceptions.NeverConnectedException;
 import exceptions.ServerOfflineException;
 import models.Model_Hardware;
+import models.Model_HardwareType;
 import models.Model_HomerServer;
 import play.libs.concurrent.HttpExecutionContext;
+import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
+import utilities.enums.FirmwareType;
+import utilities.enums.UpdateType;
+import utilities.hardware.update.UpdateService;
 import utilities.logger.Logger;
 import utilities.synchronization.SynchronizationService;
 import websocket.WebSocketService;
@@ -21,15 +28,16 @@ public class HardwareService {
     private final HttpExecutionContext httpExecutionContext;
     private final WebSocketService webSocketService;
     private final DominanceService dominanceService;
+    private final Provider<UpdateService> updateService;
     private final Injector injector;
 
     @Inject
-    public HardwareService(Injector injector, SynchronizationService synchronizationService, WebSocketService webSocketService,
-                           DominanceService dominanceService, HttpExecutionContext httpExecutionContext) {
+    public HardwareService(Injector injector, SynchronizationService synchronizationService, WebSocketService webSocketService, Provider<UpdateService> updateService, DominanceService dominanceService, HttpExecutionContext httpExecutionContext) {
         this.synchronizationService = synchronizationService;
         this.httpExecutionContext = httpExecutionContext;
         this.webSocketService = webSocketService;
         this.dominanceService = dominanceService;
+        this.updateService = updateService;
         this.injector = injector;
     }
 
@@ -57,7 +65,7 @@ public class HardwareService {
             // nothing - hardware is unreachable at this moment
         }
 
-        return new HardwareConfigurator(hardware, hardwareInterface);
+        return new HardwareConfigurator(hardware, hardwareInterface, this);
     }
 
     public void activate(Model_Hardware hardware) {
@@ -94,14 +102,30 @@ public class HardwareService {
      * @param hardware
      */
     public void setDefaultFirmware(Model_Hardware hardware) {
-        // TODO vykonat update defaultního updatu
+        DM_Board_Bootloader_DefaultConfig config = hardware.bootloader_core_configuration();
+        config.decision_for_default_firmware = true;
+        hardware.update_bootloader_configuration(config);
+
+        Model_HardwareType type = hardware.hardware_type;
+        if( type.main_c_program() != null && type.main_c_program().default_main_version != null) {
+            this.updateService.get().update(hardware, type.main_c_program().default_main_version, FirmwareType.FIRMWARE, UpdateType.MANUALLY_BY_USER_INDIVIDUAL);
+        } else {
+
+            config = hardware.bootloader_core_configuration();
+            config.decision_for_default_firmware = false;
+            hardware.update_bootloader_configuration(config);
+
+        }
     }
 
     /**
      * Reject request to set to default firmware
      */
     public void rejectDefaultFirmware(Model_Hardware hardware) {
-        // TODO zaznamenat zamítnutí
+        DM_Board_Bootloader_DefaultConfig config = hardware.bootloader_core_configuration();
+        config.decision_for_default_firmware = false;
+        hardware.update_bootloader_configuration(config);
+
     }
 
     public void deactivate(Model_Hardware hardware) {

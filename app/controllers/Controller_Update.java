@@ -484,7 +484,7 @@ public class Controller_Update extends _BaseController {
 
             // Získání všech objektů a následné filtrování podle vlastníka
             Query<Model_HardwareUpdate> query = Ebean.find(Model_HardwareUpdate.class);
-            query.order().desc("created");
+            query.order().asc("created");
 
 
             if (help.update_states != null && !help.update_states.isEmpty()) {
