@@ -4,9 +4,12 @@ package mongo.mongo_services;
 import com.google.inject.Singleton;
 import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoClients;
+import com.mongodb.reactivestreams.client.MongoCollection;
 import com.mongodb.reactivestreams.client.MongoDatabase;
 
 import java.util.HashMap;
+
+import org.bson.Document;
 import utilities.enums.*;
 import utilities.logger.Logger;
 import utilities.logger.ServerLogger;
@@ -41,7 +44,7 @@ public class _MongoNativeConnector {
 
     }
 
-    public static MongoDatabase getDatabase(String database_name) {
+    public MongoDatabase getDatabase(String database_name) {
 
         if(!databases.containsKey(database_name)) {
             MongoDatabase database = mongoClient.getDatabase(database_name);
@@ -49,6 +52,14 @@ public class _MongoNativeConnector {
         }
 
         return databases.get(database_name);
+    }
+
+    public _MongoNativeCollection getCollection(String database_name, String collection_name) {
+
+        MongoDatabase database = getDatabase(database_name);
+        MongoCollection<Document> collection =  database.getCollection(collection_name);
+
+        return new _MongoNativeCollection(collection);
     }
 
 

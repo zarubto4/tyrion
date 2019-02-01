@@ -59,7 +59,7 @@ public class ApplicationStarter {
                               ServerLogger serverLogger,
                               CacheService cacheService,
                               _MongoDBConnector mongoDBConnector,
-                              _MongoNativeConnector mongoNativConnector,
+                              // _MongoNativeConnector mongoNativConnector,
                               SchedulerService schedulerService,
                               PermissionService permissionService,
                               CompilerService compilerService) { // These unused parameters are important due to DI - don't remove them!

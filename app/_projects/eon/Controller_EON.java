@@ -58,16 +58,24 @@ import static mongo.mongo_services._SubscriberHelpers.ObservableSubscriber;
 public class Controller_EON extends _BaseController {
 
     private HttpExecutionContext httpExecutionContext;
+    private _MongoNativeConnector mongoNativConnector;
 
 // LOGGER ##############################################################################################################
 
     private static final Logger logger = new Logger(Controller_EON.class);
 
     @Inject
-    public Controller_EON(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
-                          NotificationService notificationService, EchoService echoService, HttpExecutionContext httpExecutionContext) {
+    public Controller_EON(WSClient ws,
+                          _BaseFormFactory formFactory,
+                          Config config,
+                          PermissionService permissionService,
+                          NotificationService notificationService,
+                          EchoService echoService,
+                          _MongoNativeConnector mongoNativConnector,
+                          HttpExecutionContext httpExecutionContext) {
         super(ws, formFactory, config, permissionService, notificationService, echoService);
         this.httpExecutionContext = httpExecutionContext;
+        this.mongoNativConnector = mongoNativConnector;
     }
 
 
@@ -99,7 +107,7 @@ public class Controller_EON extends _BaseController {
         try {
 
             Swagger_EON_data_request request = formFromRequestWithValidation(Swagger_EON_data_request.class);
-            _MongoNativeCollection collection = new _MongoNativeCollection("EON_LOCAL_TEST", "TEST9");
+            _MongoNativeCollection collection =  mongoNativConnector.getCollection( "EON_LOCAL_TEST", "TEST9");
 
             List<? extends Bson> pipeline = Arrays.asList(
                     new Document()
@@ -411,7 +419,7 @@ public class Controller_EON extends _BaseController {
         try {
 
 
-            _MongoNativeCollection collection = new _MongoNativeCollection("EON_LOCAL_TEST", "TEST9");
+            _MongoNativeCollection collection = mongoNativConnector.getCollection(  "EON_LOCAL_TEST", "TEST9");
 
             /*
             Bson b = and(gt("i", 4), lte("i", 10));
