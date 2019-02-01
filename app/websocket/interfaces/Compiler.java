@@ -3,9 +3,7 @@ package websocket.interfaces;
 import akka.stream.Materializer;
 import com.google.inject.Inject;
 import controllers._BaseFormFactory;
-import exceptions.FailedMessageException;
 import models.Model_CompilationServer;
-import play.libs.Json;
 import play.libs.concurrent.HttpExecutionContext;
 import utilities.compiler.CompilerService;
 import utilities.enums.NetworkStatus;
@@ -14,6 +12,7 @@ import utilities.network.NetworkStatusService;
 import websocket.Interface;
 import websocket.Message;
 import websocket.Request;
+import websocket.TimeOut;
 import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
 
 import java.util.HashMap;
@@ -34,23 +33,23 @@ public class Compiler extends Interface {
 
     @Inject
     public Compiler(NetworkStatusService networkStatusService, HttpExecutionContext httpExecutionContext,
-                    Materializer materializer, _BaseFormFactory formFactory, CompilerService compilerService) {
-        super(httpExecutionContext, materializer, formFactory);
+                    Materializer materializer, _BaseFormFactory formFactory, CompilerService compilerService, TimeOut timeOut) {
+        super(httpExecutionContext, materializer, formFactory, timeOut);
         this.networkStatusService = networkStatusService;
         this.compilerService = compilerService;
     }
 
-    public WS_Message_Make_compilation compile(Request request) throws TimeoutException, InterruptedException, ExecutionException {
-        Message message = this.sendWithResponse(request);
-        WS_Message_Make_compilation result = message.as(WS_Message_Make_compilation.class);
-
-        CompletableFuture<WS_Message_Make_compilation> future = new CompletableFuture<>();
-
-        this.runningCompilations.put(result.build_id, future);
-
-        WS_Message_Make_compilation completed = future.get(2L, TimeUnit.MINUTES);
-        completed.interface_code = message.getMessage().get("interface_code").toString(); // Interface data comes only in the first response TODO: find out how to bind the interface_code via form
-        return completed;
+    public CompletionStage<WS_Message_Make_compilation> compile(Request request) {
+        return this.ask(request)
+                .thenComposeAsync(message -> {
+                    WS_Message_Make_compilation result = message.as(WS_Message_Make_compilation.class);
+                    CompletableFuture<WS_Message_Make_compilation> future = new CompletableFuture<>();
+                    this.runningCompilations.put(result.build_id, future);
+                    return future.applyToEither(this.timeOut.after(2, TimeUnit.MINUTES), done -> {
+                        done.interface_code = message.getMessage().get("interface_code").toString(); // Interface data comes only in the first response TODO: find out how to bind the interface_code via form
+                        return done;
+                    });
+                }, this.httpExecutionContext.current());
     }
 
     @Override

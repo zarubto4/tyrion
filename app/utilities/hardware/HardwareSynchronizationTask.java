@@ -22,7 +22,7 @@ public class HardwareSynchronizationTask implements Task {
     private final NotificationService notificationService;
     private final HardwareOverviewService hardwareOverviewService;
 
-    private CompletableFuture<Void> future;
+    private CompletionStage<Void> future;
 
     private Model_Hardware hardware;
 
@@ -48,24 +48,29 @@ public class HardwareSynchronizationTask implements Task {
     public CompletionStage<Void> start() {
 
         logger.info("start - synchronization task begins");
-        return future = CompletableFuture.runAsync(() -> {
-            if (this.hardware == null || this.hardwareInterface == null) {
-                throw new RuntimeException("You must set hardware before the task start.");
-            }
 
-            this.overview = this.hardwareInterface.getOverview();
+        if (this.hardware == null || this.hardwareInterface == null) {
+            throw new RuntimeException("You must set hardware before the task start.");
+        }
 
-            this.synchronizeSettings();
-            this.synchronizeFirmware();
-            this.synchronizeBackup();
-            this.synchronizeBootloader();
+        return future = this.hardwareInterface.getOverview()
+                .thenCompose((overview) -> {
 
-        }, this.httpExecutionContext.current());
+                    this.overview = overview;
+
+                    // TODO may be better
+                    return CompletableFuture.runAsync(() -> {
+                        this.synchronizeSettings();
+                        this.synchronizeFirmware();
+                        this.synchronizeBackup();
+                        this.synchronizeBootloader();
+                    }, this.httpExecutionContext.current());
+                });
     }
 
     @Override
     public void stop() {
-        this.future.cancel(true);
+        this.future.toCompletableFuture().cancel(true);
     }
 
     public void setHardware(Model_Hardware hardware) {
@@ -77,12 +82,6 @@ public class HardwareSynchronizationTask implements Task {
         }
     }
 
-    /**
-     * Zde se kontroluje jestli je na HW to co na něm reálně být má.
-     * Pokud některý parametr je jiný než se očekává, metoda ho změní (for cyklus), jenže je nutné zařízení restartovat,
-     * protože může teoreticky dojít k tomu, že se register změní, ale na zařízení se to neprojeví.
-     * Například změna portu www stránky pro vývojáře. Proto se vrací TRUE pokud vše sedí a připojovací procedura muže pokračovat nebo false, protože device byl restartován.
-     */
     // TODO rework to something better
     private void synchronizeSettings() {
 
@@ -92,7 +91,14 @@ public class HardwareSynchronizationTask implements Task {
         for (UUID hardware_group_id : this.hardware.get_hardware_group_ids()) {
             // Pokud neobsahuje přidám - ale abych si ušetřil čas - nastavím rovnou celý seznam - Homer si s tím poradí
             if (overview.hardware_group_ids == null || overview.hardware_group_ids.isEmpty() || !overview.hardware_group_ids.contains(hardware_group_id)) {
-                this.hardwareInterface.setHardwareGroups(this.hardware.get_hardware_group_ids(), Enum_type_of_command.SET);
+                this.hardwareInterface.setHardwareGroups(this.hardware.get_hardware_group_ids(), Enum_type_of_command.SET)
+                        .whenComplete((message, exception) -> {
+                            if (exception != null) {
+                                logger.internalServerError(exception);
+                            } else {
+                                logger.info("synchronizeSettings - successfully set groups");
+                            }
+                        });
                 break;
             }
         }
@@ -105,13 +111,6 @@ public class HardwareSynchronizationTask implements Task {
         this.hardwareService.getConfigurator(this.hardware).configure(this.overview);
 
         logger.info("synchronizeSettings - ({}) settings for hardware synchronized", this.hardware.full_id);
-
-        // TODO make it work somehow
-        /*// Uložení do Cache paměti // PORT je synchronizován v následujícím for cyklu
-        if (cache_latest_know_ip_address == null || !cache_latest_know_ip_address.equals(overview.ip)) {
-            logger.warn("check_settings nastavuju jí do cache ");
-            cache_latest_know_ip_address = this.overview.ip;
-        }*/
     }
 
     private void synchronizeFirmware() {

@@ -12,6 +12,11 @@ import java.util.function.Consumer;
 public interface WebSocketInterface {
 
     /**
+     * The default timeout for the {@link #ask(Request)} method.
+     */
+    long TIMEOUT = 10000;
+
+    /**
      * Returns the id of the interface.
      * @return UUID id
      */
@@ -35,26 +40,30 @@ public interface WebSocketInterface {
     Flow<akka.http.javadsl.model.ws.Message, akka.http.javadsl.model.ws.Message, NotUsed> textFlow();
 
     /**
-     * Sends a message to the WebSocket interface.
+     * Sends a message through the WebSocket.
      * No response or confirmation is required.
-     * @param message JSON object to send
+     * @param message to send
      */
-    void send(ObjectNode message);
+    void tell(ObjectNode message);
 
     /**
-     * Sends a message to the WebSocket interface. Response is required.
-     * This operation is blocking and waits until response is received or timeout occurs.
-     * @param message object with details such as delay, timeout or tries.
-     * @return JSON object response
+     * Sends a request message through the WebSocket and waits for the response.
+     * Returned stage is completed normally if the response is received,
+     * otherwise it is completed exceptionally, with {@link java.util.concurrent.TimeoutException}
+     * after {@link #TIMEOUT} millis.
+     * @param request to perform
+     * @return {@link CompletionStage}
      */
-    Message sendWithResponse(Request message);
+    CompletionStage<Message> ask(Request request);
 
     /**
-     * Sends a message to the WebSocket interface. Response is required.
-     * This operation is non-blocking. It executes the provided consumer after the response is received.
-     * @param message object with details such as delay, timeout or tries.
+     * Enables to set custom timeout value.
+     * See {@link #ask(Request)} for details.
+     * @param request to perform
+     * @param timeout in millis after which the stage will complete exceptionally
+     * @return {@link CompletionStage}
      */
-    CompletionStage<Message> sendWithResponseAsync(Request message);
+    CompletionStage<Message> ask(Request request, long timeout);
 
     /**
      * This method receives all messages, that were not responses to waiting requests.
@@ -72,7 +81,7 @@ public interface WebSocketInterface {
      * Ping the interface.
      * @return number of milliseconds till the response was received.
      */
-    Long ping();
+    CompletionStage<Long> ping();
 
     /**
      * Closes the WebSocket connection.

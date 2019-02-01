@@ -7,7 +7,6 @@ import utilities.logger.Logger;
 
 import java.util.UUID;
 import java.util.concurrent.*;
-import java.util.function.Consumer;
 
 public class Request {
 
@@ -18,7 +17,8 @@ public class Request {
 /* PUBLIC API ----------------------------------------------------------------------------------------------------------*/
 
     private UUID id;
-    private String message_type;
+    private String type;
+    private ObjectNode message;
 
     public Request(ObjectNode message) {
         this(message, 0, 7500, 3);
@@ -28,11 +28,14 @@ public class Request {
 
         if (!message.has(Message.ID)) {
             this.id =  UUID.randomUUID();
-            this.message_type = message.get("message_type").asText();
+            this.type = message.get(Message.TYPE).asText();
             message.put(Message.ID, id.toString());
         } else {
             this.id = UUID.fromString(message.get(Message.ID).asText());
         }
+
+        this.message = message;
+
         this.responseThread = new ResponseThread(message, delay, timeout, retries);
     }
 
@@ -77,9 +80,14 @@ public class Request {
         return this.id;
     }
 
-    public String getMessageType() {
-        return this.message_type;
+    public String getType() {
+        return this.type;
     }
+
+    public ObjectNode getMessage() {
+        return this.message;
+    }
+
 /* PRIVATE API ---------------------------------------------------------------------------------------------------------*/
 
     private ResponseThread responseThread;

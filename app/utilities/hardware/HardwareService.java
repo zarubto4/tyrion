@@ -9,9 +9,8 @@ import exceptions.ServerOfflineException;
 import models.Model_Hardware;
 import models.Model_HardwareType;
 import models.Model_HomerServer;
+import play.libs.concurrent.HttpExecutionContext;
 import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
-import utilities.enums.FirmwareType;
-import utilities.enums.UpdateType;
 import utilities.hardware.update.UpdateService;
 import utilities.logger.Logger;
 import utilities.synchronization.SynchronizationService;
@@ -24,14 +23,16 @@ public class HardwareService {
     private static final Logger logger = new Logger(HardwareService.class);
 
     private final SynchronizationService synchronizationService;
+    private final HttpExecutionContext httpExecutionContext;
     private final WebSocketService webSocketService;
     private final DominanceService dominanceService;
     private final Provider<UpdateService> updateService;
     private final Injector injector;
 
     @Inject
-    public HardwareService(Injector injector, SynchronizationService synchronizationService, WebSocketService webSocketService, Provider<UpdateService> updateService, DominanceService dominanceService) {
+    public HardwareService(Injector injector, SynchronizationService synchronizationService, WebSocketService webSocketService, Provider<UpdateService> updateService, DominanceService dominanceService, HttpExecutionContext httpExecutionContext) {
         this.synchronizationService = synchronizationService;
+        this.httpExecutionContext = httpExecutionContext;
         this.webSocketService = webSocketService;
         this.dominanceService = dominanceService;
         this.updateService = updateService;
@@ -43,7 +44,7 @@ public class HardwareService {
         if (server != null) {
             Homer homer = this.webSocketService.getInterface(server.id);
             if (homer != null) {
-                return new HardwareInterface(hardware, homer);
+                return new HardwareInterface(hardware, homer, this.httpExecutionContext);
             } else {
                 throw new ServerOfflineException();
             }
@@ -70,12 +71,15 @@ public class HardwareService {
         if (this.dominanceService.setDominant(hardware)) {
             if (record != null) {
                 try {
-                    HardwareInterface hardwareInterface = this.getInterface(hardware);
-                    hardwareInterface.changeUUIDOnServer(record.random_temporary_hardware_id);
+                    this.getInterface(hardware).changeUUIDOnServer(record.random_temporary_hardware_id)
+                            .whenComplete((message, exception) -> {
+                                if (exception != null) {
+                                    logger.internalServerError(exception);
+                                }
+                            });
+
                 } catch (NeverConnectedException|ServerOfflineException e) {
                     // nothing
-                } catch (FailedMessageException e) {
-                    logger.warn("activate - server responded with error: {}", e.getFailedMessage().getErrorMessage());
                 }
             }
 
@@ -126,7 +130,13 @@ public class HardwareService {
         this.dominanceService.setNondominant(hardware);
 
         HardwareInterface hardwareInterface = this.getInterface(hardware);
-        hardwareInterface.removeUUIDOnServer();
+        hardwareInterface.removeUUIDOnServer().whenComplete((message, exception) -> {
+            if (exception != null) {
+                logger.internalServerError(exception);
+            } else {
+                logger.info("deactivate - id removed from homer server");
+            }
+        });
         // TODO send echo
         // TODO remove from network status service
     }

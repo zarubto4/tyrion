@@ -54,16 +54,24 @@ public class UpdateService {
         Model_HardwareUpdate update = this.createUpdate(hardware, updatable, firmwareType, updateType, trackingId);
         try {
             HardwareInterface hardwareInterface = this.hardwareService.getInterface(hardware);
-            hardwareInterface.update(update);
+            hardwareInterface.update(update)
+                    .whenComplete((message, exception) -> {
+                        if (exception != null) {
+                            if (exception instanceof FailedMessageException) {
+                                update.error = ((FailedMessageException) exception).getFailedMessage().getErrorMessage();
+                                update.error_code = ((FailedMessageException) exception).getFailedMessage().getErrorCode();
+                            } else {
+                                logger.internalServerError(exception);
+                                update.error = exception.getMessage();
+                            }
+
+                            update.state = HardwareUpdateState.FAILED;
+                            update.update();
+                        }
+                    });
         } catch (ServerOfflineException | NeverConnectedException e) {
             // nothing
-
-            System.out.println("update - server je offline");
-        } catch (FailedMessageException e) {
-            update.state = HardwareUpdateState.FAILED;
-            update.error = e.getFailedMessage().getErrorMessage();
-            update.error_code = e.getFailedMessage().getErrorCode();
-            update.update();
+            logger.warn("update - server is offline");
         } catch (Exception e) {
             logger.internalServerError(e);
         }
@@ -101,16 +109,28 @@ public class UpdateService {
         updates.forEach((server, updateList) -> {
             try {
                 HomerInterface homerInterface = this.homerService.getInterface(server);
-                homerInterface.bulkUpdate(updateList);
+                homerInterface.bulkUpdate(updateList)
+                        .whenComplete((message, exception) -> {
+                            if (exception != null) {
+                                if (exception instanceof FailedMessageException) {
+                                    updateList.forEach(update -> {
+                                        update.state = HardwareUpdateState.FAILED;
+                                        update.error = ((FailedMessageException)exception).getFailedMessage().getErrorMessage();
+                                        update.error_code = ((FailedMessageException)exception).getFailedMessage().getErrorCode();
+                                        update.update();
+                                    });
+                                } else {
+                                    logger.internalServerError(exception);
+                                    updateList.forEach(update -> {
+                                        update.state = HardwareUpdateState.FAILED;
+                                        update.error = exception.getMessage();
+                                        update.update();
+                                    });
+                                }
+                            }
+                        });
             } catch (ServerOfflineException e) {
                 // nothing - just continue
-            } catch (FailedMessageException e) {
-                updateList.forEach(update -> {
-                    update.state = HardwareUpdateState.FAILED;
-                    update.error = e.getFailedMessage().getErrorMessage();
-                    update.error_code = e.getFailedMessage().getErrorCode();
-                    update.update();
-                });
             }
         });
     }

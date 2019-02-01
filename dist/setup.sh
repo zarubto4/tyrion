@@ -24,7 +24,11 @@ function check_cmd {
                 apt-get update
             fi
 
-            apt-get --yes --force-yes install $1
+            if [ $1 == "pip" ]; then
+                apt-get --yes --force-yes install python-pip
+            else
+                apt-get --yes --force-yes install $1
+            fi
         else
             echo " !! Manually install $1 and then run the script again. !!"
             exit 1
@@ -60,6 +64,7 @@ echo "Checking prerequisites."
 
 check_cmd python
 check_cmd dos2unix
+check_cmd unzip
 
 # Check if requests module is installed
 python -c "import requests"

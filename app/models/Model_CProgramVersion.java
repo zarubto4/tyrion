@@ -167,26 +167,22 @@ public class Model_CProgramVersion extends VersionModel implements Permissible, 
     @JsonIgnore @Override
     public void save() {
         super.save();
-
-        Model_CProgram program = getProgram();
-        program.getVersionsId();
-        program.idCache().add(this.getClass(), id);
-        program.sort_Model_Model_CProgramVersion_ids();
+        this.getProgram().refresh();
     }
 
     @JsonIgnore @Override
     public boolean delete() {
-
-        getProgram().idCache().remove(this.getClass(), id);
-
-        return super.delete();
+        boolean delete = super.delete();
+        this.getProgram().refresh();
+        return delete;
     }
 
 /* NOTIFICATION --------------------------------------------------------------------------------------------------------*/
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/
 
-    @JsonIgnore @Transient public String get_path() {
+    @JsonIgnore
+    public String get_path() {
         return  getProgram().get_path() + "/version/" + this.id;
     }
 
