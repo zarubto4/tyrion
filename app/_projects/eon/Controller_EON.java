@@ -139,6 +139,20 @@ public class Controller_EON extends _BaseController {
                                     .append("avg", new Document()
                                             .append("$avg", "$value")
                                     )
+                            ),
+                    new Document()
+                            .append("$sort", new Document()
+                                    .append("_id.date", 1.0)
+                            ),
+                    new Document()
+                            .append("$group", new Document()
+                                    .append("_id", "$_id.hardware")
+                                    .append("data", new Document()
+                                            .append("$push", new Document()
+                                                    .append("time", "$_id.date")
+                                                    .append("value", "$avg")
+                                            )
+                                    )
                             )
             );
             ObservableSubscriber subscriber = new ObservableSubscriber<Document>();
@@ -148,17 +162,17 @@ public class Controller_EON extends _BaseController {
 
             List<Document> documents3 = subscriber.get(4000, TimeUnit.SECONDS);
 
-            List<Swagger_EON_data_values> res = documents3.stream().map(document -> {
-                Swagger_EON_data_values result = new Swagger_EON_data_values();
-                Document id = document.get("_id", Document.class);
-                result.avg = document.getDouble("avg");
-                result.date = id.getDate("date");
-                result.hardware = id.getString("hardware");
-                return result;
-            }).collect(Collectors.toList());
+//            List<Swagger_EON_data_values> res = documents3.stream().map(document -> {
+//                Swagger_EON_data_values result = new Swagger_EON_data_values();
+//                Document id = document.get("_id", Document.class);
+//                result.avg = document.getDouble("avg");
+//                result.date = id.getDate("date");
+//                result.hardware = id.getString("hardware");
+//                return result;
+//            }).collect(Collectors.toList());
 
 
-            return ok(res);
+            return ok_mongo(documents3);
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             return badRequest();
