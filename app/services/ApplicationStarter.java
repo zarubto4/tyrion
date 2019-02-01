@@ -55,9 +55,14 @@ public class ApplicationStarter {
 
     @Inject
     public ApplicationStarter(Clock clock, ApplicationLifecycle appLifecycle, Config configuration, Injector injector,
-                              ApplicationEvolutions applicationEvolutions, ServerLogger serverLogger, CacheService cacheService,
-                              _MongoDBConnector mongoDBConnector, _MongoNativeConnector mongoNativConnector, SchedulerService schedulerService,
-                              PermissionService permissionService, CompilerService compilerService) { // These unused parameters are important due to DI - don't remove them!
+                              ApplicationEvolutions applicationEvolutions,
+                              ServerLogger serverLogger,
+                              CacheService cacheService,
+                              _MongoDBConnector mongoDBConnector,
+                              _MongoNativeConnector mongoNativConnector,
+                              SchedulerService schedulerService,
+                              PermissionService permissionService,
+                              CompilerService compilerService) { // These unused parameters are important due to DI - don't remove them!
 
         this.clock = clock;
         this.appLifecycle = appLifecycle;

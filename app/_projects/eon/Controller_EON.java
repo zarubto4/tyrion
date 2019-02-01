@@ -65,7 +65,7 @@ public class Controller_EON extends _BaseController {
 
     @Inject
     public Controller_EON(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService,
-                          NotificationService notificationService, EchoService echoService, _MongoNativeConnector mongoNativConnector, HttpExecutionContext httpExecutionContext) {
+                          NotificationService notificationService, EchoService echoService, HttpExecutionContext httpExecutionContext) {
         super(ws, formFactory, config, permissionService, notificationService, echoService);
         this.httpExecutionContext = httpExecutionContext;
     }

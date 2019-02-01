@@ -23,7 +23,7 @@ public class _MongoNativeConnector {
 
     private Config config;
     private String mode;
-    private static String url;
+    private String url;
 
     private static MongoClient mongoClient;
     private static HashMap<String, MongoDatabase> databases = new HashMap<>();
@@ -38,7 +38,6 @@ public class _MongoNativeConnector {
         this.url = config.getString("MongoDB." + mode + ".url"); // Cluster
 
         mongoClient = MongoClients.create(url);
-        // this.database = mongoClient.getDatabase("EON_LOCAL_TEST");
 
     }
 

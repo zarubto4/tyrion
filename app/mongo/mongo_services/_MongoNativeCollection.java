@@ -24,7 +24,7 @@ public class _MongoNativeCollection {
     private MongoDatabase database;
     private  MongoCollection<Document> collection;
 
-    @Inject
+
     public _MongoNativeCollection(String database_name, String collection_name) {
 
         database = _MongoNativeConnector.getDatabase(database_name);
@@ -33,7 +33,6 @@ public class _MongoNativeCollection {
     }
 
     // Diferent Connection URL then default
-    @Inject
     public _MongoNativeCollection(String database_name, String url, String collection_name) {
         database = _MongoNativeConnector.getDatabase(database_name);
         collection = database.getCollection(collection_name);
