@@ -82,7 +82,7 @@ public class Controller_EON extends _BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "eon.swagger_model.in.Swagger_EON_data_request",
+                            dataType = "_projects.eon.swagger_model.in.Swagger_EON_data_request",
                             required = true,
                             paramType = "body",
                             value = "constraints for query"
