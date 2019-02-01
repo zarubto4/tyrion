@@ -11,7 +11,7 @@ import java.util.Date;
 public class Swagger_EON_data_values extends _Swagger_Abstract_Default {
     @ApiModelProperty(required = true, readOnly = true )
     public String hardware;
-    @ApiModelProperty(required = true, readOnly = true )
+    @ApiModelProperty(required = true, readOnly = true, dataType = "integer")
     public Date date;
     @ApiModelProperty(required = true, readOnly = true )
     public Double avg;
