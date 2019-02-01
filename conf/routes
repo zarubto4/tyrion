@@ -275,7 +275,7 @@ PUT        /instance/api_key/:instance_id/:token                        controll
 DELETE     /instance/api_key/:instance_id/:token                        controllers.Controller_Blocko.instance_remove_api_key(instance_id: java.util.UUID, token: java.util.UUID)
 
 POST       /instance/mesh_network_key/:instance_id                      controllers.Controller_Blocko.instance_create_mesh_network_key(instance_id: java.util.UUID)
-PUT        /instance/mesh_network_key/:instance_id/:token               controllers.Controller_Blocko.instance_edit_mesh_network_key(instance_id: java.util.UUID, token)
+PUT        /instance/mesh_netwhaork_key/:instance_id/:token               controllers.Controller_Blocko.instance_edit_mesh_network_key(instance_id: java.util.UUID, token)
 DELETE     /instance/mesh_network_key/:instance_id/:token               controllers.Controller_Blocko.instance_remove_mesh_network_key(instance_id: java.util.UUID, token)
 
 PUT       /instance/filter/:page_number                                 controllers.Controller_Blocko.get_b_program_instance_by_filter(page_number:Int)

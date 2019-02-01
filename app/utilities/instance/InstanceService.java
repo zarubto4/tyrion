@@ -94,6 +94,7 @@ public class InstanceService {
                 Map<UUID, List<Model_Hardware>> updates = new HashMap<>();
 
                 snapshot.getProgram().interfaces.forEach(iface -> {
+
                     if (!updates.containsKey(iface.interface_id)) {
                         updates.put(iface.interface_id, new ArrayList<>());
                     }
@@ -140,10 +141,14 @@ public class InstanceService {
     public void shutdown(Model_Instance instance) {
 
         if(instance.current_snapshot() != null) {
-            instance.current_snapshot().getRequiredHardware().forEach(hardware -> {
-                hardware.connected_instance_id = null;
-                hardware.update();
-            });
+            try {
+                instance.current_snapshot().getRequiredHardware().forEach(hardware -> {
+                    hardware.connected_instance_id = null;
+                    hardware.update();
+                });
+            } catch (Exception e) {
+                logger.error("shutdown_error", e);
+            }
         }
 
         instance.current_snapshot_id = null;

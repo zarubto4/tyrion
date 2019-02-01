@@ -14,6 +14,7 @@ import java.util.UUID;
 public class Swagger_HardwareGroup_Filter extends _Swagger_filter_parameter {
 
     @ApiModelProperty(required = true)
+    @Constraints.Required
     public UUID project_id;
 
     @ApiModelProperty(value = "List of instance_snapshot.id", required = false)

@@ -9,6 +9,7 @@ import io.swagger.models.properties.Property;
 
 import java.util.List;
 import java.util.Map;
+
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class SwaggerFilter implements SwaggerSpecFilter {
 

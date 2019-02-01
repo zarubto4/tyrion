@@ -31,7 +31,7 @@ public class Swagger_Hardware_List extends _Swagger_Filter_Common {
 
         if (page_number < 1) page_number = 1;
 
-        List<UUID> ids = query.setFirstRow((page_number - 1) * filter.count_on_page).setMaxRows(filter.count_on_page).findIds();
+        List<UUID> ids = query.setFirstRow((page_number - 1) * filter.count_on_page).setMaxRows(filter.count_on_page).select("id").findSingleAttributeList();
 
         for (UUID id :ids) {
             this.content.add(Model_Hardware.find.byId(id));

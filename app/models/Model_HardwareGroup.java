@@ -48,7 +48,7 @@ public class Model_HardwareGroup extends TaggedModel implements Permissible, Und
     public Integer size() {
         try {
             if (cache_group_size == null) {
-                cache_group_size = Model_Hardware.find.query().where().eq("hardware_groups.id", this.id).findCount();
+                cache_group_size = Model_Hardware.find.query().where().where().eq("deleted", false).eq("hardware_groups.id", this.id).findCount();
             }
 
             return cache_group_size;
@@ -78,7 +78,7 @@ public class Model_HardwareGroup extends TaggedModel implements Permissible, Und
     public List<UUID> get_HardwareTypesId() {
 
         if (idCache().gets(Model_HardwareType.class) == null) {
-            idCache().add(Model_HardwareType.class,  Model_HardwareType.find.query().where().eq("hardware.hardware_groups.id", id).select("id").findSingleAttributeList());
+            idCache().add(Model_HardwareType.class,  Model_HardwareType.find.query().where().where().eq("deleted", false).eq("hardware.hardware_groups.id", id).select("id").findSingleAttributeList());
         }
 
         return idCache().gets(Model_HardwareType.class) != null ?  idCache().gets(Model_HardwareType.class) : new ArrayList<>();
@@ -122,7 +122,7 @@ public class Model_HardwareGroup extends TaggedModel implements Permissible, Und
     @JsonIgnore
     public List<UUID> getHardwareIds() {
         if (idCache().gets(Model_Hardware.class) == null) {
-            idCache().add(Model_Hardware.class, (UUID) Model_Hardware.find.query().where().eq("hardware_groups.id", id).select("id").findSingleAttribute());
+            idCache().add(Model_Hardware.class, Model_Hardware.find.query().where().eq("deleted", false).eq("hardware_groups.id", id).select("id").findSingleAttributeList());
         }
 
         return idCache().gets(Model_Hardware.class) != null ?  idCache().gets(Model_Hardware.class) : new ArrayList<>();
