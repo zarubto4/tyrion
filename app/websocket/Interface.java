@@ -52,8 +52,6 @@ public abstract class Interface implements WebSocketInterface {
     /**
      * Buffer for messages which are waiting for the response.
      */
-    private Map<UUID, Request> messageBuffer = new HashMap<>();
-
     private Map<UUID, CompletableFuture<Message>> requests = new HashMap<>();
 
     protected final HttpExecutionContext httpExecutionContext;
@@ -115,23 +113,14 @@ public abstract class Interface implements WebSocketInterface {
     private CompletionStage<Void> onReceived(JsonNode msg) {
         try {
 
-           // logger.trace("onReceived - incoming message: {}", msg);
+           logger.trace("onReceived - incoming message: {}", msg);
 
             Message message = this.parseMessage(msg);
 
             UUID messageId = message.getId();
 
-            logger.trace("onReceived - incoming Message_ID: {}, time:: {} message: {}", messageId, new Date(), msg);
-
-
-            if (this.messageBuffer.containsKey(messageId)) {
-
-                logger.trace("onReceived - this.messageBuffer contains message id {} ", messageId);
-
-                this.messageBuffer.get(messageId).resolve(message);
-                this.messageBuffer.remove(messageId);
-
-            } else if (this.requests.containsKey(messageId)) {
+            if (this.requests.containsKey(messageId)) {
+                logger.trace("onReceived - buffer contains message id {} ", messageId);
                 this.requests.get(messageId).complete(message);
             } else {
 
@@ -185,6 +174,12 @@ public abstract class Interface implements WebSocketInterface {
         return Flow.fromSinkAndSourceCoupled(Sink.foreachAsync(10, onReceived), Source.fromPublisher(both.second())).watchTermination(this::onTermination).keepAlive(Duration.ofSeconds(60L), keepAlive);
     }
 
+    /**
+     * Calls onClose callbacks when the connection terminates.
+     * @param notUsed not used
+     * @param whenDone promise which completes on termination.
+     * @return not used
+     */
     private NotUsed onTermination(NotUsed notUsed, CompletionStage<Done> whenDone) {
         whenDone.thenAcceptAsync(done -> {
             logger.info("onTermination - connection lasted for {} s", Instant.now().getEpochSecond() - this.start.getEpochSecond());
