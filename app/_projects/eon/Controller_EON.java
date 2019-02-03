@@ -184,9 +184,8 @@ public class Controller_EON extends _BaseController {
 
 
             return ok_mongo(documents3);
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
-            return badRequest();
+        } catch (Throwable e) {
+            return controllerServerError(e);
         }
     }
 
@@ -227,9 +226,8 @@ public class Controller_EON extends _BaseController {
 
             return ok(list);
 
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
-            return badRequest();
+        } catch (Throwable e) {
+            return controllerServerError(e);
         }
     }
 
