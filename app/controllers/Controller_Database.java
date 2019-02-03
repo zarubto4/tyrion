@@ -129,7 +129,7 @@ public class Controller_Database extends _BaseController {
                 mongoApi.addRole(product.id.toString(), extension.id.toString());
             }
 
-            MongoDatabase database = this.mongoDBConnector.getMongoClient().getDatabase(extension.id.toString());
+            MongoDatabase database = this.mongoDBConnector.getDatabase(extension.id.toString());
             database.createCollection(info.collection_name);
 
             Swagger_Database created_database = new Swagger_Database();
