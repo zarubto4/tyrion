@@ -103,17 +103,7 @@ public class Controller_WebSocket extends _BaseController {
                 Model_HomerServer server = Model_HomerServer.find.query().nullable().where().eq("connection_identifier", token).findOne();
                 if (server != null) {
                     if (this.webSocketService.isRegistered(server.id)) {
-
-                        Homer homer = this.webSocketService.getInterface(server.id);
-
-                        try {
-                            homer.ping();
-                            logger.warn("homer - server is already connected, connection is working, cannot connect twice");
-                            return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
-                        } catch (Exception e) {
-                            logger.error("homer - ping failed, removing previous connection");
-                            homer.close();
-                        }
+                        return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
                     }
 
                     logger.info("homer - connection was successful. Server {}", server.name);
@@ -144,21 +134,11 @@ public class Controller_WebSocket extends _BaseController {
 
                 //Find object (only ID)
                 Model_CompilationServer server = Model_CompilationServer.find.query().nullable().where().eq("connection_identifier", token).select("id").findOne();
-                if(server != null){
+                if (server != null){
 
                     if (this.webSocketService.isRegistered(server.id)) {
-                        logger.error("compiler - server is already connected, trying to ping previous connection");
-
-                        Compiler compiler = this.webSocketService.getInterface(server.id);
-
-                        try {
-                            compiler.ping();
-                            logger.warn("compiler - server is already connected, connection is working, cannot connect twice");
-                            return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
-                        } catch (Exception e) {
-                            logger.error("compiler - ping failed, removing previous connection");
-                            compiler.close();
-                        }
+                        logger.warn("compiler - server is already connected, connection is working, cannot connect twice");
+                        return CompletableFuture.completedFuture(F.Either.Left(forbidden()));
                     }
 
                     Compiler compiler = injector.getInstance(Compiler.class);

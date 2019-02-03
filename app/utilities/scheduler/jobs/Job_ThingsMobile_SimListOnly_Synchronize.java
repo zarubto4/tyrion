@@ -4,6 +4,7 @@ import models.Model_GSM;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import play.inject.ApplicationLifecycle;
 import utilities.enums.SimType;
 import utilities.gsm_services.things_mobile.Controller_Things_Mobile;
 import utilities.gsm_services.things_mobile.help_json_class.TM_Sim_List;
@@ -16,6 +17,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static utilities.enums.ServerMode.DEVELOPER;
 import static utilities.enums.ServerMode.PRODUCTION;
@@ -32,7 +34,16 @@ public class Job_ThingsMobile_SimListOnly_Synchronize implements Job {
 
 //**********************************************************************************************************************
 
-    public Job_ThingsMobile_SimListOnly_Synchronize() {
+    public Job_ThingsMobile_SimListOnly_Synchronize(ApplicationLifecycle appLifecycle) {
+        appLifecycle.addStopHook(() -> {
+            try {
+                logger.warn("Interupt Thread ", this.getClass().getSimpleName());
+                this.thread.interrupt();
+            } catch (Exception e){
+                //
+            };
+            return CompletableFuture.completedFuture(null);
+        });
     }
 
     public void execute(JobExecutionContext context) throws JobExecutionException {

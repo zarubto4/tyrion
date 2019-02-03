@@ -4,12 +4,14 @@ import models.Model_Notification;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import play.inject.ApplicationLifecycle;
 import utilities.logger.Logger;
 import utilities.scheduler.Scheduled;
 
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -24,26 +26,37 @@ public class Job_OldNotificationRemoval implements Job {
 
 //**********************************************************************************************************************
 
-    public Job_OldNotificationRemoval() {}
+    public Job_OldNotificationRemoval(ApplicationLifecycle appLifecycle) {
+
+        appLifecycle.addStopHook(() -> {
+            try {
+                logger.warn("Interupt Thread ", this.getClass().getSimpleName());
+                this.thread.interrupt();
+            } catch (Exception e){
+                //
+            };
+            return CompletableFuture.completedFuture(null);
+        });
+    }
     
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
         logger.info("execute: Executing Job_OldNotificationRemoval");
 
-        if (!remove_notification_thread.isAlive()) remove_notification_thread.start();
+        if (!thread.isAlive()) thread.start();
     }
 
     /**
      * Thread finds all notifications older than one month.
      */
-    private Thread remove_notification_thread = new Thread() {
+    private Thread thread = new Thread() {
 
         @Override
         public void run() {
 
             try {
 
-                logger.debug("remove_notification_thread: concurrent thread started on {}", new Date());
+                logger.debug("thread: concurrent thread started on {}", new Date());
 
                 Date created = new Date(new Date().getTime() - TimeUnit.DAYS.toMillis(30)); // before one month
 
@@ -51,11 +64,11 @@ public class Job_OldNotificationRemoval implements Job {
 
                     List<Model_Notification> notifications = Model_Notification.find.query().where().lt("created", created).setMaxRows(100).findList();
                     if (notifications.isEmpty()) {
-                        logger.debug("remove_notification_thread: no notifications to remove");
+                        logger.debug("thread: no notifications to remove");
                         break;
                     }
 
-                    logger.debug("remove_notification_thread: removing old notifications (100 per cycle)");
+                    logger.debug("thread: removing old notifications (100 per cycle)");
 
                     notifications.forEach(Model_Notification::delete);
                 }
@@ -64,7 +77,7 @@ public class Job_OldNotificationRemoval implements Job {
                 logger.internalServerError(e);
             }
 
-            logger.debug("remove_notification_thread: thread stopped on {} ", new Date());
+            logger.debug("thread: thread stopped on {} ", new Date());
         }
     };
 }

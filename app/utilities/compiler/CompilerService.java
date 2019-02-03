@@ -14,6 +14,7 @@ import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.CompletionStage;
 
 public class CompilerService {
 
@@ -39,7 +40,7 @@ public class CompilerService {
         return this.webSocketService.countOf(iface -> iface instanceof Compiler) > 0;
     }
 
-    public WS_Message_Make_compilation compile(Request request) throws Exception {
+    public CompletionStage<WS_Message_Make_compilation> compile(Request request) {
         List<UUID> ids = this.webSocketService.getIdsOf(iface -> iface instanceof Compiler);
         if (ids.isEmpty()) {
             throw new ServerOfflineException();

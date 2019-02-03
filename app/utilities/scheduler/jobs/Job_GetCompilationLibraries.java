@@ -12,6 +12,7 @@ import models.Model_HardwareType;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import play.inject.ApplicationLifecycle;
 import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
@@ -32,6 +33,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -50,9 +52,21 @@ public class Job_GetCompilationLibraries extends _GitHubZipHelper implements Job
 
 //**********************************************************************************************************************
 
+    private Config config;
+
     @Inject
-    public Job_GetCompilationLibraries(WSClient ws, Config config, _BaseFormFactory formFactory) {
+    public Job_GetCompilationLibraries(WSClient ws, Config config, _BaseFormFactory formFactory, ApplicationLifecycle appLifecycle) {
         super(ws, config, formFactory);
+        this.config = config;
+        appLifecycle.addStopHook(() -> {
+            try {
+                logger.warn("Interupt Thread ", this.getClass().getSimpleName());
+                this.check_version_thread.interrupt();
+            } catch (Exception e){
+                //
+            };
+            return CompletableFuture.completedFuture(null);
+        });
     }
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -135,13 +149,14 @@ public class Job_GetCompilationLibraries extends _GitHubZipHelper implements Job
 
 
                         Pattern pattern = null;
-                        if (Server.mode == ServerMode.PRODUCTION) {
+                        if (config.getEnum(ServerMode.class, "server.mode") == ServerMode.PRODUCTION) {
                             pattern = Pattern.compile(regex_beta);                          // Záměrně - uživatelům to umožnujeme průběžně řešit
-                        } else if (Server.mode == ServerMode.STAGE) {
+                        } else if (config.getEnum(ServerMode.class, "server.mode") == ServerMode.STAGE) {
                             pattern = Pattern.compile(regex_beta);
-                        } else if (Server.mode == ServerMode.DEVELOPER) {
+                        } else if (config.getEnum(ServerMode.class, "server.mode") == ServerMode.DEVELOPER) {
                             pattern = Pattern.compile(regex_apha_beta);
                         }
+
 
                         if (pattern == null) {
                             logger.error("check_version_thread:: Pattern is null -  Server.server_mode not set!");

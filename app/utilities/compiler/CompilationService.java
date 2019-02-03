@@ -156,7 +156,7 @@ public class CompilationService {
         WS_Message_Make_compilation compilationResult;
 
         try {
-            compilationResult = this.compilerService.compile(new Request(new WS_Message_Make_compilation().make_request(hardwareType, libraryVersion, version.id, code_file.main, includes)));
+            compilationResult = this.compilerService.compile(new Request(new WS_Message_Make_compilation().make_request(hardwareType, libraryVersion, version.id, code_file.main, includes))).toCompletableFuture().get();
         } catch (ServerOfflineException e) {
             logger.warn("compile - server is offline");
             compilation.status = CompilationStatus.SERVER_OFFLINE;

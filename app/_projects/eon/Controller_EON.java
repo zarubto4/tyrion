@@ -20,6 +20,7 @@ import org.bson.Document;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -29,8 +30,6 @@ import java.util.stream.Collectors;
 import static com.mongodb.client.model.Sorts.descending;
 
 import org.bson.conversions.Bson;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import play.libs.concurrent.HttpExecutionContext;
 import play.mvc.BodyParser;
 import responses.*;
@@ -102,6 +101,13 @@ public class Controller_EON extends _BaseController {
 
             Swagger_EON_data_request request = formFromRequestWithValidation(Swagger_EON_data_request.class);
             _MongoNativeCollection collection = new _MongoNativeCollection("EON_LOCAL_TEST", "TEST9");
+
+            if( request.hardwares == null){
+                request.hardwares = new ArrayList<>();
+
+                request.hardwares.add("0A014C4F4700044AA26C");
+                request.hardwares.add("0A014C4F4700044AA26D");
+            }
 
             List<? extends Bson> pipeline = Arrays.asList(
                     new Document()

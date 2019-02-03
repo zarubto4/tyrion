@@ -801,6 +801,10 @@ public class Model_Hardware extends TaggedModel implements Permissible, UnderPro
     @Override
     public boolean delete() {
         this.dominant_entity = false;
+        Model_Project project = this.getProject();
+        if (project != null) {
+            project.idCache().remove(Model_Hardware.class, this.id);
+        }
         return super.delete();
     }
 

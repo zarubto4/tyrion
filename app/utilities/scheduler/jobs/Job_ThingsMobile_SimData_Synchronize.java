@@ -1,6 +1,7 @@
 package utilities.scheduler.jobs;
 
 import mongo.ModelMongo_ThingsMobile_CRD;
+import play.inject.ApplicationLifecycle;
 import xyz.morphia.mapping.MappingException;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -14,6 +15,7 @@ import utilities.scheduler.Restrict;
 import utilities.scheduler.Scheduled;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static utilities.enums.ServerMode.DEVELOPER;
 import static utilities.enums.ServerMode.PRODUCTION;
@@ -31,7 +33,16 @@ public class Job_ThingsMobile_SimData_Synchronize implements Job {
 
 //**********************************************************************************************************************
 
-    public Job_ThingsMobile_SimData_Synchronize() {
+    public Job_ThingsMobile_SimData_Synchronize(ApplicationLifecycle appLifecycle) {
+        appLifecycle.addStopHook(() -> {
+            try {
+                logger.warn("Interupt Thread ", this.getClass().getSimpleName());
+                this.thread.interrupt();
+            } catch (Exception e){
+                //
+            };
+            return CompletableFuture.completedFuture(null);
+        });
     }
 
     public void execute(JobExecutionContext context) throws JobExecutionException {

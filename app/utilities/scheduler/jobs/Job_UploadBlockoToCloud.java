@@ -5,11 +5,13 @@ import models.Model_InstanceSnapshot;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import play.inject.ApplicationLifecycle;
 import utilities.instance.InstanceService;
 import utilities.logger.Logger;
 
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Uploads blocko program to homer.
@@ -25,8 +27,17 @@ public class Job_UploadBlockoToCloud implements Job {
     private final InstanceService instanceService;
 
     @Inject
-    public Job_UploadBlockoToCloud(InstanceService instanceService) {
+    public Job_UploadBlockoToCloud(InstanceService instanceService, ApplicationLifecycle appLifecycle) {
         this.instanceService = instanceService;
+        appLifecycle.addStopHook(() -> {
+            try {
+                logger.warn("Interupt Thread ", this.getClass().getSimpleName());
+                this.thread.interrupt();
+            } catch (Exception e){
+                //
+            };
+            return CompletableFuture.completedFuture(null);
+        });
     }
 
     private UUID record_id;
@@ -37,22 +48,22 @@ public class Job_UploadBlockoToCloud implements Job {
 
         record_id = UUID.fromString(context.getMergedJobDataMap().getString("record_id"));
 
-        if (!upload_blocko_thread.isAlive()) upload_blocko_thread.start();
+        if (!thread.isAlive()) thread.start();
     }
 
-    private Thread upload_blocko_thread = new Thread() {
+    private Thread thread = new Thread() {
 
         @Override
         public void run() {
             try {
 
-                logger.trace("upload_blocko_thread: concurrent thread started on {}", new Date());
+                logger.trace("thread: concurrent thread started on {}", new Date());
 
                 if (record_id == null) throw new NullPointerException("Job was instantiated without record_id in the JobExecutionContext or the record_id is null for some reason.");
 
                 Model_InstanceSnapshot record = Model_InstanceSnapshot.find.byId(record_id);
 
-                logger.trace("upload_blocko_thread: uploading the record");
+                logger.trace("thread: uploading the record");
 
                 instanceService.deploy(record);
 
@@ -60,7 +71,7 @@ public class Job_UploadBlockoToCloud implements Job {
                 logger.internalServerError(e);
             }
 
-            logger.trace("upload_blocko_thread: thread stopped on {}", new Date());
+            logger.trace("thread: thread stopped on {}", new Date());
         }
     };
 }

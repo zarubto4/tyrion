@@ -542,7 +542,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
             // sleep(5000);
 
             // System.out.print("Stahování statistik");
-            new Job_ThingsMobile_SimData_Synchronize().execute(null);
+            // new Job_ThingsMobile_SimData_Synchronize().execute(null);
 
             return ok();
 
@@ -560,7 +560,7 @@ public class Controller_ZZZ_Tester extends _BaseController {
 
             // new Job_ThingsMobile_SimData_Synchronize().execute(null);
 
-/*
+            /*
             BasicDBObject query = new BasicDBObject();
             query.put("deleted", false);
 

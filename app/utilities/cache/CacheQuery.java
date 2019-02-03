@@ -57,7 +57,7 @@ public class CacheQuery<T extends BaseModel> extends DefaultOrmQuery<T> {
             T entity = super.findOne();
             if (entity == null) {
                 logger.trace("findOne - ({}) not found", entityName);
-                throw new NotFoundException(this.cacheFinder.getEntityType());
+                throw new NotFoundException(this.cacheFinder.getEntityType(), this.getGeneratedSql());
             }
 
             queryCache.put(hash, entity.id);

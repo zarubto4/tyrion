@@ -41,6 +41,7 @@ public class SchedulerService {
         this.scheduler = scheduler;
 
         appLifecycle.addStopHook(() -> {
+            this.scheduler.shutdown();
             this.scheduler.clear();
             return CompletableFuture.completedFuture(null);
         });

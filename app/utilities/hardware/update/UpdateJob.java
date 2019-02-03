@@ -1,11 +1,13 @@
 package utilities.hardware.update;
 
 import com.google.inject.Inject;
+import exceptions.FailedMessageException;
 import exceptions.ServerOfflineException;
 import models.Model_HardwareUpdate;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import utilities.enums.HardwareUpdateState;
 import utilities.hardware.HardwareInterface;
 import utilities.hardware.HardwareService;
 import utilities.logger.Logger;
@@ -39,7 +41,21 @@ public class UpdateJob implements Job {
             try {
 
                 HardwareInterface hardwareInterface = hardwareService.getInterface(update.getHardware());
-                hardwareInterface.update(update);
+                hardwareInterface.update(update)
+                        .whenComplete((message, exception) -> {
+                            if (exception != null) {
+                                if (exception instanceof FailedMessageException) {
+                                    update.error = ((FailedMessageException) exception).getFailedMessage().getErrorMessage();
+                                    update.error_code = ((FailedMessageException) exception).getFailedMessage().getErrorCode();
+                                } else {
+                                    logger.internalServerError(exception);
+                                    update.error = exception.getMessage();
+                                }
+
+                                update.state = HardwareUpdateState.FAILED;
+                                update.update();
+                            }
+                        });
 
             } catch (ServerOfflineException e) {
                 logger.info("execute - server is currently offline");
