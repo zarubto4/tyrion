@@ -20,23 +20,10 @@ public class _MongoNativeCollection {
 
     private static final Logger logger = new Logger(_MongoNativeCollection.class);
 
-    private MongoClient mongoClient;
-    private MongoDatabase database;
     private  MongoCollection<Document> collection;
 
-    @Inject
-    public _MongoNativeCollection(String database_name, String collection_name) {
-
-        database = _MongoNativeConnector.getDatabase(database_name);
-        collection = database.getCollection(collection_name);
-
-    }
-
-    // Diferent Connection URL then default
-    @Inject
-    public _MongoNativeCollection(String database_name, String url, String collection_name) {
-        database = _MongoNativeConnector.getDatabase(database_name);
-        collection = database.getCollection(collection_name);
+    public _MongoNativeCollection(MongoCollection<Document> collection) {
+        this.collection = collection;
     }
 
     public MongoCollection<Document> getCollection() {
@@ -70,7 +57,7 @@ public class _MongoNativeCollection {
      * @param doc
      * @throws Throwable
      */
-    public ObservableSubscriber<Success> insertDocumentToCollection(Document doc) throws Throwable {
+    public ObservableSubscriber<Success> insertDocumentToCollection(Document doc) {
 
         logger.trace("insertDocumentToCollection:: collection name: {}",  this.collection.getNamespace());
         // Create subscriber
@@ -92,7 +79,7 @@ public class _MongoNativeCollection {
      * @param docs
      * @throws Throwable
      */
-    public ObservableSubscriber<Success> insertDocumentToCollection(List<Document> docs) throws Throwable {
+    public ObservableSubscriber<Success> insertDocumentToCollection(List<Document> docs)  {
 
         logger.trace("insertDocumentToCollection:: collection name: {}, documents: {}",  this.collection.getNamespace(), docs.size());
         // Create subscriber
@@ -136,14 +123,5 @@ public class _MongoNativeCollection {
         // Provide Action
         return subscriber;
 
-    }
-
-
-    public MongoDatabase getMongoDatabase() {
-        return this.database;
-    }
-
-    public MongoClient getMongoClient() {
-        return this.mongoClient;
     }
 }

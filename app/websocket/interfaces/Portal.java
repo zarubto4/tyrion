@@ -9,6 +9,7 @@ import utilities.logger.Logger;
 import utilities.notifications.NotificationService;
 import websocket.Interface;
 import websocket.Message;
+import websocket.TimeOut;
 import websocket.messages.tyrion_with_becki.WS_Message_Subscribe_Notifications;
 import websocket.messages.tyrion_with_becki.WS_Message_UnSubscribe_Notifications;
 
@@ -25,8 +26,9 @@ public class Portal extends Interface {
     private final NotificationService notificationService;
 
     @Inject
-    public Portal(HttpExecutionContext httpExecutionContext, Materializer materializer, _BaseFormFactory formFactory, NotificationService notificationService) {
-        super(httpExecutionContext, materializer, formFactory);
+    public Portal(HttpExecutionContext httpExecutionContext, Materializer materializer, _BaseFormFactory formFactory,
+                  NotificationService notificationService, TimeOut timeOut) {
+        super(httpExecutionContext, materializer, formFactory, timeOut);
         this.notificationService = notificationService;
     }
 
@@ -56,7 +58,7 @@ public class Portal extends Interface {
                     default: {
                         logger.warn("onMessagePortal - incoming message not recognized: {}", message.getMessage().toString());
                         if (!message.isErroneous()) {
-                            this.send(message.getMessage().put("error_message", "message_type not recognized").put("error_code", 400));
+                            this.tell(message.getMessage().put("error_message", "message_type not recognized").put("error_code", 400));
                         }
                     }
                 }
@@ -80,7 +82,7 @@ public class Portal extends Interface {
 
         this.notificationService.subscribe(this);
 
-        this.send(WS_Message_Subscribe_Notifications.approve_result(message.getId().toString()));
+        this.tell(WS_Message_Subscribe_Notifications.approve_result(message.getId().toString()));
     }
 
     private void onUnsubscribeNotification(Message message) {
@@ -88,6 +90,6 @@ public class Portal extends Interface {
 
         this.notificationService.unsubscribe(this);
 
-        this.send(WS_Message_UnSubscribe_Notifications.approve_result(message.getId().toString()));
+        this.tell(WS_Message_UnSubscribe_Notifications.approve_result(message.getId().toString()));
     }
 }

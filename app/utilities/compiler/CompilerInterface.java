@@ -6,6 +6,8 @@ import websocket.WebSocketInterface;
 import websocket.interfaces.Compiler;
 import websocket.messages.compilator_with_tyrion.WS_Message_Make_compilation;
 
+import java.util.concurrent.CompletionStage;
+
 public class CompilerInterface {
 
     private final Model_CompilationServer server;
@@ -16,7 +18,7 @@ public class CompilerInterface {
         this.webSocketInterface = webSocketInterface;
     }
 
-    public WS_Message_Make_compilation compile(Request request) throws Exception {
+    public CompletionStage<WS_Message_Make_compilation> compile(Request request) {
         return ((Compiler) this.webSocketInterface).compile(request);
     }
 }

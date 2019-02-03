@@ -112,7 +112,7 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
-    public List<UUID> getVersionsId() {
+    public List<UUID> getVersionIds() {
 
         if (idCache().gets(Model_CProgramVersion.class) == null) {
             idCache().add(Model_CProgramVersion.class, Model_CProgramVersion.find.query().where().eq("c_program.id", id).ne("deleted", true).order().desc("created").select("id").findSingleAttributeList());
@@ -122,17 +122,8 @@ public class Model_CProgram extends TaggedModel implements Permissible, UnderPro
     }
 
     @JsonIgnore
-    public void sort_Model_Model_CProgramVersion_ids() {
-
-        List<Model_CProgramVersion> versions = getVersions();
-        this.idCache().removeAll(Model_CProgramVersion.class);
-        versions.stream().sorted((element1, element2) -> element2.created.compareTo(element1.created)).collect(Collectors.toList())
-                .forEach(o -> this.idCache().add(Model_CProgramVersion.class, o.id));
-    }
-
-    @JsonIgnore
     public List<Model_CProgramVersion> getVersions() {
-        return this.getVersionsId().stream().map(Model_CProgramVersion.find::byId).collect(Collectors.toList());
+        return this.getVersionIds().stream().map(Model_CProgramVersion.find::byId).collect(Collectors.toList());
     }
 
     @JsonIgnore
