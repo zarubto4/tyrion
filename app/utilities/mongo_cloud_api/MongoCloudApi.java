@@ -108,7 +108,7 @@ public class MongoCloudApi {
 
     //Will throw IllegalArgumentException in case database with such name doesn't exist
     public List<String> getCollections(String databaseName) throws IllegalArgumentException {
-        MongoIterable<String> collections = this.mongoDBConnector
+        MongoIterable<String> collections = this.mongoDBConnector.getMongoClient()
                                                   .getDatabase(databaseName)   //throws IllegalArgumentException
                                                   .listCollectionNames();
         List<String> result = new ArrayList<>();
@@ -119,7 +119,7 @@ public class MongoCloudApi {
     }
 
     public void createCollection(String databaseId, String collectionName) throws IllegalArgumentException{
-        this.mongoDBConnector
+        this.mongoDBConnector.getMongoClient()
               .getDatabase(databaseId) //throws IllegalArgumentException
               .createCollection(collectionName);
     }

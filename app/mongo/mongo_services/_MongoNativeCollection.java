@@ -14,28 +14,19 @@ import java.util.List;
 import static mongo.mongo_services._SubscriberHelpers.ObservableSubscriber;
 import static mongo.mongo_services._SubscriberHelpers.OperationSubscriber;
 
-@Singleton
+
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class _MongoNativeCollection {
 
     private static final Logger logger = new Logger(_MongoNativeCollection.class);
 
-    private MongoClient mongoClient;
+
     private MongoDatabase database;
     private  MongoCollection<Document> collection;
 
-    @Inject
-    public _MongoNativeCollection(String database_name, String collection_name) {
+    public _MongoNativeCollection(MongoDatabase database, String collection_name) {
 
-        database = _MongoNativeConnector.getDatabase(database_name);
-        collection = database.getCollection(collection_name);
-
-    }
-
-    // Diferent Connection URL then default
-    @Inject
-    public _MongoNativeCollection(String database_name, String url, String collection_name) {
-        database = _MongoNativeConnector.getDatabase(database_name);
+        this.database = database;
         collection = database.getCollection(collection_name);
     }
 
@@ -138,12 +129,9 @@ public class _MongoNativeCollection {
 
     }
 
-
     public MongoDatabase getMongoDatabase() {
         return this.database;
     }
 
-    public MongoClient getMongoClient() {
-        return this.mongoClient;
-    }
+
 }

@@ -39,11 +39,11 @@ public class _MongoNativeConnector {
         this.url = config.getString("MongoDB." + mode + ".url"); // Cluster
 
         mongoClient = MongoClients.create(url);
-        // this.database = mongoClient.getDatabase("EON_LOCAL_TEST");
+        this.getDatabase(config.getString("MongoDB." + mode + ".main_database_name"));
 
     }
 
-    public static MongoDatabase getDatabase(String database_name) {
+    public MongoDatabase getDatabase(String database_name) {
 
         if(!databases.containsKey(database_name)) {
             MongoDatabase database = mongoClient.getDatabase(database_name);
@@ -53,7 +53,10 @@ public class _MongoNativeConnector {
         return databases.get(database_name);
     }
 
-    public static  MongoClient getMongoClient() {
-        return mongoClient;
+    public _MongoNativeCollection getDatabaseCollection(String database_name, String collection_name) {
+
+        MongoDatabase database = getDatabase(database_name);
+        return  new _MongoNativeCollection(database, collection_name);
     }
+
 }

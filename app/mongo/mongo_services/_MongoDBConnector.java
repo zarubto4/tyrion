@@ -76,8 +76,6 @@ public class _MongoDBConnector {
                     value = model.getSimpleName();
                 }
 
-
-
                 for (Field field : model.getFields()) {
                     if (field.isAnnotationPresent(InjectStore.class) && field.get(null) instanceof CacheMongoFinder) {
 
