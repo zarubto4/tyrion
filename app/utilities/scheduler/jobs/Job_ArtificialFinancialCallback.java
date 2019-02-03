@@ -4,13 +4,10 @@ import com.google.inject.Inject;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import play.inject.ApplicationLifecycle;
 import play.libs.ws.WSClient;
 import utilities.logger.Logger;
 import utilities.scheduler.Restrict;
 import utilities.scheduler.Scheduled;
-
-import java.util.concurrent.CompletableFuture;
 
 import static utilities.enums.ServerMode.PRODUCTION;
 import static utilities.enums.ServerMode.STAGE;
@@ -26,17 +23,8 @@ public class Job_ArtificialFinancialCallback implements Job {
     private final WSClient ws;
 
     @Inject
-    public Job_ArtificialFinancialCallback(WSClient ws, ApplicationLifecycle appLifecycle) {
+    public Job_ArtificialFinancialCallback(WSClient ws) {
         this.ws = ws;
-        appLifecycle.addStopHook(() -> {
-            try {
-                logger.warn("Interupt Thread ", this.getClass().getSimpleName());
-                this.thread.interrupt();
-            } catch (Exception e){
-                //
-            };
-            return CompletableFuture.completedFuture(null);
-        });
     }
 
     // Logger
@@ -46,20 +34,20 @@ public class Job_ArtificialFinancialCallback implements Job {
 
         logger.info("execute - executing Job_ArtificialFinancialCallback");
 
-        if (!thread.isAlive()) thread.start();
+        if (!callback_thread.isAlive()) callback_thread.start();
     }
 
     /**
      * Thread finds pending invoices and makes artificial callbacks.
      */
-    private Thread thread = new Thread() {
+    private Thread callback_thread = new Thread() {
 
         @Override
         public void run() {
 // TODO
 //            try {
 //
-//                logger.debug("thread: concurrent thread started on {}", new Date());
+//                logger.debug("callback_thread: concurrent thread started on {}", new Date());
 //
 //                List<Model_Invoice> invoices_for_gopay = Model_Invoice.find.query().where()
 //                        .isNotNull("gopay_id")
@@ -81,7 +69,7 @@ public class Job_ArtificialFinancialCallback implements Job {
 //
 //                    WSResponse response = responsePromise.toCompletableFuture().get();
 //
-//                    logger.debug("thread: Sending notification for payment: {} - response: {}", invoice.gopay_id, response.getStatus());
+//                    logger.debug("callback_thread: Sending notification for payment: {} - response: {}", invoice.gopay_id, response.getStatus());
 //                }
 //
 //                for (Model_Invoice invoice : invoices_for_fakturoid) {
@@ -99,13 +87,13 @@ public class Job_ArtificialFinancialCallback implements Job {
 //
 //                    WSResponse response = responsePromise.toCompletableFuture().get();
 //
-//                    logger.debug("thread: Sending notification for invoice: {} - response: {}", invoice.proforma_id, response.getStatus());
+//                    logger.debug("callback_thread: Sending notification for invoice: {} - response: {}", invoice.proforma_id, response.getStatus());
 //                }
 //            } catch (Exception e) {
 //                logger.internalServerError(e);
 //            }
 //
-//            logger.debug("thread: thread stopped on {}", new Date());
+//            logger.debug("callback_thread: thread stopped on {}", new Date());
         }
     };
 }

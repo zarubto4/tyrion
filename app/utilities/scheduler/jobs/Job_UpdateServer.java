@@ -3,11 +3,11 @@ package utilities.scheduler.jobs;
 
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
+import models.Model_HomerServer;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import play.inject.ApplicationLifecycle;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
@@ -21,7 +21,6 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Date;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -39,18 +38,9 @@ public class Job_UpdateServer implements Job {
     private Config config;
 
     @Inject
-    public Job_UpdateServer(WSClient ws, Config config, ApplicationLifecycle appLifecycle) {
+    public Job_UpdateServer(WSClient ws, Config config) {
         this.ws = ws;
         this.config = config;
-        appLifecycle.addStopHook(() -> {
-            try {
-                logger.warn("Interupt Thread ", this.getClass().getSimpleName());
-                this.thread.interrupt();
-            } catch (Exception e){
-                //
-            };
-            return CompletableFuture.completedFuture(null);
-        });
     }
 
     private JobDataMap jobData;
@@ -61,16 +51,16 @@ public class Job_UpdateServer implements Job {
 
         jobData = context.getMergedJobDataMap();
 
-        if (!thread.isAlive()) thread.start();
+        if (!update_server_thread.isAlive()) update_server_thread.start();
     }
 
-    private Thread thread = new Thread() {
+    private Thread update_server_thread = new Thread() {
 
         @Override
         public void run() {
             try {
 
-                logger.trace("thread: concurrent thread started on {}", new Date());
+                logger.trace("update_server_thread: concurrent thread started on {}", new Date());
 
                 if (jobData == null) {
                     throw new NullPointerException("Job was instantiated without jobData in the JobExecutionContext.");
@@ -93,7 +83,7 @@ public class Job_UpdateServer implements Job {
                 switch (server) {
                     case "tyrion": {
 
-                        logger.trace("thread: Updating Tyrion");
+                        logger.trace("update_server_thread: Updating Tyrion");
 
                         WSResponse wsResponse = ws.url(jobData.getString("url"))
                                 .addHeader("Authorization", "token " + config.getString("GitHub.apiKey"))
@@ -103,7 +93,7 @@ public class Job_UpdateServer implements Job {
                                 .toCompletableFuture()
                                 .get();
 
-                        logger.trace("thread: Got file download url");
+                        logger.trace("update_server_thread: Got file download url");
 
                         // Redirect URL from response
                         String url;
@@ -128,7 +118,7 @@ public class Job_UpdateServer implements Job {
 
                         WSResponse response = request.get().toCompletableFuture().get(30, TimeUnit.MINUTES);
 
-                        logger.debug("thread: Status for file download is {}", response.getStatus());
+                        logger.debug("update_server_thread: Status for file download is {}", response.getStatus());
 
                         Path path = Paths.get("../dist.zip");
                         InputStream inputStream = response.getBodyAsStream();
@@ -143,7 +133,7 @@ public class Job_UpdateServer implements Job {
                         if (inputStream != null) {inputStream.close();}
                         if (outputStream != null) {outputStream.close();}
 
-                        logger.trace("thread: File downloaded, run update script");
+                        logger.trace("update_server_thread: File downloaded, run update script");
 
                         // Runtime.getRuntime().exec("./update_wrapper.sh " + jobData.getString("version") + " &");
 
@@ -172,7 +162,7 @@ public class Job_UpdateServer implements Job {
                 logger.internalServerError(e);
             }
 
-            logger.trace("thread: thread stopped on {}", new Date());
+            logger.trace("update_server_thread: thread stopped on {}", new Date());
         }
     };
 }

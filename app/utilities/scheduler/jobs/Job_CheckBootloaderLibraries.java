@@ -9,7 +9,6 @@ import models.Model_HardwareType;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import play.inject.ApplicationLifecycle;
 import play.libs.F;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSResponse;
@@ -21,7 +20,6 @@ import utilities.swagger.input.Swagger_GitHubReleases_Asset;
 
 import java.net.ConnectException;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -38,33 +36,24 @@ public class Job_CheckBootloaderLibraries extends _GitHubZipHelper implements Jo
 
 
     @Inject
-    public Job_CheckBootloaderLibraries(WSClient ws, Config config, _BaseFormFactory formFactory, ApplicationLifecycle appLifecycle) {
+    public Job_CheckBootloaderLibraries(WSClient ws, Config config, _BaseFormFactory formFactory) {
         super(ws, config, formFactory);
-        appLifecycle.addStopHook(() -> {
-            try {
-                logger.warn("Interupt Thread ", this.getClass().getSimpleName());
-                this.thread.interrupt();
-            } catch (Exception e){
-                //
-            };
-            return CompletableFuture.completedFuture(null);
-        });
     }
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
         logger.info("execute: Executing Job_CheckBootloaderLibraries");
 
-        if (!thread.isAlive()) thread.start();
+        if (!check_version_thread.isAlive()) check_version_thread.start();
     }
 
-    private Thread thread = new Thread() {
+    private Thread check_version_thread = new Thread() {
 
         @Override
         public void run() {
             try {
 
-                logger.trace("thread: concurrent thread started on {}", new Date());
+                logger.trace("check_version_thread: concurrent thread started on {}", new Date());
 
                 // Seznam Release z GitHubu v upravené podobě
                 List<Swagger_GitHubReleases> releases = request_list();
@@ -76,11 +65,11 @@ public class Job_CheckBootloaderLibraries extends _GitHubZipHelper implements Jo
 
                     Model_HardwareType hardwareType = Model_HardwareType.find.byId(uuid);
 
-                    logger.trace("thread:: Get  Hardware Type from database: Type Name: {}",  hardwareType.name);
+                    logger.trace("check_version_thread:: Get  Hardware Type from database: Type Name: {}",  hardwareType.name);
 
                     List<Model_BootLoader> bootLoaders = hardwareType.boot_loaders_get_for_github_include_removed();
 
-                    logger.trace("thread:: For this type we have {} bootLoaders",  bootLoaders.size());
+                    logger.trace("check_version_thread:: For this type we have {} bootLoaders",  bootLoaders.size());
 
                     // Pokud knihovnu
                     synchro_bootloaders:
@@ -88,11 +77,11 @@ public class Job_CheckBootloaderLibraries extends _GitHubZipHelper implements Jo
 
                         // Nejedná se o bootloader
                         if (!release.tag_name.contains("bootloader")) {
-                            logger.trace("thread:: release {} is not bootloader",  release.name );
+                            logger.trace("check_version_thread:: release {} is not bootloader",  release.name );
                             continue;
                         }
 
-                        logger.trace("thread:: release {} is bootloader",  release.name );
+                        logger.trace("check_version_thread:: release {} is bootloader",  release.name );
 
                         String[] subStrings_main_parts = release.tag_name.split("_bootloader_");
 
@@ -108,18 +97,18 @@ public class Job_CheckBootloaderLibraries extends _GitHubZipHelper implements Jo
                             continue;
                         }
 
-                        logger.trace("thread:: now we will check if booloader already exist in database",  release.name );
+                        logger.trace("check_version_thread:: now we will check if booloader already exist in database",  release.name );
 
                         // Kontrola zda už neexistuje
                         for (Model_BootLoader bootLoader : bootLoaders) {
                             if (bootLoader.version_identifier.equals(subStrings_main_parts[1])) {
                                 // Je již vytvořen
-                                logger.trace("thread:: yes - its already created in database");
+                                logger.trace("check_version_thread:: yes - its already created in database");
                                 continue synchro_bootloaders;
                             }
                         }
 
-                        logger.trace("thread:: no its not - we can create it");
+                        logger.trace("check_version_thread:: no its not - we can create it");
 
                         // Nejedná se o správný typ desky
                         if (!release.tag_name.contains(hardwareType.compiler_target_name)) {
@@ -128,7 +117,7 @@ public class Job_CheckBootloaderLibraries extends _GitHubZipHelper implements Jo
 
                         // nebráno v potaz
                         if (release.prerelease || release.draft) {
-                            logger.trace("thread:: prerelease == true");
+                            logger.trace("check_version_thread:: prerelease == true");
                             continue;
                         }
 
@@ -148,7 +137,7 @@ public class Job_CheckBootloaderLibraries extends _GitHubZipHelper implements Jo
                         }
 
                         if (asset_url == null) {
-                            logger.error("thread:: Required file bootloader.bin in release {} not found", release.tag_name);
+                            logger.error("check_version_thread:: Required file bootloader.bin in release {} not found", release.tag_name);
                             continue;
                         }
 
@@ -160,7 +149,7 @@ public class Job_CheckBootloaderLibraries extends _GitHubZipHelper implements Jo
 
 
                         if (ws_download_file.getStatus() != 200) {
-                            logger.error("thread:: Download Bootloader [] unsuccessful", release.tag_name);
+                            logger.error("check_version_thread:: Download Bootloader [] unsuccessful", release.tag_name);
                             logger.error("reason", ws_download_file.getBody());
                             return;
                         }
@@ -171,8 +160,8 @@ public class Job_CheckBootloaderLibraries extends _GitHubZipHelper implements Jo
 
                         // Naheraji na Azure
 
-                        logger.debug("thread:: bootLoader_uploadFile::  File Name " + "bootloader.bin");
-                        logger.debug("thread:: bootLoader_uploadFile::  File Path " + new_bootLoader.get_path());
+                        logger.debug("check_version_thread:: bootLoader_uploadFile::  File Name " + "bootloader.bin");
+                        logger.debug("check_version_thread:: bootLoader_uploadFile::  File Path " + new_bootLoader.get_path());
 
                         new_bootLoader.file = Model_Blob.upload(file_body, "application/octet-stream",  "bootloader.bin", new_bootLoader.get_path());
                         new_bootLoader.update();
@@ -194,7 +183,7 @@ public class Job_CheckBootloaderLibraries extends _GitHubZipHelper implements Jo
                 }
 
 
-                logger.trace("thread:: all Bootloader in type of Board synchronized");
+                logger.trace("check_version_thread:: all Bootloader in type of Board synchronized");
 
             } catch (F.PromiseTimeoutException e ) {
                 logger.error("Job_CheckBootloaderLibraries:: PromiseTimeoutException! - Probably Network is unreachable", new Date());
@@ -204,7 +193,7 @@ public class Job_CheckBootloaderLibraries extends _GitHubZipHelper implements Jo
                 logger.internalServerError(e);
             }
 
-            logger.trace("thread: thread stopped on {}", new Date());
+            logger.trace("check_version_thread: thread stopped on {}", new Date());
         }
     };
 

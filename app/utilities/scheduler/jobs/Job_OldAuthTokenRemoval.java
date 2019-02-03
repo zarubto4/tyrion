@@ -4,13 +4,11 @@ import models.Model_AuthorizationToken;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import play.inject.ApplicationLifecycle;
 import utilities.logger.Logger;
 import utilities.scheduler.Scheduled;
 
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Class removes old authTokens, that cannot be used anymore. (Expiration time)
@@ -24,37 +22,26 @@ public class Job_OldAuthTokenRemoval implements Job {
 
 //**********************************************************************************************************************
 
-    public Job_OldAuthTokenRemoval(ApplicationLifecycle appLifecycle) {
-
-        appLifecycle.addStopHook(() -> {
-            try {
-                logger.warn("Interupt Thread ", this.getClass().getSimpleName());
-                this.thread.interrupt();
-            } catch (Exception e){
-                //
-            };
-            return CompletableFuture.completedFuture(null);
-        });
-    }
+    public Job_OldAuthTokenRemoval() {}
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
         logger.info("execute: Executing Job_OldFloatingTokenRemoval");
 
-        if (!thread.isAlive()) thread.start();
+        if (!remove_token_thread.isAlive()) remove_token_thread.start();
     }
 
     /**
      * Thread finds tokens whose access_age is greater than now.
      */
-    private Thread thread = new Thread() {
+    private Thread remove_token_thread = new Thread() {
 
         @Override
         public void run() {
 
             try {
 
-                logger.debug("thread: concurrent thread started on {}", new Date());
+                logger.debug("remove_token_thread: concurrent thread started on {}", new Date());
 
                 while (true) {
 
@@ -67,11 +54,11 @@ public class Job_OldAuthTokenRemoval implements Job {
                             .findList();
 
                     if (tokens.isEmpty()) {
-                        logger.debug("thread: no tokens to remove");
+                        logger.debug("remove_token_thread: no tokens to remove");
                         break;
                     }
 
-                    logger.debug("thread: removing old tokens (100 per cycle)");
+                    logger.debug("remove_token_thread: removing old tokens (100 per cycle)");
 
                     tokens.forEach(Model_AuthorizationToken::delete);
                 }
@@ -80,7 +67,7 @@ public class Job_OldAuthTokenRemoval implements Job {
                 logger.internalServerError(e);
             }
 
-            logger.debug("thread: thread stopped on {}", new Date());
+            logger.debug("remove_token_thread: thread stopped on {}", new Date());
         }
     };
 }

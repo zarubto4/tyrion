@@ -9,7 +9,7 @@ import models.Model_Product;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import play.inject.ApplicationLifecycle;
+import utilities.enums.PaymentMethod;
 import utilities.enums.InvoiceStatus;
 import utilities.enums.PaymentWarning;
 import utilities.financial.fakturoid.FakturoidService;
@@ -28,7 +28,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -50,27 +50,18 @@ public class Job_Financial implements Job {
     private NotificationService notificationService;
 
     @Inject
-    public Job_Financial(Config config, FakturoidService fakturoid, GoPay goPay, NotificationService notificationService, ApplicationLifecycle appLifecycle) {
+    public Job_Financial(Config config, FakturoidService fakturoid, GoPay goPay, NotificationService notificationService) {
         this.config = config;
         this.fakturoid = fakturoid;
         this.goPay = goPay;
         this.notificationService = notificationService;
-        appLifecycle.addStopHook(() -> {
-            try {
-                logger.warn("Interupt Thread ", this.getClass().getSimpleName());
-                this.thread.interrupt();
-            } catch (Exception e){
-                //
-            };
-            return CompletableFuture.completedFuture(null);
-        });
     }
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
         logger.info("execute: Executing Job_Financial");
 
-        if (!thread.isAlive()) thread.start();
+        if (!financial_thread.isAlive()) financial_thread.start();
     }
 
     /**
@@ -78,12 +69,12 @@ public class Job_Financial implements Job {
      * Product must be active, must have some extensions and must be older than 16h.
      * Then gets products in paged list (25 for page) and passes them to method spend().
      */
-    private Thread thread = new Thread() {
+    private Thread financial_thread = new Thread() {
 
         @Override
         public void run() {
 
-            logger.debug("thread: concurrent thread started on {}", new Date());
+            logger.debug("financial_thread: concurrent thread started on {}", new Date());
 
             try {
 
@@ -105,7 +96,7 @@ public class Job_Financial implements Job {
 
                     for (int page = 0; page <= page_total - 1; page++) {
 
-                        logger.debug("thread: procedure for page {} from {}", (page + 1), page_total);
+                        logger.debug("financial_thread: procedure for page {} from {}", (page + 1), page_total);
 
                     /*
                      * Filter slouží k hledání těch produktů, kde by mělo dojít ke stržení kreditu
@@ -130,7 +121,7 @@ public class Job_Financial implements Job {
                 logger.internalServerError(e);
             }
 
-            logger.debug("thread: thread stopped on {}", new Date());
+            logger.debug("financial_thread: thread stopped on {}", new Date());
         }
 
         /**
