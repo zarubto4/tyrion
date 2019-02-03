@@ -1,18 +1,14 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import controllers._BaseController;
 import exceptions.NotFoundException;
 import io.intercom.api.User;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.ehcache.Cache;
-import org.hibernate.validator.constraints.Email;
+import javax.validation.constraints.Email;
 import org.mindrot.jbcrypt.BCrypt;
-import utilities.Server;
 import utilities.cache.CacheFinder;
 import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
@@ -25,11 +21,11 @@ import utilities.notifications.helps_objects.Becki_color;
 import utilities.notifications.helps_objects.Notification_Button;
 import utilities.notifications.helps_objects.Notification_Text;
 import utilities.permission.Action;
-import utilities.permission.JsonPermission;
 import utilities.permission.Permissible;
 import utilities.permission.WithPermission;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.*;
 
 @Entity
@@ -54,32 +50,32 @@ public class Model_Person extends BaseModel implements Permissible {
     public String country;
     public String gender;
 
-    @JsonIgnore public String portal_config; // Prostor kde si vývojáři Becki mohou poznamenávat nějaké detaily o uživately
+    @JsonIgnore @SuppressWarnings({"unused"}) public String portal_config; // Prostor kde si vývojáři Becki mohou poznamenávat nějaké detaily o uživately
 
     @JsonIgnore public boolean validated;
     @JsonIgnore public boolean frozen;
     @JsonIgnore public String password;
     @JsonIgnore public String alternative_picture_link;   // alternativa k prolinkování obrázku - není na azure!
 
-    @JsonIgnore public String facebook_oauth_id;
-    @JsonIgnore public String github_oauth_id;
+    @JsonIgnore @SuppressWarnings({"unused"}) public String facebook_oauth_id;
+    @JsonIgnore @SuppressWarnings({"unused"}) public String github_oauth_id;
 
     // ##### RELATIONS #####
 
-    @JsonIgnore @OneToOne   public Model_Blob picture;
+    @JsonIgnore @OneToOne public Model_Blob picture;
 
-    @JsonIgnore @OneToOne(mappedBy = "person") public Model_PasswordRecoveryToken passwordRecoveryToken;
-    @JsonIgnore @OneToOne(mappedBy = "person") public Model_ChangePropertyToken   changePropertyToken;
+    @JsonIgnore @OneToOne(mappedBy = "person") @SuppressWarnings({"unused"}) public Model_PasswordRecoveryToken passwordRecoveryToken;
+    @JsonIgnore @OneToOne(mappedBy = "person") @SuppressWarnings({"unused"}) public Model_ChangePropertyToken   changePropertyToken;
 
-    @JsonIgnore @ManyToMany(mappedBy = "persons", fetch = FetchType.LAZY) public List<Model_Project> projects = new ArrayList<>();
-    @JsonIgnore @ManyToMany(mappedBy = "persons", fetch = FetchType.LAZY) public List<Model_Role> roles = new ArrayList<>();
-    @JsonIgnore @ManyToMany(fetch = FetchType.LAZY) public List<Model_Permission> permissions = new ArrayList<>();
+    @JsonIgnore @ManyToMany(mappedBy = "persons", fetch = FetchType.LAZY) @SuppressWarnings({"unused"}) public List<Model_Project> projects = new ArrayList<>();
+    @JsonIgnore @ManyToMany(mappedBy = "persons", fetch = FetchType.LAZY) @SuppressWarnings({"unused"}) public List<Model_Role> roles = new ArrayList<>();
+    @JsonIgnore @ManyToMany(fetch = FetchType.LAZY) @SuppressWarnings({"unused"}) public List<Model_Permission> permissions = new ArrayList<>();
 
-    @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Employee>              employees            = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_AuthorizationToken>    authorization_tokens = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy = "owner",  cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Invitation>            invitations          = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_Notification>          notifications        = new ArrayList<>();
-    @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) public List<Model_GridTerminal>          grid_terminals       = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @SuppressWarnings({"unused"}) public List<Model_Employee>              employees            = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @SuppressWarnings({"unused"}) public List<Model_AuthorizationToken>    authorization_tokens = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "owner",  cascade = CascadeType.ALL, fetch = FetchType.LAZY) @SuppressWarnings({"unused"}) public List<Model_Invitation>            invitations          = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @SuppressWarnings({"unused"}) public List<Model_Notification>          notifications        = new ArrayList<>();
+    @JsonIgnore @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY) @SuppressWarnings({"unused"}) public List<Model_GridTerminal>          grid_terminals       = new ArrayList<>();
 
 /* CACHE VALUES --------------------------------------------------------------------------------------------------------*/
 
@@ -87,7 +83,9 @@ public class Model_Person extends BaseModel implements Permissible {
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @ApiModelProperty(required = true)
+    @JsonProperty
+    @ApiModelProperty(required = true)
+    @SuppressWarnings({"unused"})
     public String picture_link() {
         try {
                 if (this.alternative_picture_link != null && alternative_picture_link.contains("http")) {
@@ -105,6 +103,7 @@ public class Model_Person extends BaseModel implements Permissible {
     }
 
     @JsonProperty()
+    @SuppressWarnings({"unused"})
     @WithPermission(Action.ACTIVATE)
     public boolean byzance_admin() {
         return true;
@@ -164,9 +163,7 @@ public class Model_Person extends BaseModel implements Permissible {
     @Override
     public void save() {
 
-
         super.save();
-
         try {
             // Create
             io.intercom.api.User user = new io.intercom.api.User()
@@ -177,7 +174,7 @@ public class Model_Person extends BaseModel implements Permissible {
                     .setUserId(id.toString());
             User.create(user);
         } catch (Exception e) {
-
+            logger.error("save:: Fail with save Intercom Api");
         }
     }
 
@@ -250,6 +247,8 @@ public class Model_Person extends BaseModel implements Permissible {
         return find.query().nullable().where().eq("email", email).setIncludeSoftDeletes().findOne();
     }
 
+    @SuppressWarnings({"NullableProblems", "ConstantConditions"})
+    @NotNull
     public static Model_Person getByAuthToken(UUID token) throws NotFoundException {
 
         UUID id = token_cache.get(token);

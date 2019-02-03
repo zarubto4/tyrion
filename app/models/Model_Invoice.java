@@ -259,7 +259,7 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderCustom
      * @return price of the whole invoice without taxes
      */
     @JsonIgnore
-    public double  getTotalPriceWithoutVatEstimate() {
+    public double getTotalPriceWithoutVatEstimate() {
         BigDecimal total = BigDecimal.ZERO;
         for (Model_InvoiceItem  item : invoice_items) {
             total = total.add(item.quantity.multiply(item.unit_price));
@@ -278,7 +278,7 @@ public class Model_Invoice extends BaseModel implements Permissible, UnderCustom
      */
     @JsonIgnore
     public double getTotalPriceWithVatEstimate() {
-        Map<Integer, BigDecimal> vatRatesPrices = new HashMap();
+        Map<Integer, BigDecimal> vatRatesPrices = new HashMap<Integer, BigDecimal>();
 
         for (Model_InvoiceItem  item : invoice_items) {
             BigDecimal total = vatRatesPrices.get(item.vat_rate);

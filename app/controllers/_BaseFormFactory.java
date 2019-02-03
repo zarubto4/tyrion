@@ -1,6 +1,7 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.typesafe.config.Config;
 import exceptions.*;
 import play.data.Form;
 import play.data.FormFactory;
@@ -15,6 +16,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.validation.ValidationException;
 import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
 /**
  * Helper to create better forms.
@@ -29,8 +31,8 @@ public class _BaseFormFactory extends FormFactory {
 // Methods  ##############################################################################################################
 
     @Inject
-    public _BaseFormFactory(MessagesApi messagesApi, Formatters formatters, Validator validator) {
-       super(messagesApi, formatters, validator);
+    public _BaseFormFactory(MessagesApi messagesApi, Formatters formatters, ValidatorFactory validatorFactory, Config config) {
+       super(messagesApi, formatters, validatorFactory, config);
     }
 
 

@@ -30,6 +30,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Api(value = "Not Documented API - InProgress or Stuck")
+@SuppressWarnings({"rawtypes", "unchecked", "deprecation"})
 public class Controller_WebSocket extends _BaseController {
 
 /* LOGGER --------------------------------------------------------------------------------------------------------------*/

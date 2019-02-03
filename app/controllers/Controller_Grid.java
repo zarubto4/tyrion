@@ -800,7 +800,7 @@ public class Controller_Grid extends _BaseController {
             @ApiResponse(code = 477, message = "External Server is offline", response = Result_ServerOffline.class),
             @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
     })
-    public Result gridProgram_getByQRToken(UUID instance_id, UUID grid_program_id) { // ins = instance_id && prg = program_version_id
+    public Result gridProgram_getByQRToken(UUID instance_id, UUID grid_program_id, Http.Request request) { // ins = instance_id && prg = program_version_id
         try {
 
 
@@ -814,7 +814,7 @@ public class Controller_Grid extends _BaseController {
                 return badRequest("Instance not running");
             }
 
-            Swagger_Mobile_Connection_Summary result = instance.current_snapshot().get_connection_summary(grid_program_id , ctx());
+            Swagger_Mobile_Connection_Summary result = instance.current_snapshot().get_connection_summary(grid_program_id , request);
 
             System.out.println("Co Vracím?? \n");
             System.out.println(Json.toJson(result));
@@ -903,7 +903,7 @@ public class Controller_Grid extends _BaseController {
     })
     @BodyParser.Of(BodyParser.Json.class)
     //@Security.Authenticated(Authentication.class) - Není záměrně!!!! - Ověřuje se v read_permision program může být public!
-    public Result get_identificator() {
+    public Result get_identificator(Http.Request request) {
         try {
 
 
@@ -914,17 +914,12 @@ public class Controller_Grid extends _BaseController {
             terminal.device_name = help.device_name;
             terminal.device_type = help.device_type;
 
-            if ( Http.Context.current().request().headers().get("User-Agent")[0] != null) terminal.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
+            if ( request.getHeaders().get("User-Agent").isPresent()) terminal.user_agent = request.getHeaders().get("User-Agent").get();
             else  terminal.user_agent = "Unknown browser";
 
-
-            // Tato část je určená pro nalezení tokenu a přihlášení uživatele - bylo totiž nutné zpřístupnit tuto metodu i nepřihlášeným (bez loginu). Kvuli tomu že by to přes  @Security.Authenticated(Authentication.class)  neprošlo
-            String[] token_values =  Http.Context.current().request().headers().get("X-AUTH-TOKEN");
-
-
-            if ((token_values != null) && (token_values.length == 1) && (token_values[0] != null)) {
+            if (request.getHeaders().get("X-AUTH-TOKEN").isPresent()) {
                 logger.debug("get_identificator :: HTTP request containts X-AUTH-TOKEN");
-                Model_Person person = Model_Person.getByAuthToken(UUID.fromString(token_values[0]));
+                Model_Person person = Model_Person.getByAuthToken(UUID.fromString(request.getHeaders().get("X-AUTH-TOKEN").get()));
                 if (person != null) {
                     logger.debug("get_identificator :: Person with X-AUTH-TOKEN found");
                   terminal.person = person;

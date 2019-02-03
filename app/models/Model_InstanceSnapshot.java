@@ -445,7 +445,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
 /* Helper Class --------------------------------------------------------------------------------------------------------*/
 
     @JsonIgnore
-    public Swagger_Mobile_Connection_Summary get_connection_summary(UUID grid_program_id,  Http.Context context) {
+    public Swagger_Mobile_Connection_Summary get_connection_summary(UUID grid_program_id,  Http.Request request) {
 
         // OBJEKT který se variabilně naplní a vrátí - ITS EMPTY!!!!
         Swagger_Mobile_Connection_Summary summary = new Swagger_Mobile_Connection_Summary();
@@ -506,8 +506,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
             case PROJECT: {
 
                 // Check Token
-                String token = new Authentication().getUsername(context); // TODO ugly
-                if (token == null) {
+                if ( ! new Authentication().getUsername(request).isPresent()) {
                     throw new UnauthorizedException();
                 }
 
@@ -521,7 +520,7 @@ public class Model_InstanceSnapshot extends TaggedModel implements Permissible, 
                 terminal.device_name = "Unknown";
                 terminal.device_type = "Unknown";
 
-                if ( Http.Context.current().request().headers().get("User-Agent")[0] != null) terminal.user_agent =  Http.Context.current().request().headers().get("User-Agent")[0];
+                if ( request.getHeaders().get("User-Agent").isPresent()) terminal.user_agent =  request.getHeaders().get("User-Agent").get();
                 else  terminal.user_agent = "Unknown browser";
 
                 terminal.person = person;

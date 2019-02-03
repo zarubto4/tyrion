@@ -176,6 +176,8 @@ public abstract class _BaseController {
     public static Model_Person person() throws UnauthorizedException {
         try {
 
+            System.out.println("_BaseController: person()");
+
             Model_Person person = (Model_Person) Controller.ctx().args.get("person");
 
             if (person != null) {

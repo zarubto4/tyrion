@@ -510,9 +510,9 @@ PUT       /grid_program/tags/remove                                     controll
 DELETE    /grid_program/:grid_program_id                                controllers.Controller_Grid.gridProgram_delete(grid_program_id: java.util.UUID)
 
 # Terminals Aps
-GET       /grid_program/app/token/:instance_id/:program_version_id      controllers.Controller_Grid.gridProgram_getByQRToken(instance_id: java.util.UUID, program_version_id: java.util.UUID)
+GET       /grid_program/app/token/:instance_id/:program_version_id      controllers.Controller_Grid.gridProgram_getByQRToken(instance_id: java.util.UUID, program_version_id: java.util.UUID, request: Request)
 
-PUT       /websocket/terminal/identificator                             controllers.Controller_Grid.get_identificator()
+PUT       /websocket/terminal/identificator                             controllers.Controller_Grid.get_identificator(request: Request)
 PUT       /websocket/terminal/identificator/:terminal_id                controllers.Controller_Grid.check_identifiactor(terminal_id: java.util.UUID)
 
 # Wigets

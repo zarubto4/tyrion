@@ -7,8 +7,6 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.google.inject.Injector;
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.typesafe.config.Config;
 import controllers._BaseFormFactory;
 import io.intercom.api.Intercom;
@@ -41,11 +39,6 @@ public class Server {
     public static String httpAddress;
     public static String clearAddress;
     public static String wsAddress;
-
-    // Azure - Blob
-    public static CloudStorageAccount storageAccount;
-    public static CloudBlobClient blobClient;
-    public static String azure_blob_Link;
 
     public static AWSCredentialsProvider awscp;
     public static AmazonS3 space;
@@ -207,12 +200,6 @@ public class Server {
         Facebook_apiKey         = configuration.getString("Facebook." + mode +".apiKey  ");
 
         // Azure Config ------------------------------------------------------------------------------------------------------------
-
-        azure_blob_Link = configuration.getString("blob." + mode + ".url");
-        storageAccount  = CloudStorageAccount.parse(configuration.getString("blob." + mode + ".secret"));
-        blobClient      = storageAccount.createCloudBlobClient();
-
-
 
         // AWS - DigitalOcean Config ------------------------------------------------------------------------------------------------------------
         awscp = new AWSStaticCredentialsProvider( new BasicAWSCredentials(configuration.getString("digitalOcean.space.access_key"), configuration.getString("digitalOcean.space.secret_key")));
