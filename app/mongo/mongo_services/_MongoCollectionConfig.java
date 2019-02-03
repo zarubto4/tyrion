@@ -11,5 +11,6 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 public @interface _MongoCollectionConfig {
     String database_name() default "";
+    String database_url() default "";
 }
 

@@ -33,7 +33,6 @@ import java.util.*;
         )
 })
 @ApiModel("HardwareBatch")
-@_MongoCollectionConfig(database_name = "Tyrion")
 public class ModelMongo_Hardware_BatchCollection extends _Abstract_MongoModel implements Permissible, Publishable {
 
 

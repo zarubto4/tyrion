@@ -9,6 +9,7 @@ import models.*;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import play.inject.ApplicationLifecycle;
 import play.libs.F;
 import play.libs.Json;
 import play.libs.ws.WSClient;
@@ -25,11 +26,10 @@ import utilities.swagger.input.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import static utilities.enums.ServerMode.PRODUCTION;
 import static utilities.enums.ServerMode.STAGE;
 
 /**
@@ -46,26 +46,37 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
 //**********************************************************************************************************************
 
     private CompilationService compilationService;
+    private Config config;
 
     @Inject
-    public Job_CheckCompilationLibraries(WSClient ws, Config config, _BaseFormFactory formFactory, CompilationService compilationService) {
+    public Job_CheckCompilationLibraries(WSClient ws, Config config, _BaseFormFactory formFactory, CompilationService compilationService, ApplicationLifecycle appLifecycle) {
         super(ws, config, formFactory);
+        this.config = config;
+        appLifecycle.addStopHook(() -> {
+            try {
+                logger.warn("Interupt Thread ", this.getClass().getSimpleName());
+                this.thread.interrupt();
+            } catch (Exception e){
+                //
+            };
+            return CompletableFuture.completedFuture(null);
+        });
     }
 
     public void execute(JobExecutionContext context) throws JobExecutionException {
 
         logger.info("execute: Executing Job_CheckCompilationLibraries");
 
-        if (!check_version_thread.isAlive()) check_version_thread.start();
+        if (!thread.isAlive()) thread.start();
     }
 
-    private Thread check_version_thread = new Thread() {
+    private Thread thread = new Thread() {
 
         @Override
         public void run() {
             try {
 
-                logger.trace("check_version_thread: concurrent thread started on {}", new Date());
+                logger.trace("thread: concurrent thread started on {}", new Date());
 
                 // Seznam Release z GitHubu v upravené podobě
                 List<Swagger_GitHubReleases> releases = request_list();
@@ -98,20 +109,20 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
 
 
                         if (release.assets.size() == 0) {
-                            logger.debug("check_version_thread: Tag version  {} not contains any assets", release.tag_name);
+                            logger.debug("thread: Tag version  {} not contains any assets", release.tag_name);
                             continue;
                         }
 
                         List<String> obsolete_versions = config.getStringList("compilation_settings.obsolete_lib_version");
 
                         if (obsolete_versions.contains(release.tag_name)) {
-                            logger.debug("check_version_thread: Tag version  {} is mark as obsolete", release.tag_name);
+                            logger.debug("thread: Tag version  {} is mark as obsolete", release.tag_name);
                             continue;
                         }
 
 
                         if (release.tag_name == null) {
-                            logger.error("check_version_thread:: Release is Damaged: {} ", Json.toJson(release).toString());
+                            logger.error("thread:: Release is Damaged: {} ", Json.toJson(release).toString());
                             continue;
                         }
 
@@ -128,40 +139,40 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
 
 
                         Pattern pattern = null;
-                        if (Server.mode == ServerMode.PRODUCTION) {
+                        if (config.getEnum(ServerMode.class, "server.mode") == ServerMode.PRODUCTION) {
                             pattern = Pattern.compile(regex_beta);                          // Záměrně - uživatelům to umožnujeme průběžně řešit
-                        } else if (Server.mode == ServerMode.STAGE) {
+                        } else if (config.getEnum(ServerMode.class, "server.mode") == ServerMode.STAGE) {
                             pattern = Pattern.compile(regex_beta);
-                        } else if (Server.mode == ServerMode.DEVELOPER) {
+                        } else if (config.getEnum(ServerMode.class, "server.mode") == ServerMode.DEVELOPER) {
                             pattern = Pattern.compile(regex_apha_beta);
                         }
 
                         if (pattern == null) {
-                            logger.error("check_version_thread:: Pattern is null -  Server.server_mode not set!");
+                            logger.error("thread:: Pattern is null -  Server.server_mode not set!");
                             continue;
                         }
 
                         Matcher matcher = pattern.matcher(release.tag_name);
 
                         if (matcher.matches()) {
-                            logger.debug("check_version_thread:: Code Library Version TAG name {} match regex", release.tag_name);
+                            logger.debug("thread:: Code Library Version TAG name {} match regex", release.tag_name);
                         } else {
-                            logger.debug("check_version_thread:: Code Library Version  TAG name {} not match regex {} ", release.tag_name, pattern.pattern());
+                            logger.debug("thread:: Code Library Version  TAG name {} not match regex {} ", release.tag_name, pattern.pattern());
                             continue;
                         }
 
                         if (release.prerelease || release.draft) {
-                            logger.trace("check_version_thread:: prerelease == true");
+                            logger.trace("thread:: prerelease == true");
                             continue;
                         }
 
                         if (release.assets.size() == 0) {
-                            logger.trace("check_version_thread:: not any assets - its required!");
+                            logger.trace("thread:: not any assets - its required!");
                             continue;
                         }
 
 
-                        logger.trace("check_version_thread:: setAndCompileNewPublicPrograms: release {}", release.prettyPrint());
+                        logger.trace("thread:: setAndCompileNewPublicPrograms: release {}", release.prettyPrint());
                         try {
                             setAndCompileNewPublicPrograms(release);
                         } catch (Exception e) {
@@ -172,7 +183,7 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
 
                 }
 
-                logger.trace("thread:check_version_thread:: all Library type of Board synchronized");
+                logger.trace("thread:thread:: all Library type of Board synchronized");
 
             } catch (F.PromiseTimeoutException e ) {
                 logger.error("thread:: PromiseTimeoutException! - Probably Network is unreachable", new Date());
@@ -180,7 +191,7 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
                 logger.internalServerError(e);
             }
 
-            logger.trace("check_version_thread: thread stopped on {}", new Date());
+            logger.trace("thread: thread stopped on {}", new Date());
         }
     };
 
@@ -215,12 +226,12 @@ public class Job_CheckCompilationLibraries extends _GitHubZipHelper implements J
 
 
             if(ws_download_file == null) {
-                logger.error("check_version_thread:: download request is null");
+                logger.error("thread:: download request is null");
                 return;
             }
 
             if (ws_download_file.getStatus() != 200) {
-                logger.error("check_version_thread:: Download Bootloader [] unsuccessful", release.tag_name);
+                logger.error("thread:: Download Bootloader [] unsuccessful", release.tag_name);
                 logger.error("reason", ws_download_file.getBody());
                 return;
             }
