@@ -27,7 +27,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public abstract class Interface implements WebSocketInterface {
@@ -231,7 +233,8 @@ public abstract class Interface implements WebSocketInterface {
     /**
      * See {@link WebSocketInterface#ask(Request, long)} documentation for details.
      * @param request to perform
-     * @return CompletionStage
+     * @param timeout in millis after which the stage will complete exceptionally
+     * @return {@link CompletionStage}
      */
     @Override
     public CompletionStage<Message> ask(Request request, long timeout) {

@@ -1,6 +1,6 @@
 name := """tyrion"""
 
-version := "2.3.2"
+version := "2.3.8"
 
 packageName in Universal := "v" + version.value
 
@@ -10,8 +10,8 @@ scalaVersion := "2.12.7"
 
 libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "42.2.5",
-  "com.microsoft.azure" % "azure-storage" % "6.1.0",
-  "com.microsoft.azure" % "azure-documentdb" % "1.15.1",
+  "com.microsoft.azure" % "azure-storage" % "6.1.0",          // TODO odstranit
+  "com.microsoft.azure" % "azure-documentdb" % "1.15.1",      // TODO odstranit
   "com.mandrillapp.wrapper.lutung" % "lutung" % "0.0.8",
   "com.itextpdf" % "itextpdf" % "5.5.12",
   "org.ehcache" % "ehcache" % "3.4.0",
@@ -23,7 +23,7 @@ libraryDependencies ++= Seq(
   "org.assertj" % "assertj-core" % "3.6.2" % Test,
   "org.awaitility" % "awaitility" % "2.0.0" % Test,
   "com.myjeeva.digitalocean" % "digitalocean-api-client" % "2.13", // Digital Ocean - Creating Automaticaly Homer Servers
-  "io.minio" % "minio" % "0.2.4", // Minio BLOB storage library - azure-storag opensource alternative
+  "io.minio" % "minio" % "0.2.4", // Minio BLOB storage library - azure-storag opensource alternative  // TODO odstranit
   "com.fasterxml.jackson.dataformat" % "jackson-dataformat-xml" % "2.8.0", // XML to JSON support
   "org.mockito" % "mockito-core" % "2.18.3" % Test,
   "org.apache.poi" % "poi" % "3.17", // Excel support for report P&G
@@ -38,7 +38,6 @@ libraryDependencies ++= Seq(
   "com.facebook.business.sdk" % "facebook-java-business-sdk" % "3.0.0",
   "com.restfb" % "restfb" % "2.9.0", // New Login
   "com.amazonaws" % "aws-java-sdk" % "1.11.479", // Amazon == DigitalOcean!
-
   evolutions,
   guice,
   ws

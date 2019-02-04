@@ -1,8 +1,10 @@
 package _projects.cez;
 
+import _projects.cez.swagger_model.in.Swagger_CEZ_data_request;
 import _projects.eon.swagger_model.in.Swagger_EON_data_request;
 import _projects.eon.swagger_model.out.Swagger_EON_data_values;
 import com.google.inject.Inject;
+import com.mongodb.client.MongoDatabase;
 import com.typesafe.config.Config;
 import controllers._BaseController;
 import controllers._BaseFormFactory;
@@ -41,7 +43,7 @@ public class Controller_CEZ extends _BaseController {
 
 
     @ApiOperation(
-            value = "get Electricity_Meter_Data",
+            value = "get Sensor_Data",
             tags = {"CEZ"},
             notes = "values in given date range, from given hardware, averaged inside time intervals given in minutes"
     )
@@ -49,7 +51,7 @@ public class Controller_CEZ extends _BaseController {
             {
                     @ApiImplicitParam(
                             name = "body",
-                            dataType = "_projects.eon.swagger_model.in.Swagger_EON_data_request",
+                            dataType = "_projects.cez.swagger_model.in.Swagger_CEZ_data_request",
                             required = true,
                             paramType = "body",
                             value = "constraints for query"
@@ -67,7 +69,7 @@ public class Controller_CEZ extends _BaseController {
     public Result getValues() {
         try {
 
-            Swagger_EON_data_request request = formFromRequestWithValidation(Swagger_EON_data_request.class);
+            Swagger_CEZ_data_request request = formFromRequestWithValidation(Swagger_CEZ_data_request.class);
             _MongoNativeCollection collection = mongoNativeConnector.getDatabaseCollection("4d7fd102-a3b4-4dde-914c-c0dcfaa545ac", "PRIME");
 
             // Project ID::
@@ -80,5 +82,7 @@ public class Controller_CEZ extends _BaseController {
             return controllerServerError(e);
         }
     }
+
+
 
 }
