@@ -106,6 +106,7 @@ public class ProjectService {
     }
 
     public void acceptInvitation(Model_Invitation invitation) {
+
         Model_Person person = Model_Person.find.query().where().eq("email", invitation.email).findOne();
 
         Model_Project project = invitation.getProject();
@@ -115,8 +116,14 @@ public class ProjectService {
             project.update();
 
             try {
+
+                System.out.println("acceptInvitation hledam default role");
                 Model_Role role = Model_Role.find.query().where().eq("project.id", project.id).eq("default_role", true).findOne();
+
                 if (!role.persons.contains(person)) {
+
+                    System.out.println("Role neobsahuje uživatele a přidávám ho");
+
                     role.persons.add(person);
                     role.update();
                 }
@@ -127,7 +134,16 @@ public class ProjectService {
 
         person.idCache().add(Model_Project.class, project.id);
 
-        this.notificationService.send(invitation.owner, project.notificationInvitationAccepted(person));
+        try {
+
+            System.out.println("onProjectInvitationAccepted - person " + invitation.who_invite().email);
+            System.out.println("onProjectInvitationAccepted - person " + person.email);
+
+            this.notificationService.send(invitation.who_invite(), project.notificationInvitationAccepted(person));
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Posralo se něco v notifikaci");
+        }
 
         // TODO new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, project_not_cached.id, project_not_cached.id))).start();
 

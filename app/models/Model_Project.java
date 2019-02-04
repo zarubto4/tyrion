@@ -87,11 +87,14 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
         }
     }
 
+
+/* GET SQL PARAMETER - CACHE OBJECTS ------------------------------------------------------------------------------------*/
+
     /**
      * Making List of Model_ProjectParticipant from Model_ProjectParticipant and also from all invitations!
      * @return Model_ProjectParticipant[]
      */
-    @JsonProperty @ApiModelProperty(required = true)
+    @JsonIgnore  @ApiModelProperty(required = true)
     public List<Swagger_ProjectParticipant> participants() {
         try {
 
@@ -109,24 +112,6 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
             return new ArrayList<>();
         }
     }
-
-    /**
-     * Making List of invitations!
-     * @return Model_ProjectParticipant[]
-     */
-    @JsonProperty @ApiModelProperty(required = true)
-    public List<Model_Invitation> invitations() {
-        try {
-
-            return getInvitations();
-
-        } catch (Exception e){
-            logger.internalServerError(e);
-            return new ArrayList<>();
-        }
-    }
-
-/* GET SQL PARAMETER - CACHE OBJECTS ------------------------------------------------------------------------------------*/
 
     @JsonIgnore
     public List<UUID> getPersonsIds() {

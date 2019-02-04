@@ -102,7 +102,7 @@ public class Controller_Person extends _BaseController {
             if (invitations.isEmpty()) {
 
                 Model_ValidationToken validationToken = Model_ValidationToken.find.query().where().eq("email",help.email).findOne();
-                if (validationToken!=null) validationToken.delete();
+                if (validationToken != null) validationToken.delete();
                 validationToken = new Model_ValidationToken().setValidation(person.email);
 
                 String link = Server.httpAddress + "/person/mail_authentication/" + validationToken.token;
@@ -127,6 +127,7 @@ public class Controller_Person extends _BaseController {
                 try {
 
                     for(Model_Invitation invitation : invitations ) {
+                        System.out.println("Accept invitations invitation" + invitation.id);
                         this.projectService.acceptInvitation(invitation);
                     }
 
@@ -719,7 +720,8 @@ public class Controller_Person extends _BaseController {
                 }
 
                 case "nick_name" : {
-                    if (Model_Person.find.query().where().ieq("nick_name", help.value).findOne() == null) {
+
+                    if (Model_Person.find.query().nullable().where().ieq("nick_name", help.value).findOne() == null) {
 
                         validation.valid = true;
                         return ok(validation);

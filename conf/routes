@@ -235,6 +235,7 @@ DELETE    /admin/tariff_extension/:extension_id                         controll
 POST      /project                                                      controllers.Controller_Project.project_create()
 POST      /project_valid_name                                           controllers.Controller_Project.project_valid_name()
 PUT       /project/:project_id                                          controllers.Controller_Project.project_update(project_id: java.util.UUID)
+GET       /project/invitations/:project_id                              controllers.Controller_Project.project_get_invitation(project_id: java.util.UUID)
 GET       /project/:project_id                                          controllers.Controller_Project.project_get(project_id: java.util.UUID)
 GET       /project                                                      controllers.Controller_Project.project_getByUser
 DELETE    /project/:project_id                                          controllers.Controller_Project.project_delete(project_id: java.util.UUID)

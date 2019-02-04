@@ -200,6 +200,8 @@ public class Model_Person extends BaseModel implements Permissible {
                     .setUserId(id.toString());
             User.create(user);
 
+        } catch (Exception e) {
+            logger.error("Update " + e.getMessage());
         }
 
         super.update();

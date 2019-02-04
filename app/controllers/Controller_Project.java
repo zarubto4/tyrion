@@ -341,12 +341,7 @@ public class Controller_Project extends _BaseController {
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.delete_permission", value = "true")
-                    })
-            }
+            code = 200
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -371,6 +366,33 @@ public class Controller_Project extends _BaseController {
             project.delete();
 
             return ok();
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "get Project Invitation",
+            tags = {"Project"},
+            notes = "get Projects Invitations of new Users by project_id",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Invitation.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result project_get_invitation(UUID project_id) {
+        try {
+
+            Model_Project project = Model_Project.find.byId(project_id);
+            return ok(project.getInvitations());
+
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -441,7 +463,7 @@ public class Controller_Project extends _BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Invitation.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -548,7 +570,7 @@ public class Controller_Project extends _BaseController {
             project.refresh();
 
             // Vrácení objektu
-            return ok(project);
+            return ok(project.getInvitations());
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -595,16 +617,16 @@ public class Controller_Project extends _BaseController {
 
 
             // Remove All Persons
-            List<Model_Person> list =  Model_Person.find.query().nullable().where().in("email", help.persons_mail).eq("projects.id", project_id).findList();
+            List<Model_Person> person_to_remove = Model_Person.find.query().nullable().where().in("email", help.persons_mail).findList();
+            List<Model_Role> roles = Model_Role.find.query().nullable().where().in("persons.email", help.persons_mail).eq("project.id", project_id).findList();
 
-            if(!list.isEmpty()) {
-                project.persons.removeAll(list);
+            if(!roles.isEmpty()) {
+                project.persons.removeAll(person_to_remove);
                 project.update();
 
                 // Remove Persons from Roles
-                List<Model_Role> roles = Model_Role.find.query().nullable().where().eq("project.id", project.id).in("persons.id", list.stream().map(p -> p.id).collect(Collectors.toList())).findList();
                 roles.forEach(r -> {
-                    r.persons.removeAll(list);
+                    r.persons.removeAll(person_to_remove);
                     r.update();
                 });
             }
