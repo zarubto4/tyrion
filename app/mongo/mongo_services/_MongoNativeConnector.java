@@ -15,7 +15,6 @@ import utilities.logger.ServerLogger;
 import com.typesafe.config.Config;
 import com.google.inject.Inject;
 
-
 @Singleton
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class _MongoNativeConnector {

@@ -118,8 +118,8 @@ public class Controller_EON extends _BaseController {
                             .append("$match", new Document()
                                     .append("obic_code", request.obis_code) // TODO Fixnout chybu v obic_code na obis_code
                                     .append("timestamp", new Document()
-                                            .append("$gte", new Date(request.startDate))
-                                            .append("$lte", new Date(request.endDate))
+                                            .append("$gte", new Date(request.startDate * 1000))
+                                            .append("$lte", new Date(request.endDate * 1000))
                                     )
                                     .append("metter_id", new Document()
                                             .append("$in", request.hardwares)

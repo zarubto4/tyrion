@@ -10,10 +10,10 @@ import java.util.List;
         value = "eon_data_request")
 public class Swagger_EON_data_request {
 
-    @ApiModelProperty(value = "begin of time range", required = true)
+    @ApiModelProperty(value = "begin of time range, in unix time", dataType = "number", required = true, example = "1549223285")
     public Long startDate = 1549223285L;
 
-    @ApiModelProperty(value = "end of time range", required = true)
+    @ApiModelProperty(value = "end of time range, in unix time", required = true, dataType = "number", example = "1704067200")
     public Long endDate = 1704067200L;
 
     @ApiModelProperty(value = "code of value",required = true)

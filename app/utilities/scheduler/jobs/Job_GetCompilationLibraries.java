@@ -32,6 +32,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
@@ -118,20 +119,20 @@ public class Job_GetCompilationLibraries extends _GitHubZipHelper implements Job
                         }
 
 
-                        if(release.assets.size() == 0) {
+                        if (release.assets.size() == 0) {
                             logger.debug("check_version_thread: Tag version  {} not contains any assets", release.tag_name);
                             continue;
                         }
 
                         List<String> obsolete_versions = config.getStringList("compilation_settings.obsolete_lib_version");
 
-                        if(obsolete_versions.contains(release.tag_name)) {
+                        if (obsolete_versions.contains(release.tag_name)) {
                             logger.debug("check_version_thread: Tag version  {} is mark as obsolete", release.tag_name);
                             continue;
                         }
 
 
-                        if(release.tag_name == null) {
+                        if (release.tag_name == null) {
                             logger.error("check_version_thread:: Release is Damaged: {} ", Json.toJson(release).toString());
                             continue;
                         }
@@ -204,6 +205,8 @@ public class Job_GetCompilationLibraries extends _GitHubZipHelper implements Job
 
                 logger.trace("thread:check_version_thread:: all Library type of Board synchronized");
 
+            } catch (java.util.concurrent.ExecutionException e) {
+                logger.error("thread:: PromiseTimeoutException! - Probably Network is unreachable", new Date());
             } catch (F.PromiseTimeoutException e ) {
                 logger.error("thread:: PromiseTimeoutException! - Probably Network is unreachable", new Date());
             } catch (Exception e) {
