@@ -719,8 +719,7 @@ public class Controller_Person extends _BaseController {
                 }
 
                 case "nick_name" : {
-                    if (Model_Person.find.query().where().ieq("nick_name", help.value).findOne() == null) {
-
+                    if (Model_Person.find.query().nullable().where().ieq("nick_name", help.value).findOne() == null) {
                         validation.valid = true;
                         return ok(validation);
                     }

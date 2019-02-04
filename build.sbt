@@ -31,10 +31,6 @@ libraryDependencies ++= Seq(
   "org.mongodb" % "mongodb-driver-reactivestreams" % "1.10.0",
   "org.mongodb" % "mongodb-driver" % "3.9.1",
   "xyz.morphia.morphia" % "core" % "1.4.0",
-  "com.facebook.business.sdk" % "facebook-java-business-sdk" % "3.0.0",
-  "com.sendgrid" % "sendgrid-java" % "4.0.1",
-  "commons-validator" % "commons-validator" % "1.6", // Kontrola Emailů, URL adres etc
-  "com.facebook.business.sdk" % "facebook-java-business-sdk" % "3.0.0",
   "com.restfb" % "restfb" % "2.9.0", // New Login
   "com.amazonaws" % "aws-java-sdk-s3" % "1.11.490", // Amazon == DigitalOcean!
   evolutions,
