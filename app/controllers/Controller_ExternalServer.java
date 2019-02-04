@@ -1,9 +1,6 @@
 package controllers;
 
 import com.google.inject.Inject;
-import com.microsoft.azure.storage.blob.CloudAppendBlob;
-import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
-import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
 import com.typesafe.config.Config;
 import io.ebean.*;
 import io.swagger.annotations.*;
@@ -844,35 +841,8 @@ public class Controller_ExternalServer extends _BaseController {
             // Získám soubor
             Model_BootLoader bootLoader = Model_BootLoader.find.byId(bootloader_id);
 
-            logger.trace("cloud_file_get_bootloader - Bootloader: {}", bootLoader.version_identifier);
-
-            Model_Blob modelBlob = bootLoader.getBlob();
-
-            int slash = modelBlob.path.indexOf("/");
-            String container_name = modelBlob.path.substring(0,slash);
-            String real_file_path = modelBlob.path.substring(slash+1);
-
-            logger.trace("cloud_file_get_bootloader - Container Name {} real_file_path {} ", container_name, real_file_path );
-
-            CloudAppendBlob blob = Server.blobClient.getContainerReference(container_name).getAppendBlobReference(real_file_path);
-
-            // Create Policy
-            Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-            cal.setTime(new Date());
-            cal.add(Calendar.DATE, 250);
-
-            SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
-            policy.setPermissions(EnumSet.of(SharedAccessBlobPermissions.READ));
-            policy.setSharedAccessExpiryTime(cal.getTime());
-
-            String sas = blob.generateSharedAccessSignature(policy, null);
-
-            String total_link = blob.getUri().toString() + "?" + sas;
-
-            logger.trace("cloud_file_get_bootloader_version - download link: {}", total_link);
-
             // Přesměruji na link
-            return redirect(total_link);
+            return redirect(bootLoader.getBlob().link);
 
         } catch (Exception e) {
            return controllerServerError(e);

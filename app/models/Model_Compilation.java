@@ -2,7 +2,6 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import io.swagger.annotations.ApiModel;
 import org.apache.commons.io.FileExistsException;
 import play.libs.ws.WSClient;
@@ -175,10 +174,7 @@ public class Model_Compilation extends BaseModel implements Updatable {
 
     @JsonIgnore
     public static String get_path_for_bin() throws Exception {
-
-        CloudBlobContainer container = Server.blobClient.getContainerReference("bin-files");
-        return container.getName() + "/" + UUID.randomUUID().toString();
-
+        return "bin-files" + "/" + UUID.randomUUID().toString();
     }
 
 /* BLOB DATA  ----------------------------------------------------------------------------------------------------------*/

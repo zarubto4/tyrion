@@ -61,6 +61,7 @@ public class Controller_EON extends _BaseController {
 
     private HttpExecutionContext httpExecutionContext;
     private _MongoNativeConnector mongoNativeConnector;
+    private _MongoNativeCollection collection;
 
 // LOGGER ##############################################################################################################
 
@@ -72,6 +73,7 @@ public class Controller_EON extends _BaseController {
         super(ws, formFactory, config, permissionService, notificationService, echoService);
         this.httpExecutionContext = httpExecutionContext;
         this.mongoNativeConnector = mongoNativeConnector;
+        collection = this.mongoNativeConnector.getDatabaseCollection("EON_LOCAL_TEST", "TEST9");
     }
 
 
@@ -103,9 +105,6 @@ public class Controller_EON extends _BaseController {
         try {
 
             Swagger_EON_data_request request = formFromRequestWithValidation(Swagger_EON_data_request.class);
-
-            _MongoNativeCollection collection = mongoNativeConnector.getDatabaseCollection("EON_LOCAL_TEST", "TEST9");
-
 
             if( request.hardwares == null){
                 request.hardwares = new ArrayList<>();
@@ -172,15 +171,6 @@ public class Controller_EON extends _BaseController {
                     .subscribe(subscriber);
 
             List<Document> documents3 = subscriber.get(4000, TimeUnit.SECONDS);
-
-//            List<Swagger_EON_data_values> res = documents3.stream().map(document -> {
-//                Swagger_EON_data_values result = new Swagger_EON_data_values();
-//                Document id = document.get("_id", Document.class);
-//                result.avg = document.getDouble("avg");
-//                result.date = id.getDate("date");
-//                result.hardware = id.getString("hardware");
-//                return result;
-//            }).collect(Collectors.toList());
 
 
             return ok_mongo(documents3);
@@ -412,7 +402,6 @@ public class Controller_EON extends _BaseController {
             return badRequest();
         }
     }
-
 
 
 // HELPERS ##############################################################################################################

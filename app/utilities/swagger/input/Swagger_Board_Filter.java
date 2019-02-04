@@ -34,7 +34,6 @@ public class Swagger_Board_Filter extends _Swagger_filter_parameter{
     public List<UUID>  hardware_groups_id;
 
     @ApiModelProperty(value = "Unix in second - created - start_time", dataType = "integer", example = "1536424319", required = false)
-
     public Date start_time;
 
     @ApiModelProperty(value = "Unix in second - created - end_time", dataType = "integer", example = "1536424319", required = false)

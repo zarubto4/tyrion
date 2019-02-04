@@ -3,7 +3,6 @@ package utilities.compiler;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
-import com.microsoft.azure.storage.StorageException;
 import controllers._BaseFormFactory;
 import exceptions.*;
 import models.*;
@@ -233,9 +232,6 @@ public class CompilationService {
 
             return new ArrayList<>();
 
-        } catch (StorageException e) {
-            logger.internalServerError(new Exception("StorageException" + compilationResult.build_url, e));
-            compilation.status = CompilationStatus.SERVER_ERROR;
         } catch (ConnectException e) {
             logger.internalServerError(new Exception("Compilation Server is probably offline on URL: " + compilationResult.build_url, e));
             compilation.status = CompilationStatus.SUCCESS_DOWNLOAD_FAILED;

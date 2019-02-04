@@ -3,7 +3,6 @@ package models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import controllers._BaseController;
 import exceptions.NotFoundException;
 import io.intercom.api.User;

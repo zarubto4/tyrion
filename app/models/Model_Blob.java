@@ -4,7 +4,6 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.microsoft.azure.storage.blob.*;
 import exceptions.BadRequestException;
 import io.swagger.annotations.ApiModel;
 import org.apache.http.annotation.Obsolete;
@@ -68,32 +67,8 @@ public class Model_Blob extends BaseModel {
     public String downloadString() {
         try {
 
-            if(storage_type.equals("AzureBlob")) {
-
-                if (cache_string_file.containsKey(this.id)) {
-                    return cache_string_file.get(this.id);
-                }
-
-                int slash = path.indexOf("/");
-                String container_name = path.substring(0, slash);
-                String real_file_path = path.substring(slash + 1);
-
-                System.out.println("AzureBlob file ID:: " + this.id);
-                System.out.println("AzureBlob container_name:: " + container_name);
-                System.out.println("AzureBlob real_file_path:: " + real_file_path);
-
-                CloudBlobContainer container = Server.blobClient.getContainerReference(container_name);
-                CloudBlockBlob blob = container.getBlockBlobReference(real_file_path);
-                String file = blob.downloadText();
-
-                cache_string_file.put(this.id, file);
-
-                return file;
-
-            } else {
-                S3Object s3Object = Server.space.getObject(Server.bucket_name, this.path);
-                return org.apache.commons.io.IOUtils.toString(new BufferedReader(new InputStreamReader(s3Object.getObjectContent())));
-            }
+            S3Object s3Object = Server.space.getObject(Server.bucket_name, this.path);
+            return org.apache.commons.io.IOUtils.toString(new BufferedReader(new InputStreamReader(s3Object.getObjectContent())));
 
         } catch (Exception e) {
             logger.internalServerError(e);

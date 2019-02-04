@@ -2,9 +2,7 @@ package models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import io.swagger.annotations.ApiModel;
-import utilities.Server;
 import utilities.cache.CacheFinder;
 import utilities.cache.InjectCache;
 import utilities.enums.EntityType;
