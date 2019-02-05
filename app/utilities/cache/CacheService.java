@@ -79,6 +79,8 @@ public class CacheService {
                     throw new NotSupportedException("Cannot inject cache into " + obj.getClass() + ", because it does not implement ModelCache interface.");
                 }
 
+            } catch (NullPointerException e) {
+
             } catch (Exception e) {
                 logger.error("init - cache init failed:", e);
             }

@@ -146,6 +146,9 @@ public class Controller_Security extends _BaseController {
                  person = Model_Person.getByEmail(help.email.toLowerCase());
 
             } catch (NotFoundException e) {
+
+                System.out.println("Email " + help.email);
+
                 logger.trace("Email {} not found", help.email.toLowerCase());
                 return forbidden("Email or password is wrong");
             }

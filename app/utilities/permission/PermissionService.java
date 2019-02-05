@@ -108,17 +108,19 @@ public class PermissionService {
         UUID id = null;
         boolean isPublic = false;
 
+        System.out.println("Model je " + model.getClass().getSimpleName());
+
         if (model instanceof Personal) {
             id = ((Personal) model).getPerson().id;
+        } else if (model instanceof Model_Project) {
+            id = model.id;
         } else if (model instanceof UnderCustomer) {
             id = ((UnderCustomer) model).getCustomer().id;
         } else if (model instanceof UnderProject) {
-
             Model_Project project = ((UnderProject) model).getProject();
             if (project != null) {
                 id = project.id;
             }
-
         } else {
             id = model.id;
         }
@@ -158,24 +160,42 @@ public class PermissionService {
 
                 logger.trace("check - ({}) finding the permission in the DB", modelName);
 
+                System.out.println("PermissionService:: Hledám oprávnění podle role:: pro " + person.email);
+                System.out.println("PermissionService:: Hledám oprávnění action " + action);
+                System.out.println("PermissionService:: Hledám oprávnění entityType " + entityType);
+                System.out.println("PermissionService:: Hledám oprávnění project id " + id);
+                System.out.println("PermissionService:: Hledám oprávnění person id " +person.id);
+
                 // Try to find the permission in the DB
                 Model_Role role = Model_Role.find.query()
                         .where()
                         .eq("persons.id", person.id)
-                        .or(Expr.isNull("project"), Expr.eq("project.id", id))
-                        .and(Expr.eq("permissions.action", action), Expr.eq("permissions.entity_type", entityType))
+                        .or(
+                                Expr.isNull("project"),
+                                Expr.eq("project.id", id)
+                            )
+                        .and(
+                                Expr.eq("permissions.action", action),
+                                Expr.eq("permissions.entity_type", entityType))
                         .setMaxRows(1)
                         .findOne();
 
                 logger.trace("check - ({}) found role with the permission", modelName);
 
                 if (role.project == null) {
+
+                    System.out.println("PermissionService:: Project je null Role ID " + role.id + "  role.name " + role.name );
                     this.cache.get(person.id).add(new CachedPermission(null, entityType, action, true));
+
                 } else {
+
+                    System.out.println("PermissionService:: Project není null");
                     this.cache.get(person.id).add(new CachedPermission(id, entityType, action, true));
                 }
 
             } catch (NotFoundException e) {
+
+                System.out.println("PermissionService:: not found");
 
                 // If there is no such permission
 

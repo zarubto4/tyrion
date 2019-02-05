@@ -3,12 +3,22 @@ package utilities.project;
 import com.google.inject.Inject;
 import exceptions.NotFoundException;
 import models.*;
+import play.libs.Json;
+import utilities.Server;
+import utilities.emails.Email;
 import utilities.enums.NetworkStatus;
 import utilities.homer.HomerService;
 import utilities.logger.Logger;
 import utilities.network.NetworkStatusService;
 import utilities.notifications.NotificationService;
+import utilities.swagger.input.Swagger_Invite_Person;
 import utilities.swagger.output.Swagger_ProjectStats;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+import java.net.URLEncoder;
 
 public class ProjectService {
 
@@ -101,38 +111,112 @@ public class ProjectService {
 
     public void deactivate(Model_Project project) {}
 
-    public void invite(Model_Person person) {
+    public void invite(Model_Project project, List<String> emails, Model_Person who_invite) throws UnsupportedEncodingException {
 
+        // Získání seznamu uživatelů, kteří jsou registrovaní(listIn) a kteří ne(listOut)
+        List<Model_Person> listIn = new ArrayList<>();
+        List<String> listOut = new ArrayList<>();
+
+        // Roztřídění seznamů
+        for (String mail : emails) {
+            Model_Person person =  Model_Person.find.query().nullable().where().eq("email",mail).findOne();
+            if (person != null) {
+                listIn.add(person);
+                listOut.add(person.email);
+            }
+        }
+
+        emails.removeAll(listOut);
+
+        logger.debug("project_invite - registered users {}", Json.toJson(listIn));
+        logger.debug("project_invite - unregistered users {}", Json.toJson(emails));
+
+        String full_name = who_invite.full_name();
+
+        // Vytvoření pozvánky pro nezaregistrované uživatele
+        for (String mail : emails) {
+
+            logger.debug("project_invite - creating invitation for {}", mail);
+
+            Model_Invitation invitation = Model_Invitation.find.query().nullable().where().eq("email", mail).eq("project.id", project.id).findOne();
+            if (invitation == null) {
+                invitation = new Model_Invitation();
+                invitation.email = mail;
+                invitation.owner = who_invite;
+                invitation.project = project;
+                invitation.save();
+            }
+
+            String link = Server.becki_mainUrl + "/" +  Server.becki_invitationToCollaborate + URLEncoder.encode(mail, "UTF-8");
+
+            // Odeslání emailu s linkem pro registraci
+            try {
+
+                new Email()
+                        .text("User " + Email.bold(full_name) + " invites you to collaborate on the project " + Email.bold(project.name) + ". If you would like to participate in it, register yourself via link below.")
+                        .divider()
+                        .link("Register here and collaborate",link)
+                        .send(mail, "Invitation to Collaborate");
+
+            } catch (Exception e) {
+                logger.internalServerError(e);
+            }
+        }
+
+        // Pro Registrované uživatele
+        for (Model_Person person : listIn) {
+
+            if (project.isParticipant(person)) continue;
+
+            logger.debug("project_invite - creating invitation for {}", person.email);
+
+            Model_Invitation invitation = Model_Invitation.find.query().nullable().where().eq("email", person.email).eq("project.id", project.id).findOne();
+            if (invitation == null) {
+                invitation = new Model_Invitation();
+                invitation.email = person.email;
+                invitation.owner = who_invite;
+                invitation.project = project;
+                invitation.save();
+            }
+
+            project.idCache().add(Model_Invitation.class, invitation.id);
+
+            try {
+
+                new Email()
+                        .text("User " + Email.bold(full_name) + " invites you to collaborate on the project ")
+                        .link(project.name, Server.becki_mainUrl + "/projects")
+                        .text(". If you would like to participate in it, log in to your Byzance account.")
+                        .send(person.email, "Invitation to Collaborate");
+
+            } catch (Exception e) {
+                logger.internalServerError(e);
+            }
+
+            this.notificationService.send(person, project.notificationInvitation(who_invite, invitation));
+        }
+
+        // Uložení do DB
+        project.refresh();
     }
 
     public void acceptInvitation(Model_Invitation invitation) {
 
         Model_Person person = Model_Person.find.query().where().eq("email", invitation.email).findOne();
-
         Model_Project project = invitation.getProject();
 
-        if (!project.persons.contains(person)) {
-            project.persons.add(person);
-            project.update();
+        try {
 
-            try {
+            Model_Role role = Model_Role.find.query().where().eq("project.id", project.id).eq("default_role", true).findOne();
 
-                System.out.println("acceptInvitation hledam default role");
-                Model_Role role = Model_Role.find.query().where().eq("project.id", project.id).eq("default_role", true).findOne();
+            if (!role.persons.contains(person)) {
 
-                if (!role.persons.contains(person)) {
-
-                    System.out.println("Role neobsahuje uživatele a přidávám ho");
-
-                    role.persons.add(person);
-                    role.update();
-                }
-            } catch (NotFoundException e) {
-                logger.warn("onProjectInvitationAccepted - unable to find default role for project, id {}", project.id);
+                role.persons.add(person);
+                role.update();
             }
+        } catch (NotFoundException e) {
+            logger.warn("onProjectInvitationAccepted - unable to find default role for project, id {}", project.id);
         }
-
-        person.idCache().add(Model_Project.class, project.id);
 
         try {
 
@@ -140,9 +224,9 @@ public class ProjectService {
             System.out.println("onProjectInvitationAccepted - person " + person.email);
 
             this.notificationService.send(invitation.who_invite(), project.notificationInvitationAccepted(person));
+
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Posralo se něco v notifikaci");
         }
 
         // TODO new Thread(() -> EchoHandler.addToQueue(new WSM_Echo(Model_Project.class, project_not_cached.id, project_not_cached.id))).start();

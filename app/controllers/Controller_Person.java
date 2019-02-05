@@ -79,7 +79,6 @@ public class Controller_Person extends _BaseController {
             // Get and Validate Object
             Swagger_Person_New help = formFromRequestWithValidation(Swagger_Person_New.class);
 
-            System.out.println("Create Person");
 
             if (Model_Person.getByNickName(help.nick_name) != null)
                 return badRequest("nick name is used");
@@ -127,7 +126,6 @@ public class Controller_Person extends _BaseController {
                 try {
 
                     for(Model_Invitation invitation : invitations ) {
-                        System.out.println("Accept invitations invitation" + invitation.id);
                         this.projectService.acceptInvitation(invitation);
                     }
 
