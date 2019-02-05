@@ -87,43 +87,9 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
         }
     }
 
-    /**
-     * Making List of Model_ProjectParticipant from Model_ProjectParticipant and also from all invitations!
-     * @return Model_ProjectParticipant[]
-     */
     @JsonProperty @ApiModelProperty(required = true)
-    public List<Swagger_ProjectParticipant> participants() {
-        try {
-
-            return getPersons().stream().map(person -> {
-                Swagger_ProjectParticipant participant = new Swagger_ProjectParticipant();
-                participant.id = person.id;
-                participant.email = person.email;
-                participant.full_name = person.full_name();
-                return participant;
-            }).collect(Collectors.toList());
-
-
-        } catch (Exception e){
-            logger.internalServerError(e);
-            return new ArrayList<>();
-        }
-    }
-
-    /**
-     * Making List of invitations!
-     * @return Model_ProjectParticipant[]
-     */
-    @JsonProperty @ApiModelProperty(required = true)
-    public List<Model_Invitation> invitations() {
-        try {
-
-            return getInvitations();
-
-        } catch (Exception e){
-            logger.internalServerError(e);
-            return new ArrayList<>();
-        }
+    public List<Model_Person> persons() {
+        return getPersons();
     }
 
 /* GET SQL PARAMETER - CACHE OBJECTS ------------------------------------------------------------------------------------*/
@@ -131,7 +97,7 @@ public class Model_Project extends TaggedModel implements Permissible, UnderCust
     @JsonIgnore
     public List<UUID> getPersonsIds() {
         if (idCache().gets(Model_Person.class) == null) {
-            idCache().add(Model_Person.class, Model_Person.find.query().where().eq("projects.id", id).ne("deleted", true).select("id").findSingleAttributeList());
+            idCache().add(Model_Person.class, Model_Person.find.query().where().eq("roles.project.id", id).ne("deleted", true).select("id").findSingleAttributeList());
         }
         return idCache().gets(Model_Person.class) != null ?  idCache().gets(Model_Person.class) : new ArrayList<>();
     }

@@ -25,6 +25,7 @@ import utilities.model.EchoService;
 import utilities.mongo_cloud_api.MongoCloudApi;
 import utilities.notifications.NotificationService;
 import utilities.permission.PermissionService;
+import utilities.project.ProjectService;
 import utilities.swagger.input.*;
 
 import java.net.URLEncoder;
@@ -46,14 +47,16 @@ public class Controller_Project extends _BaseController {
     private final HardwareService hardwareService;
     private final MongoCloudApi mongoApi;
     private final ProductService productService;
+    private final ProjectService projectService;
 
     @Inject
     public Controller_Project(WSClient ws, _BaseFormFactory formFactory, Config config, PermissionService permissionService, ProductService productService,
-                              MongoCloudApi mongoApi, NotificationService notificationService, HardwareService hardwareService, EchoService echoService) {
+                              MongoCloudApi mongoApi, NotificationService notificationService, HardwareService hardwareService, ProjectService projectService, EchoService echoService) {
         super(ws, formFactory, config, permissionService, notificationService, echoService);
         this.hardwareService = hardwareService;
         this.productService = productService;
         this.mongoApi = mongoApi;
+        this.projectService = projectService;
     }
 
 
@@ -102,7 +105,6 @@ public class Controller_Project extends _BaseController {
             project.description = help.description;
             project.product     = product;
 
-            project.persons.addAll(product.owner.getEmployees().stream().map(Model_Employee::getPerson).collect(Collectors.toList()));
             project.setTags(help.tags);
             this.checkCreatePermission(project);
 
@@ -341,12 +343,7 @@ public class Controller_Project extends _BaseController {
             produces = "application/json",
             consumes = "text/html",
             protocols = "https",
-            code = 200,
-            extensions = {
-                    @Extension( name = "permission_required", properties = {
-                            @ExtensionProperty(name = "Project.delete_permission", value = "true")
-                    })
-            }
+            code = 200
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Ok Result",                 response = Result_Ok.class),
@@ -371,6 +368,33 @@ public class Controller_Project extends _BaseController {
             project.delete();
 
             return ok();
+        } catch (Exception e) {
+            return controllerServerError(e);
+        }
+    }
+
+    @ApiOperation(value = "get Project Invitation",
+            tags = {"Project"},
+            notes = "get Projects Invitations of new Users by project_id",
+            produces = "application/json",
+            consumes = "text/html",
+            protocols = "https",
+            code = 200
+    )
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Invitation.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
+            @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
+            @ApiResponse(code = 403, message = "Need required permission",  response = Result_Forbidden.class),
+            @ApiResponse(code = 404, message = "Object not found",          response = Result_NotFound.class),
+            @ApiResponse(code = 500, message = "Server side Error",         response = Result_InternalServerError.class)
+    })
+    public Result project_get_invitation(UUID project_id) {
+        try {
+
+            Model_Project project = Model_Project.find.byId(project_id);
+            return ok(project.getInvitations());
+
         } catch (Exception e) {
             return controllerServerError(e);
         }
@@ -441,7 +465,7 @@ public class Controller_Project extends _BaseController {
             }
     )
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Project.class),
+            @ApiResponse(code = 200, message = "Ok Result",                 response = Model_Invitation.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Invalid body",              response = Result_InvalidBody.class),
             @ApiResponse(code = 400, message = "Something is wrong",        response = Result_BadRequest.class),
             @ApiResponse(code = 401, message = "Unauthorized request",      response = Result_Unauthorized.class),
@@ -462,93 +486,10 @@ public class Controller_Project extends _BaseController {
             // Kontrola oprávnění
             this.checkInvitePermission(project);
 
-            // Získání seznamu uživatelů, kteří jsou registrovaní(listIn) a kteří ne(listOut)
-            List<Model_Person> listIn = new ArrayList<>();
-            List<String> listOut = new ArrayList<>();
-
-            // Roztřídění seznamů
-            for (String mail : help.persons_mail) {
-                Model_Person person =  Model_Person.find.query().nullable().where().eq("email",mail).findOne();
-                if (person != null) {
-                    listIn.add(person);
-                    listOut.add(person.email);
-                }
-            }
-            help.persons_mail.removeAll(listOut);
-
-            logger.debug("project_invite - registered users {}", Json.toJson(listIn));
-            logger.debug("project_invite - unregistered users {}", Json.toJson(help.persons_mail));
-
-            String full_name = person().full_name();
-
-            // Vytvoření pozvánky pro nezaregistrované uživatele
-            for (String mail :  help.persons_mail) {
-
-                logger.debug("project_invite - creating invitation for {}", mail);
-
-                Model_Invitation invitation = Model_Invitation.find.query().nullable().where().eq("email", mail).eq("project.id", project.id).findOne();
-                if (invitation == null) {
-                    invitation = new Model_Invitation();
-                    invitation.email = mail;
-                    invitation.owner = person();
-                    invitation.project = project;
-                    invitation.save();
-                }
-
-                String link = Server.becki_mainUrl + "/" +  Server.becki_invitationToCollaborate + URLEncoder.encode(mail, "UTF-8");
-
-                // Odeslání emailu s linkem pro registraci
-                try {
-
-                    new Email()
-                            .text("User " + Email.bold(full_name) + " invites you to collaborate on the project " + Email.bold(project.name) + ". If you would like to participate in it, register yourself via link below.")
-                            .divider()
-                            .link("Register here and collaborate",link)
-                            .send(mail, "Invitation to Collaborate");
-
-                } catch (Exception e) {
-                    logger.internalServerError(e);
-                }
-            }
-
-            // Pro Registrované uživatele
-            for (Model_Person person : listIn) {
-
-                if (project.isParticipant(person)) continue;
-
-                logger.debug("project_invite - creating invitation for {}", person.email);
-
-                Model_Invitation invitation = Model_Invitation.find.query().nullable().where().eq("email", person.email).eq("project.id", project.id).findOne();
-                if (invitation == null) {
-                    invitation = new Model_Invitation();
-                    invitation.email = person.email;
-                    invitation.owner = person();
-                    invitation.project = project;
-                    invitation.save();
-                }
-
-                project.idCache().add(Model_Invitation.class, invitation.id);
-
-                try {
-
-                    new Email()
-                            .text("User " + Email.bold(full_name) + " invites you to collaborate on the project ")
-                            .link(project.name, Server.becki_mainUrl + "/projects")
-                            .text(". If you would like to participate in it, log in to your Byzance account.")
-                            .send(person.email, "Invitation to Collaborate");
-
-                } catch (Exception e) {
-                    logger.internalServerError(e);
-                }
-
-                this.notificationService.send(person, project.notificationInvitation(person(), invitation));
-            }
-
-            // Uložení do DB
-            project.refresh();
+            this.projectService.invite(project, help.persons_mail, person());
 
             // Vrácení objektu
-            return ok(project);
+            return ok(project.getInvitations());
 
         } catch (Exception e) {
             return controllerServerError(e);
@@ -595,20 +536,16 @@ public class Controller_Project extends _BaseController {
 
 
             // Remove All Persons
-            List<Model_Person> list =  Model_Person.find.query().nullable().where().in("email", help.persons_mail).eq("projects.id", project_id).findList();
+            List<Model_Person> person_to_remove = Model_Person.find.query().nullable().where().in("email", help.persons_mail).findList();
+            List<Model_Role> roles = Model_Role.find.query().nullable().where().in("persons.email", help.persons_mail).eq("project.id", project_id).findList();
 
-            if(!list.isEmpty()) {
-                project.persons.removeAll(list);
-                project.update();
-
+            if(!roles.isEmpty()) {
                 // Remove Persons from Roles
-                List<Model_Role> roles = Model_Role.find.query().nullable().where().eq("project.id", project.id).in("persons.id", list.stream().map(p -> p.id).collect(Collectors.toList())).findList();
                 roles.forEach(r -> {
-                    r.persons.removeAll(list);
+                    r.persons.removeAll(person_to_remove);
                     r.update();
                 });
             }
-
 
 
             // Získání seznamu --- Remove invitations

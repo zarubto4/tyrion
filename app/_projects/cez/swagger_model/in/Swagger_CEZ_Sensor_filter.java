@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 @ApiModel(description = "Json Model for getting data for EON project",
-        value = "EON_Electricity_meter_filter")
+        value = "CEZ_Sensor_filter")
 public class Swagger_CEZ_Sensor_filter extends _Swagger_filter_parameter {
 
     @ApiModelProperty(value = "Hardware Alias Name - substring supported", required = false)

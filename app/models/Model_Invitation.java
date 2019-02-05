@@ -32,11 +32,22 @@ public class Model_Invitation extends BaseModel {
 
 /* JSON PROPERTY VALUES ------------------------------------------------------------------------------------------------*/
 
-    @JsonProperty @ApiModelProperty(required = true)
+    @JsonProperty @ApiModelProperty(required = true, value = "Only if user is already registered in system, otherwise there is a null value")
     public Model_Person invited_person() {
         try {
             return Model_Person.find.query().nullable().where().eq("email", this.email).findOne();
         } catch (Exception e) {
+            logger.internalServerError(e);
+            return null;
+        }
+    }
+
+
+    @JsonProperty @ApiModelProperty(required = true)
+    public Model_Person who_invite() {
+        try {
+            return getOwner();
+        } catch (Exception e){
             logger.internalServerError(e);
             return null;
         }

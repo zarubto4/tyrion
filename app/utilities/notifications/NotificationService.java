@@ -64,6 +64,8 @@ public class NotificationService {
                 message.put("id", notification1.id.toString());
             }
 
+            System.out.println("Resiver ID" + receiver.id);
+
             if (this.subscriptions.containsKey(receiver.id)) {
                 this.subscriptions.get(receiver.id).forEach(portal -> portal.tell(message));
             }

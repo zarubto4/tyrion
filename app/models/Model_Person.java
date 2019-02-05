@@ -119,6 +119,7 @@ public class Model_Person extends BaseModel implements Permissible {
         if (idCache().gets(Model_Project.class) == null) {
             // Získání seznamu
             idCache().add(Model_Project.class, Model_Project.find.query().where().eq("persons.id", id).select("id").findSingleAttributeList());
+            idCache().add(Model_Project.class, Model_Project.find.query().where().eq("roles.persons.id", id).select("id").findSingleAttributeList());
         }
 
         List<Model_Project> projects = new ArrayList<>();
@@ -200,6 +201,8 @@ public class Model_Person extends BaseModel implements Permissible {
                     .setUserId(id.toString());
             User.create(user);
 
+        } catch (Exception e) {
+            logger.error("Update " + e.getMessage());
         }
 
         super.update();
