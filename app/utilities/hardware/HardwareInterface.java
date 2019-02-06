@@ -120,6 +120,10 @@ public class HardwareInterface {
         return this.webSocketInterface.ask(new Request(new WS_Message_Hardware_uuid_converter_cleaner().make_request(this.hardware.id, oldId, this.hardware.full_id)));
     }
 
+    public CompletionStage<Message> changeUUIDOnServer(UUID oldId, UUID newId) {
+        return this.webSocketInterface.ask(new Request(new WS_Message_Hardware_uuid_converter_cleaner().make_request(newId, oldId, this.hardware.full_id)));
+    }
+
     public CompletionStage<Message> removeUUIDOnServer() {
         return this.webSocketInterface.ask(new Request(new WS_Message_Hardware_uuid_converter_cleaner().make_request(null, this.hardware.id, this.hardware.full_id)));
     }

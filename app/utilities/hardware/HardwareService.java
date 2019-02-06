@@ -12,33 +12,36 @@ import models.Model_HomerServer;
 import play.libs.concurrent.HttpExecutionContext;
 import utilities.document_mongo_db.document_objects.DM_Board_Bootloader_DefaultConfig;
 import utilities.enums.FirmwareType;
+import utilities.enums.NetworkStatus;
 import utilities.enums.UpdateType;
 import utilities.hardware.update.UpdateService;
 import utilities.logger.Logger;
+import utilities.network.NetworkStatusService;
 import utilities.synchronization.SynchronizationService;
 import websocket.WebSocketService;
 import websocket.interfaces.Homer;
 import websocket.messages.homer_hardware_with_tyrion.helps_objects.WS_Model_Hardware_Temporary_NotDominant_record;
 
+import java.util.UUID;
+
 public class HardwareService {
 
     private static final Logger logger = new Logger(HardwareService.class);
 
-    private final SynchronizationService synchronizationService;
     private final HttpExecutionContext httpExecutionContext;
     private final WebSocketService webSocketService;
     private final DominanceService dominanceService;
+    private final NetworkStatusService networkStatusService;
     private final Provider<UpdateService> updateService;
-    private final Injector injector;
 
     @Inject
-    public HardwareService(Injector injector, SynchronizationService synchronizationService, WebSocketService webSocketService, Provider<UpdateService> updateService, DominanceService dominanceService, HttpExecutionContext httpExecutionContext) {
-        this.synchronizationService = synchronizationService;
+    public HardwareService(WebSocketService webSocketService, Provider<UpdateService> updateService, DominanceService dominanceService,
+                           HttpExecutionContext httpExecutionContext, NetworkStatusService networkStatusService) {
         this.httpExecutionContext = httpExecutionContext;
         this.webSocketService = webSocketService;
         this.dominanceService = dominanceService;
         this.updateService = updateService;
-        this.injector = injector;
+        this.networkStatusService = networkStatusService;
     }
 
     public HardwareInterface getInterface(Model_Hardware hardware) {
@@ -71,24 +74,22 @@ public class HardwareService {
     public void activate(Model_Hardware hardware) {
         WS_Model_Hardware_Temporary_NotDominant_record record = this.dominanceService.getNondominant(hardware.full_id);
         if (this.dominanceService.setDominant(hardware)) {
-            if (record != null) {
-                try {
+            this.networkStatusService.setStatus(hardware, NetworkStatus.OFFLINE);
+            try {
+                if (record != null) {
                     this.getInterface(hardware).changeUUIDOnServer(record.random_temporary_hardware_id)
                             .whenComplete((message, exception) -> {
                                 if (exception != null) {
                                     logger.internalServerError(exception);
                                 }
                             });
-
-                } catch (NeverConnectedException|ServerOfflineException e) {
-                    // nothing
                 }
+            } catch (NeverConnectedException e) {
+                this.networkStatusService.setStatus(hardware, NetworkStatus.NOT_YET_FIRST_CONNECTED);
+            } catch (ServerOfflineException e) {
+                this.networkStatusService.setStatus(hardware, NetworkStatus.UNKNOWN_LOST_CONNECTION_WITH_SERVER);
             }
 
-            HardwareSynchronizationTask task = this.injector.getInstance(HardwareSynchronizationTask.class);
-            task.setHardware(hardware);
-
-            this.synchronizationService.submit(task);
             // TODO send echo
 
             hardware.make_log_activated(); // TODO injection
@@ -130,16 +131,20 @@ public class HardwareService {
 
     public void deactivate(Model_Hardware hardware) {
         this.dominanceService.setNondominant(hardware);
-
-        HardwareInterface hardwareInterface = this.getInterface(hardware);
-        hardwareInterface.removeUUIDOnServer().whenComplete((message, exception) -> {
-            if (exception != null) {
-                logger.internalServerError(exception);
-            } else {
-                logger.info("deactivate - id removed from homer server");
-            }
-        });
+        this.networkStatusService.setStatus(hardware, NetworkStatus.FREEZED);
+        try {
+            HardwareInterface hardwareInterface = this.getInterface(hardware);
+            hardwareInterface.changeUUIDOnServer(hardware.getId(), this.dominanceService.rememberNondominant(hardware.full_id, hardware.connected_server_id))
+                    .whenComplete((message, exception) -> {
+                        if (exception != null) {
+                            logger.internalServerError(exception);
+                        } else {
+                            logger.info("deactivate - id changed on homer server");
+                        }
+                    });
+        } catch (NeverConnectedException|ServerOfflineException e) {
+            // nothing
+        }
         // TODO send echo
-        // TODO remove from network status service
     }
 }

@@ -357,7 +357,7 @@ public class Homer extends Interface {
     private void onHardwareConnected(WS_Message_Hardware_connected help) {
         try {
 
-            logger.debug("onHardwareConnected - hardware, id: {} is online", help.uuid);
+            logger.debug("onHardwareConnected - hardware is online, full id: {}, id {}", help.full_id, help.uuid);
 
             Model_Hardware hardware = Model_Hardware.find.byId(help.uuid);
 
